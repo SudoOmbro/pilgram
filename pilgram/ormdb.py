@@ -37,6 +37,7 @@ class Player(BaseModel):
     money = IntegerField()
     level = IntegerField()
     xp = IntegerField()
+    gear_level = IntegerField()
 
 
 class Guild(BaseModel):

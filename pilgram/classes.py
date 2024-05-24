@@ -85,6 +85,7 @@ class Player:
             xp: int,
             money: int,
             progress: Progress,
+            gear_level: int
     ):
         """
         :param player_id (int): unique id of the player
@@ -104,6 +105,7 @@ class Player:
         self.money = money
         self.level = level
         self.xp = xp
+        self.gear_level = gear_level
         self.required_xp: int = self.get_new_required_xp()
 
     def get_new_required_xp(self) -> int:
