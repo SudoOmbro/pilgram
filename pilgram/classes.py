@@ -48,8 +48,11 @@ class Quest:
 
     def finish_quest(self, player: "Player") -> bool:
         """ return true if the player has successfully finished the quest """
-        roll = random.randint(1, (self.number + 5)) * (self.zone.level + 1)
-        return player.level + 1 >= roll
+        roll = random.randint(0, 11)
+        if roll == 0:
+            return False  # you can still get a critical failure
+        result = player.level + player.gear_level + roll
+        return result >= self.zone.level + (self.number * 2)
 
     def get_quest_rewards(self) -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """

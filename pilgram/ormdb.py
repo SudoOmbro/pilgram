@@ -34,10 +34,10 @@ class Player(BaseModel):
     name = CharField(null=False)
     description = CharField(null=False)
     guild = ForeignKeyField("Guild", backref="players")
-    money = IntegerField()
-    level = IntegerField()
-    xp = IntegerField()
-    gear_level = IntegerField()
+    money = IntegerField(default=10)
+    level = IntegerField(default=1)
+    xp = IntegerField(default=0)
+    gear_level = IntegerField(default=0)
 
 
 class Guild(BaseModel):
