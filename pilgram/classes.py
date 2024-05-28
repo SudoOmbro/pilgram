@@ -77,7 +77,7 @@ class Progress:
             self.zone_progress[zp[0]] = zp[1]
 
     def get_zone_progress(self, zone: Zone) -> int:
-        return self.zone_progress[zone.zone_id] if zone in self.zone_progress else 0
+        return self.zone_progress[zone.zone_id] if zone.zone_id in self.zone_progress else 0
 
     def __str__(self):
         return "\n".join(f"zone {zone}: progress {progress}" for zone, progress in self.zone_progress)
