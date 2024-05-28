@@ -45,6 +45,7 @@ class Guild(BaseModel):
     name = CharField(null=False)
     description = CharField(null=False)
     founder = ForeignKeyField(Player, backref='guilds')
+    creation_date = DateTimeField(default=datetime.now)
 
 
 class Progress(BaseModel):

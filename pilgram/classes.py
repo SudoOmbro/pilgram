@@ -1,4 +1,5 @@
 import random
+from datetime import datetime
 from typing import Tuple, Dict
 
 
@@ -47,8 +48,13 @@ class Quest:
 
     def finish_quest(self, player: "Player") -> bool:
         """ return true if the player has successfully finished the quest """
-        # TODO quest success has to be influenced by player & zone level
-        return True
+        roll = random.randint(1, (self.number + 5)) * (self.zone.level + 1)
+        return player.level + 1 >= roll
+
+    def get_quest_rewards(self) -> Tuple[int, int]:
+        """ return the amount of xp & money the completion of the quest rewards """
+        multiplier = self.zone.level + self.number
+        return 100 * multiplier, 180 * multiplier  # XP, Money
 
 
 class Progress:
@@ -132,21 +138,24 @@ class Player:
 
 
 class Guild:
+    """ Player/admin created guilds that players can join """
 
-    def __init__(self, guild_id: int, name: str, description: str, founder: Player):
+    def __init__(self, guild_id: int, name: str, description: str, founder: Player, creation_date: datetime):
         """
         :param guild_id: unique id of the guild
         :param name: player given name of the guild
         :param description: player given description of the guild
-        :param founder: the player who found the guild
+        :param founder: the player who found the guild,
+        :param creation_date: the date the guild was created
         """
         self.guild_id = guild_id
         self.name = name
         self.description = description
         self.founder = founder
+        self.creation_date = creation_date
 
     def __str__(self):
-        return  f"*{self.name}*\nfounder: _{self.founder}_\n\n{self.description}"
+        return f"*{self.name}*\nfounder: _{self.founder}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 
 
 class ZoneEvent:
