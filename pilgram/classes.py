@@ -27,6 +27,7 @@ class Quest:
             quest_id: int,
             zone: Zone,
             number: int,
+            name: str,
             description: str,
             success_text: str,
             failure_text: str,
@@ -42,6 +43,7 @@ class Quest:
         self.quest_id = quest_id
         self.zone = zone
         self.number = number
+        self.name = name
         self.description = description
         self.success_text = success_text
         self.failure_text = failure_text
@@ -58,6 +60,9 @@ class Quest:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = self.zone.level + self.number
         return 100 * multiplier, 180 * multiplier  # XP, Money
+
+    def __str__(self):
+        return f"*{self.name}*\n\n{self.description}"
 
 
 class Progress:
