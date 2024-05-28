@@ -1,9 +1,28 @@
+import logging
 from functools import cache
-from typing import Union
+from typing import Union, List
 
 import requests
 
 from AI.generics import PilgramGenerator
+
+
+log = logging.getLogger(__name__)
+
+
+WORLD_PROMPT = "You write about a low fantasy world named Borom"
+STYLE_PROMPT = ""
+FORMATTING_PROMPT = ""
+
+
+@cache
+def build_messages(role: str, *messages: str) -> List[dict]:
+    return [{"role": role, "content": x} for x in messages]
+
+
+class GPTAPIError(Exception):
+    # TODO: put information in the exception about the type of error that happened, so that retries can be informed
+    pass
 
 
 class _ChatGPTAPI:
@@ -15,7 +34,7 @@ class _ChatGPTAPI:
             self,
             token: str,
             model: str,
-            api_version: str = "v1",
+            api_version: int = 1,
             project: Union[str, None] = None,
             organization: Union[str, None] = None
     ):
@@ -35,13 +54,27 @@ class _ChatGPTAPI:
 
     @cache
     def build_request_url(self, endpoint: str) -> str:
-        return f"{self.BASE_URL}/{self.api_version}/{endpoint}"
+        return f"{self.BASE_URL}/v{self.api_version}/{endpoint}"
 
-    def create_completion(self, system_message: str, user_message: str) -> str:
-        pass
+    def create_completion(self, messages: List[dict]) -> str:
+        response = requests.post(
+            self.build_request_url("completion"),
+            {
+                "model": self.model,
+                "messages": messages
+            },
+            headers=self.headers
+        )
+        if response.ok:
+            return response.json()["choiches"][0]["message"]["content"]
+        log.error(f"could not create completion, response: {response.text}")
+        raise GPTAPIError
 
 
 class ChatGPTGenerator(PilgramGenerator):
+
+    QUEST_SYS = build_messages("system", WORLD_PROMPT, FORMATTING_PROMPT)
+    EVENT_SYS = build_messages("system", WORLD_PROMPT, STYLE_PROMPT, FORMATTING_PROMPT)
 
     def generate(self, prompt: str):
         pass

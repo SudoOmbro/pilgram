@@ -3,7 +3,7 @@ from typing import Tuple, Dict
 
 
 class Zone:
-    """ contains info about a zone. Zone 0 should be the town to reuse the event system """
+    """ contains info about a zone. Zone 0 should be the town to reuse the zone event system """
 
     def __init__(self, zone_id: int, zone_name: str, level: int, zone_description: str):
         """

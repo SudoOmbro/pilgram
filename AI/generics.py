@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Any, List
 
-from pilgram.classes import Zone, ZoneEvent
+from pilgram.classes import Zone, ZoneEvent, Quest
 
 
 class PilgramGenerator(ABC):
@@ -10,5 +10,7 @@ class PilgramGenerator(ABC):
         raise NotImplementedError
 
     def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
-        # TODO
-        pass
+        raise NotImplementedError
+
+    def generate_quests(self, zone: Zone) -> List[Quest]:
+        raise NotImplementedError
