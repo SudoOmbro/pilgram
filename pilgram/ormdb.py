@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 
 from datetime import datetime
@@ -8,7 +10,9 @@ from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyFie
 from pilgram.classes import Player, Progress, Guild
 from pilgram.generics import PilgramDatabase
 
+
 db = SqliteDatabase("pilgram.db")
+log = logging.getLogger(__name__)
 
 
 class BaseModel(Model):
@@ -105,9 +109,19 @@ def encode_progress(data: Dict[int, int]) -> bytes:
 
 
 class PilgramORMDatabase(PilgramDatabase):
+    """ singleton object which contains the instance that handles connections to the database and the caches """
+    _instance = None
 
     def __init__(self):
-        super().__init__()
+        raise RuntimeError("This class is a singleton, call instance() instead.")
+
+    @classmethod
+    def instance(cls):
+        if cls._instance is None:
+            print('Creating new instance')
+            cls._instance = cls.__new__(cls)
+            # TODO init caches here
+        return cls._instance
 
     def get_player_data(self, player_id) -> Player:
         pls = PlayerModel.get(PlayerModel.id == player_id)
@@ -135,6 +149,7 @@ class PilgramORMDatabase(PilgramDatabase):
         pls.money = player.money,
         pls.gear_level = player.gear_level
         pls.progress = encode_progress(player.progress.zone_progress)
+        pls.save()
 
     def create_player_data(self, player: Player):
         PlayerModel.create(
@@ -153,6 +168,12 @@ class PilgramORMDatabase(PilgramDatabase):
             founder,
             gs.creation_date,
         )
+
+    def update_guild(self, guild: Guild):
+        gs = GuildModel.get(GuildModel.id == guild.guild_id)
+        gs.name = guild.name
+        gs.description = guild.description
+        gs.save()
 
     def add_guild(self, guild: Guild):
         GuildModel.create(
