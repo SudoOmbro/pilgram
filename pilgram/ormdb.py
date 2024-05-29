@@ -8,7 +8,6 @@ from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyFie
 from pilgram.classes import Player, Progress, Guild
 from pilgram.generics import PilgramDatabase
 
-
 db = SqliteDatabase("pilgram.db")
 
 
@@ -93,6 +92,7 @@ def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:
 
 
 def encode_progress(data: Dict[int, int]) -> bytes:
+    """ encodes the data dictionary contained in the progress object to a bytestring that can be saved on the db """
     dict_size = len(data)
     packed_array = np.empty(dict_size << 1, np.uint16)
     i: int = 0
@@ -152,4 +152,13 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.description,
             founder,
             gs.creation_date,
+        )
+
+    def add_guild(self, guild: Guild):
+        GuildModel.create(
+            id=guild.guild_id,
+            name=guild.name,
+            description=guild.description,
+            founder_id=guild.founder.player_id,
+            creation_date=guild.creation_date
         )
