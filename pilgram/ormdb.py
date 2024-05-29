@@ -1,10 +1,13 @@
-from datetime import datetime
-from typing import Dict
+import numpy as np
 
-from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, CompositeKey, DateTimeField
+from datetime import datetime
+from typing import Dict, Union
+
+from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey
 
 from pilgram.classes import Player, Progress, Guild
 from pilgram.generics import PilgramDatabase
+
 
 db = SqliteDatabase("pilgram.db")
 
@@ -35,7 +38,7 @@ class PlayerModel(BaseModel):
     id = IntegerField(primary_key=True, unique=True)
     name = CharField(null=False)
     description = CharField(null=False)
-    guild_id = ForeignKeyField("Guild", backref="players", null=True, default=None)
+    guild_id = DeferredForeignKey('GuildModel', backref="players", null=True, default=None)
     money = IntegerField(default=10)
     level = IntegerField(default=1)
     xp = IntegerField(default=0)
@@ -75,15 +78,30 @@ def create_tables():
     db.close()
 
 
-def decode_progress(data: str) -> Dict[int, int]:
+def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:
+    """
+        decodes the bytestring saved in progress field to an integer map.
+        Even bytes represent zone ids, odd bytes represent the progress in the associated zone.
+    """
     if not data:
         return {}
-    # TODO
+    progress_dictionary: Dict[int, int] = {}
+    unpacked_array = np.frombuffer(data, dtype=np.uint16).reshape((2, len(data) >> 2))
+    for zone_id, progress in unpacked_array:
+        progress_dictionary[zone_id.item()] = progress.item()
+    return progress_dictionary
 
 
-def encode_progress(data: Dict[int, int]) -> str:
-    # TODO
-    pass
+def encode_progress(data: Dict[int, int]) -> bytes:
+    dict_size = len(data)
+    packed_array = np.empty(dict_size << 1, np.uint16)
+    i: int = 0
+    for zone_id, progress in data.items():
+        j = i << 1
+        packed_array[j] = zone_id
+        packed_array[j + 1] = progress
+        i += 1
+    return packed_array.tobytes()
 
 
 class PilgramORMDatabase(PilgramDatabase):
