@@ -1,6 +1,6 @@
 import random
 from datetime import datetime
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Any, Callable
 
 
 class Zone:
@@ -68,13 +68,15 @@ class Quest:
 class Progress:
     """ stores the player quest progress for each zone """
 
-    def __init__(self, progress_tuple: Tuple[Tuple[int, int]]):
+    def __init__(self, progress_data: Any, parsing_function: Callable[[Any], Dict[int, int]]):
         """
-        :param progress_tuple: tuple of the player quest progress
+        :param progress_data:
+            The data that contains the player quest progress.
+            How it is stored on the database is independent of the implementation here.
+        :param parsing_function:
+            The function used to parse progress_data, must return the correct data format
         """
-        self.zone_progress: Dict[int, int] = {}
-        for zp in progress_tuple:
-            self.zone_progress[zp[0]] = zp[1]
+        self.zone_progress: Dict[int, int] = parsing_function(progress_data)
 
     def get_zone_progress(self, zone: Zone) -> int:
         return self.zone_progress[zone.zone_id] if zone.zone_id in self.zone_progress else 0

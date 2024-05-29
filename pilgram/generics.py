@@ -73,7 +73,7 @@ class PilgramDatabase(ABC):
     def get_next_quest(self, zone: Zone, player: Player) -> Quest:
         """ returns the next quest the player has to do in the specified zone. """
         player_zone_progress = player.progress.get_zone_progress(zone)
-        return self.get_quest(zone, player_zone_progress + 1)
+        return self.get_quest(zone, player_zone_progress)
 
     def get_quest(self, zone: Zone, quest_number: int) -> Quest:
         """ get a quest given a zone and the number of the quest """
