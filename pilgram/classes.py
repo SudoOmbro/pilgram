@@ -1,6 +1,6 @@
 import random
 from datetime import datetime
-from typing import Tuple, Dict, Any, Callable
+from typing import Tuple, Dict, Any, Callable, Union
 
 
 class Zone:
@@ -185,3 +185,23 @@ class ZoneEvent:
 
     def __str__(self):
         return f"{self.event_text}\n\nxp gained: {self.xp_value}\nmoney gained: {self.money_value}"
+
+
+class AdventureContainer:
+    """ Utility class to help manage player updates """
+
+    def __init__(self, player: Player, quest: Union[Quest, None], finish_time: Union[datetime, None]):
+        """
+        :param player:
+            the player questing
+        :param quest:
+            if not None then it's the quest the player is currently doing, otherwise it means the player is in town
+        :param finish_time:
+            the time the quest finishes. If None the player is in town
+        """
+        self.player = player
+        self.quest = quest
+        self.finish_time = finish_time
+
+    def is_quest_finished(self) -> bool:
+        return datetime.now() > self.finish_time

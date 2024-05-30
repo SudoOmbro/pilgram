@@ -133,14 +133,13 @@ class PilgramORMDatabase(PilgramDatabase):
         gs.save()
 
     def add_guild(self, guild: Guild):
-        # TODO autogenerate id & update object
-        GuildModel.create(
-            id=guild.guild_id,
+        gs = GuildModel.create(
             name=guild.name,
             description=guild.description,
             founder_id=guild.founder.player_id,
             creation_date=guild.creation_date
         )
+        guild.guild_id = gs.guild_id
 
     # zones ----
 
@@ -166,13 +165,12 @@ class PilgramORMDatabase(PilgramDatabase):
         zs.save()
 
     def add_zone(self, zone: Zone):
-        # TODO autogenerate id & update object
-        ZoneModel.create(
-            id=zone.zone_id,
+        zs = ZoneModel.create(
             name=zone.zone_name,
             level=zone.level,
             description=zone.zone_description
         )
+        zone.zone_id = zs.id
 
     # zone events ----
 
@@ -204,11 +202,11 @@ class PilgramORMDatabase(PilgramDatabase):
         zes.save()
 
     def add_zone_event(self, event: ZoneEvent):
-        # TODO autogenerate id & update object
-        ZoneEventModel.create(
-            zone_id=event.zone,
+        zes = ZoneEventModel.create(
+            zone_id=event.zone.zone_id,
             event_text=event.event_text
         )
+        event.event_id = zes.id
 
         # quests ----
 
@@ -249,11 +247,17 @@ class PilgramORMDatabase(PilgramDatabase):
         qs.save()
 
     def add_quest(self, quest: Quest):
-        # TODO autogenerate id & update object
-        QuestModel.create(
-            id=quest.quest_id,
+        qs = QuestModel.create(
             name=quest.name,
             description=quest.description,
             success_text=quest.success_text,
             failure_text=quest.failure_text,
         )
+        quest.quest_id = qs.id
+
+    def get_quest_count(self, zone: Zone) -> int:
+        return QuestModel.select().where(QuestModel.id == zone.zone_id).count()
+
+    # in progress quest management ----
+
+    # TODO

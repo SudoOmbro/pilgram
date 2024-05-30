@@ -1,7 +1,8 @@
 from abc import ABC
+from datetime import timedelta
 from typing import List
 
-from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent
+from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
 
 
 class NotFoundException(Exception):
@@ -93,4 +94,18 @@ class PilgramDatabase(ABC):
 
     def get_quest_count(self, zone: Zone) -> int:
         """ used to determine the quest number at creation time """
+        raise NotImplementedError
+
+    # in progress quests management ----
+
+    def is_player_on_a_quest(self, player: Player) -> bool:
+        """ returns True if the player is currently on a quest """
+        raise NotImplementedError
+
+    def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
+        """ get all quest progress that was last updated timedelta hours ago or more """
+        raise NotImplementedError
+
+    def update_quest_progress(self, adventure_container: AdventureContainer):
+        """ update quest player progress, either complete quests or just change last update """
         raise NotImplementedError

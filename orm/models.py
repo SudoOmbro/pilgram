@@ -1,8 +1,8 @@
 import logging
 from datetime import datetime
 
-from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey
-
+from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
+    AutoField
 
 DB_FILENAME: str = "pilgram.db"
 
@@ -16,14 +16,14 @@ class BaseModel(Model):
 
 
 class ZoneModel(BaseModel):
-    id = IntegerField(primary_key=True, unique=True)
+    id = AutoField(primary_key=True, unique=True)
     name = CharField()
     level = IntegerField()
     description = CharField()
 
 
 class QuestModel(BaseModel):
-    id = IntegerField(primary_key=True, unique=True)
+    id = AutoField(primary_key=True, unique=True)
     zone_id = ForeignKeyField(ZoneModel, backref="quests")
     number = IntegerField(default=0)  # the number of the quest in the quest order
     name = CharField(null=False)
@@ -45,7 +45,7 @@ class PlayerModel(BaseModel):
 
 
 class GuildModel(BaseModel):
-    id = IntegerField(primary_key=True)
+    id = AutoField(primary_key=True)
     name = CharField(null=False)
     description = CharField(null=False)
     founder_id = ForeignKeyField(PlayerModel, backref='guilds')
@@ -53,7 +53,7 @@ class GuildModel(BaseModel):
 
 
 class ZoneEventModel(BaseModel):
-    id = IntegerField(primary_key=True)
+    id = AutoField(primary_key=True)
     zone_id = ForeignKeyField(ZoneModel)
     event_text = CharField()
 
