@@ -7,8 +7,8 @@ from typing import Dict, Union
 
 from peewee import fn
 
-from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent
+from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest
 from pilgram.generics import PilgramDatabase, NotFoundException
 from orm.utils import cache_ttl_quick, cache_sized_quick
 
@@ -43,7 +43,7 @@ def encode_progress(data: Dict[int, int]) -> bytes:
 
 
 class PilgramORMDatabase(PilgramDatabase):
-    """ singleton object which contains the instance that handles connections to the database and the caches """
+    """ singleton object which contains the instance that handles connections to the database """
     _instance = None
 
     def __init__(self):
@@ -176,7 +176,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # zone events ----
 
-    def build_zone_event_objects(self, zes):
+    def build_zone_event_object(self, zes) -> ZoneEvent:
         zone = self.get_zone(zes.zone_id)
         return ZoneEvent(
             zes.id,
@@ -188,13 +188,13 @@ class PilgramORMDatabase(PilgramDatabase):
         zes = ZoneEventModel.get(ZoneEventModel.id == event_id)
         if not zes:
             raise NotFoundException(f"Could not find zone event with id {event_id}")
-        return self.build_zone_event_objects(zes)
+        return self.build_zone_event_object(zes)
 
     @cache_ttl_quick(ttl=10)
     def get_random_zone_event(self, zone: Zone) -> ZoneEvent:
         # cache lasts only 10 seconds to optimize the most frequent use case
         zes = ZoneEventModel.select().where(ZoneEventModel.id == zone.zone_id).order_by(fn.Random()).limit(1)
-        return self.build_zone_event_objects(zes)
+        return self.build_zone_event_object(zes)
 
     def update_zone_event(self, event: ZoneEvent):
         zes = ZoneEventModel.get(ZoneEventModel.id == event.event_id)
@@ -208,4 +208,52 @@ class PilgramORMDatabase(PilgramDatabase):
         ZoneEventModel.create(
             zone_id=event.zone,
             event_text=event.event_text
+        )
+
+        # quests ----
+
+    def build_quest_object(self, qs, zone: Union[Zone, None] = None) -> Quest:
+        if not zone:
+            zone = self.get_zone(qs.zone_id)
+        return Quest(
+            qs.id,
+            zone,
+            qs.number,
+            qs.name,
+            qs.description,
+            qs.success_text,
+            qs.failure_text,
+        )
+
+    def get_quest(self, quest_id: int) -> Quest:  # this is unlikely to ever be used
+        qs = QuestModel.get(QuestModel.id == quest_id)
+        if not qs:
+            raise NotFoundException(f"Could not find quest with id {quest_id}")
+        return self.build_quest_object(qs)
+
+    def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
+        qs = QuestModel.get(QuestModel.zone_id == zone.zone_id and QuestModel.number == quest_number)
+        if not qs:
+            raise NotFoundException(f"Could not find quest number {quest_number} in zone {zone.zone_id}")
+        return self.build_quest_object(qs, zone=zone)
+
+    def update_quest(self, quest: Quest):
+        qs = QuestModel.get(QuestModel.id == quest.quest_id)
+        if not qs:
+            raise NotFoundException(f"Could not find quest with id {quest.quest_id}")
+        qs.number = quest.number
+        qs.name = quest.name
+        qs.description = quest.description
+        qs.failure_text = quest.failure_text
+        qs.success_text = quest.success_text
+        qs.save()
+
+    def add_quest(self, quest: Quest):
+        # TODO autogenerate id & update object
+        QuestModel.create(
+            id=quest.quest_id,
+            name=quest.name,
+            description=quest.description,
+            success_text=quest.success_text,
+            failure_text=quest.failure_text,
         )

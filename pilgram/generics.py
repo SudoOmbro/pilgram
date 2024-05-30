@@ -73,16 +73,24 @@ class PilgramDatabase(ABC):
     def get_next_quest(self, zone: Zone, player: Player) -> Quest:
         """ returns the next quest the player has to do in the specified zone. """
         player_zone_progress = player.progress.get_zone_progress(zone)
-        return self.get_quest(zone, player_zone_progress)
+        return self.get_quest_from_number(zone, player_zone_progress)
 
-    def get_quest(self, zone: Zone, quest_number: int) -> Quest:
+    def get_quest(self, quest_id: int) -> Quest:
         """ get a quest given a zone and the number of the quest """
         raise NotImplementedError
 
-    def update_quest(self, zone: Zone, quest: Quest):
+    def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
+        """ get a quest given a zone and the number of the quest """
+        raise NotImplementedError
+
+    def update_quest(self, quest: Quest):
         """ only used by the admin on the server via CLI to update an existing quest """
         raise NotImplementedError
 
-    def add_quest(self, zone: Zone, quest: Quest):
+    def add_quest(self, quest: Quest):
         """ used by the generator or manually by the admin via CLI on the server to add a new quest """
+        raise NotImplementedError
+
+    def get_quest_count(self, zone: Zone) -> int:
+        """ used to determine the quest number at creation time """
         raise NotImplementedError
