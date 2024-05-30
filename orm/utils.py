@@ -11,7 +11,7 @@ def cache(size_limit=0, ttl=0, quick_key_access=False):
             # Generate a key based on arguments being passed
             key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
 
-            # Check if they return value is already known
+            # Check if their return value is already known
             if key in storage:
                 result = storage[key]
             else:
@@ -70,7 +70,7 @@ def cache_ttl_quick(ttl=3600):
             # Generate a key based on arguments being passed
             key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
 
-            # Check if they return value is already known
+            # Check if their return value is already known
             if key in storage:
                 result = storage[key]
             else:
@@ -103,7 +103,7 @@ def cache_sized_quick(size_limit=256):
             # Generate a key based on arguments being passed
             key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
 
-            # Check if they return value is already known
+            # Check if their return value is already known
             if key in storage:
                 result = storage[key]
             else:

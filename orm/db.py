@@ -5,8 +5,10 @@ import numpy as np
 
 from typing import Dict, Union
 
-from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables
-from pilgram.classes import Player, Progress, Guild, Zone
+from peewee import fn
+
+from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent
 from pilgram.generics import PilgramDatabase, NotFoundException
 from orm.utils import cache_ttl_quick, cache_sized_quick
 
@@ -82,6 +84,8 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_player_data(self, player: Player):
         pls = PlayerModel.get(PlayerModel.id == player.player_id)
+        if not pls:
+            raise NotFoundException(f'Player with id {player.player_id} not found')
         pls.name = player.name,
         pls.description = player.description,
         pls.guild = player.guild,
@@ -122,6 +126,8 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_guild(self, guild: Guild):
         gs = GuildModel.get(GuildModel.id == guild.guild_id)
+        if not gs:
+            raise NotFoundException(f'Guild with id {guild.guild_id} not found')
         gs.name = guild.name
         gs.description = guild.description
         gs.save()
@@ -152,6 +158,8 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_zone(self, zone: Zone):  # this will basically never be called, but it's good to have
         zs = ZoneModel.get(ZoneModel.id == zone.zone_id)
+        if not zs:
+            raise NotFoundException(f"Could not find zone with id {zone.zone_id}")
         zs.name = zone.zone_name
         zs.level = zone.level
         zs.description = zone.zone_description
@@ -164,4 +172,40 @@ class PilgramORMDatabase(PilgramDatabase):
             name=zone.zone_name,
             level=zone.level,
             description=zone.zone_description
+        )
+
+    # zone events ----
+
+    def build_zone_event_objects(self, zes):
+        zone = self.get_zone(zes.zone_id)
+        return ZoneEvent(
+            zes.id,
+            zone,
+            zes.event_text
+        )
+
+    def get_zone_event(self, event_id: int) -> ZoneEvent:  # this is unlikely to ever be used
+        zes = ZoneEventModel.get(ZoneEventModel.id == event_id)
+        if not zes:
+            raise NotFoundException(f"Could not find zone event with id {event_id}")
+        return self.build_zone_event_objects(zes)
+
+    @cache_ttl_quick(ttl=10)
+    def get_random_zone_event(self, zone: Zone) -> ZoneEvent:
+        # cache lasts only 10 seconds to optimize the most frequent use case
+        zes = ZoneEventModel.select().where(ZoneEventModel.id == zone.zone_id).order_by(fn.Random()).limit(1)
+        return self.build_zone_event_objects(zes)
+
+    def update_zone_event(self, event: ZoneEvent):
+        zes = ZoneEventModel.get(ZoneEventModel.id == event.event_id)
+        if not zes:
+            raise NotFoundException(f"Could not find zone event with id {event.event_id}")
+        zes.event_text = event.event_text
+        zes.save()
+
+    def add_zone_event(self, event: ZoneEvent):
+        # TODO autogenerate id & update object
+        ZoneEventModel.create(
+            zone_id=event.zone,
+            event_text=event.event_text
         )
