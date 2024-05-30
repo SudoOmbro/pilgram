@@ -1,84 +1,16 @@
 import logging
+import os
 
 import numpy as np
 
-from datetime import datetime
 from typing import Dict, Union
 
-from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey
+from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables
+from pilgram.classes import Player, Progress, Guild, Zone
+from pilgram.generics import PilgramDatabase, NotFoundException
+from orm.utils import cache_ttl_quick, cache_sized_quick
 
-from pilgram.classes import Player, Progress, Guild
-from pilgram.generics import PilgramDatabase
-
-
-db = SqliteDatabase("pilgram.db")
 log = logging.getLogger(__name__)
-
-
-class BaseModel(Model):
-    class Meta:
-        database = db
-
-
-class ZoneModel(BaseModel):
-    id = IntegerField(primary_key=True, unique=True)
-    name = CharField()
-    level = IntegerField()
-    description = CharField()
-
-
-class QuestModel(BaseModel):
-    id = IntegerField(primary_key=True, unique=True)
-    zone_id = ForeignKeyField(ZoneModel, backref="quests")
-    number = IntegerField(default=0)  # the number of the quest in the quest order
-    name = CharField(null=False)
-    description = CharField(null=False)
-    success_text = CharField(null=False)
-    failure_text = CharField(null=False)
-
-
-class PlayerModel(BaseModel):
-    id = IntegerField(primary_key=True, unique=True)
-    name = CharField(null=False)
-    description = CharField(null=False)
-    guild_id = DeferredForeignKey('GuildModel', backref="players", null=True, default=None)
-    money = IntegerField(default=10)
-    level = IntegerField(default=1)
-    xp = IntegerField(default=0)
-    gear_level = IntegerField(default=0)
-    progress = CharField(null=True, default=None)  # progress is stored as a char string in the player table.
-
-
-class GuildModel(BaseModel):
-    id = IntegerField(primary_key=True)
-    name = CharField(null=False)
-    description = CharField(null=False)
-    founder_id = ForeignKeyField(PlayerModel, backref='guilds')
-    creation_date = DateTimeField(default=datetime.now)
-
-
-class ZoneEventModel(BaseModel):
-    id = IntegerField(primary_key=True)
-    zone_id = ForeignKeyField(ZoneModel)
-    event_text = CharField()
-
-
-class QuestProgressModel(BaseModel):
-    """ Table that tracks the progress of player quests & controls when to send events/finish the quest """
-    player_id = ForeignKeyField(PlayerModel, unique=True)
-    quest_id = ForeignKeyField(QuestModel, null=True, default=None)
-    start_time = DateTimeField(default=datetime.now)
-    end_time = DateTimeField(default=datetime.now)
-    last_update = DateTimeField(default=datetime.now)
-
-    class Meta:
-        primary_key = False
-
-
-def create_tables():
-    db.connect()
-    db.create_tables([ZoneModel, QuestModel, PlayerModel, GuildModel, ZoneEventModel, QuestProgressModel])
-    db.close()
 
 
 def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:
@@ -120,11 +52,20 @@ class PilgramORMDatabase(PilgramDatabase):
         if cls._instance is None:
             print('Creating new instance')
             cls._instance = cls.__new__(cls)
-            # TODO init caches here
+            if not os.path.isfile(DB_FILENAME):
+                create_tables()
         return cls._instance
 
+    # player ----
+
+    @cache_sized_quick(size_limit=2000)
     def get_player_data(self, player_id) -> Player:
+        # we are using a cache in front of this function since it's going to be called a lot, because of how the
+        # function is structured the cache will store the Player objects which will always be updated in memory along
+        # with their database record; Thus making it always valid.
         pls = PlayerModel.get(PlayerModel.id == player_id)
+        if not pls:
+            raise NotFoundException(f'Player with id {player_id} not found')
         guild = self.get_guild(pls.guild_id)
         progress = Progress(pls.progress, decode_progress)
         return Player(
@@ -155,11 +96,21 @@ class PilgramORMDatabase(PilgramDatabase):
         PlayerModel.create(
             id=player.player_id,
             name=player.name,
-            description=player.description
+            description=player.description,
+            guild=player.guild.guild_id,
+            level=player.level,
+            xp=player.xp,
+            money=player.money,
+            progress=player.progress.zone_progress,
+            gear_level=player.gear_level
         )
+
+    # guilds ----
 
     def get_guild(self, guild_id: int) -> Guild:
         gs = GuildModel.get(GuildModel.id == guild_id)
+        if not gs:
+            raise NotFoundException(f'Guild with id {guild_id} not found')
         founder = self.get_player_data(gs.founder_id)
         return Guild(
             gs.id,
@@ -176,10 +127,41 @@ class PilgramORMDatabase(PilgramDatabase):
         gs.save()
 
     def add_guild(self, guild: Guild):
+        # TODO autogenerate id & update object
         GuildModel.create(
             id=guild.guild_id,
             name=guild.name,
             description=guild.description,
             founder_id=guild.founder.player_id,
             creation_date=guild.creation_date
+        )
+
+    # zones ----
+
+    @cache_ttl_quick(ttl=604800)  # cache lasts a week since I don't ever plan to change zones, but you never know
+    def get_zone(self, zone_id: int) -> Zone:
+        zs = ZoneModel.get(ZoneModel.id == zone_id)
+        if not zs:
+            raise NotFoundException(f"Could not find zone with id {zone_id}")
+        return Zone(
+            zs.id,
+            zs.name,
+            zs.level,
+            zs.description
+        )
+
+    def update_zone(self, zone: Zone):  # this will basically never be called, but it's good to have
+        zs = ZoneModel.get(ZoneModel.id == zone.zone_id)
+        zs.name = zone.zone_name
+        zs.level = zone.level
+        zs.description = zone.zone_description
+        zs.save()
+
+    def add_zone(self, zone: Zone):
+        # TODO autogenerate id & update object
+        ZoneModel.create(
+            id=zone.zone_id,
+            name=zone.zone_name,
+            level=zone.level,
+            description=zone.zone_description
         )

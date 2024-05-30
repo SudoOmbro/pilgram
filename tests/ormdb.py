@@ -1,4 +1,4 @@
-from pilgram.ormdb import decode_progress, encode_progress
+from orm.db import decode_progress, encode_progress
 
 
 def test_decode_progress():

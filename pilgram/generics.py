@@ -4,6 +4,10 @@ from typing import List
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent
 
 
+class NotFoundException(Exception):
+    pass
+
+
 class PilgramDatabase(ABC):
 
     # players ----
@@ -34,10 +38,6 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     # zones ----
-
-    def get_all_zones(self) -> List[Zone]:
-        """ this should return a list of all zones, convenient since we are not going to have thousands of zones """
-        raise NotImplementedError
 
     def get_zone(self, zone_id: int) -> Zone:
         raise NotImplementedError
