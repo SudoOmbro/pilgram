@@ -41,6 +41,11 @@ class PilgramDatabase(ABC):
     # zones ----
 
     def get_zone(self, zone_id: int) -> Zone:
+        """ get a specific zone given its id, used basically everywhere """
+        raise NotImplementedError
+
+    def get_all_zones(self) -> List[Zone]:
+        """ used by players when selecting quests. Players can always see all zones, even if their level is too low """
         raise NotImplementedError
 
     def update_zone(self, zone: Zone):
@@ -97,6 +102,7 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     # in progress quests management ----
+    # these functions will be used only by the backend basically, a cache probably isn't necessary
 
     def is_player_on_a_quest(self, player: Player) -> bool:
         """ returns True if the player is currently on a quest """

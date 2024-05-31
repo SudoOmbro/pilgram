@@ -120,3 +120,42 @@ def cache_sized_quick(size_limit=256):
             return result
         return wrapper
     return decorator
+
+
+def cache_sized_ttl_quick(size_limit=256, ttl=3600):
+    def decorator(func):
+        storage = {}
+        ttls = {}
+        keys = []
+
+        def wrapper(*args, **kwargs):
+            # Generate a key based on arguments being passed
+            key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
+
+            # Check if their return value is already known
+            if key in storage:
+                result = storage[key]
+            else:
+                # If not, get the result
+                result = func(*args, **kwargs)
+                storage[key] = result
+                ttls[key] = time.time() + ttl
+                keys.append(key)
+                # Make sure the size hasn't been exceeded
+                if len(storage) > size_limit:
+                    oldest_key = keys[0]
+                    del keys[0]
+                    del storage[oldest_key]
+            # Check ttls
+            while True:
+                oldest_key = keys[0]
+                # If they key has expired, remove the entry and it's quick access key
+                if ttls[oldest_key] < time.time():
+                    del storage[oldest_key]
+                    del keys[0]
+                else:
+                    break
+
+            return result
+        return wrapper
+    return decorator

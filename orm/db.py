@@ -3,14 +3,14 @@ import os
 
 import numpy as np
 
-from typing import Dict, Union
+from typing import Dict, Union, List
 
 from peewee import fn
 
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest
 from pilgram.generics import PilgramDatabase, NotFoundException
-from orm.utils import cache_ttl_quick, cache_sized_quick
+from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick
 
 log = logging.getLogger(__name__)
 
@@ -111,6 +111,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # guilds ----
 
+    @cache_sized_ttl_quick(size_limit=400, ttl=3600)
     def get_guild(self, guild_id: int) -> Guild:
         gs = GuildModel.get(GuildModel.id == guild_id)
         if not gs:
@@ -143,17 +144,26 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # zones ----
 
-    @cache_ttl_quick(ttl=604800)  # cache lasts a week since I don't ever plan to change zones, but you never know
-    def get_zone(self, zone_id: int) -> Zone:
-        zs = ZoneModel.get(ZoneModel.id == zone_id)
-        if not zs:
-            raise NotFoundException(f"Could not find zone with id {zone_id}")
+    @staticmethod
+    def build_zone_object(zs):
         return Zone(
             zs.id,
             zs.name,
             zs.level,
             zs.description
         )
+
+    @cache_ttl_quick(ttl=604800)  # cache lasts a week since I don't ever plan to change zones, but you never know
+    def get_zone(self, zone_id: int) -> Zone:
+        zs = ZoneModel.get(ZoneModel.id == zone_id)
+        if not zs:
+            raise NotFoundException(f"Could not find zone with id {zone_id}")
+        return self.build_zone_object(zs)
+
+    @cache_ttl_quick(ttl=86400)
+    def get_all_zones(self) -> List[Zone]:
+        zs = ZoneModel.get_all()
+        return [self.build_zone_object(x) for x in zs]
 
     def update_zone(self, zone: Zone):  # this will basically never be called, but it's good to have
         zs = ZoneModel.get(ZoneModel.id == zone.zone_id)
@@ -229,6 +239,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise NotFoundException(f"Could not find quest with id {quest_id}")
         return self.build_quest_object(qs)
 
+    @cache_sized_ttl_quick(size_limit=200)
     def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
         qs = QuestModel.get(QuestModel.zone_id == zone.zone_id and QuestModel.number == quest_number)
         if not qs:
