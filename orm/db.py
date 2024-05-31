@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import timedelta, datetime
 
 import numpy as np
 
@@ -7,10 +8,12 @@ from typing import Dict, Union, List
 
 from peewee import fn
 
-from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest
+from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
+    QuestProgressModel
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
 from pilgram.generics import PilgramDatabase, NotFoundException
 from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick
+
 
 log = logging.getLogger(__name__)
 
@@ -52,10 +55,11 @@ class PilgramORMDatabase(PilgramDatabase):
     @classmethod
     def instance(cls):
         if cls._instance is None:
-            print('Creating new instance')
+            log.info('Creating new database instance')
             cls._instance = cls.__new__(cls)
             if not os.path.isfile(DB_FILENAME):
                 create_tables()
+                log.info("tables created")
         return cls._instance
 
     # player ----
@@ -107,6 +111,10 @@ class PilgramORMDatabase(PilgramDatabase):
             money=player.money,
             progress=player.progress.zone_progress,
             gear_level=player.gear_level
+        )
+        # also create quest progress model related to the player
+        QuestProgressModel.create(
+            player_id=player.player_id
         )
 
     # guilds ----
@@ -233,7 +241,8 @@ class PilgramORMDatabase(PilgramDatabase):
             qs.failure_text,
         )
 
-    def get_quest(self, quest_id: int) -> Quest:  # this is unlikely to ever be used
+    @cache_sized_ttl_quick(size_limit=200, ttl=86400)
+    def get_quest(self, quest_id: int) -> Quest:
         qs = QuestModel.get(QuestModel.id == quest_id)
         if not qs:
             raise NotFoundException(f"Could not find quest with id {quest_id}")
@@ -271,4 +280,27 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # in progress quest management ----
 
-    # TODO
+    def build_adventure_container(self, qps) -> AdventureContainer:
+        player = self.get_player_data(qps.player_id)
+        quest = self.get_quest(qps.quest_id)
+        return AdventureContainer(player, quest, qps.end_time)
+
+    @cache_ttl_quick(ttl=1800)
+    def is_player_on_a_quest(self, player: Player) -> bool:
+        qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
+        if not qps:
+            return False
+        return qps.quest_id is not None
+
+    def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
+        qps = QuestProgressModel.select().where(QuestProgressModel.last_update + delta <= datetime.now())
+        return [self.build_adventure_container(x) for x in qps]
+
+    def update_quest_progress(self, adventure_container: AdventureContainer):
+        qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
+        if not qps:
+            raise NotFoundException(f"Could not find quest progress for player with id {adventure_container.player_id()}")
+        qps.quest_id = adventure_container.quest_id()
+        qps.last_update = datetime.now()
+        qps.end_time = adventure_container.finish_time
+        qps.save()

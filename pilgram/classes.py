@@ -204,4 +204,13 @@ class AdventureContainer:
         self.finish_time = finish_time
 
     def is_quest_finished(self) -> bool:
+        """ returns whether the current quest is finished by checking the finish time """
         return datetime.now() > self.finish_time
+
+    def player_id(self):
+        """ non-verbose way to get player id """
+        return self.player.player_id
+
+    def quest_id(self):
+        """ non-verbose way to get quest id """
+        return self.quest.quest_id

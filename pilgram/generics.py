@@ -21,7 +21,10 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     def add_player(self, player: Player):
-        """ add a new player to the database. Happens at the end of character creation """
+        """
+            add a new player to the database. Happens at the end of character creation.
+            Should also create the quest progress row related to the player.
+        """
         raise NotImplementedError
 
     # guilds ---
@@ -105,7 +108,7 @@ class PilgramDatabase(ABC):
     # these functions will be used only by the backend basically, a cache probably isn't necessary
 
     def is_player_on_a_quest(self, player: Player) -> bool:
-        """ returns True if the player is currently on a quest """
+        """ returns True if the player is currently on a quest. This will actually be called by players """
         raise NotImplementedError
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
