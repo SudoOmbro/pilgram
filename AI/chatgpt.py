@@ -22,8 +22,11 @@ def build_messages(role: str, *messages: str) -> List[dict]:
 
 
 class GPTAPIError(Exception):
-    # TODO: put information in the exception about the type of error that happened, so that retries can be informed
-    pass
+
+    def __init__(self, response: requests.Response):
+        super().__init__()
+        self.status_code = response.status_code
+        self.response = response
 
 
 class GenericGPTAPI(ABC):
@@ -75,7 +78,7 @@ class ChatGPTAPI(GenericGPTAPI):
         if response.ok:
             return response.json()["choiches"][0]["message"]["content"]
         log.error(f"could not create completion, response: {response.text}")
-        raise GPTAPIError
+        raise GPTAPIError(response)
 
 
 class ChatGPTGenerator(PilgramGenerator):
