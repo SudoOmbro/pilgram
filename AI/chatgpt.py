@@ -1,4 +1,5 @@
 import logging
+from abc import ABC
 from functools import cache
 from typing import Union, List
 
@@ -25,7 +26,13 @@ class GPTAPIError(Exception):
     pass
 
 
-class _ChatGPTAPI:
+class GenericGPTAPI(ABC):
+
+    def create_completion(self, messages: List[dict]) -> str:
+        raise NotImplementedError
+
+
+class ChatGPTAPI(GenericGPTAPI):
     """ Wrapper around the ChatGpt API, used by the generator """
 
     BASE_URL = 'https://api.openai.com'
@@ -53,12 +60,12 @@ class _ChatGPTAPI:
             self.headers["project"] = project
 
     @cache
-    def build_request_url(self, endpoint: str) -> str:
+    def _build_request_url(self, endpoint: str) -> str:
         return f"{self.BASE_URL}/v{self.api_version}/{endpoint}"
 
     def create_completion(self, messages: List[dict]) -> str:
         response = requests.post(
-            self.build_request_url("completion"),
+            self._build_request_url("completion"),
             {
                 "model": self.model,
                 "messages": messages
@@ -75,6 +82,9 @@ class ChatGPTGenerator(PilgramGenerator):
 
     QUEST_SYS = build_messages("system", WORLD_PROMPT, FORMATTING_PROMPT)
     EVENT_SYS = build_messages("system", WORLD_PROMPT, STYLE_PROMPT, FORMATTING_PROMPT)
+
+    def __init__(self, api_wrapper: GenericGPTAPI):
+        self.api_wrapper = api_wrapper
 
     def generate(self, prompt: str):
         pass
