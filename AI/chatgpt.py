@@ -16,7 +16,6 @@ STYLE_PROMPT = ""
 FORMATTING_PROMPT = ""
 
 
-@cache
 def build_messages(role: str, *messages: str) -> List[dict]:
     return [{"role": role, "content": x} for x in messages]
 
@@ -66,17 +65,21 @@ class ChatGPTAPI(GenericGPTAPI):
     def _build_request_url(self, endpoint: str) -> str:
         return f"{self.BASE_URL}/v{self.api_version}/{endpoint}"
 
-    def create_completion(self, messages: List[dict]) -> str:
+    def create_completion(self, messages: List[dict], temperature: int = 1) -> str:
         response = requests.post(
-            self._build_request_url("completion"),
+            self._build_request_url("chat/completions"),
+            None,
             {
                 "model": self.model,
-                "messages": messages
+                "messages": messages,
+                "temperature": temperature
             },
             headers=self.headers
         )
         if response.ok:
-            return response.json()["choiches"][0]["message"]["content"]
+            jresponse = response.json()
+            log.info(jresponse)
+            return jresponse["choiches"][0]["message"]["content"]
         log.error(f"could not create completion, response: {response.text}")
         raise GPTAPIError(response)
 
