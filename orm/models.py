@@ -36,7 +36,7 @@ class PlayerModel(BaseModel):
     id = IntegerField(primary_key=True, unique=True)
     name = CharField(null=False)
     description = CharField(null=False)
-    guild_id = DeferredForeignKey('GuildModel', backref="players", null=True, default=None)
+    guild_id = DeferredForeignKey('GuildModel', backref="members", null=True, default=None)
     money = IntegerField(default=10)
     level = IntegerField(default=1)
     xp = IntegerField(default=0)
