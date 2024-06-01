@@ -6,7 +6,7 @@ class ArgumentValidationError(Exception):
     pass
 
 
-class InterpreterFunctionWrapper:  # mayber import as IFP, this name is a tad too long
+class InterpreterFunctionWrapper:  # maybe import as IFP, this name is a tad too long
     """ wrapper around interpreter functions that automatically checks argument validity & optimizes itself"""
 
     def __init__(
@@ -23,6 +23,7 @@ class InterpreterFunctionWrapper:  # mayber import as IFP, this name is a tad to
         elif regexes is None:
             self.__call__ = self.__call_with_args_no_check
         else:
+            assert len(regexes) == number_of_args
             self.__call__ = self.__call_with_args_and_check
 
     def __call_with_args_and_check(self, *args) -> str:
