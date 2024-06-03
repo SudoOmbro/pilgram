@@ -1,5 +1,5 @@
 import re
-from typing import Tuple, Union, Callable, Any
+from typing import Tuple, Union, Callable
 
 
 class ArgumentValidationError(Exception):
@@ -14,10 +14,12 @@ class InterpreterFunctionWrapper:  # maybe import as IFP, this name is a tad too
             number_of_args: int,
             regexes: Union[Tuple[Union[re.Pattern, None], ...], None],
             function: Callable[..., str],
+            description: str
     ):
         self.number_of_args = number_of_args
         self.regexes = regexes
         self.function = function
+        self.description = description
         if number_of_args == 0:
             self.__call__ = self.__call_no_args
         elif regexes is None:

@@ -23,7 +23,7 @@ def test_build_messages():
     assert messages[3]["content"] == "d"
 
 
-def test_chatgpt_api():
+def __test_chatgpt_api():
     api = ChatGPTAPI(SETTINGS["ChatGPT token"], "gpt-3.5-turbo")
     response = api.create_completion(
         build_messages("system", "your name is HAL") + build_messages("user", "Hi, what's your name?")

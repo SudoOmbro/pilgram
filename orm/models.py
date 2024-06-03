@@ -47,6 +47,7 @@ class PlayerModel(BaseModel):
 class GuildModel(BaseModel):
     id = AutoField(primary_key=True)
     name = CharField(null=False)
+    level = IntegerField(default=1)
     description = CharField(null=False)
     founder_id = ForeignKeyField(PlayerModel, backref='guilds')
     creation_date = DateTimeField(default=datetime.now)

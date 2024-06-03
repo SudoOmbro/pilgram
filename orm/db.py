@@ -128,10 +128,20 @@ class PilgramORMDatabase(PilgramDatabase):
         return Guild(
             gs.id,
             gs.name,
+            gs.level,
             gs.description,
             founder,
             gs.creation_date,
         )
+
+    @cache_sized_ttl_quick(size_limit=50, ttl=21600)
+    def get_guild_members_data(self, guild: Guild) -> List[(str, int)]:
+        pns = GuildModel.get(guild.guild_id == GuildModel.id).members
+        return [(x.name, x.level) for x in pns]
+
+    @cache_ttl_quick(ttl=15)
+    def get_guild_members_number(self, guild: Guild) -> int:
+        return GuildModel.get(guild.guild_id == GuildModel.id).members.count()
 
     def update_guild(self, guild: Guild):
         gs = GuildModel.get(GuildModel.id == guild.guild_id)
@@ -139,6 +149,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise NotFoundException(f'Guild with id {guild.guild_id} not found')
         gs.name = guild.name
         gs.description = guild.description
+        gs.level = guild.level
         gs.save()
 
     def add_guild(self, guild: Guild):

@@ -1,4 +1,4 @@
-from typing import Dict, Any, List, Callable
+from typing import Dict, Any, List, Callable, Union
 
 from ui.functions import InterpreterFunctionWrapper as IFP
 
@@ -8,20 +8,30 @@ def placeholder_function():
     return "hello world"
 
 
+def __depth_first_search(dictionary: Dict[str, Union[dict, IFP]], depth: int = 0) -> str:
+    result_string: str = ""
+    for key, value in dictionary.items():
+        result_string += "> " * depth + f"`{key}`"
+        if isinstance(value, dict):
+            result_string += "\n" + __depth_first_search(value, depth + 1)
+        else:
+            result_string += f" -- _{value.description}_\n"
+    return result_string
+
+
 def help_function() -> str:
     """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-    # TODO
-    return "aaa"
+    return __depth_first_search(COMMANDS, 0)
 
 
 COMMANDS: Dict[str, Any] = {
     "check": {
-        "board": IFP(0, None, placeholder_function),
-        "guild": IFP(0, None, placeholder_function),
-        "self": IFP(0, None, placeholder_function)
+        "board": IFP(0, None, placeholder_function, "aaa"),
+        "guild": IFP(0, None, placeholder_function, "aaa"),
+        "self": IFP(0, None, placeholder_function, "aaa")
     },
-    "embark": IFP(0, None, placeholder_function),
-    "help": IFP(0, None, help_function)
+    "embark": IFP(0, None, placeholder_function, "aaa"),
+    "help": IFP(0, None, help_function, "shows and describes all commands")
 }
 
 

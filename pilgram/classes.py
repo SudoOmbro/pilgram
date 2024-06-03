@@ -150,16 +150,18 @@ class Player:
 class Guild:
     """ Player/admin created guilds that players can join """
 
-    def __init__(self, guild_id: int, name: str, description: str, founder: Player, creation_date: datetime):
+    def __init__(self, guild_id: int, name: str, level: int, description: str, founder: Player, creation_date: datetime):
         """
         :param guild_id: unique id of the guild
         :param name: player given name of the guild
+        :param level: the current level of the guild, controls how many players can be in a guild (4 * level)
         :param description: player given description of the guild
         :param founder: the player who found the guild,
         :param creation_date: the date the guild was created
         """
         self.guild_id = guild_id
         self.name = name
+        self.level = level
         self.description = description
         self.founder = founder
         self.creation_date = creation_date

@@ -33,6 +33,17 @@ class PilgramDatabase(ABC):
         """ get a guild given its id """
         raise NotImplementedError
 
+    def get_guild_members_data(self, guild: Guild) -> List[(str, int)]:
+        """
+            return a list of all members name and level given a guild.
+            We avoid creating the entire player object 'cause we don't need it.
+        """
+        raise NotImplementedError
+
+    def get_guild_members_number(self, guild: Guild) -> int:
+        """ get amount of members in a guild. """
+        raise NotImplementedError
+
     def update_guild(self, guild: Guild):
         """ update guild information. Players will trigger this function """
         raise NotImplementedError

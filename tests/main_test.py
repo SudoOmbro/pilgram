@@ -3,6 +3,7 @@ import sys
 
 from tests.chatgpt import *
 from tests.ormdb import *
+from tests.uitest import *
 
 
 if __name__ == "__main__":
