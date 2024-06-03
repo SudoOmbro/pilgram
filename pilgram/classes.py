@@ -166,6 +166,9 @@ class Guild:
         self.founder = founder
         self.creation_date = creation_date
 
+    def can_add_member(self, current_members: int) -> bool:
+        return current_members < self.level * 4
+
     def __str__(self):
         return f"*{self.name}*\nfounder: _{self.founder}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 
