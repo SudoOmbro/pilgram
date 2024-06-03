@@ -56,9 +56,9 @@ class Quest:
         result = player.level + player.gear_level + roll
         return result >= self.zone.level + (self.number * 2)
 
-    def get_quest_rewards(self) -> Tuple[int, int]:
+    def get_quest_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
-        multiplier = self.zone.level + self.number
+        multiplier = self.zone.level + self.number + player.guild.level if player.guild.level else 0
         return 100 * multiplier, 180 * multiplier  # XP, Money
 
     def __str__(self):
@@ -111,7 +111,8 @@ class Player:
         :param level (int): current player level, potentially unlimited
         :param xp (int): current xp of the player
         :param money (int): current money of the player
-        :param progress (Progress): contains progress object, which tracks the player progress in each zone
+        :param progress (Progress): contains progress object, which tracks the player progress in each zone,
+        :param gear_level (int): current gear level of the player, potentially unlimited
         """
         self.player_id = player_id
         self.name = name
@@ -142,20 +143,20 @@ class Player:
         return False
 
     def __str__(self):
-        return f"{self.name} | lv. {self.level} | {self.guild}\n\n{self.description}"
+        return f"{self.name} | lv. {self.level} | {self.guild.name}\n\n{self.description}"
 
     def __repr__(self):
         return str(self.__dict__)
 
 
 class Guild:
-    """ Player/admin created guilds that players can join """
+    """ Player created guilds that other players can join. Players get bonus xp & money from quests when in guilds """
 
     def __init__(self, guild_id: int, name: str, level: int, description: str, founder: Player, creation_date: datetime):
         """
         :param guild_id: unique id of the guild
         :param name: player given name of the guild
-        :param level: the current level of the guild, controls how many players can be in a guild (4 * level)
+        :param level: the current level of the guild, controls how many players can be in a guild (4 * level). Max is 10
         :param description: player given description of the guild
         :param founder: the player who found the guild,
         :param creation_date: the date the guild was created
@@ -171,7 +172,7 @@ class Guild:
         return current_members < self.level * 4
 
     def __str__(self):
-        return f"*{self.name}*\nfounder: _{self.founder}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+        return f"*{self.name}*\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 
 
 class ZoneEvent:

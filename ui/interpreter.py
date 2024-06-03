@@ -5,20 +5,27 @@ from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as 
 from ui.functions import placeholder, echo
 
 
-def help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
+def __generate_help_args_string(ifw: IFW) -> str:
+    result: str = " "
+    for i in range(ifw.number_of_args):
+        result += f"[arg{i}] "
+    return result
+
+
+def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
     result_string: str = ""
     for key, value in dictionary.items():
         result_string += "> " * depth + f"`{key}`"
         if isinstance(value, dict):
-            result_string += "\n" + help_dfs(value, depth + 1)
+            result_string += "\n" + __help_dfs(value, depth + 1)
         else:
-            result_string += f" -- _{value.description}_\n"
+            result_string += f"{__generate_help_args_string(value)}-- {value.description}\n"
     return result_string
 
 
-def __help_function() -> str:
+def help_function() -> str:
     """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-    return help_dfs(COMMANDS, 0)
+    return __help_dfs(COMMANDS, 0)
 
 
 def command_not_found_error_function(context: UserContext, command: str, suggestion: str) -> str:
@@ -29,7 +36,8 @@ COMMANDS: Dict[str, Any] = {
     "check": {
         "board": IFW(0, None, placeholder, "aaa"),
         "guild": IFW(0, None, placeholder, "aaa"),
-        "self": IFW(0, None, placeholder, "aaa")
+        "self": IFW(0, None, placeholder, "aaa"),
+        "player": IFW(0, None, placeholder, "aaa")
     },
     "create": {
         "character": IFW(0, None, placeholder, "aaa"),
@@ -40,8 +48,9 @@ COMMANDS: Dict[str, Any] = {
         "guild": IFW(0, None, placeholder, "aaa")
     },
     "embark": IFW(0, None, placeholder, "aaa"),
-    "help": IFW(0, None, __help_function, "shows and describes all commands"),
-    "echo": IFW(1, (r"\S+",), echo, "says what you just said")
+    "kick": IFW(0, None, placeholder, "kicks a player from guild"),
+    "help": IFW(0, None, help_function, "shows and describes all commands"),
+    "echo": IFW(1, (r"\S+",), echo, "repeats arg0")
 }
 
 PROCESSES: Dict[str, List[Callable]] = {
