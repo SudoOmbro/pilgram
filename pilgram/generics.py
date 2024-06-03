@@ -1,6 +1,6 @@
 from abc import ABC
 from datetime import timedelta
-from typing import List
+from typing import List, Tuple
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
 
@@ -33,7 +33,7 @@ class PilgramDatabase(ABC):
         """ get a guild given its id """
         raise NotImplementedError
 
-    def get_guild_members_data(self, guild: Guild) -> List[(str, int)]:
+    def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
         """
             return a list of all members name and level given a guild.
             We avoid creating the entire player object 'cause we don't need it.

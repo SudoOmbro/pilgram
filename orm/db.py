@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 
 import numpy as np
 
-from typing import Dict, Union, List
+from typing import Dict, Union, List, Tuple
 
 from peewee import fn
 
@@ -135,7 +135,7 @@ class PilgramORMDatabase(PilgramDatabase):
         )
 
     @cache_sized_ttl_quick(size_limit=50, ttl=21600)
-    def get_guild_members_data(self, guild: Guild) -> List[(str, int)]:
+    def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
         pns = GuildModel.get(guild.guild_id == GuildModel.id).members
         return [(x.name, x.level) for x in pns]
 

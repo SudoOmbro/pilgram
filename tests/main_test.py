@@ -1,14 +1,8 @@
-import inspect
-import sys
+import unittest
 
-from tests.chatgpt import *
-from tests.ormdb import *
-from tests.uitest import *
+from ui_test import TestUi
+from chatgpt_test import TestChatGPT
 
 
 if __name__ == "__main__":
-    all_functions = inspect.getmembers(sys.modules[__name__], inspect.isfunction)
-    for key, value in all_functions:
-        if str(key).startswith("test_"):
-            value()
-            print(f"{key} passed")
+    unittest.main()
