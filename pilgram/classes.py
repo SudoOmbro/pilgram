@@ -131,6 +131,12 @@ class Player:
     def get_new_required_xp(self) -> int:
         return 100 * self.level + (5 * self.level * self.level)
 
+    def get_gear_upgrade_required_money(self) -> int:
+        return 100 * self.gear_level + (self.gear_level * self.gear_level)
+
+    def get_home_upgrade_required_money(self) -> int:
+        return 1000 * self.home_level + (4 * self.home_level * self.home_level)
+
     def level_up(self):
         while self.xp >= self.required_xp:
             self.level += 1
@@ -173,6 +179,9 @@ class Guild:
 
     def can_add_member(self, current_members: int) -> bool:
         return current_members < self.level * 4
+
+    def get_upgrade_required_money(self) -> int:
+        return 10000 * self.level + (5 * self.level * self.level)
 
     def __str__(self):
         return f"*{self.name}*\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
