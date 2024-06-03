@@ -128,9 +128,10 @@ class Player:
         return self.level * 150
 
     def level_up(self):
-        self.level += 1
-        self.xp -= self.required_xp
-        self.required_xp = self.get_new_required_xp()
+        while self.xp >= self.required_xp:
+            self.level += 1
+            self.xp -= self.required_xp
+            self.required_xp = self.get_new_required_xp()
 
     def add_xp(self, amount: int) -> bool:
         """ adds xp to the player and returns true if the player leveled up """
