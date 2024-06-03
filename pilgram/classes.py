@@ -56,7 +56,7 @@ class Quest:
         result = player.level + player.gear_level + roll
         return result >= self.zone.level + (self.number * 2)
 
-    def get_quest_rewards(self, player: "Player") -> Tuple[int, int]:
+    def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = self.zone.level + self.number + player.guild.level if player.guild.level else 0
         return 100 * multiplier, 180 * multiplier  # XP, Money
@@ -101,7 +101,8 @@ class Player:
             xp: int,
             money: int,
             progress: Progress,
-            gear_level: int
+            gear_level: int,
+            home_level: int
     ):
         """
         :param player_id (int): unique id of the player
@@ -113,6 +114,7 @@ class Player:
         :param money (int): current money of the player
         :param progress (Progress): contains progress object, which tracks the player progress in each zone,
         :param gear_level (int): current gear level of the player, potentially unlimited
+        :param home_level(int): current level of the home owned by the player, potentially unlimited
         """
         self.player_id = player_id
         self.name = name
@@ -124,9 +126,10 @@ class Player:
         self.xp = xp
         self.gear_level = gear_level
         self.required_xp: int = self.get_new_required_xp()
+        self.home_level = home_level
 
     def get_new_required_xp(self) -> int:
-        return self.level * 150
+        return 100 * self.level + (5 * self.level * self.level)
 
     def level_up(self):
         while self.xp >= self.required_xp:
@@ -143,7 +146,7 @@ class Player:
         return False
 
     def __str__(self):
-        return f"{self.name} | lv. {self.level} | {self.guild.name}\n\n{self.description}"
+        return f"{self.name} | lv. {self.level} | {self.guild.name}\nHome level: {self.home_level}\n\n{self.description}"
 
     def __repr__(self):
         return str(self.__dict__)
@@ -187,11 +190,17 @@ class ZoneEvent:
         self.event_id = event_id
         self.zone = zone
         self.event_text = event_text
-        self.xp_value = (zone.level + 1) * random.randint(1, 10)
-        self.money_value = (zone.level + 1) * random.randint(1, 10)
+        self.base_xp_value = (zone.level + 1)
+        self.base_money_value = self.base_xp_value
 
     def __str__(self):
-        return f"{self.event_text}\n\nxp gained: {self.xp_value}\nmoney gained: {self.money_value}"
+        return f"{self.event_text}"
+
+    def get_rewards(self, player: Player) -> Tuple[int, int]:
+        """ returns xp & money rewards for the event. Influenced by player home level """
+        xp = (self.base_xp_value + player.home_level) * random.randint(1, 10)
+        money = (self.base_money_value + player.home_level) * random.randint(1, 10)
+        return xp, money
 
 
 class AdventureContainer:

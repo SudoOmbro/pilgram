@@ -34,22 +34,23 @@ def command_not_found_error_function(context: UserContext, command: str, suggest
 
 COMMANDS: Dict[str, Any] = {
     "check": {
-        "board": IFW(0, None, placeholder, "aaa"),
-        "guild": IFW(0, None, placeholder, "aaa"),
-        "self": IFW(0, None, placeholder, "aaa"),
-        "player": IFW(0, None, placeholder, "aaa")
+        "board": IFW(0, None, placeholder, "Shows the quest board"),
+        "guild": IFW(0, None, placeholder, "Shows your own guild"),
+        "self": IFW(0, None, placeholder, "Shows your own stats"),
+        "player": IFW(1, (r"\S+",), placeholder, "Shows player arg0 stats")
     },
     "create": {
-        "character": IFW(0, None, placeholder, "aaa"),
-        "guild": IFW(0, None, placeholder, "aaa")
+        "character": IFW(0, None, placeholder, "Create your character"),
+        "guild": IFW(0, None, placeholder, "create your own Guild")
     },
     "upgrade": {
-        "gear": IFW(0, None, placeholder, "aaa"),
-        "guild": IFW(0, None, placeholder, "aaa")
+        "gear": IFW(0, None, placeholder, "Upgrade your gear"),
+        "guild": IFW(0, None, placeholder, "Upgrade your guild"),
+        "home": IFW(0, None, placeholder, "Upgrade your home"),
     },
-    "embark": IFW(0, None, placeholder, "aaa"),
-    "kick": IFW(0, None, placeholder, "kicks a player from guild"),
-    "help": IFW(0, None, help_function, "shows and describes all commands"),
+    "embark": IFW(1, (r"",), placeholder, "Starts quest in zone arg0"),
+    "kick": IFW(1, (r"\S+",), placeholder, "Kicks player arg0 from your guild"),
+    "help": IFW(0, None, help_function, "Shows and describes all commands"),
     "echo": IFW(1, (r"\S+",), echo, "repeats arg0")
 }
 

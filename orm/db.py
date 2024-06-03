@@ -83,7 +83,8 @@ class PilgramORMDatabase(PilgramDatabase):
             pls.xp,
             pls.money,
             progress,
-            pls.gear_level
+            pls.gear_level,
+            pls.home_level
         )
 
     def update_player_data(self, player: Player):

@@ -34,7 +34,7 @@ class QuestModel(BaseModel):
 
 class PlayerModel(BaseModel):
     id = IntegerField(primary_key=True, unique=True)
-    name = CharField(null=False)
+    name = CharField(null=False, unique=True, index=True)
     description = CharField(null=False)
     guild_id = DeferredForeignKey('GuildModel', backref="members", null=True, default=None)
     money = IntegerField(default=10)
@@ -42,6 +42,7 @@ class PlayerModel(BaseModel):
     xp = IntegerField(default=0)
     gear_level = IntegerField(default=0)
     progress = CharField(null=True, default=None)  # progress is stored as a char string in the player table.
+    home_level = IntegerField(default=0)
 
 
 class GuildModel(BaseModel):
