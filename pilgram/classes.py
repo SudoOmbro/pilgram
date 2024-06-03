@@ -188,7 +188,10 @@ class Guild:
 
 
 class ZoneEvent:
-    """ Events that happen during the day every X hours of which the player is notified """
+    """
+        Events that happen during the day every X hours of which the player is notified.
+        Players get bonus xp & money from events depending on their home level.
+    """
 
     def __init__(self, event_id: int, zone: Zone, event_text: str):
         """
