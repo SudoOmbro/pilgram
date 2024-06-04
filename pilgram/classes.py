@@ -132,10 +132,9 @@ class Player:
         self.level = level
         self.xp = xp
         self.gear_level = gear_level
-        self.required_xp: int = self.get_new_required_xp()
         self.home_level = home_level
 
-    def get_new_required_xp(self) -> int:
+    def get_required_xp(self) -> int:
         return 100 * self.level + (5 * self.level * self.level)
 
     def get_gear_upgrade_required_money(self) -> int:
@@ -144,16 +143,31 @@ class Player:
     def get_home_upgrade_required_money(self) -> int:
         return 1000 * self.home_level + (4 * self.home_level * self.home_level)
 
+    def can_upgrade_gear(self) -> bool:
+        return self.money >= self.get_gear_upgrade_required_money()
+
+    def can_upgrade_home(self) -> bool:
+        return self.money >= self.get_home_upgrade_required_money()
+
+    def upgrade_gear(self):
+        self.gear_level += 1
+        self.money -= self.get_gear_upgrade_required_money()
+
+    def upgrade_home(self):
+        self.home_level += 1
+        self.money -= self.get_home_upgrade_required_money()
+
     def level_up(self):
-        while self.xp >= self.required_xp:
+        req_xp = self.get_required_xp()
+        while self.xp >= req_xp:
             self.level += 1
-            self.xp -= self.required_xp
-            self.required_xp = self.get_new_required_xp()
+            self.xp -= req_xp
+            req_xp = self.get_required_xp()
 
     def add_xp(self, amount: int) -> bool:
         """ adds xp to the player and returns true if the player leveled up """
         self.xp += amount
-        if self.xp >= self.required_xp:
+        if self.xp >= self.get_required_xp():
             self.level_up()
             return True
         return False
@@ -166,7 +180,7 @@ class Player:
 
     @classmethod
     def create_default(cls, player_id: int, name: str, description: str) -> "Player":
-        player_defaults = ContentMeta.instance().get("defaults.player")
+        player_defaults = ContentMeta.get("defaults.player")
         return Player(
             player_id,
             name,
@@ -183,6 +197,8 @@ class Player:
 
 class Guild:
     """ Player created guilds that other players can join. Players get bonus xp & money from quests when in guilds """
+    MAX_LEVEL = ContentMeta.get("guilds.max_level")
+    PLAYERS_PER_LEVEL = ContentMeta.get("guilds.players_per_level")
 
     def __init__(self, guild_id: int, name: str, level: int, description: str, founder: Player, creation_date: datetime):
         """
@@ -201,10 +217,17 @@ class Guild:
         self.creation_date = creation_date
 
     def can_add_member(self, current_members: int) -> bool:
-        return current_members < self.level * 4
+        return current_members < self.level * self.PLAYERS_PER_LEVEL
+
+    def can_upgrade(self) -> bool:
+        return (self.level < self.MAX_LEVEL) and (self.founder.money >= self.get_upgrade_required_money())
 
     def get_upgrade_required_money(self) -> int:
         return 10000 * self.level + (5 * self.level * self.level)
+
+    def upgrade(self):
+        self.founder.money -= self.get_upgrade_required_money()
+        self.level += 1
 
     def __str__(self):
         return f"*{self.name}*\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"

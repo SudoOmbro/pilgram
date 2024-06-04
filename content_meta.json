@@ -12,5 +12,9 @@
       "gear": 1,
       "home": 1
     }
+  },
+  "guilds": {
+    "max_level": 10,
+    "players_per_level": 4
   }
 }
