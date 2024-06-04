@@ -9,6 +9,10 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 
+PLAYER_NAME_REGEX = r"^[A-Za-z0-9_-]{4,20}$"
+PLAYER_ERROR = "Player names must only be 4 to 20 characters long and contain only letters, dashes & underscores."
+
+
 class __GenericGlobalSettings(ABC):
     """ read only singleton that holds global variables """
     _instance = None

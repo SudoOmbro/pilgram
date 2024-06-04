@@ -6,10 +6,12 @@ from pilgram.utils import PathDict
 
 class ArgumentValidationError(Exception):
 
-    def __init__(self, message: str, index: int) -> None:
-        super().__init__(message)
-        self.index = index
-        super().__init__(message)
+    def __init__(self, argument: str, argument_name: str, index: int, error_message: str) -> None:
+        if error_message:
+            msg = f"'{argument}' is not a valid value for argument '{argument_name}' ({index}): {error_message}"
+        else:
+            msg = f"'{argument}' is not a valid value for argument '{argument_name}' ({index})"
+        super().__init__(msg)
 
 
 class TooFewArgumentsError(Exception):
@@ -70,45 +72,66 @@ class UserContext:
         self.__process_step = None
 
 
+class RegexWithErrorMessage:
+    """ convenience class that stores the regex to check + the error message to give the user if the regex isn't met """
+
+    def __init__(self, arg_name: str, regex: Union[str, None], error_message: Union[str, None]):
+        self.argument_name = arg_name
+        self.regex = regex
+        self.error_message = error_message
+
+    def check(self, string_to_check: str) -> bool:
+        return re.match(self.regex, string_to_check) is not None
+
+
 class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too long
     """ wrapper around interpreter functions that automatically checks argument validity & optimizes itself"""
 
     def __init__(
             self,
-            number_of_args: int,
-            regexes: Union[Tuple[Union[str, None], ...], None],
+            args: Union[List[RegexWithErrorMessage], None],
             function: Callable[..., str],
             description: str,
             default_args: Union[Dict[str, Any], None] = None,
     ):
-        self.number_of_args = number_of_args
-        self.regexes = regexes
+        self.number_of_args = len(args) if args else 0
+        self.args_container: Union[Tuple[RegexWithErrorMessage, ...], None] = tuple(args) if args else None
         self.function = function
         self.description = description
         self.default_args = default_args
         if not default_args:
-            if number_of_args == 0:
+            if self.number_of_args == 0:
                 self.run = self.__call_no_args
-            elif regexes is None:
+            elif self.__are_all_arg_regexes_none():
                 self.run = self.__call_with_args_no_check
             else:
-                assert len(regexes) == number_of_args
                 self.run = self.__call_with_args_and_check
         else:
-            if number_of_args == 0:
+            if self.number_of_args == 0:
                 self.run = self.__call_no_args_da
-            elif regexes is None:
+            elif self.__are_all_arg_regexes_none():
                 self.run = self.__call_with_args_no_check_da
             else:
-                assert len(regexes) == number_of_args
                 self.run = self.__call_with_args_and_check_da
 
+    def __are_all_arg_regexes_none(self) -> bool:
+        for arg in self.args_container:
+            if arg.regex is not None:
+                return False
+        return True
+
+    def generate_help_args_string(self) -> str:
+        result: str = " "
+        if not self.args_container:
+            return " "
+        for arg in self.args_container:
+            result += f"[{arg.argument_name}] "
+        return result
+
     def __check_args(self, args):
-        for index, arg in enumerate(args):
-            if self.regexes[index]:
-                result = re.match(self.regexes[index], arg)
-                if not result:
-                    raise ArgumentValidationError(f"Invalid argument {index}: '{arg}'", index)
+        for index, arg, arg_container in zip(enumerate(args), self.args_container):
+            if arg_container.regex and (not arg_container.check(arg)):
+                raise ArgumentValidationError(arg, arg_container.argument_name, index, arg_container.error_message)
 
     def __call_with_args_and_check_da(self, context: UserContext, *args) -> str:
         """ call with args and check args validity + use default args """

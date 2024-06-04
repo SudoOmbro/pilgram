@@ -46,7 +46,7 @@ def encode_progress(data: Dict[int, int]) -> bytes:
 
 
 class PilgramORMDatabase(PilgramDatabase):
-    """ singleton object which contains the instance that handles connections to the database """
+    """ Singleton object which contains the instance that handles connections to the database """
     _instance = None
 
     def __init__(self):

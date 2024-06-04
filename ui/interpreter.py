@@ -1,15 +1,11 @@
+from functools import cache
 from typing import Dict, Any, List, Union, Callable, Tuple
 
+from pilgram.globals import PLAYER_NAME_REGEX, PLAYER_ERROR
 from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as CPS, UserContext, \
-    reconstruct_delimited_arguments, TooFewArgumentsError
+    reconstruct_delimited_arguments, TooFewArgumentsError, ArgumentValidationError, \
+    RegexWithErrorMessage as RWE
 from ui.functions import placeholder, echo, start_character_creation, character_creation_process
-
-
-def __generate_help_args_string(ifw: IFW) -> str:
-    result: str = " "
-    for i in range(ifw.number_of_args):
-        result += f"[arg{i}] "
-    return result
 
 
 def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
@@ -19,10 +15,11 @@ def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
         if isinstance(value, dict):
             result_string += "\n" + __help_dfs(value, depth + 1)
         else:
-            result_string += f"{__generate_help_args_string(value)}-- {value.description}\n"
+            result_string += f"{value.generate_help_args_string()}-- {value.description}\n"
     return result_string
 
 
+@cache
 def help_function() -> str:
     """ basically do a depth first search on the COMMANDS dictionary and print what you find """
     return __help_dfs(COMMANDS, 0)
@@ -34,24 +31,24 @@ def command_not_found_error_function(context: UserContext, command: str, suggest
 
 COMMANDS: Dict[str, Any] = {
     "check": {
-        "board": IFW(0, None, placeholder, "Shows the quest board"),
-        "guild": IFW(0, None, placeholder, "Shows your own guild"),
-        "self": IFW(0, None, placeholder, "Shows your own stats"),
-        "player": IFW(1, (r"\S+",), placeholder, "Shows player arg0 stats")
+        "board": IFW(None, placeholder, "Shows the quest board"),
+        "guild": IFW(None, placeholder, "Shows your own guild"),
+        "self": IFW(None, placeholder, "Shows your own stats"),
+        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, PLAYER_ERROR)], placeholder, "Shows player stats")
     },
     "create": {
-        "character": IFW(0, None, start_character_creation, "Create your character"),
-        "guild": IFW(0, None, placeholder, "create your own Guild")
+        "character": IFW(None, start_character_creation, "Create your character"),
+        "guild": IFW(None, placeholder, "create your own Guild")
     },
     "upgrade": {
-        "gear": IFW(0, None, placeholder, "Upgrade your gear"),
-        "guild": IFW(0, None, placeholder, "Upgrade your guild"),
-        "home": IFW(0, None, placeholder, "Upgrade your home"),
+        "gear": IFW(None, placeholder, "Upgrade your gear"),
+        "guild": IFW(None, placeholder, "Upgrade your guild"),
+        "home": IFW(None, placeholder, "Upgrade your home"),
     },
-    "embark": IFW(1, (r"",), placeholder, "Starts quest in zone arg0"),
-    "kick": IFW(1, (r"\S+",), placeholder, "Kicks player arg0 from your guild"),
-    "help": IFW(0, None, help_function, "Shows and describes all commands"),
-    "echo": IFW(1, (r"\S+",), echo, "repeats arg0")
+    "embark": IFW([RWE("zone number", r"[\d]+", "Zone number must be a positive integer number")], placeholder, "Starts a quest in specified zone"),
+    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, PLAYER_ERROR)], placeholder, "Kicks specified player from your guild"),
+    "help": IFW(None, help_function, "Shows and describes all commands"),
+    "echo": IFW([RWE("text", None, None)], echo, "repeats 'text'")
 }
 
 PROCESSES: Dict[str, Tuple[Callable, ...]] = {
@@ -91,5 +88,8 @@ def context_aware_execute(user: UserContext, user_input: str) -> str:
     """ parses and elaborates the given user input and returns the output. """
     if user.is_in_a_process():
         return PROCESSES[user.get_process_name()][user.get_process_step()](user_input)
-    parsing_result = parse_command(user_input)
-    return parsing_result.execute(user)
+    try:
+        parsing_result = parse_command(user_input)
+        return parsing_result.execute(user)
+    except ArgumentValidationError as e:
+        return str(e)
