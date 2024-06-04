@@ -5,7 +5,8 @@ from pilgram.globals import PLAYER_NAME_REGEX, PLAYER_ERROR
 from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as CPS, UserContext, \
     reconstruct_delimited_arguments, TooFewArgumentsError, ArgumentValidationError, \
     RegexWithErrorMessage as RWE
-from ui.functions import placeholder, echo, start_character_creation, character_creation_process
+from ui.functions import placeholder, echo, start_character_creation, character_creation_process, check_self, \
+    check_player
 
 
 def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
@@ -29,12 +30,13 @@ def command_not_found_error_function(context: UserContext, command: str, suggest
     return f"command '{command}' invalid, did you mean '{suggestion}'? Type 'help' for a list of commands."
 
 
+# TODO? move COMMANDS & PROCESSES to functions
 COMMANDS: Dict[str, Any] = {
     "check": {
         "board": IFW(None, placeholder, "Shows the quest board"),
         "guild": IFW(None, placeholder, "Shows your own guild"),
-        "self": IFW(None, placeholder, "Shows your own stats"),
-        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, PLAYER_ERROR)], placeholder, "Shows player stats")
+        "self": IFW(None, check_self, "Shows your own stats"),
+        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, PLAYER_ERROR)], check_player, "Shows player stats")
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character"),

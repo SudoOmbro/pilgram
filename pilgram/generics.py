@@ -5,15 +5,14 @@ from typing import List, Tuple
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
 
 
-class NotFoundException(Exception):
-    pass
-
-
 class PilgramDatabase(ABC):
 
     # players ----
 
     def get_player_data(self, player_id) -> Player:
+        raise NotImplementedError
+
+    def get_player_id_from_name(self, player_name) -> int:
         raise NotImplementedError
 
     def update_player_data(self, player: Player):

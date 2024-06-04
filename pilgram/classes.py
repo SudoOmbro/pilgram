@@ -177,7 +177,7 @@ class Player:
         return False
 
     def __str__(self):
-        return f"{self.name} | lv. {self.level} | {self.guild.name}\nHome level: {self.home_level}\n\n{self.description}"
+        return f"{self.name} | lv. {self.level} | {self.guild.name} (lv. {self.guild.level})\nHome level {self.home_level}, Gear level {self.gear_level}\n\n{self.description}"
 
     def __repr__(self):
         return str(self.__dict__)
