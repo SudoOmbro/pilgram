@@ -10,7 +10,7 @@ log.setLevel(logging.INFO)
 
 
 class __GenericGlobalSettings(ABC):
-    """ singleton instance that holds global variables """
+    """ read only singleton that holds global variables """
     _instance = None
     FILENAME: str
 
@@ -32,8 +32,10 @@ class __GenericGlobalSettings(ABC):
 
 
 class ContentMeta(__GenericGlobalSettings):
+    """ Contains all info about the world, like default values for players, world name, etc. """
     FILENAME = "content_meta.json"
 
 
 class GlobalSettings(__GenericGlobalSettings):
+    """ Contains more technical settings like API keys """
     FILENAME = "settings.json"

@@ -2,6 +2,7 @@ from typing import Union, Dict, Any
 
 
 class PathDict:
+    """ A dictionary that can only set & get variables using string paths """
 
     def __init__(self, dictionary: Union[Dict, None] = None):
         self.__dictionary = dictionary if dictionary else {}
