@@ -71,7 +71,11 @@ class Progress:
     """ stores the player quest progress for each zone """
 
     def __init__(self, zone_progress: Dict[int, int]):
-        self.zone_progress: Dict[int, int] = zone_progress
+        """
+        :param zone_progress:
+            dictionary that contains the player quest progress in the zone, stored like this: [zone, progress]
+        """
+        self.zone_progress = zone_progress
 
     def get_zone_progress(self, zone: Zone) -> int:
         return self.zone_progress[zone.zone_id] if zone.zone_id in self.zone_progress else 0
