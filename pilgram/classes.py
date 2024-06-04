@@ -166,7 +166,7 @@ class Player:
 
     @classmethod
     def create_default(cls, player_id: int, name: str, description: str) -> "Player":
-        player_defaults = ContentMeta.instance().meta.path_get("defaults.player")
+        player_defaults = ContentMeta.instance().get("defaults.player")
         return Player(
             player_id,
             name,

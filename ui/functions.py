@@ -32,7 +32,7 @@ def character_creation_process(context: UserContext, user_input: str) -> str:
     context.set(CC_STEPS[context.get_process_step()], user_input)
     if context.get_process_step() == len(CC_STEPS):
         context.end_process()
-        world_name = ContentMeta.instance().meta.path_get("world.name")
+        world_name = ContentMeta.get("world.name")
         return f"Your character has been created! Welcome to the world of {world_name}!"
     context.progress_process()
     return f"Ok now send me you character's {CC_STEPS[context.get_process_step()]}"
