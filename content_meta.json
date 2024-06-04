@@ -8,7 +8,9 @@
       "money": 100,
       "level": 1,
       "guild": null,
-      "progress": null
+      "progress": null,
+      "gear": 1,
+      "home": 1
     }
   }
 }

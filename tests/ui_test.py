@@ -17,9 +17,6 @@ class TestUi(unittest.TestCase):
         self.assertEqual(result, "player says: 'Hello world'")
         result = context_aware_execute(context, "echo hello world")
         self.assertEqual(result, "player says: 'hello'")
-        context = UserContext(dictionary={"username": "ombro"})
+        context = UserContext({"username": "ombro"})
         result = context_aware_execute(context, "echo ciao")
         self.assertEqual(result, "ombro says: 'ciao'")
-
-    def test_help_command(self):
-        print(help_function())

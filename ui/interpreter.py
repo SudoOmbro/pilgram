@@ -1,8 +1,8 @@
-from typing import Dict, Any, List, Union, Callable
+from typing import Dict, Any, List, Union, Callable, Tuple
 
 from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as CPS, UserContext, \
     reconstruct_delimited_arguments, TooFewArgumentsError
-from ui.functions import placeholder, echo
+from ui.functions import placeholder, echo, start_character_creation, character_creation_process
 
 
 def __generate_help_args_string(ifw: IFW) -> str:
@@ -40,7 +40,7 @@ COMMANDS: Dict[str, Any] = {
         "player": IFW(1, (r"\S+",), placeholder, "Shows player arg0 stats")
     },
     "create": {
-        "character": IFW(0, None, placeholder, "Create your character"),
+        "character": IFW(0, None, start_character_creation, "Create your character"),
         "guild": IFW(0, None, placeholder, "create your own Guild")
     },
     "upgrade": {
@@ -54,13 +54,14 @@ COMMANDS: Dict[str, Any] = {
     "echo": IFW(1, (r"\S+",), echo, "repeats arg0")
 }
 
-PROCESSES: Dict[str, List[Callable]] = {
-    "character creation": [
+PROCESSES: Dict[str, Tuple[Callable, ...]] = {
+    "character creation": (
+        character_creation_process,
+        character_creation_process
+    ),
+    "guild creation": (
 
-    ],
-    "guild creation": [
-
-    ]
+    )
 }
 
 

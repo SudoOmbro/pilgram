@@ -2,6 +2,8 @@ import random
 from datetime import datetime
 from typing import Tuple, Dict, Any, Callable, Union
 
+from pilgram.globals import ContentMeta
+
 
 class Zone:
     """ contains info about a zone. Zone 0 should be the town to reuse the zone event system """
@@ -68,15 +70,8 @@ class Quest:
 class Progress:
     """ stores the player quest progress for each zone """
 
-    def __init__(self, progress_data: Any, parsing_function: Callable[[Any], Dict[int, int]]):
-        """
-        :param progress_data:
-            The data that contains the player quest progress.
-            How it is stored on the database is independent of the implementation here.
-        :param parsing_function:
-            The function used to parse progress_data, must return the correct data format
-        """
-        self.zone_progress: Dict[int, int] = parsing_function(progress_data)
+    def __init__(self, zone_progress: Dict[int, int]):
+        self.zone_progress: Dict[int, int] = zone_progress
 
     def get_zone_progress(self, zone: Zone) -> int:
         return self.zone_progress[zone.zone_id] if zone.zone_id in self.zone_progress else 0
@@ -86,6 +81,18 @@ class Progress:
 
     def __repr__(self):
         return str(self.zone_progress)
+
+    @classmethod
+    def get_from_encoded_data(cls, progress_data: Any, parsing_function: Callable[[Any], Dict[int, int]]) -> "Progress":
+        """
+        :param progress_data:
+            The data that contains the player quest progress.
+            How it is stored on the database is independent of the implementation here.
+        :param parsing_function:
+            The function used to parse progress_data, must return the correct data format
+        """
+        zone_progress: Dict[int, int] = parsing_function(progress_data)
+        return cls(zone_progress)
 
 
 class Player:
@@ -156,6 +163,22 @@ class Player:
 
     def __repr__(self):
         return str(self.__dict__)
+
+    @classmethod
+    def create_default(cls, player_id: int, name: str, description: str) -> "Player":
+        player_defaults = ContentMeta.instance().meta.path_get("defaults.player")
+        return Player(
+            player_id,
+            name,
+            description,
+            player_defaults["guild"],
+            player_defaults["level"],
+            player_defaults["xp"],
+            player_defaults["money"],
+            player_defaults["progress"],
+            player_defaults["gear"],
+            player_defaults["home"]
+        )
 
 
 class Guild:

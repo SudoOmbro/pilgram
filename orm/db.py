@@ -73,7 +73,7 @@ class PilgramORMDatabase(PilgramDatabase):
         if not pls:
             raise NotFoundException(f'Player with id {player_id} not found')
         guild = self.get_guild(pls.guild_id)
-        progress = Progress(pls.progress, decode_progress)
+        progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
         return Player(
             pls.player_id,
             pls.name,
