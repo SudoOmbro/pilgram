@@ -121,7 +121,10 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
         return Strings.no_character_yet
     if db().is_player_on_a_quest(player):
         return Strings.already_on_a_quest
-    zone = db().get_zone(int(zone_id_str))
+    try:
+        zone = db().get_zone(int(zone_id_str))
+    except KeyError:
+        return Strings.zone_does_not_exist
     zone_progress = player.progress.get_zone_progress(zone)
     quest = db().get_quest_from_number(zone, zone_progress)
     adventure_container = AdventureContainer(player, quest, datetime.now() + timedelta(hours=1))  # TODO adjust quest time

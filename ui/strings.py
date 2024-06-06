@@ -29,3 +29,4 @@ class Strings:
     guild_name_validation_error = "Player names must only be 2 to 30 characters long and contain only letters, dashes & underscores."
     description_validation_error = "Player names must only be 10 to 250 characters long and contain only letters, dashes & underscores."
     zone_id_error = "Zone number must be a positive integer number"
+    zone_does_not_exist = "The zone does not exist!"
