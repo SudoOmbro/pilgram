@@ -28,6 +28,7 @@ class Strings:
     not_enough_money = "You have not enough money."
     upgrade_successful = "The upgrade to your {obj} was successful, you paid {paid}."
     upgrade_cancelled = "The upgrade was cancelled."
+    guild_already_maxed = "Your guild is already at the maximum level"
 
     # errors
     no_character_yet = "You haven't made a character yet!"

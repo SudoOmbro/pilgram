@@ -140,6 +140,8 @@ def start_upgrade_process(context: UserContext, obj: str = "guild") -> str:
         }.get(obj)()
         if price is None:
             return Strings.no_guild_yet
+        if obj == "guild" and player.guild.level == ContentMeta.get("guilds.max_level"):
+            return Strings.guild_already_maxed
         if player.money < price:
             return Strings.not_enough_money
         context.start_process("upgrade")
