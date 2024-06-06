@@ -1,6 +1,7 @@
 import unittest
 
 from ui.interpreter import context_aware_execute
+from ui.strings import Strings
 from ui.utils import UserContext, reconstruct_delimited_arguments
 
 
@@ -24,3 +25,26 @@ class TestUi(unittest.TestCase):
     def test_character_creation(self):
         context = UserContext({"id": 1234})
         result = context_aware_execute(context, "create character")
+        print(result)
+        result = context_aware_execute(context, "Ombro")
+        print(result)
+        result = context_aware_execute(context, "Really cool guy")
+        print(result)
+
+    def test_check_command(self):
+        context = UserContext({"id": 0})
+        result = context_aware_execute(context, "check self")
+        print(result)
+        self.assertEqual(result, Strings.no_character_yet)
+        context = UserContext({"id": 1234})
+        self_result = context_aware_execute(context, "check self")
+        print(f"---------\n{self_result}\n---------")
+        result = context_aware_execute(context, "check player O")
+        print(result)
+        ombro_result = context_aware_execute(context, "check player Ombro")
+        self.assertEqual(self_result, ombro_result)
+
+    def test_check_board(self):
+        context = UserContext({"id": 1234})
+        result = context_aware_execute(context, "check board")
+        print(result)

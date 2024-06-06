@@ -32,6 +32,10 @@ class PilgramDatabase(ABC):
         """ get a guild given its id """
         raise NotImplementedError
 
+    def get_guild_id_from_name(self, guild_name: str) -> int:
+        """ get a guild id given its name """
+        raise NotImplementedError
+
     def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
         """
             return a list of all members name and level given a guild.

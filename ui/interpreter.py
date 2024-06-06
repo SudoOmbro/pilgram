@@ -34,7 +34,7 @@ def parse_command(command: str) -> CPS:
 def context_aware_execute(user: UserContext, user_input: str) -> str:
     """ parses and elaborates the given user input and returns the output. """
     if user.is_in_a_process():
-        return PROCESSES[user.get_process_name()][user.get_process_step()](user_input)
+        return PROCESSES[user.get_process_name()][user.get_process_step()](user, user_input)
     try:
         parsing_result = parse_command(user_input)
         return parsing_result.execute(user)

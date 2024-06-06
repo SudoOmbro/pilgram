@@ -129,7 +129,7 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
         return result
 
     def __check_args(self, args):
-        for index, arg, arg_container in zip(enumerate(args), self.args_container):
+        for (index, arg), arg_container in zip(enumerate(args), self.args_container):
             if arg_container.regex and (not arg_container.check(arg)):
                 raise ArgumentValidationError(arg, arg_container.argument_name, index, arg_container.error_message)
 

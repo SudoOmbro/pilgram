@@ -9,13 +9,14 @@ from typing import Dict, Union, List, Tuple
 from peewee import fn
 
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel
+    QuestProgressModel, db_connect, db_disconnect
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
 from pilgram.generics import PilgramDatabase
 from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick
 
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:
@@ -60,6 +61,7 @@ class PilgramORMDatabase(PilgramDatabase):
             if not os.path.isfile(DB_FILENAME):
                 create_tables()
                 log.info("tables created")
+            cls._instance.is_connected = False
         return cls._instance
 
     # player ----
@@ -69,55 +71,57 @@ class PilgramORMDatabase(PilgramDatabase):
         # we are using a cache in front of this function since it's going to be called a lot, because of how the
         # function is structured the cache will store the Player objects which will always be updated in memory along
         # with their database record; Thus making it always valid.
-        pls = PlayerModel.get(PlayerModel.id == player_id)
-        if not pls:
-            raise KeyError(f'Player with id {player_id} not found')
-        guild = self.get_guild(pls.guild_id)
-        progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
-        return Player(
-            pls.player_id,
-            pls.name,
-            pls.description,
-            guild,
-            pls.level,
-            pls.xp,
-            pls.money,
-            progress,
-            pls.gear_level,
-            pls.home_level
-        )
+        try:
+            pls = PlayerModel.get(PlayerModel.id == player_id)
+            guild = self.get_guild(pls.guild_id) if pls.guild_id else None
+            progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
+            return Player(
+                pls.id,
+                pls.name,
+                pls.description,
+                guild,
+                pls.level,
+                pls.xp,
+                pls.money,
+                progress,
+                pls.gear_level,
+                pls.home_level
+            )
+        except PlayerModel.DoesNotExist:
+            raise KeyError(f'Player with id {player_id} not found')  # raising exceptions makes sure invalid queries aren't cached
 
     @cache_sized_quick(size_limit=200)
     def get_player_id_from_name(self, name: str) -> int:
-        player_id = PlayerModel.get(PlayerModel.name == name).id
-        if player_id:
-            return player_id
-        raise KeyError(f'Player with name {name} not found')
+        try:
+            return PlayerModel.get(PlayerModel.name == name).id
+        except PlayerModel.DoesNotExist:
+            raise KeyError(f'Player with name {name} not found')
 
     def update_player_data(self, player: Player):
-        pls = PlayerModel.get(PlayerModel.id == player.player_id)
-        if not pls:
+        try:
+            pls = PlayerModel.get(PlayerModel.id == player.player_id)
+            pls.name = player.name,
+            pls.description = player.description,
+            pls.guild = player.guild.guild_id if player.guild else None,
+            pls.level = player.level,
+            pls.xp = player.xp,
+            pls.money = player.money,
+            pls.gear_level = player.gear_level
+            pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
+            pls.save()
+        except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
-        pls.name = player.name,
-        pls.description = player.description,
-        pls.guild = player.guild,
-        pls.level = player.level,
-        pls.xp = player.xp,
-        pls.money = player.money,
-        pls.gear_level = player.gear_level
-        pls.progress = encode_progress(player.progress.zone_progress)
-        pls.save()
 
-    def create_player_data(self, player: Player):
+    def add_player(self, player: Player):
         PlayerModel.create(
             id=player.player_id,
             name=player.name,
             description=player.description,
-            guild=player.guild.guild_id,
+            guild=player.guild.guild_id if player.guild else None,
             level=player.level,
             xp=player.xp,
             money=player.money,
-            progress=player.progress.zone_progress,
+            progress=encode_progress(player.progress.zone_progress) if player.progress else None,
             gear_level=player.gear_level
         )
         # also create quest progress model related to the player
@@ -129,18 +133,26 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_sized_ttl_quick(size_limit=400, ttl=3600)
     def get_guild(self, guild_id: int) -> Guild:
-        gs = GuildModel.get(GuildModel.id == guild_id)
-        if not gs:
+        try:
+            gs = GuildModel.get(GuildModel.id == guild_id)
+            founder = self.get_player_data(gs.founder_id)
+            return Guild(
+                gs.id,
+                gs.name,
+                gs.level,
+                gs.description,
+                founder,
+                gs.creation_date,
+            )
+        except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with id {guild_id} not found')
-        founder = self.get_player_data(gs.founder_id)
-        return Guild(
-            gs.id,
-            gs.name,
-            gs.level,
-            gs.description,
-            founder,
-            gs.creation_date,
-        )
+
+    @cache_sized_quick(size_limit=200)
+    def get_guild_id_from_name(self, guild_name: str) -> int:
+        try:
+            return GuildModel.get(GuildModel.name == guild_name).id
+        except GuildModel.DoesNotExist:
+            raise KeyError(f'Guild with name {guild_name} not found')
 
     @cache_sized_ttl_quick(size_limit=50, ttl=21600)
     def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
@@ -182,10 +194,11 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_ttl_quick(ttl=604800)  # cache lasts a week since I don't ever plan to change zones, but you never know
     def get_zone(self, zone_id: int) -> Zone:
-        zs = ZoneModel.get(ZoneModel.id == zone_id)
-        if not zs:
+        try:
+            zs = ZoneModel.get(ZoneModel.id == zone_id)
+            return self.build_zone_object(zs)
+        except ZoneModel.DoesNotExist:
             raise KeyError(f"Could not find zone with id {zone_id}")
-        return self.build_zone_object(zs)
 
     @cache_ttl_quick(ttl=86400)
     def get_all_zones(self) -> List[Zone]:
@@ -220,10 +233,11 @@ class PilgramORMDatabase(PilgramDatabase):
         )
 
     def get_zone_event(self, event_id: int) -> ZoneEvent:  # this is unlikely to ever be used
-        zes = ZoneEventModel.get(ZoneEventModel.id == event_id)
-        if not zes:
+        try:
+            zes = ZoneEventModel.get(ZoneEventModel.id == event_id)
+            return self.build_zone_event_object(zes)
+        except ZoneEventModel.DoesNotExist:
             raise KeyError(f"Could not find zone event with id {event_id}")
-        return self.build_zone_event_object(zes)
 
     @cache_ttl_quick(ttl=10)
     def get_random_zone_event(self, zone: Zone) -> ZoneEvent:
@@ -232,11 +246,12 @@ class PilgramORMDatabase(PilgramDatabase):
         return self.build_zone_event_object(zes)
 
     def update_zone_event(self, event: ZoneEvent):
-        zes = ZoneEventModel.get(ZoneEventModel.id == event.event_id)
-        if not zes:
+        try:
+            zes = ZoneEventModel.get(ZoneEventModel.id == event.event_id)
+            zes.event_text = event.event_text
+            zes.save()
+        except ZoneEventModel.DoesNotExist:
             raise KeyError(f"Could not find zone event with id {event.event_id}")
-        zes.event_text = event.event_text
-        zes.save()
 
     def add_zone_event(self, event: ZoneEvent):
         zes = ZoneEventModel.create(
@@ -262,28 +277,31 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_sized_ttl_quick(size_limit=200, ttl=86400)
     def get_quest(self, quest_id: int) -> Quest:
-        qs = QuestModel.get(QuestModel.id == quest_id)
-        if not qs:
+        try:
+            qs = QuestModel.get(QuestModel.id == quest_id)
+            return self.build_quest_object(qs)
+        except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest with id {quest_id}")
-        return self.build_quest_object(qs)
 
     @cache_sized_ttl_quick(size_limit=200)
     def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
-        qs = QuestModel.get(QuestModel.zone_id == zone.zone_id and QuestModel.number == quest_number)
-        if not qs:
+        try:
+            qs = QuestModel.get(QuestModel.zone_id == zone.zone_id and QuestModel.number == quest_number)
+            return self.build_quest_object(qs, zone=zone)
+        except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest number {quest_number} in zone {zone.zone_id}")
-        return self.build_quest_object(qs, zone=zone)
 
     def update_quest(self, quest: Quest):
-        qs = QuestModel.get(QuestModel.id == quest.quest_id)
-        if not qs:
+        try:
+            qs = QuestModel.get(QuestModel.id == quest.quest_id)
+            qs.number = quest.number
+            qs.name = quest.name
+            qs.description = quest.description
+            qs.failure_text = quest.failure_text
+            qs.success_text = quest.success_text
+            qs.save()
+        except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest with id {quest.quest_id}")
-        qs.number = quest.number
-        qs.name = quest.name
-        qs.description = quest.description
-        qs.failure_text = quest.failure_text
-        qs.success_text = quest.success_text
-        qs.save()
 
     def add_quest(self, quest: Quest):
         qs = QuestModel.create(
@@ -306,20 +324,22 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_ttl_quick(ttl=1800)
     def is_player_on_a_quest(self, player: Player) -> bool:
-        qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
-        if not qps:
+        try:
+            qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
+            return qps.quest_id is not None
+        except QuestProgressModel.DoesNotExist:
             return False
-        return qps.quest_id is not None
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
         qps = QuestProgressModel.select().where(QuestProgressModel.last_update + delta <= datetime.now())
         return [self.build_adventure_container(x) for x in qps]
 
     def update_quest_progress(self, adventure_container: AdventureContainer):
-        qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
-        if not qps:
+        try:
+            qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
+            qps.quest_id = adventure_container.quest_id()
+            qps.last_update = datetime.now()
+            qps.end_time = adventure_container.finish_time
+            qps.save()
+        except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {adventure_container.player_id()}")
-        qps.quest_id = adventure_container.quest_id()
-        qps.last_update = datetime.now()
-        qps.end_time = adventure_container.finish_time
-        qps.save()

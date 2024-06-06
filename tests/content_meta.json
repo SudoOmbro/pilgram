@@ -16,6 +16,8 @@
   },
   "guilds": {
     "max_level": 10,
-    "players_per_level": 4
+    "players_per_level": 4,
+    "creation_cost": 1000,
+    "modify_cost": 1500
   }
 }
