@@ -23,8 +23,15 @@ class Strings:
     already_on_a_quest = "You already are on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
 
+    # upgrade
+    upgrade_object_confirmation = "Are you sure you want to upgrade your {obj}? It will cost you {price}"
+    not_enough_money = "You have not enough money."
+    upgrade_successful = "The upgrade to your {obj} was successful, you paid {paid}."
+    upgrade_cancelled = "The upgrade was cancelled."
+
     # errors
     no_character_yet = "You haven't made a character yet!"
+    no_guild_yet = "You haven't created a guild yet!"
     named_object_not_exist = "A {obj} with name {name} does not exist"
     player_name_validation_error = "Player names must only be 4 to 20 characters long and contain only letters, dashes & underscores."
     guild_name_validation_error = "Player names must only be 2 to 30 characters long and contain only letters, dashes & underscores."
@@ -32,3 +39,4 @@ class Strings:
     zone_id_error = "Zone number must be a positive integer number"
     zone_does_not_exist = "The zone does not exist!"
     not_in_a_guild = "You are not a guild!"
+    yes_no_error = "You must send only either 'yes' or 'no'!"

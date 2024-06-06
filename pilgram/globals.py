@@ -13,6 +13,7 @@ PLAYER_NAME_REGEX = r"^[A-Za-z0-9_-]{4,20}$"
 GUILD_NAME_REGEX = r"^[A-Za-z0-9_-]{2,30}$"
 DESCRIPTION_REGEX = r"^[A-Za-z0-9_-]{10,250}$"
 ZONE_ID_REGEX = r"^[\d]+$"
+YES_NO_REGEX = r"^(?:yes|no)$"
 
 
 class __GenericGlobalSettings(ABC):

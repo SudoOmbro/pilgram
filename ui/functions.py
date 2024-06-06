@@ -6,7 +6,7 @@ from typing import Tuple, Dict, Union, Callable, Any
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild
 from pilgram.generics import PilgramDatabase
-from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, ZONE_ID_REGEX
+from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, ZONE_ID_REGEX, YES_NO_REGEX
 from ui.strings import Strings
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -106,8 +106,9 @@ def start_guild_creation(context: UserContext) -> str:
         player = db().get_player_data(context.get("id"))
         if player.guild and (player.guild.founder == player.player_id):
             return Strings.guild_already_created
+        if player.money < ContentMeta.get("guilds.creation_cost"):
+            return Strings.not_enough_money
         context.start_process("guild creation")
-        # TODO factor creation cost
         return Strings.guild_creation_get_name
     except KeyError:
         return Strings.no_character_yet
@@ -127,6 +128,43 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     db().add_guild(guild)
     context.end_process()
     return Strings.welcome_to_the_world
+
+
+def start_upgrade_process(context: UserContext, obj: str = "guild") -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        price: Union[int, None] = {
+            "guild": lambda: player.guild.get_upgrade_required_money() if player.guild else None,
+            "gear": lambda: player.get_gear_upgrade_required_money(),
+            "home": lambda: player.get_home_upgrade_required_money(),
+        }.get(obj)()
+        if price is None:
+            return Strings.no_guild_yet
+        if player.money < price:
+            return Strings.not_enough_money
+        context.start_process("upgrade")
+        upgrade_func: Callable = {
+            "guild": lambda: player.guild.upgrade(),
+            "gear": lambda: player.upgrade_gear(),
+            "home": lambda: player.upgrade_home()
+        }.get(obj)
+        context.set("func", upgrade_func)
+        context.set("obj", obj)
+        context.set("price", price)
+        return Strings.upgrade_object_confirmation.format(obj=obj, price=price)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def process_verify_upgrade_confirmation(context: UserContext, user_input: str) -> str:
+    if not re.match(YES_NO_REGEX, user_input):
+        return Strings.yes_no_error
+    if user_input == "no":
+        context.end_process()
+        return Strings.upgrade_cancelled
+    context.get("func")()
+    context.end_process()
+    return Strings.upgrade_successful.format(obj=context.get("obj"), paid=context.get("price"))
 
 
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
@@ -176,22 +214,22 @@ COMMANDS: Dict[str, Any] = {
         }
     },
     "create": {
-        "character": IFW(None, start_character_creation, "Create your character"),
-        "guild": IFW(None, start_guild_creation, "create your own Guild")
+        "character": IFW(None, start_character_creation, "Create your character."),
+        "guild": IFW(None, start_guild_creation, "Create your own Guild")
     },
     "upgrade": {
-        "gear": IFW(None, placeholder, "Upgrade your gear"),
-        "guild": IFW(None, placeholder, "Upgrade your guild"),
-        "home": IFW(None, placeholder, "Upgrade your home"),
+        "gear": IFW(None, start_upgrade_process, "Upgrade your gear", default_args={"obj": "gear"}),
+        "guild": IFW(None, start_upgrade_process, "Upgrade your guild", default_args={"obj": "guild"}),
+        "home": IFW(None, start_upgrade_process, "Upgrade your home", default_args={"obj": "home"}),
     },
     "modify": {
         "character": IFW(None, placeholder, "Modify your character for a price (1500 money)"),
         "guild": IFW(None, placeholder, "Modify your guild for a price (1500 money)")
     },
     "embark": IFW([RWE("zone number", ZONE_ID_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
-    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], placeholder, "Kicks specified player from your guild"),
+    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], placeholder, "Kicks specified player from your own guild"),
     "help": IFW(None, help_function, "Shows and describes all commands"),
-    "echo": IFW([RWE("text", None, None)], echo, "repeats 'text'")
+    "echo": IFW([RWE("text", None, None)], echo, "Repeats 'text'")
 }
 
 PROCESSES: Dict[str, Tuple[Callable, ...]] = {
@@ -202,5 +240,8 @@ PROCESSES: Dict[str, Tuple[Callable, ...]] = {
     "guild creation": (
         process_get_guild_name,
         process_get_character_description
-    )
+    ),
+    "upgrade": {
+        process_verify_upgrade_confirmation
+    }
 }
