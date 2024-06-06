@@ -159,12 +159,16 @@ def start_upgrade_process(context: UserContext, obj: str = "guild") -> str:
 
 
 def process_verify_upgrade_confirmation(context: UserContext, user_input: str) -> str:
+    player = db().get_player_data(context.get("id"))
     if not re.match(YES_NO_REGEX, user_input):
         return Strings.yes_no_error
     if user_input == "no":
         context.end_process()
         return Strings.upgrade_cancelled
     context.get("func")()
+    if context.get("obj") == "guild":
+        db().update_guild(player.guild)
+    db().update_player_data(player)
     context.end_process()
     return Strings.upgrade_successful.format(obj=context.get("obj"), paid=context.get("price"))
 
