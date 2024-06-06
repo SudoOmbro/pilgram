@@ -234,6 +234,9 @@ class Guild:
         self.founder.money -= self.get_upgrade_required_money()
         self.level += 1
 
+    def __eq__(self, other):
+        return self.guild_id == other.guild_id
+
     def __str__(self):
         return f"*{self.name}*\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 

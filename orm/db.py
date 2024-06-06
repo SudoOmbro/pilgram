@@ -154,6 +154,10 @@ class PilgramORMDatabase(PilgramDatabase):
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with name {guild_name} not found')
 
+    @cache_sized_quick(size_limit=100)
+    def get_guild_id_from_founder(self, player: Player) -> int:
+        return GuildModel.get(GuildModel.founder_id == player.player_id).id
+
     @cache_sized_ttl_quick(size_limit=50, ttl=21600)
     def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
         pns = GuildModel.get(guild.guild_id == GuildModel.id).members
@@ -202,7 +206,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_ttl_quick(ttl=86400)
     def get_all_zones(self) -> List[Zone]:
-        zs = ZoneModel.get_all()
+        zs = ZoneModel.select()
         return [self.build_zone_object(x) for x in zs]
 
     def update_zone(self, zone: Zone):  # this will basically never be called, but it's good to have

@@ -71,6 +71,15 @@ class UserContext:
     def end_process(self):
         self.__process_step = None
 
+    def set_event(self, event_type: str, event_data: dict):
+        """ set event data """
+        self.set("event", event_data)
+        self.set("event.type", event_type)
+
+    def get_event_data(self) -> dict:
+        """ get data contained in 'event' if an event has happened"""
+        return self.get("event")
+
 
 class RegexWithErrorMessage:
     """ convenience class that stores the regex to check + the error message to give the user if the regex isn't met """

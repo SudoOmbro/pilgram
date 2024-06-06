@@ -6,7 +6,8 @@ from typing import Tuple, Dict, Union, Callable, Any
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild
 from pilgram.generics import PilgramDatabase
-from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, ZONE_ID_REGEX, YES_NO_REGEX
+from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, YES_NO_REGEX, \
+    DESCRIPTION_REGEX
 from ui.strings import Strings
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -65,7 +66,7 @@ def check_guild(context: UserContext, guild_name: str) -> str:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
 
 
-def check_current_guild(context: UserContext) -> str:
+def check_my_guild(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         if player.guild:
@@ -104,7 +105,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
 def start_guild_creation(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if player.guild and (player.guild.founder == player.player_id):
+        if db().get_owned_guild(player):
             return Strings.guild_already_created
         if player.money < ContentMeta.get("guilds.creation_cost"):
             return Strings.not_enough_money
@@ -126,6 +127,9 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     player = db().get_player_data(context.get("id"))
     guild = Guild.create_default(player, context.get("name"), user_input)
     db().add_guild(guild)
+    guild = db().get_owned_guild(player)
+    player.guild = guild
+    db().update_player_data(player)
     context.end_process()
     return Strings.welcome_to_the_world
 
@@ -140,13 +144,15 @@ def start_upgrade_process(context: UserContext, obj: str = "guild") -> str:
         }.get(obj)()
         if price is None:
             return Strings.no_guild_yet
-        if obj == "guild" and player.guild.level == ContentMeta.get("guilds.max_level"):
-            return Strings.guild_already_maxed
+        if obj == "guild":
+            guild = db().get_owned_guild(player)
+            if guild == ContentMeta.get("guilds.max_level"):
+                return Strings.guild_already_maxed
         if player.money < price:
             return Strings.not_enough_money
         context.start_process("upgrade")
         upgrade_func: Callable = {
-            "guild": lambda: player.guild.upgrade(),
+            "guild": lambda: db().get_owned_guild(player).upgrade(),
             "gear": lambda: player.upgrade_gear(),
             "home": lambda: player.upgrade_home()
         }.get(obj)
@@ -173,6 +179,36 @@ def process_verify_upgrade_confirmation(context: UserContext, user_input: str) -
     return Strings.upgrade_successful.format(obj=context.get("obj"), paid=context.get("price"))
 
 
+def modify_player(context: UserContext, user_input: str, target: str = "name") -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        if player.money < ContentMeta.get("modify_cost"):
+            return Strings.not_enough_money
+        player.__dict__[target] = user_input
+        player.money -= ContentMeta.get("modify_cost")
+        db().update_player_data(player)
+        return Strings.obj_attr_modified.format(obj="character", attr=target)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def modify_guild(context: UserContext, user_input: str, target: str = "name") -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        guild = db().get_owned_guild(player)
+        if not guild:
+            return Strings.guild_not_owned
+        if player.money < ContentMeta.get("modify_cost"):
+            return Strings.not_enough_money
+        guild.__dict__[target] = user_input
+        db().update_guild(guild)
+        player.money -= ContentMeta.get("modify_cost")
+        db().update_player_data(player)
+        return Strings.obj_attr_modified.format(obj="guild", attr=target)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -191,6 +227,47 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     return Strings.quest_embark.format(name=quest.name, descr=quest.description)
 
 
+def kick(context: UserContext, player_name: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        guild = db().get_owned_guild(player)
+        if not guild:
+            return Strings.guild_not_owned
+        target = db().get_player_from_name(player_name)
+        if not target:
+            return Strings.named_object_not_exist.format(obj="Player", name=player_name)
+        if target.guild != guild:
+            return Strings.player_not_in_own_guild.format(name=player_name)
+        target.guild = None
+        db().update_player_data(target)
+        return Strings.player_kicked_successfully.format(name=player_name, guild=guild.name)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        amount: int = int(amount_str)
+        if amount <= 0:
+            return Strings.invalid_money_amount
+        if player.money < amount:
+            return Strings.not_enough_money
+        recipient = db().get_player_from_name(recipient_name)
+        if not recipient:
+            return Strings.named_object_not_exist.format(obj="Player", name=recipient_name)
+        # update money for both player and save data to the database
+        recipient.money += amount
+        db().update_player_data(recipient)
+        player.money -= amount
+        db().update_player_data(player)
+        # use context to communicate to the external interface that a notification should be sent to the recipient
+        context.set_event("donation", {"amount": amount, "donor": player, "recipient": recipient})
+        return Strings.donation_successful.format(amm=amount_str, rec=recipient_name)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
     result_string: str = ""
     for key, value in dictionary.items():
@@ -203,16 +280,16 @@ def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
 
 
 @cache
-def help_function() -> str:
+def help_function(context: UserContext) -> str:
     """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-    return __help_dfs(COMMANDS, 0)
+    return f"hey {context.get('username')}, here's a list of all commands:\n\n" +  __help_dfs(COMMANDS, 0)
 
 
 COMMANDS: Dict[str, Any] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board"),
-        "zone": IFW([RWE("zone number", ZONE_ID_REGEX, Strings.zone_id_error)], check_board, "Shows the quest board"),
-        "guild": IFW([RWE("guild name", PLAYER_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
+        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], check_board, "Shows the quest board"),
+        "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
         "self": IFW(None, check_self, "Shows your own stats"),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),
         "my": {
@@ -229,12 +306,19 @@ COMMANDS: Dict[str, Any] = {
         "home": IFW(None, start_upgrade_process, "Upgrade your home", default_args={"obj": "home"}),
     },
     "modify": {
-        "character": IFW(None, placeholder, "Modify your character for a price (1500 money)"),
-        "guild": IFW(None, placeholder, "Modify your guild for a price (1500 money)")
+        "character": {
+            "name": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, f"Modify your character's name for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "name"}),
+            "description": IFW([RWE("player description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, f"Modify your character's description for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "description"})
+        },
+        "guild": {
+            "name": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "name"}),
+            "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "description"})
+        }
     },
-    "embark": IFW([RWE("zone number", ZONE_ID_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
-    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], placeholder, "Kicks specified player from your own guild"),
+    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
+    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
     "help": IFW(None, help_function, "Shows and describes all commands"),
+    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], echo, "donates the specified amount of money to the recipient"),
     "echo": IFW([RWE("text", None, None)], echo, "Repeats 'text'")
 }
 

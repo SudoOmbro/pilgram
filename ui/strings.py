@@ -30,14 +30,26 @@ class Strings:
     upgrade_cancelled = "The upgrade was cancelled."
     guild_already_maxed = "Your guild is already at the maximum level"
 
+    # modify
+    obj_attr_modified = f"{{obj}} {{attr}} has been modified correctly. You paid {ContentMeta.get('modify_cost')}"
+
+    # kick
+    player_not_in_own_guild = "player '{name}' is not in your guild"
+    player_kicked_successfully = "player '{name} has been successfully kicked from guild {guild}'"
+
+    # donations
+    donation_successful = "You successfully sent {amm} money to {rec}. They are certainly going to be happy :)"
+    invalid_money_amount = "The specified amount must be greater than zero!"
+
     # errors
     no_character_yet = "You haven't made a character yet!"
     no_guild_yet = "You haven't created a guild yet!"
-    named_object_not_exist = "A {obj} with name {name} does not exist"
+    named_object_not_exist = "{obj} with name {name} does not exist"
     player_name_validation_error = "Player names must only be 4 to 20 characters long and contain only letters, dashes & underscores."
     guild_name_validation_error = "Player names must only be 2 to 30 characters long and contain only letters, dashes & underscores."
     description_validation_error = "Player names must only be 10 to 250 characters long and contain only letters, dashes & underscores."
     zone_id_error = "Zone number must be a positive integer number"
     zone_does_not_exist = "The zone does not exist!"
     not_in_a_guild = "You are not a guild!"
+    guild_not_owned = "You don't own a guild!"
     yes_no_error = "You must send only either 'yes' or 'no'!"

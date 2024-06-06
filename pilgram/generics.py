@@ -1,6 +1,6 @@
 from abc import ABC
 from datetime import timedelta
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
 
@@ -10,10 +10,21 @@ class PilgramDatabase(ABC):
     # players ----
 
     def get_player_data(self, player_id) -> Player:
+        """
+        returns a complete player object
+
+        :raise KeyError: if player does not exist
+        """
         raise NotImplementedError
 
     def get_player_id_from_name(self, player_name) -> int:
         raise NotImplementedError
+
+    def get_player_from_name(self, player_name: str) -> Union[Player, None]:
+        try:
+            return self.get_player_data(self.get_player_id_from_name(player_name))
+        except KeyError:
+            return None
 
     def update_player_data(self, player: Player):
         """ this should also update the player progress, implement however you see fit """
@@ -29,12 +40,27 @@ class PilgramDatabase(ABC):
     # guilds ---
 
     def get_guild(self, guild_id: int) -> Guild:
-        """ get a guild given its id """
+        """
+        get a guild given its id
+
+        :raise KeyError: if the guild does not exist
+        """
         raise NotImplementedError
 
     def get_guild_id_from_name(self, guild_name: str) -> int:
         """ get a guild id given its name """
         raise NotImplementedError
+
+    def get_guild_id_from_founder(self, founder: Player) -> int:
+        """ get a guild id given its founder """
+        raise NotImplementedError
+
+    def get_owned_guild(self, player: Player) -> Union[Guild, None]:
+        """ get a guild owned by a player """
+        try:
+            return self.get_guild(self.get_guild_id_from_founder(player))
+        except KeyError:
+            return None
 
     def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
         """

@@ -22,6 +22,9 @@ class TestUi(unittest.TestCase):
         result = context_aware_execute(context, "echo ciao")
         self.assertEqual(result, "ombro says: 'ciao'")
 
+    def test_help_function(self):
+        print(context_aware_execute(UserContext({"username": "ombro"}), "help"))
+
     def test_character_creation(self):
         context = UserContext({"id": 1234})
         result = context_aware_execute(context, "create character")

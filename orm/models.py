@@ -52,7 +52,7 @@ class GuildModel(BaseModel):
     name = CharField(null=False, unique=True, index=True)
     level = IntegerField(default=1)
     description = CharField(null=False)
-    founder_id = ForeignKeyField(PlayerModel, backref='guilds')
+    founder_id = ForeignKeyField(PlayerModel, backref='owned_guild')
     creation_date = DateTimeField(default=datetime.now)
 
 
