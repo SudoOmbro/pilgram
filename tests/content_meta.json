@@ -5,11 +5,7 @@
   },
   "defaults": {
     "player": {
-      "xp": 0,
       "money": 100,
-      "level": 1,
-      "guild": null,
-      "progress": null,
       "gear": 1,
       "home": 1
     }

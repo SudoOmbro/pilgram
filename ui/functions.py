@@ -4,7 +4,7 @@ from functools import cache
 from typing import Tuple, Dict, Union, Callable, Any
 
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, AdventureContainer
+from pilgram.classes import Player, AdventureContainer, Guild
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, ZONE_ID_REGEX
 from ui.strings import Strings
@@ -30,13 +30,21 @@ def echo(context: UserContext, text) -> str:
 
 def check_board(context: UserContext) -> str:
     zones = db().get_all_zones()
-    return "\n".join(x.zone_name for x in zones)
+    return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones)
+
+
+def check_zone(context: UserContext, zone_id_str: int) -> str:
+    try:
+        zone = db().get_zone(int(zone_id_str))
+        return str(zone)
+    except KeyError:
+        return Strings.zone_does_not_exist
 
 
 def check_self(context: UserContext) -> str:
     try:
-        character = db().get_player_data(context.get("id"))
-        return str(character)
+        player = db().get_player_data(context.get("id"))
+        return str(player)
     except KeyError:
         return Strings.no_character_yet
 
@@ -57,6 +65,16 @@ def check_guild(context: UserContext, guild_name: str) -> str:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
 
 
+def check_current_guild(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        if player.guild:
+            return str(player.guild)
+        else:
+            return Strings.not_in_a_guild
+    except KeyError:
+        return Strings.no_character_yet
+
 def start_character_creation(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -75,11 +93,11 @@ def process_get_character_name(context: UserContext, user_input) -> str:
 
 
 def process_get_character_description(context: UserContext, user_input) -> str:
-    context.end_process()
     player = Player.create_default(
         context.get("id"), context.get("name"), user_input
     )
     db().add_player(player)
+    context.end_process()
     return Strings.welcome_to_the_world
 
 
@@ -96,21 +114,18 @@ def start_guild_creation(context: UserContext) -> str:
 
 
 def process_get_guild_name(context: UserContext, user_input) -> str:
-    # TODO
     if not re.match(GUILD_NAME_REGEX, user_input):
-        return Strings.player_name_validation_error
+        return Strings.guild_name_validation_error
     context.set("name", user_input)
     context.progress_process()
-    return Strings.character_creation_get_description
+    return Strings.guild_creation_get_description
 
 
 def process_get_guild_description(context: UserContext, user_input) -> str:
-    # TODO
+    player = db().get_player_data(context.get("id"))
+    guild = Guild.create_default(player, context.get("name"), user_input)
+    db().add_guild(guild)
     context.end_process()
-    player = Player.create_default(
-        context.get("id"), context.get("name"), user_input
-    )
-    db().add_player(player)
     return Strings.welcome_to_the_world
 
 
@@ -151,14 +166,18 @@ def help_function() -> str:
 
 COMMANDS: Dict[str, Any] = {
     "check": {
-        "board": IFW(None, placeholder, "Shows the quest board"),
+        "board": IFW(None, check_board, "Shows the quest board"),
+        "zone": IFW([RWE("zone number", ZONE_ID_REGEX, Strings.zone_id_error)], check_board, "Shows the quest board"),
         "guild": IFW([RWE("guild name", PLAYER_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
         "self": IFW(None, check_self, "Shows your own stats"),
-        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats")
+        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),
+        "my": {
+            "guild": IFW(None, check_board, "Shows your own guild"),
+        }
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character"),
-        "guild": IFW(None, placeholder, "create your own Guild")
+        "guild": IFW(None, start_guild_creation, "create your own Guild")
     },
     "upgrade": {
         "gear": IFW(None, placeholder, "Upgrade your gear"),

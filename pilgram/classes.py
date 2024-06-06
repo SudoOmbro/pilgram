@@ -191,10 +191,10 @@ class Player:
             name,
             description,
             player_defaults["guild"],
-            player_defaults["level"],
-            player_defaults["xp"],
+            1,
+            0,
             player_defaults["money"],
-            player_defaults["progress"],
+            Progress({}),
             player_defaults["gear"],
             player_defaults["home"]
         )
@@ -236,6 +236,17 @@ class Guild:
 
     def __str__(self):
         return f"*{self.name}*\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+
+    @classmethod
+    def create_default(cls, founder: Player, name: str, description: str) -> "Guild":
+        return Guild(
+            0,
+            name,
+            1,
+            description,
+            founder,
+            datetime.now()
+        )
 
 
 class ZoneEvent:

@@ -4,17 +4,15 @@
   },
   "defaults": {
     "player": {
-      "xp": 0,
       "money": 100,
-      "level": 1,
-      "guild": null,
-      "progress": null,
       "gear": 1,
       "home": 1
     }
   },
   "guilds": {
     "max_level": 10,
-    "players_per_level": 4
+    "players_per_level": 4,
+    "creation_cost": 1000,
+    "modify_cost": 1500
   }
 }

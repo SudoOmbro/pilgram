@@ -19,6 +19,7 @@ class Strings:
     guild_creation_success = "Your guild '{name}' has been created!"
 
     # quests
+    check_board = "You check the board, you see there are quests available in the following zones:"
     already_on_a_quest = "You already are on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
 
@@ -30,3 +31,4 @@ class Strings:
     description_validation_error = "Player names must only be 10 to 250 characters long and contain only letters, dashes & underscores."
     zone_id_error = "Zone number must be a positive integer number"
     zone_does_not_exist = "The zone does not exist!"
+    not_in_a_guild = "You are not a guild!"
