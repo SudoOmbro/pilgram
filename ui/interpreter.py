@@ -1,67 +1,12 @@
-from functools import cache
-from typing import Dict, Any, List, Union, Callable, Tuple
+from typing import List
 
-from pilgram.globals import PLAYER_NAME_REGEX, PLAYER_ERROR
+from ui.functions import COMMANDS, PROCESSES
 from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as CPS, UserContext, \
-    reconstruct_delimited_arguments, TooFewArgumentsError, ArgumentValidationError, \
-    RegexWithErrorMessage as RWE
-from ui.functions import placeholder, echo, start_character_creation, character_creation_process, check_self, \
-    check_player
-
-
-def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
-    result_string: str = ""
-    for key, value in dictionary.items():
-        result_string += "> " * depth + f"`{key}`"
-        if isinstance(value, dict):
-            result_string += "\n" + __help_dfs(value, depth + 1)
-        else:
-            result_string += f"{value.generate_help_args_string()}-- {value.description}\n"
-    return result_string
-
-
-@cache
-def help_function() -> str:
-    """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-    return __help_dfs(COMMANDS, 0)
+    reconstruct_delimited_arguments, TooFewArgumentsError, ArgumentValidationError
 
 
 def command_not_found_error_function(context: UserContext, command: str, suggestion: str) -> str:
     return f"command '{command}' invalid, did you mean '{suggestion}'? Type 'help' for a list of commands."
-
-
-# TODO? move COMMANDS & PROCESSES to functions
-COMMANDS: Dict[str, Any] = {
-    "check": {
-        "board": IFW(None, placeholder, "Shows the quest board"),
-        "guild": IFW(None, placeholder, "Shows your own guild"),
-        "self": IFW(None, check_self, "Shows your own stats"),
-        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, PLAYER_ERROR)], check_player, "Shows player stats")
-    },
-    "create": {
-        "character": IFW(None, start_character_creation, "Create your character"),
-        "guild": IFW(None, placeholder, "create your own Guild")
-    },
-    "upgrade": {
-        "gear": IFW(None, placeholder, "Upgrade your gear"),
-        "guild": IFW(None, placeholder, "Upgrade your guild"),
-        "home": IFW(None, placeholder, "Upgrade your home"),
-    },
-    "embark": IFW([RWE("zone number", r"[\d]+", "Zone number must be a positive integer number")], placeholder, "Starts a quest in specified zone"),
-    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, PLAYER_ERROR)], placeholder, "Kicks specified player from your guild"),
-    "help": IFW(None, help_function, "Shows and describes all commands"),
-    "echo": IFW([RWE("text", None, None)], echo, "repeats 'text'")
-}
-
-PROCESSES: Dict[str, Tuple[Callable, ...]] = {
-    "character creation": (
-        character_creation_process,
-        character_creation_process
-    ),
-    "guild creation": (
-
-    )
-}
 
 
 def parse_command(command: str) -> CPS:

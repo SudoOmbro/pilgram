@@ -1,6 +1,6 @@
 import unittest
 
-from ui.interpreter import context_aware_execute, help_function
+from ui.interpreter import context_aware_execute
 from ui.utils import UserContext, reconstruct_delimited_arguments
 
 
@@ -20,9 +20,6 @@ class TestUi(unittest.TestCase):
         context = UserContext({"username": "ombro"})
         result = context_aware_execute(context, "echo ciao")
         self.assertEqual(result, "ombro says: 'ciao'")
-
-    def test_help_function(self):
-        print(help_function())
 
     def test_character_creation(self):
         context = UserContext({"id": 1234})
