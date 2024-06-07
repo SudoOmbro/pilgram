@@ -15,19 +15,6 @@ def db() -> PilgramDatabase:
     return PilgramORMDatabase.instance()
 
 
-def placeholder(context: UserContext) -> str:
-    """ temporary placeholder function """
-    return "hello world"
-
-
-def echo(context: UserContext, text) -> str:
-    try:
-        username = context.get("username")
-    except KeyError:
-        username = "player"
-    return f"{username} says: '{text}'"
-
-
 def check_board(context: UserContext) -> str:
     zones = db().get_all_zones()
     return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones)
@@ -336,8 +323,7 @@ COMMANDS: Dict[str, Any] = {
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
     "help": IFW(None, help_function, "Shows and describes all commands"),
-    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], echo, "donates the specified amount of money to the recipient"),
-    "echo": IFW([RWE("text", None, None)], echo, "Repeats 'text'")
+    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient")
 }
 
 PROCESSES: Dict[str, Tuple[Callable, ...]] = {
