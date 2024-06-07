@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Tuple, Dict, Any, Callable, Union
 
 from pilgram.globals import ContentMeta
+from ui.strings import MONEY
 
 
 class Zone:
@@ -107,7 +108,7 @@ class Player:
             player_id: int,
             name: str,
             description: str,
-            guild: "Guild",
+            guild: Union["Guild", None],
             level: int,
             xp: int,
             money: int,
@@ -178,7 +179,7 @@ class Player:
 
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        return f"{self.name} | lv. {self.level}{guild}\nHome level {self.home_level}, Gear level {self.gear_level}\n\n{self.description}"
+        return f"{self.name} | lv. {self.level}{guild}\nHome level {self.home_level}, Gear level {self.gear_level}\n\n{self.description}\n{self.money} {MONEY}"
 
     def __repr__(self):
         return str(self.__dict__)
@@ -190,7 +191,7 @@ class Player:
             player_id,
             name,
             description,
-            player_defaults["guild"],
+            None,
             1,
             0,
             player_defaults["money"],

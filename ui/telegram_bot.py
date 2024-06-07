@@ -33,10 +33,10 @@ def notify(bot: Bot, player: Player, text: str):
 
 def get_event_notification_string(event: dict) -> Tuple[str, Player]:
     return {
-        "donation": (Strings.donation_received.format(donor=event["donor"], amm=event["amount"]), event["recipient"]),
-        "player kicked": (Strings.you_have_been_kicked.format(guild=event["guild"].name), event["player"]),
-        "guild joined": (Strings.player_joined_your_guild.format(player=event["player"], guild=event["guild"].name), event["guild"].founder),
-    }.get(event["type"])
+        "donation": lambda: (Strings.donation_received.format(donor=event["donor"].name, amm=event["amount"]), event["recipient"]),
+        "player kicked": lambda: (Strings.you_have_been_kicked.format(guild=event["guild"].name), event["player"]),
+        "guild joined": lambda: (Strings.player_joined_your_guild.format(player=event["player"].name, guild=event["guild"].name), event["guild"].founder),
+    }.get(event["type"])()
 
 
 async def start(update: Update, c: ContextTypes.DEFAULT_TYPE):

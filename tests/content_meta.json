@@ -15,5 +15,8 @@
     "players_per_level": 4,
     "creation_cost": 1000
   },
-  "modify_cost": 1000
+  "modify_cost": 1000,
+  "money": {
+    "name": "Boromian Alloy"
+  }
 }

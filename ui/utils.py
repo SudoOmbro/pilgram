@@ -76,9 +76,12 @@ class UserContext:
         self.set("event", event_data)
         self.set("event.type", event_type)
 
-    def get_event_data(self) -> dict:
+    def get_event_data(self) -> Union[dict, None]:
         """ get data contained in 'event' if an event has happened"""
-        return self.get("event")
+        try:
+            return self.get("event")
+        except KeyError:
+            return None
 
 
 class RegexWithErrorMessage:

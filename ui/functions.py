@@ -7,7 +7,7 @@ from pilgram.classes import Player, AdventureContainer, Guild
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, YES_NO_REGEX, \
     DESCRIPTION_REGEX
-from ui.strings import Strings
+from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
 
@@ -310,12 +310,12 @@ COMMANDS: Dict[str, Any] = {
     },
     "modify": {
         "character": {
-            "name": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, f"Modify your character's name for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "name"}),
-            "description": IFW([RWE("player description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, f"Modify your character's description for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "description"})
+            "name": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, f"Modify your character's name for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "name"}),
+            "description": IFW([RWE("player description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, f"Modify your character's description for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "description"})
         },
         "guild": {
-            "name": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "name"}),
-            "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "description"})
+            "name": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "name"}),
+            "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "description"})
         }
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name"),

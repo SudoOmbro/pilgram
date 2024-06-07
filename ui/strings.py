@@ -1,6 +1,9 @@
 from pilgram.globals import ContentMeta
 
 
+MONEY = ContentMeta.get("money.name")
+
+
 class Strings:
     """
     class that contains all the interface-related strings that will be sent to the players.
@@ -30,8 +33,8 @@ class Strings:
 
     # upgrade
     upgrade_object_confirmation = "Are you sure you want to upgrade your {obj}? It will cost you {price}"
-    not_enough_money = "You have not enough money."
-    upgrade_successful = "The upgrade to your {obj} was successful, you paid {paid}."
+    not_enough_money = f"You don't have enough {MONEY}."
+    upgrade_successful = f"The upgrade to your {{obj}} was successful, you paid {{paid}} {MONEY}."
     upgrade_cancelled = "The upgrade was cancelled."
     guild_already_maxed = "Your guild is already at the maximum level"
 
@@ -44,8 +47,8 @@ class Strings:
     you_have_been_kicked = "You have been kicked from guild {guild}."
 
     # donations
-    donation_received = "{donor} just donated you {amm} money!"
-    donation_successful = "You successfully sent {amm} money to {rec}. They are certainly going to be happy :)"
+    donation_received = f"{{donor}} just donated you {{amm}} {MONEY}!"
+    donation_successful = f"You successfully sent {{amm}} {MONEY} to {{rec}}. They are certainly going to be happy :)"
     invalid_money_amount = "The specified amount must be greater than zero!"
 
     # errors
