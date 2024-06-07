@@ -8,6 +8,7 @@ from telegram.error import TelegramError
 
 from pilgram.classes import Player
 from pilgram.generics import PilgramNotifier
+from pilgram.globals import ContentMeta
 from pilgram.utils import read_text_file, TempIntCache
 from ui.interpreter import context_aware_execute
 from ui.utils import UserContext
@@ -21,7 +22,7 @@ logging.basicConfig(
 
 
 INFO_STRING = "Made with ❤️ by @LordOmbro\n\n--> [visit my github](https://github.com/SudoOmbro)\n\n--> [offer me a beer](https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2)"
-START_STRING = read_text_file("intro.txt")
+START_STRING = read_text_file("intro.txt").format(wn=ContentMeta.get("world.name"), mn=ContentMeta.get("money.name"))
 
 
 async def notify(bot: Bot, player: Player, text: str):
