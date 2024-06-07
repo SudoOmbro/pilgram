@@ -20,7 +20,7 @@ logging.basicConfig(
 )
 
 
-INFO_STRING = "Made with ❤️ by @LordOmbro\n\n[github](https://github.com/SudoOmbro)\n[offer me a beer](https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2)"
+INFO_STRING = "Made with ❤️ by @LordOmbro\n\n--> [visit my github](https://github.com/SudoOmbro)\n\n--> [offer me a beer](https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2)"
 START_STRING = read_text_file("intro.txt")
 
 
@@ -40,11 +40,11 @@ def get_event_notification_string(event: dict) -> Tuple[str, Player]:
 
 
 async def start(update: Update, c: ContextTypes.DEFAULT_TYPE):
-    await c.bot.send_message(chat_id=update.effective_chat.id, text=START_STRING, parse_mode=ParseMode.MARKDOWN)
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=START_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
 async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
-    await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN)
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
 class PilgramBot(PilgramNotifier):
