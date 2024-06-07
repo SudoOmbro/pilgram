@@ -272,20 +272,20 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
         return Strings.no_character_yet
 
 
-def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
+def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], previous_command: str) -> str:
     result_string: str = ""
     for key, value in dictionary.items():
-        result_string += "  " * depth + f"`{key}`"
+        command = f"{previous_command}{key} "
         if isinstance(value, dict):
-            result_string += "\n" + __help_dfs(value, depth + 1)
+            result_string += __help_dfs(value, command)
         else:
-            result_string += f"{value.generate_help_args_string()}-- {value.description}\n"
+            result_string += f"`{command}`{value.generate_help_args_string()}- _{value.description}_\n\n"
     return result_string
 
 
 def help_function(context: UserContext) -> str:
     """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-    return f"hey {context.get('username')}, here's a list of all commands:\n\n" +  __help_dfs(COMMANDS, 0)
+    return f"hey {context.get('username')}, here's a list of all commands:\n\n" + __help_dfs(COMMANDS, "")
 
 
 COMMANDS: Dict[str, Any] = {

@@ -24,9 +24,9 @@ INFO_STRING = "Made with ❤️ by @LordOmbro\n\n[github](https://github.com/Sud
 START_STRING = read_text_file("intro.txt")
 
 
-def notify(bot: Bot, player: Player, text: str):
+async def notify(bot: Bot, player: Player, text: str):
     try:
-        bot.send_message(player.player_id, text, parse_mode=ParseMode.MARKDOWN_V2)
+        await bot.send_message(player.player_id, text, parse_mode=ParseMode.MARKDOWN)
     except TelegramError as e:
         log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")
 
@@ -40,11 +40,11 @@ def get_event_notification_string(event: dict) -> Tuple[str, Player]:
 
 
 async def start(update: Update, c: ContextTypes.DEFAULT_TYPE):
-    await c.bot.send_message(chat_id=update.effective_chat.id, text=START_STRING, parse_mode=ParseMode.MARKDOWN_V2)
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=START_STRING, parse_mode=ParseMode.MARKDOWN)
 
 
 async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
-    await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN_V2)
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN)
 
 
 async def handle_message(update: Update, c: ContextTypes.DEFAULT_TYPE):
@@ -56,8 +56,8 @@ async def handle_message(update: Update, c: ContextTypes.DEFAULT_TYPE):
     event = user_context.get_event_data()
     if event:
         string, target = get_event_notification_string(event)
-        notify(c.bot, target, string)
-    c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN_V2)
+        await notify(c.bot, target, string)
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
 
 
 class PilgramBot(PilgramNotifier):

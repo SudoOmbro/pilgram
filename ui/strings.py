@@ -27,7 +27,7 @@ class Strings:
     guild_is_full = "The guild is full! Tell the owner to upgrade it or make your own."
 
     # quests
-    check_board = "You check the board, you see there are quests available in the following zones:"
+    check_board = "You check the quest board, you see there are quests available in the following zones:"
     already_on_a_quest = "You already are on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
 

@@ -137,7 +137,7 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
         if not self.args_container:
             return " "
         for arg in self.args_container:
-            result += f"[{arg.argument_name}] "
+            result += f"\\[{arg.argument_name}] "
         return result
 
     def __check_args(self, args):

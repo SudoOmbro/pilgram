@@ -6,7 +6,7 @@ from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as 
 
 
 def command_not_found_error_function(context: UserContext, command: str, suggestion: str) -> str:
-    return f"command '{command}' invalid, did you mean '{suggestion}'? Type 'help' for a list of commands."
+    return f"command '{command}' invalid, did you mean '`{suggestion}`'? Type '`help`' for a list of commands."
 
 
 def parse_command(command: str) -> CPS:
@@ -24,11 +24,10 @@ def parse_command(command: str) -> CPS:
                 if ifw.number_of_args > len(args):
                     raise TooFewArgumentsError(full_command + command_token, ifw.number_of_args, len(args))
                 return CPS(ifw, args)
-            full_command = f"{full_command} {command_token}"
+            full_command = f"{full_command}{command_token} "
             parser = parser[ctlw]
             indentation_levels += 1
-        else:
-            return CPS(command_not_found_error_function, [command, list(parser.keys())[0]])
+    return CPS(command_not_found_error_function, [command, f"{full_command}{list(parser.keys())[0]}"])
 
 
 def context_aware_execute(user: UserContext, user_input: str) -> str:
