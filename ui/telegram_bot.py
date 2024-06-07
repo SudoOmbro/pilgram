@@ -1,4 +1,6 @@
 import logging
+from typing import Tuple
+
 from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from telegram.constants import ParseMode
@@ -9,6 +11,7 @@ from pilgram.generics import PilgramNotifier
 from pilgram.utils import read_text_file
 from ui.interpreter import context_aware_execute
 from ui.utils import UserContext
+from ui.strings import Strings
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
@@ -21,12 +24,27 @@ INFO_STRING = "Made with ❤️ by @LordOmbro\n\n[github](https://github.com/Sud
 START_STRING = read_text_file("intro.txt")
 
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text="I'm a bot, please talk to me!", parse_mode=ParseMode.MARKDOWN_V2)
+def notify(bot: Bot, player: Player, text: str):
+    try:
+        bot.send_message(player.player_id, text, parse_mode=ParseMode.MARKDOWN_V2)
+    except TelegramError as e:
+        log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")
 
 
-async def info(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await context.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN_V2)
+def get_event_notification_string(event: dict) -> Tuple[str, Player]:
+    return {
+        "donation": (Strings.donation_received.format(donor=event["donor"], amm=event["amount"]), event["recipient"]),
+        "player kicked": (Strings.you_have_been_kicked.format(guild=event["guild"].name), event["player"]),
+        "guild joined": (Strings.player_joined_your_guild.format(player=event["player"], guild=event["guild"].name), event["guild"].founder),
+    }.get(event["type"])
+
+
+async def start(update: Update, c: ContextTypes.DEFAULT_TYPE):
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=START_STRING, parse_mode=ParseMode.MARKDOWN_V2)
+
+
+async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN_V2)
 
 
 async def handle_message(update: Update, c: ContextTypes.DEFAULT_TYPE):
@@ -37,8 +55,8 @@ async def handle_message(update: Update, c: ContextTypes.DEFAULT_TYPE):
     result = context_aware_execute(user_context, update.message.text)
     event = user_context.get_event_data()
     if event:
-        # TODO handle events
-        pass
+        string, target = get_event_notification_string(event)
+        notify(c.bot, target, string)
     c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN_V2)
 
 
@@ -51,10 +69,7 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(MessageHandler(filters.TEXT, handle_message))
 
     def notify(self, player: Player, text: str):
-        try:
-            self.get_bot().send_message(player.player_id, text, parse_mode=ParseMode.MARKDOWN_V2)
-        except TelegramError as e:
-            log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")
+        notify(self.get_bot(), player, text)
 
     def get_bot(self) -> Bot:
         return self.__app.bot

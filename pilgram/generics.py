@@ -55,6 +55,12 @@ class PilgramDatabase(ABC):
         """ get a guild id given its founder """
         raise NotImplementedError
 
+    def get_guild_from_name(self, guild_name: str) -> Union[Guild, None]:
+        try:
+            return self.get_guild(self.get_guild_id_from_name(guild_name))
+        except KeyError:
+            return None
+
     def get_owned_guild(self, player: Player) -> Union[Guild, None]:
         """ get a guild owned by a player """
         try:

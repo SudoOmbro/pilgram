@@ -18,6 +18,11 @@ class Strings:
     guild_creation_get_description = "Ok now send me your guild's description (10 - 250 characters)"
     guild_creation_success = "Your guild '{name}' has been created!"
 
+    # joining guilds
+    guild_join_success = "You successfully joined guild '{guild}'!"
+    player_joined_your_guild = "Player {player} joined your guild ({guild})"
+    guild_is_full = "The guild is full! Tell the owner to upgrade it or make your own."
+
     # quests
     check_board = "You check the board, you see there are quests available in the following zones:"
     already_on_a_quest = "You already are on a quest!"
@@ -36,8 +41,10 @@ class Strings:
     # kick
     player_not_in_own_guild = "player '{name}' is not in your guild"
     player_kicked_successfully = "player '{name} has been successfully kicked from guild {guild}'"
+    you_have_been_kicked = "You have been kicked from guild {guild}."
 
     # donations
+    donation_received = "{donor} just donated you {amm} money!"
     donation_successful = "You successfully sent {amm} money to {rec}. They are certainly going to be happy :)"
     invalid_money_amount = "The specified amount must be greater than zero!"
 

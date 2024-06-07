@@ -75,6 +75,7 @@ def check_my_guild(context: UserContext) -> str:
     except KeyError:
         return Strings.no_character_yet
 
+
 def start_character_creation(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -208,6 +209,23 @@ def modify_guild(context: UserContext, user_input: str, target: str = "name") ->
         return Strings.no_character_yet
 
 
+def join_guild(context: UserContext, guild_name: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        guild = db().get_guild_from_name(guild_name)
+        if not guild:
+            return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+        members: int = db().get_guild_members_number(guild)
+        if not guild.can_add_member(members):
+            return Strings.guild_is_full
+        player.guild = guild
+        db().update_player_data(player)
+        context.set_event("guild joined", {"player": player, "guild": guild})
+        return Strings.guild_join_success.format(guild=guild_name)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -239,6 +257,7 @@ def kick(context: UserContext, player_name: str) -> str:
             return Strings.player_not_in_own_guild.format(name=player_name)
         target.guild = None
         db().update_player_data(target)
+        context.set_event("player kicked", {"player": target, "guild": guild})
         return Strings.player_kicked_successfully.format(name=player_name, guild=guild.name)
     except KeyError:
         return Strings.no_character_yet
@@ -313,6 +332,7 @@ COMMANDS: Dict[str, Any] = {
             "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} money)", default_args={"target": "description"})
         }
     },
+    "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name"),
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
     "help": IFW(None, help_function, "Shows and describes all commands"),
