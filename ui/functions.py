@@ -291,7 +291,7 @@ def help_function(context: UserContext) -> str:
 COMMANDS: Dict[str, Any] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board"),
-        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], check_board, "Shows the quest board"),
+        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], check_zone, "Shows a description of the given zone"),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
         "self": IFW(None, check_self, "Shows your own stats"),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),

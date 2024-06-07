@@ -69,7 +69,7 @@ class UserContext:
         self.__process_step += 1
 
     def end_process(self):
-        self.__process_step = None
+        self.__process = None
 
     def set_event(self, event_type: str, event_data: dict):
         """ set event data """
@@ -82,6 +82,9 @@ class UserContext:
             return self.get("event")
         except KeyError:
             return None
+
+    def __str__(self):
+        return str(self.__dictionary)
 
 
 class RegexWithErrorMessage:
@@ -133,9 +136,9 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
         return True
 
     def generate_help_args_string(self) -> str:
-        result: str = " "
+        result: str = ""
         if not self.args_container:
-            return " "
+            return ""
         for arg in self.args_container:
             result += f"\\[{arg.argument_name}] "
         return result

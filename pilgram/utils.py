@@ -31,3 +31,21 @@ class PathDict:
                 container[key] = {}
             container = container[key]
         container[last_key] = value
+
+    def __str__(self):
+        return str(self.__dictionary)
+
+
+class TempIntCache:
+
+    def __init__(self):
+        self.cache: Dict[int, Any] = {}
+
+    def get(self, key: int) -> Union[Any, None]:
+        return self.cache.get(key, None)
+
+    def set(self, key: int, value: Any):
+        self.cache[key] = value
+
+    def drop(self, key: int):
+        del self.cache[key]

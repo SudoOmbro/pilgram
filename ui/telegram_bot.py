@@ -8,7 +8,7 @@ from telegram.error import TelegramError
 
 from pilgram.classes import Player
 from pilgram.generics import PilgramNotifier
-from pilgram.utils import read_text_file
+from pilgram.utils import read_text_file, TempIntCache
 from ui.interpreter import context_aware_execute
 from ui.utils import UserContext
 from ui.strings import Strings
@@ -47,26 +47,40 @@ async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
     await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN)
 
 
-async def handle_message(update: Update, c: ContextTypes.DEFAULT_TYPE):
-    user_context = UserContext({
-        "id": update.effective_user.id,
-        "username": update.effective_user.username,
-    })
-    result = context_aware_execute(user_context, update.message.text)
-    event = user_context.get_event_data()
-    if event:
-        string, target = get_event_notification_string(event)
-        await notify(c.bot, target, string)
-    await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
-
-
 class PilgramBot(PilgramNotifier):
 
     def __init__(self, bot_token: str):
         self.__app = ApplicationBuilder().token(bot_token).build()
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
-        self.__app.add_handler(MessageHandler(filters.TEXT, handle_message))
+        self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
+        self.process_cache = TempIntCache()
+
+    def get_user_context(self, update: Update) -> Tuple[UserContext, bool]:
+        user_id: int = update.effective_user.id
+        cached_value = self.process_cache.get(user_id)
+        if cached_value:
+            return cached_value, True
+        return UserContext({
+            "id": user_id,
+            "username": update.effective_user.username,
+        }), False
+
+    async def handle_message(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
+        user_context, was_cached = self.get_user_context(update)
+        result = context_aware_execute(user_context, update.message.text)
+        event = user_context.get_event_data()
+        if event:
+            # if an event happened notify the target
+            string, target = get_event_notification_string(event)
+            await notify(c.bot, target, string)
+        if user_context.is_in_a_process():
+            # if user is in a process then save the context to use later
+            self.process_cache.set(update.effective_user.id, user_context)
+        elif was_cached:
+            # if the context was retrieved from cache and the process is finished then remove context from cache
+            self.process_cache.drop(update.effective_user.id)
+        await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
 
     def notify(self, player: Player, text: str):
         notify(self.get_bot(), player, text)
