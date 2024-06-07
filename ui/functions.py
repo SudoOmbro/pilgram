@@ -224,8 +224,7 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
         zone = db().get_zone(int(zone_id_str))
     except KeyError:
         return Strings.zone_does_not_exist
-    zone_progress = player.progress.get_zone_progress(zone)
-    quest = db().get_quest_from_number(zone, zone_progress)
+    quest = db().get_next_quest(zone, player)
     adventure_container = AdventureContainer(player, quest, datetime.now() + timedelta(hours=1))  # TODO adjust quest time
     db().update_quest_progress(adventure_container)
     return Strings.quest_embark.format(name=quest.name, descr=quest.description)
@@ -276,7 +275,7 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
 def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
     result_string: str = ""
     for key, value in dictionary.items():
-        result_string += "> " * depth + f"`{key}`"
+        result_string += "  " * depth + f"`{key}`"
         if isinstance(value, dict):
             result_string += "\n" + __help_dfs(value, depth + 1)
         else:

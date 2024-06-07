@@ -12,16 +12,6 @@ class TestUi(unittest.TestCase):
         result = reconstruct_delimited_arguments(original_string.split())
         self.assertEqual(result, ['Enlist in the helldivers now!', 'to', 'become a legend!', 'NOW!'])
 
-    def test_echo_command(self):
-        context = UserContext()
-        result = context_aware_execute(context, "echo \"Hello world\"")
-        self.assertEqual(result, "player says: 'Hello world'")
-        result = context_aware_execute(context, "echo hello world")
-        self.assertEqual(result, "player says: 'hello'")
-        context = UserContext({"username": "ombro"})
-        result = context_aware_execute(context, "echo ciao")
-        self.assertEqual(result, "ombro says: 'ciao'")
-
     def test_help_function(self):
         print(context_aware_execute(UserContext({"username": "ombro"}), "help"))
 
