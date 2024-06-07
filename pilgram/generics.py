@@ -1,6 +1,6 @@
 from abc import ABC
 from datetime import timedelta
-from typing import List, Tuple, Union
+from typing import List, Tuple, Union, Any
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
 
@@ -157,4 +157,22 @@ class PilgramDatabase(ABC):
 
     def update_quest_progress(self, adventure_container: AdventureContainer):
         """ update quest player progress, either complete quests or just change last update """
+        raise NotImplementedError
+
+
+class PilgramGenerator(ABC):
+
+    def generate(self, prompt: str) -> Any:
+        raise NotImplementedError
+
+    def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
+        raise NotImplementedError
+
+    def generate_quests(self, zone: Zone) -> List[Quest]:
+        raise NotImplementedError
+
+
+class PilgramNotifier(ABC):
+
+    def notify(self, player: Player, text: str):
         raise NotImplementedError

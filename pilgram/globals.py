@@ -8,10 +8,11 @@ from pilgram.utils import PathDict
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
+__INNER_REGEX = r"[A-Za-z0-9\-,.!?;:\(\)\/+=\"'@#$%^&]"
 
-PLAYER_NAME_REGEX = r"^[A-Za-z0-9_-]{4,20}$"
-GUILD_NAME_REGEX = r"^[A-Za-z0-9_-]{2,30}$"
-DESCRIPTION_REGEX = r"^[A-Za-z0-9_-]{10,250}$"
+PLAYER_NAME_REGEX = fr"^{__INNER_REGEX}{{4,20}}$"
+GUILD_NAME_REGEX = fr"^{__INNER_REGEX}{{2,30}}$"
+DESCRIPTION_REGEX = fr"^{__INNER_REGEX}{{10,250}}$"
 POSITIVE_INTEGER_REGEX = r"^[\d]+$"
 YES_NO_REGEX = r"^(?:yes|no)$"
 

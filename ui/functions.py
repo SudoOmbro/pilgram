@@ -1,6 +1,5 @@
 import re
 from datetime import datetime, timedelta
-from functools import cache
 from typing import Tuple, Dict, Union, Callable, Any
 
 from orm.db import PilgramORMDatabase
@@ -279,7 +278,6 @@ def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], depth: int = 0) -> str:
     return result_string
 
 
-@cache
 def help_function(context: UserContext) -> str:
     """ basically do a depth first search on the COMMANDS dictionary and print what you find """
     return f"hey {context.get('username')}, here's a list of all commands:\n\n" +  __help_dfs(COMMANDS, 0)

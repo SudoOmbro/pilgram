@@ -5,7 +5,7 @@ from typing import Union, List
 
 import requests
 
-from AI.generics import PilgramGenerator
+from pilgram.generics import PilgramGenerator
 
 
 log = logging.getLogger(__name__)

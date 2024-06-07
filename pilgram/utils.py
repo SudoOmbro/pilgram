@@ -1,6 +1,11 @@
 from typing import Union, Dict, Any
 
 
+def read_text_file(path: str) -> str:
+    with open(path, 'r') as f:
+        return f.read()
+
+
 class PathDict:
     """ A dictionary that can only set & get variables using string paths """
 
