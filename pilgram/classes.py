@@ -28,6 +28,9 @@ class Zone:
     def __str__(self):
         return f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}"
 
+    def __hash__(self):
+        return hash(self.zone_id)
+
 
 class Quest:
     """ contains info about a human written or AI generated quest """
@@ -82,6 +85,9 @@ class Quest:
 
     def __str__(self):
         return f"*{self.name}*\n\n{self.description}"
+
+    def __hash__(self):
+        return hash(self.quest_id)
 
 
 class Progress:
@@ -206,6 +212,9 @@ class Player:
     def __repr__(self):
         return str(self.__dict__)
 
+    def __hash__(self):
+        return hash(self.player_id)
+
     @classmethod
     def create_default(cls, player_id: int, name: str, description: str) -> "Player":
         player_defaults = ContentMeta.get("defaults.player")
@@ -272,7 +281,10 @@ class Guild:
         return self.guild_id == other.guild_id
 
     def __str__(self):
-        return f"*{self.name}* | {self.prestige}\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: _{self.founder.name}\nSince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+
+    def __hash__(self):
+        return hash(self.guild_id)
 
     @classmethod
     def create_default(cls, founder: Player, name: str, description: str) -> "Guild":
@@ -305,14 +317,17 @@ class ZoneEvent:
         self.base_xp_value = (zone.level + 1)
         self.base_money_value = self.base_xp_value
 
-    def __str__(self):
-        return self.event_text
-
     def get_rewards(self, player: Player) -> Tuple[int, int]:
         """ returns xp & money rewards for the event. Influenced by player home level """
         xp = (self.base_xp_value + player.home_level) * random.randint(1, 10)
         money = (self.base_money_value + player.home_level) * random.randint(1, 10)
         return xp, money
+
+    def __str__(self):
+        return self.event_text
+
+    def __hash__(self):
+        return hash(self.event_id)
 
 
 class AdventureContainer:
@@ -350,3 +365,6 @@ class AdventureContainer:
     def get_current_quest_zone(self):
         """ this assumes that the player is on a quest, not in town """
         return self.quest.zone
+
+    def __hash__(self):
+        return hash(self.player_id())

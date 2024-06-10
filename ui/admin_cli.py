@@ -1,4 +1,4 @@
-from typing import Dict, Union, Tuple, Callable, Any
+from typing import Dict, Union, Tuple, Callable
 
 from orm.db import PilgramORMDatabase
 from pilgram.generics import PilgramDatabase

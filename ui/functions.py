@@ -277,7 +277,7 @@ def rank_guilds(context: UserContext) -> str:
     result = "Here are the top guilds (guild | prestige):\n\n"
     guilds = db().rank_top_guilds()
     for guild in guilds:
-        result += f"{guild.name} | {guild.prestige}\n"
+        result += f"{guild[0]} | {guild[1]}\n"
     return result
 
 
@@ -289,7 +289,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "self": IFW(None, check_self, "Shows your own stats"),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),
         "my": {
-            "guild": IFW(None, check_board, "Shows your own guild"),
+            "guild": IFW(None, check_my_guild, "Shows your own guild"),
         }
     },
     "create": {
@@ -327,7 +327,7 @@ USER_PROCESSES: Dict[str, Tuple[Callable, ...]] = {
     ),
     "guild creation": (
         process_get_guild_name,
-        process_get_character_description
+        process_get_guild_description
     ),
     "upgrade": {
         process_verify_upgrade_confirmation

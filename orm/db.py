@@ -105,7 +105,7 @@ class PilgramORMDatabase(PilgramDatabase):
             pls = PlayerModel.get(PlayerModel.id == player.player_id)
             pls.name = player.name
             pls.description = player.description
-            pls.guild = player.guild.guild_id if player.guild else None
+            pls.guild_id = player.guild.guild_id if player.guild else None
             pls.level = player.level
             pls.xp = player.xp
             pls.money = player.money
@@ -136,7 +136,7 @@ class PilgramORMDatabase(PilgramDatabase):
     # guilds ----
 
     def build_guild_object(self, gs):
-        founder = self.get_player_data(gs.founder_id)
+        founder = self.get_player_data(gs.founder_id, )
         return Guild(
             gs.id,
             gs.name,
@@ -164,7 +164,10 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_sized_quick(size_limit=100)
     def get_guild_id_from_founder(self, player: Player) -> int:
-        return GuildModel.get(GuildModel.founder_id == player.player_id).id
+        try:
+            return GuildModel.get(GuildModel.founder_id == player.player_id).id
+        except GuildModel.DoesNotExist:
+            raise KeyError(f'Guild founded by player with id {player.player_id} not found')
 
     @cache_sized_ttl_quick(size_limit=50, ttl=21600)
     def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
@@ -191,12 +194,12 @@ class PilgramORMDatabase(PilgramDatabase):
             founder_id=guild.founder.player_id,
             creation_date=guild.creation_date
         )
-        guild.guild_id = gs.guild_id
+        guild.guild_id = gs.id
 
     @cache_ttl_single_value(ttl=14400)
-    def rank_top_guilds(self) -> List[Guild]:
-        gs = GuildModel.select().order_by(GuildModel.player_id.desc()).limit(20)
-        return [self.build_guild_object(guild_row) for guild_row in gs]
+    def rank_top_guilds(self) -> List[Tuple[str, int]]:
+        gs = GuildModel.select(GuildModel.name, GuildModel.prestige).order_by(GuildModel.prestige.desc()).limit(20)
+        return [(guild_row.name, guild_row.prestige) for guild_row in gs]
 
     # zones ----
 
