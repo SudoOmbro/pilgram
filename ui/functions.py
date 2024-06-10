@@ -272,6 +272,14 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
         return Strings.no_character_yet
 
 
+def rank_guilds(context: UserContext) -> str:
+    result = "Here are the top guilds (guild | prestige):\n\n"
+    guilds = db().rank_top_guilds()
+    for guild in guilds:
+        result += f"{guild.name} | {guild.prestige}\n"
+    return result
+
+
 def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], previous_command: str) -> str:
     result_string: str = ""
     for key, value in dictionary.items():
@@ -321,8 +329,11 @@ COMMANDS: Dict[str, Any] = {
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name"),
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
+    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient"),
+    "rank": {
+        "guilds": IFW(None, rank_guilds, "Shows and describes all commands")
+    },
     "help": IFW(None, help_function, "Shows and describes all commands"),
-    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient")
 }
 
 PROCESSES: Dict[str, Tuple[Callable, ...]] = {

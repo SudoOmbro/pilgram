@@ -184,9 +184,15 @@ class Player:
             return True
         return False
 
+    def get_number_of_completed_quests(self) -> int:
+        result: int = 0
+        for zone, progress in self.progress.zone_progress.items():
+            result += progress
+        return result
+
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        return f"{self.name} | lv. {self.level}{guild}\nHome level {self.home_level}, Gear level {self.gear_level}\n\n{self.description}\n{self.money} {MONEY}"
+        return f"{self.name} | lv. {self.level}{guild}\n{self.money} {MONEY}\nHome lv. {self.home_level}, Gear lv. {self.gear_level}\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
 
     def __repr__(self):
         return str(self.__dict__)
@@ -257,7 +263,7 @@ class Guild:
         return self.guild_id == other.guild_id
 
     def __str__(self):
-        return f"*{self.name}*\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+        return f"*{self.name}* | {self.prestige}\nfounder: _{self.founder.name}\nsince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 
     @classmethod
     def create_default(cls, founder: Player, name: str, description: str) -> "Guild":
