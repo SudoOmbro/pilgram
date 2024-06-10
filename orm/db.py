@@ -53,7 +53,7 @@ class PilgramORMDatabase(PilgramDatabase):
         raise RuntimeError("This class is a singleton, call instance() instead.")
 
     @classmethod
-    def instance(cls):
+    def instance(cls) -> "PilgramORMDatabase":
         if cls._instance is None:
             log.info('Creating new database instance')
             cls._instance = cls.__new__(cls)
@@ -62,6 +62,10 @@ class PilgramORMDatabase(PilgramDatabase):
                 log.info("tables created")
             cls._instance.is_connected = False
         return cls._instance
+
+    @classmethod
+    def acquire(cls) -> "PilgramORMDatabase":
+        return cls.instance()
 
     # player ----
 
@@ -343,8 +347,11 @@ class PilgramORMDatabase(PilgramDatabase):
             return False
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
-        qps = QuestProgressModel.select().where(QuestProgressModel.last_update + delta <= datetime.now())
-        return [self.build_adventure_container(x) for x in qps]
+        try:
+            qps = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta)
+            return [self.build_adventure_container(x) for x in qps]
+        except QuestProgressModel.DoesNotExist:
+            return []
 
     def update_quest_progress(self, adventure_container: AdventureContainer):
         try:

@@ -22,6 +22,12 @@ class Zone:
         self.level = level
         self.zone_description = zone_description
 
+    def __eq__(self, other):
+        return self.zone_id == other.zone_id
+
+    def __str__(self):
+        return f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}"
+
 
 class Quest:
     """ contains info about a human written or AI generated quest """
@@ -70,6 +76,9 @@ class Quest:
                 (DURATION_PER_ZONE_LEVEL * self.zone.level) +
                 (DURATION_PER_QUEST_NUMBER * self.number) +
                 (random.randint(0, self.zone.level) * RANDOM_DURATION))
+
+    def get_prestige(self) -> int:
+        return self.zone.level + self.number
 
     def __str__(self):
         return f"*{self.name}*\n\n{self.description}"
@@ -297,7 +306,7 @@ class ZoneEvent:
         self.base_money_value = self.base_xp_value
 
     def __str__(self):
-        return f"{self.event_text}"
+        return self.event_text
 
     def get_rewards(self, player: Player) -> Tuple[int, int]:
         """ returns xp & money rewards for the event. Influenced by player home level """
@@ -326,6 +335,10 @@ class AdventureContainer:
         """ returns whether the current quest is finished by checking the finish time """
         return datetime.now() > self.finish_time
 
+    def is_on_a_quest(self) -> bool:
+        """ returns whether the player is on a quest """
+        return self.quest is not None
+
     def player_id(self):
         """ non-verbose way to get player id """
         return self.player.player_id
@@ -333,3 +346,7 @@ class AdventureContainer:
     def quest_id(self):
         """ non-verbose way to get quest id """
         return self.quest.quest_id
+
+    def get_current_quest_zone(self):
+        """ this assumes that the player is on a quest, not in town """
+        return self.quest.zone

@@ -7,6 +7,10 @@ from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureCont
 
 class PilgramDatabase(ABC):
 
+    def acquire(self) -> "PilgramDatabase":
+        """ generic method to get self, used to make the pilgram package implementation agnostic """
+        raise NotImplementedError
+
     # players ----
 
     def get_player_data(self, player_id) -> Player:
