@@ -62,6 +62,11 @@ def __generate_int_op_command(target_attr: str, target: str, action: str) -> IFW
     )
 
 
+def add_zone(context: UserContext) -> str:
+    # TODO
+    pass
+
+
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "add": {
         "player": {
