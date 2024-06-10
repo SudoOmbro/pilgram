@@ -2,7 +2,7 @@ from datetime import timedelta
 from asyncio import sleep
 from typing import List
 
-from pilgram.classes import Quest, Player, AdventureContainer
+from pilgram.classes import Quest, Player, AdventureContainer, Zone
 from pilgram.generics import PilgramDatabase, PilgramNotifier
 from pilgram.globals import ContentMeta
 from ui.strings import Strings
@@ -69,3 +69,12 @@ class GeneratorManager:
 
     def __init__(self, database: PilgramDatabase):
         self.database = database
+
+    def db(self) -> PilgramDatabase:
+        """ wrapper around the acquire method to make calling it less verbose """
+        return self.database.acquire()
+
+    def get_all_zones(self) -> List[Zone]:
+        return self.db().get_all_zones()
+
+    # TODO

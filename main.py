@@ -1,4 +1,4 @@
-from asyncio import sleep, run, gather
+from asyncio import sleep, gather
 from datetime import timedelta
 
 from orm.db import PilgramORMDatabase
@@ -12,22 +12,27 @@ INTERVAL = 3600
 UPDATE_INTERVAL = timedelta(hours=6)
 
 
-async def run_periodically(database: PilgramDatabase, notifier: PilgramNotifier):
+async def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     quest_manager = QuestManager(database, notifier, UPDATE_INTERVAL)
-    generator_manager = GeneratorManager(database)
     while True:
         updates = quest_manager.get_updates()
         for update in updates:
             quest_manager.process_update(update)
             await sleep(0.1)
-        # TODO generate new quests and zone events with the GeneratorManager
+        await sleep(INTERVAL)
+
+
+async def run_generator_manager(database: PilgramDatabase):
+    generator_manager = GeneratorManager(database)
+    while True:
+        # TODO generate new quests & events with generator_manager
         await sleep(INTERVAL)
 
 
 def main():
     bot = PilgramBot(GlobalSettings.get("Telegram bot token"))
     database = PilgramORMDatabase
-    gather(run_periodically(database, bot), bot.run())
+    gather(run_quest_manager(database, bot), run_generator_manager(database), bot.run())
     bot.stop()
 
 
