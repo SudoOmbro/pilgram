@@ -331,7 +331,7 @@ COMMANDS: Dict[str, Any] = {
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient"),
     "rank": {
-        "guilds": IFW(None, rank_guilds, "Shows and describes all commands")
+        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige")
     },
     "help": IFW(None, help_function, "Shows and describes all commands"),
 }
