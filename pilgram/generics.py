@@ -87,6 +87,10 @@ class PilgramDatabase(ABC):
         """ create a new guild. Check if a player already has a guild before letting them create a new guild """
         raise NotImplementedError
 
+    def rank_top_guilds(self) -> List[Guild]:
+        """ get top 20 guilds based on rank """
+        raise NotImplementedError
+
     # zones ----
 
     def get_zone(self, zone_id: int) -> Zone:

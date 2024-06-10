@@ -9,11 +9,10 @@ from typing import Dict, Union, List, Tuple
 from peewee import fn
 
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel, db_connect, db_disconnect
+    QuestProgressModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
 from pilgram.generics import PilgramDatabase
-from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick
-
+from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -131,19 +130,23 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # guilds ----
 
+    def build_guild_object(self, gs):
+        founder = self.get_player_data(gs.founder_id)
+        return Guild(
+            gs.id,
+            gs.name,
+            gs.level,
+            gs.description,
+            founder,
+            gs.creation_date,
+            gs.prestige
+        )
+
     @cache_sized_ttl_quick(size_limit=400, ttl=3600)
     def get_guild(self, guild_id: int) -> Guild:
         try:
             gs = GuildModel.get(GuildModel.id == guild_id)
-            founder = self.get_player_data(gs.founder_id)
-            return Guild(
-                gs.id,
-                gs.name,
-                gs.level,
-                gs.description,
-                founder,
-                gs.creation_date,
-            )
+            return self.build_guild_object(gs)
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with id {guild_id} not found')
 
@@ -184,6 +187,11 @@ class PilgramORMDatabase(PilgramDatabase):
             creation_date=guild.creation_date
         )
         guild.guild_id = gs.guild_id
+
+    @cache_ttl_single_value(ttl=14400)
+    def rank_top_guilds(self) -> List[Guild]:
+        gs = GuildModel.select().order_by(GuildModel.player_id.desc()).limit(20)
+        return [self.build_guild_object(guild_row) for guild_row in gs]
 
     # zones ----
 

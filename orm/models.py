@@ -54,6 +54,7 @@ class GuildModel(BaseModel):
     description = CharField(null=False)
     founder_id = ForeignKeyField(PlayerModel, backref='owned_guild')
     creation_date = DateTimeField(default=datetime.now)
+    prestige = IntegerField(default=0)
 
 
 class ZoneEventModel(BaseModel):

@@ -159,3 +159,21 @@ def cache_sized_ttl_quick(size_limit=256, ttl=3600):
             return result
         return wrapper
     return decorator
+
+
+def cache_ttl_single_value(ttl=3600):
+    def decorator(func):
+        value = None
+        time_to_live = time.time()
+
+        def wrapper(*args, **kwargs):
+            nonlocal value
+            nonlocal time_to_live
+            if time_to_live > time.time():
+                return value
+            value = func(*args, **kwargs)
+            time_to_live = time.time() + ttl
+            return value
+        return wrapper
+    return decorator
+

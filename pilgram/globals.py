@@ -1,6 +1,7 @@
 import json
 import logging
 from abc import ABC
+from datetime import timedelta
 from typing import Any
 
 from pilgram.utils import PathDict
@@ -15,6 +16,11 @@ GUILD_NAME_REGEX = fr"^{__INNER_REGEX}{{2,30}}$"
 DESCRIPTION_REGEX = fr"^{__INNER_REGEX}{{10,250}}$"
 POSITIVE_INTEGER_REGEX = r"^[\d]+$"
 YES_NO_REGEX = r"^(?:yes|no)$"
+
+BASE_QUEST_DURATION: timedelta = timedelta(days=2)
+DURATION_PER_ZONE_LEVEL: timedelta = timedelta(minutes=30)
+DURATION_PER_QUEST_NUMBER: timedelta = timedelta(hours=1)
+RANDOM_DURATION: timedelta = timedelta(minutes=30)
 
 
 class __GenericGlobalSettings(ABC):

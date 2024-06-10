@@ -1,8 +1,9 @@
 import random
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple, Dict, Any, Callable, Union
 
-from pilgram.globals import ContentMeta
+from pilgram.globals import ContentMeta, BASE_QUEST_DURATION, DURATION_PER_ZONE_LEVEL, DURATION_PER_QUEST_NUMBER, \
+    RANDOM_DURATION
 from ui.strings import MONEY
 
 
@@ -63,6 +64,12 @@ class Quest:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = self.zone.level + self.number + player.guild.level if player.guild.level else 0
         return 100 * multiplier, 180 * multiplier  # XP, Money
+
+    def get_duration(self) -> timedelta:
+        return (BASE_QUEST_DURATION +
+                (DURATION_PER_ZONE_LEVEL * self.zone.level) +
+                (DURATION_PER_QUEST_NUMBER * self.number) +
+                (random.randint(0, self.zone.level) * RANDOM_DURATION))
 
     def __str__(self):
         return f"*{self.name}*\n\n{self.description}"
@@ -206,7 +213,16 @@ class Guild:
     MAX_LEVEL = ContentMeta.get("guilds.max_level")
     PLAYERS_PER_LEVEL = ContentMeta.get("guilds.players_per_level")
 
-    def __init__(self, guild_id: int, name: str, level: int, description: str, founder: Player, creation_date: datetime):
+    def __init__(
+            self,
+            guild_id: int,
+            name: str,
+            level: int,
+            description: str,
+            founder: Player,
+            creation_date: datetime,
+            prestige: int
+    ):
         """
         :param guild_id: unique id of the guild
         :param name: player given name of the guild
@@ -214,6 +230,7 @@ class Guild:
         :param description: player given description of the guild
         :param founder: the player who found the guild,
         :param creation_date: the date the guild was created
+        :param prestige: the amount of prestige the guild has
         """
         self.guild_id = guild_id
         self.name = name
@@ -221,6 +238,7 @@ class Guild:
         self.description = description
         self.founder = founder
         self.creation_date = creation_date
+        self.prestige = prestige
 
     def can_add_member(self, current_members: int) -> bool:
         return current_members < self.level * self.PLAYERS_PER_LEVEL
@@ -249,7 +267,8 @@ class Guild:
             1,
             description,
             founder,
-            datetime.now()
+            datetime.now(),
+            0
         )
 
 

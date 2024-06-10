@@ -1,5 +1,5 @@
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Tuple, Dict, Union, Callable, Any
 
 from orm.db import PilgramORMDatabase
@@ -225,7 +225,7 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     except KeyError:
         return Strings.zone_does_not_exist
     quest = db().get_next_quest(zone, player)
-    adventure_container = AdventureContainer(player, quest, datetime.now() + timedelta(hours=1))  # TODO adjust quest time
+    adventure_container = AdventureContainer(player, quest, datetime.now() + quest.get_duration())
     db().update_quest_progress(adventure_container)
     return Strings.quest_embark.format(name=quest.name, descr=quest.description)
 
