@@ -56,6 +56,7 @@ class QuestManager:
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):
+        # TODO add interactions between players in same zone (post launch)
         if ac.is_on_a_quest() and ac.is_quest_finished():
             self._complete_quest(ac)
         else:
