@@ -1,12 +1,13 @@
 import re
 from datetime import datetime
-from typing import Tuple, Dict, Union, Callable, Any
+from typing import Tuple, Dict, Union, Callable
 
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, YES_NO_REGEX, \
     DESCRIPTION_REGEX
+from ui.interpreter import CLIInterpreter
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -280,23 +281,7 @@ def rank_guilds(context: UserContext) -> str:
     return result
 
 
-def __help_dfs(dictionary: Dict[str, Union[dict, IFW]], previous_command: str) -> str:
-    result_string: str = ""
-    for key, value in dictionary.items():
-        command = f"{previous_command}{key} "
-        if isinstance(value, dict):
-            result_string += __help_dfs(value, command)
-        else:
-            result_string += f"`{command}`{value.generate_help_args_string()}- _{value.description}_\n\n"
-    return result_string
-
-
-def help_function(context: UserContext) -> str:
-    """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-    return f"hey {context.get('username')}, here's a list of all commands:\n\n" + __help_dfs(COMMANDS, "")
-
-
-COMMANDS: Dict[str, Any] = {
+USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board"),
         "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], check_zone, "Shows a description of the given zone"),
@@ -332,11 +317,10 @@ COMMANDS: Dict[str, Any] = {
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient"),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige")
-    },
-    "help": IFW(None, help_function, "Shows and describes all commands"),
+    }
 }
 
-PROCESSES: Dict[str, Tuple[Callable, ...]] = {
+USER_PROCESSES: Dict[str, Tuple[Callable, ...]] = {
     "character creation": (
         process_get_character_name,
         process_get_character_description

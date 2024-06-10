@@ -10,14 +10,15 @@ from pilgram.classes import Player
 from pilgram.generics import PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.utils import read_text_file, TempIntCache
-from ui.interpreter import context_aware_execute
+from ui.functions import USER_COMMANDS, USER_PROCESSES
+from ui.interpreter import CLIInterpreter
 from ui.utils import UserContext
 from ui.strings import Strings
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
+    level=logging.WARN
 )
 
 
@@ -56,6 +57,7 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(CommandHandler("info", info))
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.process_cache = TempIntCache()
+        self.interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
 
     def get_user_context(self, update: Update) -> Tuple[UserContext, bool]:
         user_id: int = update.effective_user.id
@@ -69,7 +71,7 @@ class PilgramBot(PilgramNotifier):
 
     async def handle_message(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
         user_context, was_cached = self.get_user_context(update)
-        result = context_aware_execute(user_context, update.message.text)
+        result = self.interpreter.context_aware_execute(user_context, update.message.text)
         event = user_context.get_event_data()
         if event:
             # if an event happened notify the target

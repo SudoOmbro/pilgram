@@ -1,5 +1,4 @@
 from datetime import timedelta
-from asyncio import sleep
 from typing import List
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone
