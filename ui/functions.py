@@ -287,7 +287,7 @@ def rank_guilds(context: UserContext) -> str:
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board"),
-        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], check_zone, "Shows a description of the given zone"),
+        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], check_zone, "Shows a description of the given zone"),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
         "self": IFW(None, check_self, "Shows your own stats"),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),
@@ -316,7 +316,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name"),
-    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_id_error)], embark_on_quest, "Starts a quest in specified zone"),
+    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts a quest in specified zone"),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient"),
     "rank": {

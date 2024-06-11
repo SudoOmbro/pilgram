@@ -65,15 +65,33 @@ def __generate_int_op_command(target_attr: str, target: str, action: str) -> IFW
 
 
 def start_add_obj_process(context: UserContext, obj_type: str = "zone") -> str:
-    target_object = {
-        "zone": Zone.get_empty(),
-        "quest": Quest.get_empty(),
-        "event": ZoneEvent.get_empty()
-    }.get(obj_type)
-    context.set("type", obj_type)
-    context.set("obj", target_object)
-    context.start_process(f"add {obj_type}")
-    return context.get_process_prompt(ADMIN_PROCESSES)
+    try:
+        target_object = {
+            "zone": Zone.get_empty(),
+            "quest": Quest.get_empty(),
+            "event": ZoneEvent.get_empty()
+        }.get(obj_type)
+        context.set("type", obj_type)
+        context.set("obj", target_object)
+        context.start_process(f"add {obj_type}")
+        return context.get_process_prompt(ADMIN_PROCESSES)
+    except Exception as e:
+        return str(e)
+
+
+def start_edit_obj_process(context: UserContext, obj_id: int, obj_type: str = "zone") -> str:
+    try:
+        target_object = {
+            "zone": lambda: db().get_zone(obj_id),
+            "quest": lambda: db().get_quest(obj_id),
+            "event": lambda: db().get_zone_event(obj_id)
+        }.get(obj_type)()
+        context.set("type", obj_type)
+        context.set("obj", target_object)
+        context.start_process(f"edit {obj_type}")
+        return context.get_process_prompt(ADMIN_PROCESSES)
+    except Exception as e:
+        return str(e)
 
 
 def _progress(context: UserContext) -> str:
@@ -118,9 +136,27 @@ def process_obj_add_confirm(context: UserContext, user_input: str) -> str:
         }.get(obj_type)
         func()
         context.end_process()
-        return f"{obj_type} add successfully"
+        return f"{obj_type} added successfully"
     context.end_process()
     return f"{obj_type} add process cancelled"
+
+
+def process_obj_edit_confirm(context: UserContext, user_input: str) -> str:
+    if not re.match(YES_NO_REGEX, user_input):
+        return Strings.yes_no_error
+    obj_type = context.get("type")
+    obj = context.get("obj")
+    if user_input == "y":
+        func: Callable = {
+            "zone": lambda: db().update_zone(obj),
+            "quest": lambda: db().update_quest(obj),
+            "event": lambda: db().update_zone_event(obj)
+        }.get(obj_type)
+        func()
+        context.end_process()
+        return f"{obj_type} edited successfully"
+    context.end_process()
+    return f"{obj_type} edit process cancelled"
 
 
 def process_quest_add_zone(context: UserContext, user_input: str) -> str:
@@ -188,6 +224,11 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "level": __generate_int_op_command("level", "guild", "sub"),
             "prestige": __generate_int_op_command("home", "guild", "sub"),
         }
+    },
+    "edit": {
+        "zone": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "zone"}),
+        "quest": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "quest"}),
+        "event": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "event"})
     }
 }
 
@@ -211,6 +252,25 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write event description", ProcessGetObjStrAttr("description")),
         ("Write Quest zone id", process_quest_add_zone),
         ("Confirm?", process_obj_add_confirm)
+    ),
+    "edit zone": (
+        ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
+        ("Write Zone level", ProcessGetObjIntAttr("level")),
+        ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
+        ("Confirm?", process_obj_edit_confirm)
+    ),
+    "edit quest": (
+        ("Write Quest name", ProcessGetObjStrAttr("name")),
+        ("Write Quest zone id", process_quest_add_zone),
+        ("Write Quest description", ProcessGetObjStrAttr("description")),
+        ("Write Quest success text", ProcessGetObjStrAttr("success_text")),
+        ("Write Quest failure text", ProcessGetObjStrAttr("failure_text")),
+        ("Confirm?", process_obj_edit_confirm)
+    ),
+    "edit event": (
+        ("Write event description", ProcessGetObjStrAttr("description")),
+        ("Write Quest zone id", process_quest_add_zone),
+        ("Confirm?", process_obj_edit_confirm)
     )
 }
 

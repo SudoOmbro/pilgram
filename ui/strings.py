@@ -61,7 +61,7 @@ class Strings:
     player_name_validation_error = "Player names must only be 4 to 20 characters long and " + __must_only_contain
     guild_name_validation_error = "Player names must only be 2 to 30 characters long and " + __must_only_contain
     description_validation_error = "Player names must only be 10 to 250 characters long and " + __must_only_contain
-    zone_id_error = "Zone number must be a positive integer number"
+    zone_number_error = "Zone number must be a positive integer number"
     zone_does_not_exist = "The zone does not exist!"
     not_in_a_guild = "You are not in a guild!"
     guild_not_owned = "You don't own a guild!"
