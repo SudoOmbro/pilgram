@@ -313,16 +313,16 @@ class ZoneEvent:
         Players get bonus xp & money from events depending on their home level.
     """
 
-    def __init__(self, event_id: int, zone: Zone, event_text: str):
+    def __init__(self, event_id: int, zone: Union[Zone, None], event_text: str):
         """
         :param event_id: unique id of the event
-        :param zone: the zone that this event happens in
+        :param zone: the zone that this event happens in. If none then it's the town
         :param event_text: a short text describing the event
         """
         self.event_id = event_id
         self.zone = zone
         self.event_text = event_text
-        self.base_xp_value = (zone.level + 1)
+        self.base_xp_value = (zone.level + 1) if zone else 1
         self.base_money_value = self.base_xp_value
 
     def get_rewards(self, player: Player) -> Tuple[int, int]:

@@ -122,8 +122,8 @@ class PilgramDatabase(ABC):
         """ get a specific zone event given its id """
         raise NotImplementedError
 
-    def get_random_zone_event(self, zone: Zone) -> ZoneEvent:
-        """ get a random zone event given a zone """
+    def get_random_zone_event(self, zone: Union[Zone, None]) -> ZoneEvent:
+        """ get a random zone event given a zone. If zone is None then it's implied to be the town """
         raise NotImplementedError
 
     def add_zone_event(self, event: ZoneEvent):

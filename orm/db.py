@@ -255,10 +255,9 @@ class PilgramORMDatabase(PilgramDatabase):
     # zone events ----
 
     def build_zone_event_object(self, zes) -> ZoneEvent:
-        zone = self.get_zone(zes.zone_id)
         return ZoneEvent(
             zes.id,
-            zone,
+            self.get_zone(zes.zone_id) if zes.zone_id != 0 else None,
             zes.event_text
         )
 
@@ -270,10 +269,16 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find zone event with id {event_id}")
 
     @cache_ttl_quick(ttl=10)
-    def get_random_zone_event(self, zone: Zone) -> ZoneEvent:
+    def get_random_zone_event(self, zone: Union[Zone, None]) -> ZoneEvent:
         # cache lasts only 10 seconds to optimize the most frequent use case
-        zes = ZoneEventModel.select().where(ZoneEventModel.id == zone.zone_id).order_by(fn.Random()).limit(1)
-        return self.build_zone_event_object(zes)
+        try:
+            if zone:
+                zes = ZoneEventModel.select().where(ZoneEventModel.zone_id == zone.zone_id).order_by(fn.Random()).limit(1)
+            else:
+                zes = ZoneEventModel.select().where(ZoneEventModel.zone_id == 0).order_by(fn.Random()).limit(1)
+            return self.build_zone_event_object(zes)
+        except ZoneEventModel.DoesNotExist:
+            raise KeyError(f"Could not find any zone events within zone {zone.zone_id}")
 
     def update_zone_event(self, event: ZoneEvent):
         try:
@@ -290,7 +295,7 @@ class PilgramORMDatabase(PilgramDatabase):
         )
         event.event_id = zes.id
 
-        # quests ----
+    # quests ----
 
     def build_quest_object(self, qs, zone: Union[Zone, None] = None) -> Quest:
         if not zone:
