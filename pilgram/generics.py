@@ -157,8 +157,8 @@ class PilgramDatabase(ABC):
         """ used by the generator or manually by the admin via CLI on the server to add a new quest """
         raise NotImplementedError
 
-    def get_quest_count(self, zone: Zone) -> int:
-        """ used to determine the quest number at creation time """
+    def get_quests_counts(self) -> List[int]:
+        """ returns a list of quest amounts per zone, position in the list is determined by zone id """
         raise NotImplementedError
 
     # in progress quests management ----

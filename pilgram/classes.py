@@ -374,9 +374,9 @@ class AdventureContainer:
         """ non-verbose way to get quest id """
         return self.quest.quest_id
 
-    def zone(self):
-        """ this assumes that the player is on a quest, not in town """
-        return self.quest.zone
+    def zone(self) -> Union[Zone, None]:
+        """ returns Zone if player is on a quest, None if player is in town """
+        return self.quest.zone if self.quest else None
 
     def __hash__(self):
         return hash(self.player_id())

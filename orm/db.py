@@ -6,7 +6,7 @@ import numpy as np
 
 from typing import Dict, Union, List, Tuple
 
-from peewee import fn
+from peewee import fn, JOIN
 
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel
@@ -347,8 +347,13 @@ class PilgramORMDatabase(PilgramDatabase):
         )
         quest.quest_id = qs.id
 
-    def get_quest_count(self, zone: Zone) -> int:
-        return QuestModel.select().where(QuestModel.id == zone.zone_id).count()
+    def get_quests_counts(self) -> List[int]:
+        """ returns a list of quest amounts per zone, position in the list is determined by zone id """
+        query = (ZoneModel.select(fn.Count(QuestModel.id).alias('quest_count')).
+                 join(QuestModel, JOIN.LEFT_OUTER).
+                 group_by(QuestModel.id).
+                 order_by(ZoneModel.id.desc()))
+        return [x.quest_count for x in query]
 
     # in progress quest management ----
 
