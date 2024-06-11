@@ -9,7 +9,7 @@ def cache(size_limit=0, ttl=0, quick_key_access=False):
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
-            key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
+            key = (*args,)
 
             # Check if their return value is already known
             if key in storage:
@@ -68,7 +68,7 @@ def cache_ttl_quick(ttl=3600):
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
-            key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
+            key = (*args,)
 
             # Check if their return value is already known
             if key in storage:
@@ -101,7 +101,7 @@ def cache_sized_quick(size_limit=256):
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
-            key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
+            key = (*args,)
 
             # Check if their return value is already known
             if key in storage:
@@ -130,7 +130,7 @@ def cache_sized_ttl_quick(size_limit=256, ttl=3600):
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
-            key = (*args,) + tuple([(k, v) for k, v in kwargs.items()])
+            key = (*args,)
 
             # Check if their return value is already known
             if key in storage:

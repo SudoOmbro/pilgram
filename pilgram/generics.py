@@ -43,7 +43,7 @@ class PilgramDatabase(ABC):
 
     # guilds ---
 
-    def get_guild(self, guild_id: int) -> Guild:
+    def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:
         """
         get a guild given its id
 
@@ -68,7 +68,10 @@ class PilgramDatabase(ABC):
     def get_owned_guild(self, player: Player) -> Union[Guild, None]:
         """ get a guild owned by a player """
         try:
-            return self.get_guild(self.get_guild_id_from_founder(player))
+            guild = self.get_guild(self.get_guild_id_from_founder(player), calling_player_id=player.player_id)
+            guild.founder = player
+            player.guild = guild
+            return guild
         except KeyError:
             return None
 

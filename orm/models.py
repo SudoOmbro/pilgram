@@ -38,7 +38,7 @@ class PlayerModel(BaseModel):
     id = IntegerField(primary_key=True, unique=True)
     name = CharField(null=False, unique=True, index=True)
     description = CharField(null=False)
-    guild_id = DeferredForeignKey('GuildModel', backref="members", null=True, default=None)
+    guild = DeferredForeignKey('GuildModel', backref="members", null=True, default=None)
     money = IntegerField(default=10)
     level = IntegerField(default=1)
     xp = IntegerField(default=0)
@@ -52,7 +52,7 @@ class GuildModel(BaseModel):
     name = CharField(null=False, unique=True, index=True)
     level = IntegerField(default=1)
     description = CharField(null=False)
-    founder_id = ForeignKeyField(PlayerModel, backref='owned_guild')
+    founder = ForeignKeyField(PlayerModel, backref='owned_guild')
     creation_date = DateTimeField(default=datetime.now)
     prestige = IntegerField(default=0)
 
@@ -65,8 +65,8 @@ class ZoneEventModel(BaseModel):
 
 class QuestProgressModel(BaseModel):
     """ Table that tracks the progress of player quests & controls when to send events/finish the quest """
-    player_id = ForeignKeyField(PlayerModel, unique=True)
-    quest_id = ForeignKeyField(QuestModel, null=True, default=None)
+    player = ForeignKeyField(PlayerModel, unique=True)
+    quest = ForeignKeyField(QuestModel, null=True, default=None)
     end_time = DateTimeField(default=datetime.now)
     last_update = DateTimeField(default=datetime.now)
 

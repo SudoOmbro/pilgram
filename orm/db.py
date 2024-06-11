@@ -76,9 +76,9 @@ class PilgramORMDatabase(PilgramDatabase):
         # with their database record; Thus making it always valid.
         try:
             pls = PlayerModel.get(PlayerModel.id == player_id)
-            guild = self.get_guild(pls.guild_id) if pls.guild_id else None
+            guild = self.get_guild(pls.guild, calling_player_id=pls.id) if pls.guild else None
             progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
-            return Player(
+            player = Player(
                 pls.id,
                 pls.name,
                 pls.description,
@@ -90,6 +90,10 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.gear_level,
                 pls.home_level
             )
+            if guild and (guild.founder is None):
+                # if guild has no founder it means the founder is the player currently being retrieved
+                guild.founder = player
+            return player
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player_id} not found')  # raising exceptions makes sure invalid queries aren't cached
 
@@ -105,7 +109,7 @@ class PilgramORMDatabase(PilgramDatabase):
             pls = PlayerModel.get(PlayerModel.id == player.player_id)
             pls.name = player.name
             pls.description = player.description
-            pls.guild_id = player.guild.guild_id if player.guild else None
+            pls.guild = player.guild.guild_id if player.guild else None
             pls.level = player.level
             pls.xp = player.xp
             pls.money = player.money
@@ -135,8 +139,15 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # guilds ----
 
-    def build_guild_object(self, gs):
-        founder = self.get_player_data(gs.founder_id, )
+    def build_guild_object(self, gs, calling_player_id: Union[int, None]):
+        """
+            build the guild object, also check if the player requesting the guild is the founder of said guild
+            to avoid an infinite recursion loop.
+        """
+        if (calling_player_id is not None) and (calling_player_id == gs.founder.id):
+            founder = None
+        else:
+            founder = self.get_player_data(gs.founder)
         return Guild(
             gs.id,
             gs.name,
@@ -148,10 +159,10 @@ class PilgramORMDatabase(PilgramDatabase):
         )
 
     @cache_sized_ttl_quick(size_limit=400, ttl=3600)
-    def get_guild(self, guild_id: int) -> Guild:
+    def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:
         try:
             gs = GuildModel.get(GuildModel.id == guild_id)
-            return self.build_guild_object(gs)
+            return self.build_guild_object(gs, calling_player_id)
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with id {guild_id} not found')
 
@@ -165,7 +176,7 @@ class PilgramORMDatabase(PilgramDatabase):
     @cache_sized_quick(size_limit=100)
     def get_guild_id_from_founder(self, player: Player) -> int:
         try:
-            return GuildModel.get(GuildModel.founder_id == player.player_id).id
+            return GuildModel.get(GuildModel.founder == player.player_id).id
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild founded by player with id {player.player_id} not found')
 
@@ -338,15 +349,15 @@ class PilgramORMDatabase(PilgramDatabase):
     # in progress quest management ----
 
     def build_adventure_container(self, qps) -> AdventureContainer:
-        player = self.get_player_data(qps.player_id)
-        quest = self.get_quest(qps.quest_id)
+        player = self.get_player_data(qps.player)
+        quest = self.get_quest(qps.quest)
         return AdventureContainer(player, quest, qps.end_time)
 
     @cache_ttl_quick(ttl=1800)
     def is_player_on_a_quest(self, player: Player) -> bool:
         try:
-            qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
-            return qps.quest_id is not None
+            qps = QuestProgressModel.get(QuestProgressModel.player == player.player_id)
+            return qps.quest is not None
         except QuestProgressModel.DoesNotExist:
             return False
 
@@ -359,8 +370,8 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_quest_progress(self, adventure_container: AdventureContainer):
         try:
-            qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
-            qps.quest_id = adventure_container.quest_id()
+            qps = QuestProgressModel.get(QuestProgressModel.player == adventure_container.player_id())
+            qps.quest = adventure_container.quest_id()
             qps.last_update = datetime.now()
             qps.end_time = adventure_container.finish_time
             qps.save()

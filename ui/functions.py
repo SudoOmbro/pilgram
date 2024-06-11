@@ -53,6 +53,18 @@ def check_guild(context: UserContext, guild_name: str) -> str:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
 
 
+def check_prices(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        result: str = f"Gear upgrade: {player.get_gear_upgrade_required_money()} {MONEY}\nHome upgrade: {player.get_home_upgrade_required_money()} {MONEY}"
+        if player.guild:
+            result += f"\nGuild upgrade: {player.guild.get_upgrade_required_money()} {MONEY}"
+        result += f"\n\nCreate guild: {ContentMeta.get('guilds.creation_cost')} {MONEY}\nModify: {ContentMeta.get('modify_cost')} {MONEY}"
+        return result
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def check_my_guild(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -119,52 +131,45 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     player.guild = guild
     db().update_player_data(player)
     context.end_process()
-    return Strings.welcome_to_the_world
+    return Strings.guild_creation_success.format(name=guild.name)
 
 
-def start_upgrade_process(context: UserContext, obj: str = "guild") -> str:
+def upgrade(context: UserContext, obj: str = "gear") -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        price: Union[int, None] = {
-            "guild": lambda: player.guild.get_upgrade_required_money() if player.guild else None,
-            "gear": lambda: player.get_gear_upgrade_required_money(),
-            "home": lambda: player.get_home_upgrade_required_money(),
+        price: int = {
+            "gear": player.get_gear_upgrade_required_money,
+            "home": player.get_home_upgrade_required_money,
         }.get(obj)()
-        if price is None:
-            return Strings.no_guild_yet
-        if obj == "guild":
-            guild = db().get_owned_guild(player)
-            if guild == ContentMeta.get("guilds.max_level"):
-                return Strings.guild_already_maxed
         if player.money < price:
             return Strings.not_enough_money
-        context.start_process("upgrade")
-        upgrade_func: Callable = {
-            "guild": lambda: db().get_owned_guild(player).upgrade(),
-            "gear": lambda: player.upgrade_gear(),
-            "home": lambda: player.upgrade_home()
-        }.get(obj)
-        context.set("func", upgrade_func)
-        context.set("obj", obj)
-        context.set("price", price)
-        return Strings.upgrade_object_confirmation.format(obj=obj, price=price)
+        {
+            "gear": player.upgrade_gear,
+            "home": player.upgrade_home
+        }.get(obj)()
+        db().update_player_data(player)
+        return Strings.upgrade_successful.format(obj=obj, paid=price)
     except KeyError:
         return Strings.no_character_yet
 
 
-def process_verify_upgrade_confirmation(context: UserContext, user_input: str) -> str:
-    player = db().get_player_data(context.get("id"))
-    if not re.match(YES_NO_REGEX, user_input):
-        return Strings.yes_no_error
-    if user_input == "no":
-        context.end_process()
-        return Strings.upgrade_cancelled
-    context.get("func")()
-    if context.get("obj") == "guild":
-        db().update_guild(player.guild)
-    db().update_player_data(player)
-    context.end_process()
-    return Strings.upgrade_successful.format(obj=context.get("obj"), paid=context.get("price"))
+def upgrade_guild(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        guild = db().get_owned_guild(player)
+        if not guild:
+            return Strings.no_guild_yet
+        if guild.level == ContentMeta.get("guilds.max_level"):
+            return Strings.guild_already_maxed
+        price = guild.get_upgrade_required_money()
+        if player.money < price:
+            return Strings.not_enough_money
+        guild.upgrade()
+        db().update_guild(guild)
+        db().update_player_data(player)
+        return Strings.upgrade_successful.format(obj="guild", paid=price)
+    except KeyError:
+        return Strings.no_character_yet
 
 
 def modify_player(context: UserContext, user_input: str, target: str = "name") -> str:
@@ -288,8 +293,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
         "self": IFW(None, check_self, "Shows your own stats"),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),
+        "prices": IFW(None, check_prices, "Shows all the prices"),
         "my": {
-            "guild": IFW(None, check_my_guild, "Shows your own guild"),
+            "guild": IFW(None, check_my_guild, "Shows your own guild")
         }
     },
     "create": {
@@ -297,9 +303,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "guild": IFW(None, start_guild_creation, "Create your own Guild")
     },
     "upgrade": {
-        "gear": IFW(None, start_upgrade_process, "Upgrade your gear", default_args={"obj": "gear"}),
-        "guild": IFW(None, start_upgrade_process, "Upgrade your guild", default_args={"obj": "guild"}),
-        "home": IFW(None, start_upgrade_process, "Upgrade your home", default_args={"obj": "home"}),
+        "gear": IFW(None, upgrade, "Upgrade your gear", default_args={"obj": "gear"}),
+        "home": IFW(None, upgrade, "Upgrade your home", default_args={"obj": "home"}),
+        "guild": IFW(None, upgrade_guild, "Upgrade your guild")
     },
     "modify": {
         "character": {
@@ -328,8 +334,5 @@ USER_PROCESSES: Dict[str, Tuple[Callable, ...]] = {
     "guild creation": (
         process_get_guild_name,
         process_get_guild_description
-    ),
-    "upgrade": {
-        process_verify_upgrade_confirmation
-    }
+    )
 }
