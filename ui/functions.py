@@ -5,9 +5,7 @@ from typing import Tuple, Dict, Union, Callable
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild
 from pilgram.generics import PilgramDatabase
-from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, YES_NO_REGEX, \
-    DESCRIPTION_REGEX
-from ui.interpreter import CLIInterpreter
+from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -82,7 +80,7 @@ def start_character_creation(context: UserContext) -> str:
         return Strings.character_already_created.format(name=player.name)
     except KeyError:
         context.start_process("character creation")
-        return Strings.character_creation_get_name
+        return context.get_process_prompt(USER_PROCESSES)
 
 
 def process_get_character_name(context: UserContext, user_input) -> str:
@@ -90,7 +88,7 @@ def process_get_character_name(context: UserContext, user_input) -> str:
         return Strings.player_name_validation_error
     context.set("name", user_input)
     context.progress_process()
-    return Strings.character_creation_get_description
+    return context.get_process_prompt(USER_PROCESSES)
 
 
 def process_get_character_description(context: UserContext, user_input) -> str:
@@ -110,7 +108,7 @@ def start_guild_creation(context: UserContext) -> str:
         if player.money < ContentMeta.get("guilds.creation_cost"):
             return Strings.not_enough_money
         context.start_process("guild creation")
-        return Strings.guild_creation_get_name
+        return context.get_process_prompt(USER_PROCESSES)
     except KeyError:
         return Strings.no_character_yet
 
@@ -120,7 +118,7 @@ def process_get_guild_name(context: UserContext, user_input) -> str:
         return Strings.guild_name_validation_error
     context.set("name", user_input)
     context.progress_process()
-    return Strings.guild_creation_get_description
+    return context.get_process_prompt(USER_PROCESSES)
 
 
 def process_get_guild_description(context: UserContext, user_input) -> str:
@@ -326,13 +324,13 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     }
 }
 
-USER_PROCESSES: Dict[str, Tuple[Callable, ...]] = {
+USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "character creation": (
-        process_get_character_name,
-        process_get_character_description
+        (Strings.character_creation_get_name, process_get_character_name),
+        (Strings.character_creation_get_description, process_get_character_description)
     ),
     "guild creation": (
-        process_get_guild_name,
-        process_get_guild_description
+        (Strings.guild_creation_get_name, process_get_guild_name),
+        (Strings.guild_creation_get_description, process_get_guild_description)
     )
 }

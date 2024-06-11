@@ -1,4 +1,5 @@
 import logging
+import sys
 import threading
 import time
 from time import sleep
@@ -16,6 +17,8 @@ INTERVAL = 3600
 UPDATE_INTERVAL = timedelta(hours=6)
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
+log.addHandler(logging.StreamHandler(sys.stderr))
 
 
 def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
@@ -38,10 +41,10 @@ def run_generator_manager(database: PilgramDatabase):
 
 
 def run_admin_cli():
-    time.sleep(1)
+    print("Admin CLI active!")
     user_context: UserContext = UserContext({"id": 69, "username": "God"})
     while True:
-        command: str = input("Command: ")
+        command: str = input()
         result: str = ADMIN_INTERPRETER.context_aware_execute(user_context, command)
         print(result)
 

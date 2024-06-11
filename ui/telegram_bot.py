@@ -1,4 +1,5 @@
 import logging
+import sys
 from typing import Tuple
 
 from telegram import Update, Bot
@@ -17,8 +18,7 @@ from ui.strings import Strings
 
 log = logging.getLogger(__name__)
 logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.WARN
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
 

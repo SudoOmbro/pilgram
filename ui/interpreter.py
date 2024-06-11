@@ -25,7 +25,7 @@ class CLIInterpreter:
     def __init__(
             self,
             commands_dict: Dict[str, Union[str, IFW]],
-            processes: Dict[str, Tuple[Callable, ...]],
+            processes: Dict[str, Tuple[Tuple[str, Callable], ...]],
             help_formatting: Union[str, None] = None
     ):
         self.commands_dict = commands_dict

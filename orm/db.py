@@ -15,7 +15,6 @@ from pilgram.generics import PilgramDatabase
 from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
 
 
 def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:

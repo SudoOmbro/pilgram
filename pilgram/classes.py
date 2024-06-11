@@ -31,6 +31,10 @@ class Zone:
     def __hash__(self):
         return hash(self.zone_id)
 
+    @classmethod
+    def get_empty(cls) -> "Zone":
+        return Zone(0, "", 0, "")
+
 
 class Quest:
     """ contains info about a human written or AI generated quest """
@@ -88,6 +92,10 @@ class Quest:
 
     def __hash__(self):
         return hash(self.quest_id)
+
+    @classmethod
+    def get_empty(cls) -> "Quest":
+        return Quest(0, None, 0, "", "", "", "")
 
 
 class Progress:
@@ -328,6 +336,10 @@ class ZoneEvent:
 
     def __hash__(self):
         return hash(self.event_id)
+
+    @classmethod
+    def get_empty(cls) -> "ZoneEvent":
+        return ZoneEvent(0, None, "")
 
 
 class AdventureContainer:

@@ -65,4 +65,4 @@ class Strings:
     zone_does_not_exist = "The zone does not exist!"
     not_in_a_guild = "You are not in a guild!"
     guild_not_owned = "You don't own a guild!"
-    yes_no_error = "You must send only either 'yes' or 'no'!"
+    yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"

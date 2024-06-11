@@ -1,8 +1,9 @@
-from typing import Dict, Union, Tuple, Callable
+from typing import Dict, Union, Tuple, Callable, re
 
 from orm.db import PilgramORMDatabase
+from pilgram.classes import Zone, Quest, ZoneEvent
 from pilgram.generics import PilgramDatabase
-from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta
+from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX
 from ui.interpreter import CLIInterpreter
 from ui.strings import Strings
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
@@ -62,9 +63,58 @@ def __generate_int_op_command(target_attr: str, target: str, action: str) -> IFW
     )
 
 
-def add_zone(context: UserContext) -> str:
-    # TODO
-    pass
+def start_add_obj_process(context: UserContext, obj_type: str = "zone") -> str:
+    target_object = {
+        "zone": Zone.get_empty(),
+        "quest": Quest.get_empty(),
+        "event": ZoneEvent.get_empty()
+    }.get(obj_type)
+    context.set("type", obj_type)
+    context.set("obj", target_object)
+    context.start_process(f"add {obj_type}")
+    return context.get_process_prompt(ADMIN_PROCESSES)
+
+
+class ProcessGetObjStrAttr:
+
+    def __init__(self, target_attr: str):
+        self.target_attr = target_attr
+
+    @staticmethod
+    def _progress(context: UserContext) -> str:
+        context.progress_process()
+        return context.get_process_prompt(ADMIN_PROCESSES)
+
+    def __call__(self, context: UserContext, user_input: str) -> str:
+        obj = context.get("obj")
+        obj.__dict__[self.target_attr] = user_input
+        return self._progress(context)
+
+
+class ProcessGetObjIntAttr(ProcessGetObjStrAttr):
+
+    def __call__(self, context: UserContext, user_input: str) -> str:
+        obj = context.get("obj")
+        obj.__dict__[self.target_attr] = int(user_input)
+        return self._progress(context)
+
+
+def process_obj_add_confirm(context: UserContext, user_input: str) -> str:
+    if not re.match(YES_NO_REGEX, user_input):
+        return Strings.yes_no_error
+    obj_type = context.get("type")
+    if user_input == "y":
+        obj = context.get("obj")
+        func: Callable = {
+            "zone": lambda: db().add_zone(obj),
+            "quest": lambda: db().add_quest(obj),
+            "event": lambda: db().add_zone_event(obj)
+        }.get(obj_type)
+        func()
+        context.end_process()
+        return f"{obj_type} add successful"
+    context.end_process()
+    return f"{obj_type} add process cancelled"
 
 
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
@@ -78,7 +128,8 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),
             "prestige": __generate_int_op_command("home", "guild", "add"),
-        }
+        },
+        "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"})
     },
     "set": {
         "player": {
@@ -106,8 +157,10 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     }
 }
 
-ADMIN_PROCESSES: Dict[str, Tuple[Callable, ...]] = {
-
+ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
+    "add zone": (
+        ("ok, send me the name of the zone to add", ProcessGetObjStrAttr("name")),
+    )
 }
 
 ADMIN_INTERPRETER = CLIInterpreter(ADMIN_COMMANDS, ADMIN_PROCESSES)
