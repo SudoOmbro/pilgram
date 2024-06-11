@@ -374,7 +374,7 @@ class AdventureContainer:
         """ non-verbose way to get quest id """
         return self.quest.quest_id
 
-    def get_current_quest_zone(self):
+    def zone(self):
         """ this assumes that the player is on a quest, not in town """
         return self.quest.zone
 

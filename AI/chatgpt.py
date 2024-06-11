@@ -5,13 +5,14 @@ from typing import Union, List
 
 import requests
 
+from pilgram.classes import Zone, Quest, ZoneEvent
 from pilgram.generics import PilgramGenerator
-
+from pilgram.globals import ContentMeta
 
 log = logging.getLogger(__name__)
 
 
-WORLD_PROMPT = "You write about a low fantasy world named Borom"
+WORLD_PROMPT = f"You write about a low fantasy world named {ContentMeta.get('world.name')}"
 STYLE_PROMPT = ""
 FORMATTING_PROMPT = ""
 
@@ -93,4 +94,10 @@ class ChatGPTGenerator(PilgramGenerator):
         self.api_wrapper = api_wrapper
 
     def generate(self, prompt: str):
+        pass
+
+    def generate_quests(self, zone: Zone) -> List[Quest]:
+        pass
+
+    def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
         pass

@@ -1,5 +1,8 @@
+import json
+import os
+import pickle
 from datetime import timedelta
-from typing import List
+from typing import List, Dict
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone
 from pilgram.generics import PilgramDatabase, PilgramNotifier
@@ -14,6 +17,26 @@ def _gain(xp: int, money: int) -> str:
     return f"\n\nYou gain {xp} xp & {money} {MONEY}"
 
 
+class _HighestQuests:
+    """ records highest reached quest by players per zone, useful to the generator to see what it has to generate """
+    FILENAME = "questprogressdata.json"
+
+    def __init__(self):
+        self.__data: Dict[int, int] = {}
+        if os.path.isfile(self.FILENAME):
+            with open(self.FILENAME, "r") as f:
+                self.__data = json.load(f)
+
+    def save(self):
+        with open(self.FILENAME, "w") as f:
+            json.dump(self.__data, f)
+
+    def update(self, zone_id: int, progress: int):
+        if self.__data[zone_id] < progress:
+            self.__data[zone_id] = progress
+            self.save()
+
+
 class QuestManager:
     """ helper class to neatly manage zone events & quests """
 
@@ -21,6 +44,7 @@ class QuestManager:
         self.database = database
         self.notifier = notifier
         self.update_interval = update_interval
+        self.highest_quests = _HighestQuests()
 
     def db(self) -> PilgramDatabase:
         """ wrapper around the acquire method to make calling it less verbose """
@@ -33,6 +57,7 @@ class QuestManager:
             xp, money = quest.get_rewards(player)
             player.add_xp(xp)
             player.money += money
+            self.highest_quests.update(ac.zone().zone_id, ac.quest.number)
             self.db().update_player_data(player)
             if player.guild:
                 player.guild.prestige += quest.get_prestige()
@@ -44,7 +69,7 @@ class QuestManager:
             self.notifier.notify(player, Strings.quest_fail.format(name=quest.name))
 
     def _process_event(self, ac: AdventureContainer):
-        zone = ac.quest.zone if ac.quest else self.db().get_zone(0)
+        zone = ac.quest.zone if ac.quest else None
         event = self.db().get_random_zone_event(zone)
         xp, money = event.get_rewards(ac.player)
         ac.player.add_xp(xp)
