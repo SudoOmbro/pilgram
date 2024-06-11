@@ -1,5 +1,6 @@
 import json
 import os
+from time import sleep
 from datetime import timedelta
 from typing import List, Dict
 
@@ -87,7 +88,7 @@ class QuestManager:
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):
-        # TODO add interactions between players in same zone (post launch)
+        # TODO add interactions between players in same zone (post launch) (maybe)
         if ac.is_on_a_quest() and ac.is_quest_finished():
             self._complete_quest(ac)
         else:
@@ -121,12 +122,14 @@ class GeneratorManager:
                 result.append(zone)
         return result
 
-    def run(self):
+    def run(self, timeout_between_ai_calls: float):
         zones = self.__get_zones_to_generate()
         for zone in zones:
             quests = self.generator.generate_quests(zone)
+            sleep(timeout_between_ai_calls)
             for quest in quests:
                 self.db().add_quest(quest)
-                zone_events = self.generator.generate_zone_events(zone)
-                for zone_event in zone_events:
-                    self.db().add_zone_event(zone_event)
+            zone_events = self.generator.generate_zone_events(zone)
+            for zone_event in zone_events:
+                self.db().add_zone_event(zone_event)
+            sleep(timeout_between_ai_calls)
