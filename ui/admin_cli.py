@@ -1,4 +1,5 @@
-from typing import Dict, Union, Tuple, Callable, re
+import re
+from typing import Dict, Union, Tuple, Callable
 
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Zone, Quest, ZoneEvent
@@ -75,36 +76,41 @@ def start_add_obj_process(context: UserContext, obj_type: str = "zone") -> str:
     return context.get_process_prompt(ADMIN_PROCESSES)
 
 
+def _progress(context: UserContext) -> str:
+    context.progress_process()
+    return context.get_process_prompt(ADMIN_PROCESSES)
+
+
 class ProcessGetObjStrAttr:
 
     def __init__(self, target_attr: str):
         self.target_attr = target_attr
 
-    @staticmethod
-    def _progress(context: UserContext) -> str:
-        context.progress_process()
-        return context.get_process_prompt(ADMIN_PROCESSES)
-
     def __call__(self, context: UserContext, user_input: str) -> str:
         obj = context.get("obj")
         obj.__dict__[self.target_attr] = user_input
-        return self._progress(context)
+        print(obj.__dict__)
+        return _progress(context)
 
 
 class ProcessGetObjIntAttr(ProcessGetObjStrAttr):
 
     def __call__(self, context: UserContext, user_input: str) -> str:
         obj = context.get("obj")
-        obj.__dict__[self.target_attr] = int(user_input)
-        return self._progress(context)
+        try:
+            obj.__dict__[self.target_attr] = int(user_input)
+            print(obj.__dict__)
+        except Exception as e:
+            return str(e)
+        return _progress(context)
 
 
 def process_obj_add_confirm(context: UserContext, user_input: str) -> str:
     if not re.match(YES_NO_REGEX, user_input):
         return Strings.yes_no_error
     obj_type = context.get("type")
+    obj = context.get("obj")
     if user_input == "y":
-        obj = context.get("obj")
         func: Callable = {
             "zone": lambda: db().add_zone(obj),
             "quest": lambda: db().add_quest(obj),
@@ -112,9 +118,35 @@ def process_obj_add_confirm(context: UserContext, user_input: str) -> str:
         }.get(obj_type)
         func()
         context.end_process()
-        return f"{obj_type} add successful"
+        return f"{obj_type} add successfully"
     context.end_process()
     return f"{obj_type} add process cancelled"
+
+
+def process_quest_add_zone(context: UserContext, user_input: str) -> str:
+    quest: Quest = context.get("obj")
+    try:
+        zone_id = int(user_input)
+        zone = db().get_zone(zone_id)
+        num = db().get_quest_count(zone)
+        quest.zone = zone
+        quest.num = num
+        print(quest.__dict__)
+        return _progress(context)
+    except Exception as e:
+        return str(e)
+
+
+def process_event_add_zone(context: UserContext, user_input: str) -> str:
+    event: ZoneEvent = context.get("obj")
+    try:
+        zone_id = int(user_input)
+        zone = db().get_zone(zone_id)
+        event.zone = zone
+        print(event.__dict__)
+        return _progress(context)
+    except Exception as e:
+        return str(e)
 
 
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
@@ -129,7 +161,9 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "level": __generate_int_op_command("level", "guild", "add"),
             "prestige": __generate_int_op_command("home", "guild", "add"),
         },
-        "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"})
+        "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"}),
+        "quest": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "quest"}),
+        "event": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "event"})
     },
     "set": {
         "player": {
@@ -159,7 +193,24 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
 
 ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "add zone": (
-        ("ok, send me the name of the zone to add", ProcessGetObjStrAttr("name")),
+        ("Write Zone id", ProcessGetObjIntAttr("zone_id")),
+        ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
+        ("Write Zone level", ProcessGetObjIntAttr("level")),
+        ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
+        ("Confirm?", process_obj_add_confirm)
+    ),
+    "add quest": (
+        ("Write Quest name", ProcessGetObjStrAttr("name")),
+        ("Write Quest zone id", process_quest_add_zone),
+        ("Write Quest description", ProcessGetObjStrAttr("description")),
+        ("Write Quest success text", ProcessGetObjStrAttr("success_text")),
+        ("Write Quest failure text", ProcessGetObjStrAttr("failure_text")),
+        ("Confirm?", process_obj_add_confirm)
+    ),
+    "add event": (
+        ("Write event description", ProcessGetObjStrAttr("description")),
+        ("Write Quest zone id", process_quest_add_zone),
+        ("Confirm?", process_obj_add_confirm)
     )
 }
 

@@ -84,7 +84,7 @@ class UserContext:
             return None
 
     def get_process_prompt(self, processes_container: Dict[str, Tuple[Tuple[str, Callable], ...]]):
-        return processes_container[self.get_process_name()][self.get_process_step()]
+        return processes_container[self.get_process_name()][self.get_process_step()][0]
 
     def __str__(self):
         return str(self.__dictionary)

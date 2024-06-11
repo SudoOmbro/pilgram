@@ -95,7 +95,7 @@ class Quest:
 
     @classmethod
     def get_empty(cls) -> "Quest":
-        return Quest(0, None, 0, "", "", "", "")
+        return Quest(0, Zone.get_empty(), 0, "", "", "", "")
 
 
 class Progress:
@@ -339,7 +339,7 @@ class ZoneEvent:
 
     @classmethod
     def get_empty(cls) -> "ZoneEvent":
-        return ZoneEvent(0, None, "")
+        return ZoneEvent(0, Zone.get_empty(), "")
 
 
 class AdventureContainer:
