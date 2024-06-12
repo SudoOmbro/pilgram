@@ -42,7 +42,7 @@ class _HighestQuests:
             self.save()
 
     def is_quest_number_too_low(self, zone: Zone, number_of_quests: int) -> bool:
-        return number_of_quests < self.__data[zone.zone_id] + QUEST_THRESHOLD
+        return number_of_quests < self.__data[zone.zone_id - 1] + QUEST_THRESHOLD
 
 
 class QuestManager:

@@ -341,6 +341,8 @@ class PilgramORMDatabase(PilgramDatabase):
     def add_quest(self, quest: Quest):
         qs = QuestModel.create(
             name=quest.name,
+            zone_id=quest.zone.zone_id,
+            number=quest.number,
             description=quest.description,
             success_text=quest.success_text,
             failure_text=quest.failure_text,

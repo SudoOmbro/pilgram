@@ -108,7 +108,7 @@ class ChatGPTAPI:
         raise GPTAPIError(response)
 
     def create_batch_line(self, messages: List[dict]) -> str:
-        # TODO? adding batches would half the cost of API calls
+        # TODO (?) adding batches would half the cost of API calls
         pass
 
 
@@ -117,19 +117,39 @@ class ChatGPTGenerator(PilgramGenerator):
     def __init__(self, api_wrapper: ChatGPTAPI):
         self.api_wrapper = api_wrapper
 
-    def __get_quests_from_generated_text(self, input_text: str) -> List[Quest]:
-        # TODO
-        pass
+    @staticmethod
+    def __get_quests_from_generated_text(input_text: str, zone: Zone, starting_number: int) -> List[Quest]:
+        result = []
+        split_text = input_text.split("\n\n")
+        for text in split_text:
+            # TODO get info from text
+            new_quest = Quest.create_default(
+                zone,
+                starting_number,
+                "",
+                "",
+                "",
+                ""
+            )
+            starting_number += 1
+            result.append(new_quest)
+        return result
 
-    def __get_events_from_generated_text(self, input_text: str) -> List[ZoneEvent]:
-        # TODO
-        pass
+    @staticmethod
+    def __get_events_from_generated_text(input_text: str, zone: Zone) -> List[ZoneEvent]:
+        result = []
+        split_text = input_text.split("\n\n")
+        for text in split_text:
+            new_event = ZoneEvent.create_default(zone, text)
+            result.append(new_event)
+        return result
 
-    def generate_quests(self, zone: Zone) -> List[Quest]:
+    def generate_quests(self, zone: Zone, quest_numbers: List[int]) -> List[Quest]:
         try:
             messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
             generated_text = self.api_wrapper.create_completion(messages)
-            return self.__get_quests_from_generated_text(generated_text)
+            starting_number = quest_numbers[zone.zone_id - 1]
+            return self.__get_quests_from_generated_text(generated_text, zone, starting_number)
         except GPTAPIError as e:
             log.error(f"could not generate quests, error: {e}")
             return []
@@ -138,7 +158,7 @@ class ChatGPTGenerator(PilgramGenerator):
         try:
             messages = get_quests_system_prompt(zone) + build_messages("user", EVENTS_PROMPT)
             generated_text = self.api_wrapper.create_completion(messages)
-            return self.__get_events_from_generated_text(generated_text)
+            return self.__get_events_from_generated_text(generated_text, zone)
         except GPTAPIError as e:
             log.error(f"could not generate quests, error: {e}")
             return []

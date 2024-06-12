@@ -179,10 +179,10 @@ class PilgramDatabase(ABC):
 
 class PilgramGenerator(ABC):
 
-    def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
+    def generate_quests(self, zone: Zone, quest_data: Any) -> List[Quest]:
         raise NotImplementedError
 
-    def generate_quests(self, zone: Zone) -> List[Quest]:
+    def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
         raise NotImplementedError
 
 

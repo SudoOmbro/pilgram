@@ -97,6 +97,10 @@ class Quest:
     def get_empty(cls) -> "Quest":
         return Quest(0, Zone.get_empty(), 0, "", "", "", "")
 
+    @classmethod
+    def create_default(cls, zone: Zone, num: int, name: str, description: str, success: str, failure: str) -> "Quest":
+        return Quest(0, zone, num, name, description, success, failure)
+
 
 class Progress:
     """ stores the player quest progress for each zone """
@@ -340,6 +344,10 @@ class ZoneEvent:
     @classmethod
     def get_empty(cls) -> "ZoneEvent":
         return ZoneEvent(0, Zone.get_empty(), "")
+
+    @classmethod
+    def create_default(cls, zone: Zone, event_text: str) -> "ZoneEvent":
+        return ZoneEvent(0, zone, event_text)
 
 
 class AdventureContainer:
