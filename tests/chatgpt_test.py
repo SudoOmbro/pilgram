@@ -24,10 +24,9 @@ class TestChatGPT(unittest.TestCase):
         self.assertEqual(messages[2]["content"], "c")
         self.assertEqual(messages[3]["content"], "d")
 
-
-def __test_chatgpt_api():
-    api = ChatGPTAPI(SETTINGS["ChatGPT token"], "gpt-3.5-turbo")
-    response = api.create_completion(
-        build_messages("system", "your name is HAL") + build_messages("user", "Hi, what's your name?")
-    )
-    print(response)
+    def test_chatgpt_api(self):
+        api = ChatGPTAPI(SETTINGS["ChatGPT token"], "gpt-3.5-turbo")
+        response = api.create_completion(
+            build_messages("system", "your name is HAL") + build_messages("user", "Hi, what's your name?")
+        )
+        print(response)

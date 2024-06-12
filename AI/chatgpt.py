@@ -5,20 +5,50 @@ from typing import Union, List
 
 import requests
 
+from AI.utils import GenericLLMInterface
 from pilgram.classes import Zone, Quest, ZoneEvent
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
 
+
 log = logging.getLogger(__name__)
 
 
-WORLD_PROMPT = f"You write about a low fantasy world named {ContentMeta.get('world.name')}"
-STYLE_PROMPT = ""
-FORMATTING_PROMPT = ""
+QUESTS_PER_BATCH: int = 5
+EVENTS_PER_BATCH: int = 25
+
+WORLD_PROMPT = f"You write about a dark fantasy world named {ContentMeta.get('world.name')}"
+STYLE_PROMPT = "Refer to the protagonist as \"You\"."
+QUEST_FORMATTING_PROMPT = "Leave 2 lines between quests"
+EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
+
+ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
+QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with success and failure descriptions"
+EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
 
 
 def build_messages(role: str, *messages: str) -> List[dict]:
     return [{"role": role, "content": x} for x in messages]
+
+
+def get_quests_system_prompt(zone: Zone) -> List[dict]:
+    return build_messages(
+        "system",
+        WORLD_PROMPT,
+        STYLE_PROMPT,
+        QUEST_FORMATTING_PROMPT,
+        ZONE_PROMPT.format(name=zone.zone_name, descr=zone.zone_description)
+    )
+
+
+def get_events_system_prompt(zone: Zone) -> List[dict]:
+    return build_messages(
+        "system",
+        WORLD_PROMPT,
+        STYLE_PROMPT,
+        EVENT_FORMATTING_PROMPT,
+        ZONE_PROMPT.format(name=zone.zone_name, descr=zone.zone_description)
+    )
 
 
 class GPTAPIError(Exception):
@@ -29,13 +59,7 @@ class GPTAPIError(Exception):
         self.response = response
 
 
-class GenericGPTAPI(ABC):
-
-    def create_completion(self, messages: List[dict]) -> str:
-        raise NotImplementedError
-
-
-class ChatGPTAPI(GenericGPTAPI):
+class ChatGPTAPI(GenericLLMInterface):
     """ Wrapper around the ChatGpt API, used by the generator """
 
     BASE_URL = 'https://api.openai.com'
@@ -51,7 +75,7 @@ class ChatGPTAPI(GenericGPTAPI):
         self.token = token
         self.model = model
         self.api_version = api_version
-        self.project = project
+        self.project = project if project else "default project"
         self.organization = organization
         self.headers = {
             "Authorization": f"Bearer {token}",
@@ -61,6 +85,7 @@ class ChatGPTAPI(GenericGPTAPI):
             self.headers["organization"] = organization
         if project:
             self.headers["project"] = project
+        self.last_batch: str = ""
 
     @cache
     def _build_request_url(self, endpoint: str) -> str:
@@ -78,19 +103,25 @@ class ChatGPTAPI(GenericGPTAPI):
             headers=self.headers
         )
         if response.ok:
-            jresponse = response.json()
-            log.info(jresponse)
-            return jresponse["choiches"][0]["message"]["content"]
+            json_response = response.json()
+            log.info(json_response)
+            return json_response["choiches"][0]["message"]["content"]
         log.error(f"could not create completion, response: {response.text}")
         raise GPTAPIError(response)
+
+    def create_batch_line(self):
+        pass
+
+    def create_batch_file(self):
+        pass
+
+    def send_batch(self):
+        pass
 
 
 class ChatGPTGenerator(PilgramGenerator):
 
-    QUEST_SYS = build_messages("system", WORLD_PROMPT, FORMATTING_PROMPT)
-    EVENT_SYS = build_messages("system", WORLD_PROMPT, STYLE_PROMPT, FORMATTING_PROMPT)
-
-    def __init__(self, api_wrapper: GenericGPTAPI):
+    def __init__(self, api_wrapper: ChatGPTAPI):
         self.api_wrapper = api_wrapper
 
     def generate(self, prompt: str):

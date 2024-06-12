@@ -1,10 +1,10 @@
 import logging
 import sys
 import threading
-import time
 from time import sleep
 from datetime import timedelta
 
+from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
 from pilgram.generics import PilgramDatabase, PilgramNotifier
 from pilgram.globals import GlobalSettings
@@ -34,9 +34,15 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
 
 def run_generator_manager(database: PilgramDatabase):
     log.info("Running generator manager")
-    generator_manager = GeneratorManager(database)
+    generator_manager = GeneratorManager(
+        database,
+        ChatGPTGenerator(ChatGPTAPI(
+            GlobalSettings.get("ChatGPT token"),
+            "gpt-3.5-turbo"
+        ))
+    )
     while True:
-        # TODO generate new quests & events with generator_manager
+        generator_manager.run(1)
         sleep(INTERVAL)
 
 
