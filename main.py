@@ -32,7 +32,7 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
                 sleep(0.1)
             sleep(INTERVAL)
         except Exception as e:
-            log.exception(f"error in quest manager thread: {e}")
+            log.error(f"error in quest manager thread: {e}")
 
 
 def run_generator_manager(database: PilgramDatabase):
@@ -49,7 +49,7 @@ def run_generator_manager(database: PilgramDatabase):
             generator_manager.run(1)
             sleep(INTERVAL)
         except Exception as e:
-            log.exception(f"error in generator manager thread: {e}")
+            log.error(f"error in generator manager thread: {e}")
 
 
 def run_admin_cli():
@@ -61,7 +61,7 @@ def run_admin_cli():
             result: str = ADMIN_INTERPRETER.context_aware_execute(user_context, command)
             print(result)
         except Exception as e:
-            log.exception(f"error in admin CLI thread: {e}")
+            log.error(f"error in admin CLI thread: {e}")
             print(e)
 
 
