@@ -25,11 +25,14 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running quest manager")
     quest_manager = QuestManager(database, notifier, UPDATE_INTERVAL)
     while True:
-        updates = quest_manager.get_updates()
-        for update in updates:
-            quest_manager.process_update(update)
-            sleep(0.1)
-        sleep(INTERVAL)
+        try:
+            updates = quest_manager.get_updates()
+            for update in updates:
+                quest_manager.process_update(update)
+                sleep(0.1)
+            sleep(INTERVAL)
+        except Exception as e:
+            log.exception(f"error in quest manager thread: {e}")
 
 
 def run_generator_manager(database: PilgramDatabase):
@@ -42,17 +45,24 @@ def run_generator_manager(database: PilgramDatabase):
         ))
     )
     while True:
-        generator_manager.run(1)
-        sleep(INTERVAL)
+        try:
+            generator_manager.run(1)
+            sleep(INTERVAL)
+        except Exception as e:
+            log.exception(f"error in generator manager thread: {e}")
 
 
 def run_admin_cli():
     print("Admin CLI active!")
     user_context: UserContext = UserContext({"id": 69, "username": "God"})
     while True:
-        command: str = input()
-        result: str = ADMIN_INTERPRETER.context_aware_execute(user_context, command)
-        print(result)
+        try:
+            command: str = input()
+            result: str = ADMIN_INTERPRETER.context_aware_execute(user_context, command)
+            print(result)
+        except Exception as e:
+            log.exception(f"error in admin CLI thread: {e}")
+            print(e)
 
 
 def main():
