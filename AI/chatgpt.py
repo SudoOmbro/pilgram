@@ -1,11 +1,9 @@
 import logging
-from abc import ABC
 from functools import cache
 from typing import Union, List
 
 import requests
 
-from AI.utils import GenericLLMInterface
 from pilgram.classes import Zone, Quest, ZoneEvent
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
@@ -59,7 +57,7 @@ class GPTAPIError(Exception):
         self.response = response
 
 
-class ChatGPTAPI(GenericLLMInterface):
+class ChatGPTAPI:
     """ Wrapper around the ChatGpt API, used by the generator """
 
     BASE_URL = 'https://api.openai.com'
@@ -109,13 +107,8 @@ class ChatGPTAPI(GenericLLMInterface):
         log.error(f"could not create completion, response: {response.text}")
         raise GPTAPIError(response)
 
-    def create_batch_line(self):
-        pass
-
-    def create_batch_file(self):
-        pass
-
-    def send_batch(self):
+    def create_batch_line(self, messages: List[dict]) -> str:
+        # TODO? adding batches would half the cost of API calls
         pass
 
 
@@ -124,11 +117,28 @@ class ChatGPTGenerator(PilgramGenerator):
     def __init__(self, api_wrapper: ChatGPTAPI):
         self.api_wrapper = api_wrapper
 
-    def generate(self, prompt: str):
+    def __get_quests_from_generated_text(self, input_text: str) -> List[Quest]:
+        # TODO
+        pass
+
+    def __get_events_from_generated_text(self, input_text: str) -> List[ZoneEvent]:
+        # TODO
         pass
 
     def generate_quests(self, zone: Zone) -> List[Quest]:
-        pass
+        try:
+            messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
+            generated_text = self.api_wrapper.create_completion(messages)
+            return self.__get_quests_from_generated_text(generated_text)
+        except GPTAPIError as e:
+            log.error(f"could not generate quests, error: {e}")
+            return []
 
     def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
-        pass
+        try:
+            messages = get_quests_system_prompt(zone) + build_messages("user", EVENTS_PROMPT)
+            generated_text = self.api_wrapper.create_completion(messages)
+            return self.__get_events_from_generated_text(generated_text)
+        except GPTAPIError as e:
+            log.error(f"could not generate quests, error: {e}")
+            return []
