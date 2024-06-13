@@ -234,7 +234,6 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
 
 ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "add zone": (
-        ("Write Zone id", ProcessGetObjIntAttr("zone_id")),
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
         ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
