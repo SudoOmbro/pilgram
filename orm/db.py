@@ -4,12 +4,12 @@ from datetime import timedelta, datetime
 
 import numpy as np
 
-from typing import Dict, Union, List, Tuple
+from typing import Dict, Union, List, Tuple, Any
 
 from peewee import fn, JOIN
 
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel
+    QuestProgressModel, db
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
 from pilgram.generics import PilgramDatabase
 from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick, cache_ttl_single_value
@@ -120,21 +120,22 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f'Player with id {player.player_id} not found')
 
     def add_player(self, player: Player):
-        PlayerModel.create(
-            id=player.player_id,
-            name=player.name,
-            description=player.description,
-            guild=player.guild.guild_id if player.guild else None,
-            level=player.level,
-            xp=player.xp,
-            money=player.money,
-            progress=encode_progress(player.progress.zone_progress) if player.progress else None,
-            gear_level=player.gear_level
-        )
-        # also create quest progress model related to the player
-        QuestProgressModel.create(
-            player_id=player.player_id
-        )
+        with db.atomic():
+            PlayerModel.create(
+                id=player.player_id,
+                name=player.name,
+                description=player.description,
+                guild=player.guild.guild_id if player.guild else None,
+                level=player.level,
+                xp=player.xp,
+                money=player.money,
+                progress=encode_progress(player.progress.zone_progress) if player.progress else None,
+                gear_level=player.gear_level
+            )
+            # also create quest progress model related to the player
+            QuestProgressModel.create(
+                player_id=player.player_id
+            )
 
     # guilds ----
 
@@ -198,13 +199,13 @@ class PilgramORMDatabase(PilgramDatabase):
         gs.save()
 
     def add_guild(self, guild: Guild):
-        gs = GuildModel.create(
-            name=guild.name,
-            description=guild.description,
-            founder_id=guild.founder.player_id,
-            creation_date=guild.creation_date
-        )
-        guild.guild_id = gs.id
+        with db.atomic():
+            GuildModel.create(
+                name=guild.name,
+                description=guild.description,
+                founder_id=guild.founder.player_id,
+                creation_date=guild.creation_date
+            )
 
     @cache_ttl_single_value(ttl=14400)
     def rank_top_guilds(self) -> List[Tuple[str, int]]:
@@ -248,12 +249,12 @@ class PilgramORMDatabase(PilgramDatabase):
         zs.save()
 
     def add_zone(self, zone: Zone):
-        zs = ZoneModel.create(
-            name=zone.zone_name,
-            level=zone.level,
-            description=zone.zone_description
-        )
-        zone.zone_id = zs.id
+        with db.atomic():
+            ZoneModel.create(
+                name=zone.zone_name,
+                level=zone.level,
+                description=zone.zone_description
+            )
 
     # zone events ----
 
@@ -292,11 +293,16 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find zone event with id {event.event_id}")
 
     def add_zone_event(self, event: ZoneEvent):
-        zes = ZoneEventModel.create(
-            zone_id=event.zone.zone_id,
-            event_text=event.event_text
-        )
-        event.event_id = zes.id
+        with db.atomic():
+            ZoneEventModel.create(
+                zone_id=event.zone.zone_id,
+                event_text=event.event_text
+            )
+
+    def add_zone_events(self, events: List[ZoneEvent]):
+        data_to_insert = [{"zone_id": e.zone.zone_id, "event_text": e.event_text} for e in events]
+        with db.atomic():
+            ZoneEventModel.insert_many(data_to_insert).execute()
 
     # quests ----
 
@@ -342,15 +348,29 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find quest with id {quest.quest_id}")
 
     def add_quest(self, quest: Quest):
-        qs = QuestModel.create(
-            name=quest.name,
-            zone_id=quest.zone.zone_id,
-            number=quest.number,
-            description=quest.description,
-            success_text=quest.success_text,
-            failure_text=quest.failure_text,
-        )
-        quest.quest_id = qs.id
+        with db.atomic():
+            QuestModel.create(
+                name=quest.name,
+                zone_id=quest.zone.zone_id,
+                number=quest.number,
+                description=quest.description,
+                success_text=quest.success_text,
+                failure_text=quest.failure_text,
+            )
+
+    def add_quests(self, quests: List[Quest]):
+        data_to_insert: List[Dict[str, Any]] = [
+            {
+                "name": q.name,
+                "zone_id": q.zone.zone_id,
+                "number": q.number,
+                "description": q.description,
+                "success_text": q.success_text,
+                "failure_text": q.failure_text
+            } for q in quests
+        ]
+        with db.atomic():
+            QuestModel.insert_many(data_to_insert).execute()
 
     @cache_ttl_single_value(ttl=30)
     def get_quests_counts(self) -> List[int]:

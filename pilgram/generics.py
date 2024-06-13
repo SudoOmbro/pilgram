@@ -131,7 +131,11 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     def add_zone_event(self, event: ZoneEvent):
-        """ add a zone event, generally used by the generator or manually by the admin """
+        """ add a single zone event, generally used by the generator or manually by the admin """
+        raise NotImplementedError
+
+    def add_zone_events(self, events: List[ZoneEvent]):
+        """ adds an entire list of zone events to the database, much more efficient for multiple values """
         raise NotImplementedError
 
     def update_zone_event(self, event: ZoneEvent):
@@ -159,6 +163,10 @@ class PilgramDatabase(ABC):
 
     def add_quest(self, quest: Quest):
         """ used by the generator or manually by the admin via CLI on the server to add a new quest """
+        raise NotImplementedError
+
+    def add_quests(self, quests: List[Quest]):
+        """ adds more than one quest to the database, much more efficient for multiple values """
         raise NotImplementedError
 
     def get_quests_counts(self) -> List[int]:

@@ -18,7 +18,8 @@ log.setLevel(logging.INFO)
 MONEY = ContentMeta.get("money.name")
 QUEST_THRESHOLD = 5
 
-MAX_QUESTS_FOR_EVENTS = 120  # * 25 = 3000
+MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
+MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
 
 def _gain(xp: int, money: int) -> str:
@@ -128,31 +129,34 @@ class GeneratorManager:
 
     def run(self, timeout_between_ai_calls: float):
         zones = self.__get_zones_to_generate()
-        quest_numbers = self.db().get_quests_counts()
+        quest_numbers: List[int] = self.db().get_quests_counts()
         log.info(f"Found {len(zones)} zones to generate quests/events for")
         for zone in zones:
             try:
                 log.info(f"generating quests for zone {zone.zone_id}")
                 quests = self.generator.generate_quests(zone, quest_numbers)
-                for quest in quests:
-                    self.db().add_quest(quest)
+                self.db().add_quests(quests)
+                log.info(f"Quest generation done for zone {zone.zone_id}")
                 sleep(timeout_between_ai_calls)
                 if quest_numbers[zone.zone_id - 1] < MAX_QUESTS_FOR_EVENTS:
                     log.info(f"generating zone events for zone {zone.zone_id}")
                     # only generate zone events if there are less than MAX_QUESTS_FOR_EVENTS
                     zone_events = self.generator.generate_zone_events(zone)
-                    for zone_event in zone_events:
-                        self.db().add_zone_event(zone_event)
+                    self.db().add_zone_events(zone_events)
+                    log.info(f"Zone event generation done for zone {zone.zone_id}")
             except Exception as e:
                 log.error(f"Encountered an error while generating for zone {zone.zone_id}: {e}")
             finally:
                 sleep(timeout_between_ai_calls)
         if len(zones) > 0:
+            # generate town events only if there ia less than 6000 (600 * 2 * 5) of them
+            if sum(quest_numbers) > MAX_QUESTS_FOR_TOWN_EVENTS:
+                return
             # generate something for the town if you generated something for other zones
             try:
                 log.info(f"generating zone events for town")
-                zone_events = self.generator.generate_zone_events(TOWN_ZONE)
-                for zone_event in zone_events:
-                    self.db().add_zone_event(zone_event)
+                town_events = self.generator.generate_zone_events(TOWN_ZONE)
+                self.db().add_zone_events(town_events)
+                log.info(f"Zone event generation done for town")
             except Exception as e:
                 log.error(f"Encountered an error while generating for town zone: {e}")

@@ -1,7 +1,10 @@
 {
-  "test": "test",
   "world": {
-    "name": "Borom"
+    "name": "Borom",
+    "city": {
+      "name": "Pilgrim's Rest",
+      "description": "somber and enigmatic town. The cobblestone streets are lined with ancient, ivy-covered buildings that whisper tales of a forgotten past."
+    }
   },
   "defaults": {
     "player": {

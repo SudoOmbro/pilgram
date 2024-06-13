@@ -80,6 +80,8 @@ def main():
         thread.start()
     bot.run()
     bot.stop()
+    for thread in threads:
+        thread.join()
 
 
 if __name__ == '__main__':

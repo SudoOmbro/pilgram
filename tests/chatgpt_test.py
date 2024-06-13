@@ -50,7 +50,8 @@ class TestChatGPT(unittest.TestCase):
     def test_build_quests_from_generated_text(self):
         text = _read_file("mock_quests_response.txt")
         quests = self.generator._get_quests_from_generated_text(text, self.ZONE, 5)
-        for quest in quests:
+        for quest, num in zip(quests, range(5, 10)):
+            self.assertEqual(quest.number, num)
             print(f"{quest}\nnum: {quest.number}, success: '{quest.success_text}', failure: '{quest.failure_text}'\n")
 
     def test_build_events_from_generated_text(self):
