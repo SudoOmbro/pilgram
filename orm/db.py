@@ -349,6 +349,7 @@ class PilgramORMDatabase(PilgramDatabase):
         )
         quest.quest_id = qs.id
 
+    @cache_ttl_single_value(ttl=30)
     def get_quests_counts(self) -> List[int]:
         """ returns a list of quest amounts per zone, position in the list is determined by zone id """
         query = (ZoneModel.select(fn.Count(QuestModel.id).alias('quest_count')).
@@ -365,12 +366,12 @@ class PilgramORMDatabase(PilgramDatabase):
         return AdventureContainer(player, quest, qps.end_time)
 
     @cache_ttl_quick(ttl=1800)
-    def is_player_on_a_quest(self, player: Player) -> bool:
+    def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
         try:
             qps = QuestProgressModel.get(QuestProgressModel.player == player.player_id)
-            return qps.quest is not None
+            return qps.quest
         except QuestProgressModel.DoesNotExist:
-            return False
+            raise KeyError(f"Could not find quest progress for player with id {player.player_id}")
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
         try:

@@ -19,6 +19,18 @@ def check_board(context: UserContext) -> str:
     return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones)
 
 
+def check_current_quest(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        try:
+            quest = db().get_player_current_quest(player)
+        except KeyError as e:
+            return f"Fatal error: {e}"
+        return str(quest)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def check_zone(context: UserContext, zone_id_str: int) -> str:
     try:
         zone = db().get_zone(int(zone_id_str))
@@ -287,6 +299,7 @@ def rank_guilds(context: UserContext) -> str:
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board"),
+        "quest": IFW(None, check_current_quest, "Shows the current quest name & objective (if you are on a quest)"),
         "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], check_zone, "Shows a description of the given zone"),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
         "self": IFW(None, check_self, "Shows your own stats"),

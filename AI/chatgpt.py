@@ -21,7 +21,7 @@ QUEST_FORMATTING_PROMPT = "Leave 2 lines between quests"
 EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
 
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
-QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with success and failure descriptions"
+QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
 
 
@@ -103,7 +103,7 @@ class ChatGPTAPI:
         if response.ok:
             json_response = response.json()
             log.info(json_response)
-            return json_response["choiches"][0]["message"]["content"]
+            return json_response["choices"][0]["message"]["content"]
         log.error(f"could not create completion, response: {response.text}")
         raise GPTAPIError(response)
 

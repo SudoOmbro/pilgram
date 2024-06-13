@@ -1,8 +1,12 @@
+import logging
 from abc import ABC
 from datetime import timedelta
 from typing import List, Tuple, Union, Any
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
+
+
+log = logging.getLogger(__name__)
 
 
 class PilgramDatabase(ABC):
@@ -162,11 +166,22 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     # in progress quests management ----
-    # these functions will be used only by the backend basically, a cache probably isn't necessary
+
+    def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
+        """
+        returns True if the player is currently on a quest. This will actually be called by players
+
+        :raises KeyError: if no quest progress is found for the player.
+        """
+        raise NotImplementedError
 
     def is_player_on_a_quest(self, player: Player) -> bool:
         """ returns True if the player is currently on a quest. This will actually be called by players """
-        raise NotImplementedError
+        try:
+            return self.get_player_current_quest(player) is not None
+        except KeyError as e:
+            log.error(e)
+            return False
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
         """ get all quest progress that was last updated timedelta hours ago or more """
