@@ -1,0 +1,24 @@
+Quest 1: The Mysterious Package
+Objective: Find and retrieve a mysterious package hidden deep in the forest.
+Success: You locate the package, discovering a powerful artifact inside.
+Failure: Ambushed by bandits, you lose the package and are left empty-handed.
+
+Quest 2: The Lost Scout
+Objective: Locate a missing scout who wandered into the forest.
+Success: You find the scout alive and bring them back to safety.
+Failure: Unable to locate the scout, their fate remains unknown in the dangerous forest.
+
+Quest 3: The Enchanted Grove
+Objective: Discover the secret entrance to the hidden grove rumored to contain ancient magic.
+Success: You find the entrance and uncover the magical grove, gaining new knowledge and abilities.
+Failure: Lost in the dense forest, you are unable to locate the grove and miss out on its hidden powers.
+
+Quest 4: The Forest Guardian
+Objective: Confront and defeat the powerful guardian spirit protecting the heart of the forest.
+Success: You defeat the guardian and gain its blessing, granting you protection and strength in the forest.
+Failure: Overwhelmed by the guardian's power, you are forced to retreat and face its wrath in future encounters.
+
+Quest 5: The Dark Ritual
+Objective: Stop a group of dark cultists from performing a dangerous ritual in the forest.
+Success: You thwart the ritual, preventing a catastrophe and earning the gratitude of the forest spirits.
+Failure: The ritual is completed, unleashing a wave of dark energy that threatens to corrupt the forest and its inhabitants.

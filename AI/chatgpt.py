@@ -44,7 +44,6 @@ def get_events_system_prompt(zone: Zone) -> List[dict]:
         "system",
         WORLD_PROMPT,
         STYLE_PROMPT,
-        EVENT_FORMATTING_PROMPT,
         ZONE_PROMPT.format(name=zone.zone_name, descr=zone.zone_description)
     )
 
@@ -122,7 +121,7 @@ class ChatGPTGenerator(PilgramGenerator):
         result = []
         split_text = input_text.split("\n\n")
         for text in split_text:
-            # TODO get info from text
+
             new_quest = Quest.create_default(
                 zone,
                 starting_number,

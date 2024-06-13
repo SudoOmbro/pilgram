@@ -1,9 +1,15 @@
 import json, unittest
 
-from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT
+from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
+    EVENTS_PROMPT
 from pilgram.classes import Zone
 
 SETTINGS = json.load(open('settings.json'))
+
+
+def _read_file(filename: str) -> str:
+    with open(filename, 'r') as f:
+        return f.read()
 
 
 class TestChatGPT(unittest.TestCase):
@@ -34,6 +40,19 @@ class TestChatGPT(unittest.TestCase):
         messages = get_quests_system_prompt(self.ZONE) + build_messages("user", QUESTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
+
+    def test_generate_events(self):
+        messages = get_events_system_prompt(self.ZONE) + build_messages("user", EVENTS_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        print(generated_text)
+
+    def test_build_quests_from_generated_text(self):
+        text = _read_file("mock_quests_response.txt")
+        split_text = text.split("\n\n")
+        for x in split_text:
+            print(x)
+            print("---")
+
 
     def _test_chatgpt_api(self):
         response = self.api_wrapper.create_completion(

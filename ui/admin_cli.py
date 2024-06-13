@@ -164,7 +164,7 @@ def process_quest_add_zone(context: UserContext, user_input: str) -> str:
     try:
         zone_id = int(user_input)
         zone = db().get_zone(zone_id)
-        num = db().get_quest_count(zone)
+        num = db().get_quests_counts()[zone.zone_id - 1]
         quest.zone = zone
         quest.num = num
         print(quest.__dict__)
