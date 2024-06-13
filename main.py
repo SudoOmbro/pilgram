@@ -9,12 +9,13 @@ from orm.db import PilgramORMDatabase
 from pilgram.generics import PilgramDatabase, PilgramNotifier
 from pilgram.globals import GlobalSettings
 from pilgram.manager import QuestManager, GeneratorManager
+from pilgram.utils import read_update_interval
 from ui.admin_cli import ADMIN_INTERPRETER
 from ui.telegram_bot import PilgramBot
 from ui.utils import UserContext
 
-INTERVAL = 3600
-UPDATE_INTERVAL = timedelta(hours=6)
+INTERVAL = GlobalSettings.get("thread interval")
+UPDATE_INTERVAL = read_update_interval(GlobalSettings.get("update interval"))
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)

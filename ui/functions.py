@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Tuple, Dict, Union, Callable
 
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, AdventureContainer, Guild
+from pilgram.classes import Player, AdventureContainer, Guild, TOWN_ZONE
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX
 from ui.strings import Strings, MONEY
@@ -39,6 +39,10 @@ def check_zone(context: UserContext, zone_id_str: int) -> str:
         return str(zone)
     except KeyError:
         return Strings.zone_does_not_exist
+
+
+def check_town(context: UserContext) -> str:
+    return str(TOWN_ZONE)
 
 
 def check_self(context: UserContext) -> str:
@@ -154,7 +158,7 @@ def upgrade(context: UserContext, obj: str = "gear") -> str:
             "home": player.get_home_upgrade_required_money,
         }.get(obj)()
         if player.money < price:
-            return Strings.not_enough_money
+            return Strings.not_enough_money.format(amount=price-player.money)
         {
             "gear": player.upgrade_gear,
             "home": player.upgrade_home
@@ -300,42 +304,43 @@ def rank_guilds(context: UserContext) -> str:
 
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
-        "board": IFW(None, check_board, "Shows the quest board"),
-        "quest": IFW(None, check_current_quest, "Shows the current quest name & objective (if you are on a quest)"),
-        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], check_zone, "Shows a description of the given zone"),
-        "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name"),
-        "self": IFW(None, check_self, "Shows your own stats"),
-        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats"),
-        "prices": IFW(None, check_prices, "Shows all the prices"),
+        "board": IFW(None, check_board, "Shows the quest board."),
+        "quest": IFW(None, check_current_quest, "Shows the current quest name & objective (if you are on a quest)."),
+        "town": IFW(None, check_town, f"Shows a description of {ContentMeta.get('world.city.name')}."),
+        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], check_zone, "Shows a description of the given zone."),
+        "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
+        "self": IFW(None, check_self, "Shows your own stats."),
+        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
+        "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
-            "guild": IFW(None, check_my_guild, "Shows your own guild")
+            "guild": IFW(None, check_my_guild, "Shows your own guild.")
         }
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
-        "guild": IFW(None, start_guild_creation, "Create your own Guild")
+        "guild": IFW(None, start_guild_creation, "Create your own Guild.")
     },
     "upgrade": {
-        "gear": IFW(None, upgrade, "Upgrade your gear", default_args={"obj": "gear"}),
-        "home": IFW(None, upgrade, "Upgrade your home", default_args={"obj": "home"}),
-        "guild": IFW(None, upgrade_guild, "Upgrade your guild")
+        "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
+        "home": IFW(None, upgrade, "Upgrade your home.", default_args={"obj": "home"}),
+        "guild": IFW(None, upgrade_guild, "Upgrade your guild.")
     },
     "modify": {
         "character": {
-            "name": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, f"Modify your character's name for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "name"}),
-            "description": IFW([RWE("player description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, f"Modify your character's description for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "description"})
+            "name": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, f"Modify your character's name for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "name"}),
+            "description": IFW([RWE("player description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, f"Modify your character's description for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "description"})
         },
         "guild": {
-            "name": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "name"}),
-            "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} {MONEY})", default_args={"target": "description"})
+            "name": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "name"}),
+            "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "description"})
         }
     },
-    "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name"),
-    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts a quest in specified zone"),
-    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild"),
-    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient"),
+    "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name."),
+    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts a quest in specified zone."),
+    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild."),
+    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient."),
     "rank": {
-        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige")
+        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     }
 }
 

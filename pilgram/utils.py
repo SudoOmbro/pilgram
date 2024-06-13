@@ -1,9 +1,35 @@
+from datetime import timedelta
 from typing import Union, Dict, Any
+
+
+class IntervalError(Exception):
+    pass
+
+
+LETTERS_TO_INTERVALS: Dict[str, timedelta] = {
+    "d": timedelta(days=1),
+    "h": timedelta(hours=1),
+    "m": timedelta(minutes=1),
+    "s": timedelta(seconds=1),
+    "w": timedelta(weeks=1)
+}
 
 
 def read_text_file(path: str) -> str:
     with open(path, 'r') as f:
         return f.read()
+
+
+def read_update_interval(interval_str: str) -> timedelta:
+    result = timedelta(seconds=0)
+    split_string = interval_str.split(' ')
+    for token in split_string:
+        letter = token[-1]
+        if letter not in LETTERS_TO_INTERVALS:
+            raise IntervalError(f"Invalid interval string, '{letter}' not supported")
+        interval = LETTERS_TO_INTERVALS[letter]
+        result += interval * int(token[:-1])
+    return result
 
 
 class PathDict:

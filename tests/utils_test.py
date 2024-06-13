@@ -1,6 +1,7 @@
 import unittest
+from datetime import timedelta
 
-from pilgram.utils import PathDict
+from pilgram.utils import PathDict, read_update_interval
 
 
 class TestUtils(unittest.TestCase):
@@ -14,3 +15,14 @@ class TestUtils(unittest.TestCase):
         pd = PathDict()
         pd.path_set("a.b.c", 1)
         self.assertEqual(pd.path_get("a.b.c"), 1)
+
+    def test_interval_reading(self):
+        interval_string = "6h"
+        interval = read_update_interval(interval_string)
+        self.assertEqual(interval, timedelta(hours=6))
+        interval_string = "4h 30m 25s"
+        interval = read_update_interval(interval_string)
+        self.assertEqual(interval, timedelta(hours=4, minutes=30, seconds=25))
+        interval_string = "4w 3d 2s"
+        interval = read_update_interval(interval_string)
+        self.assertEqual(interval, timedelta(weeks=4, days=3, seconds=2))

@@ -1,5 +1,7 @@
 {
   "ChatGPT token": "XXX",
   "ChatGPT project": "XXX",
-  "Telegram bot token": "XXX"
+  "Telegram bot token": "XXX",
+  "update interval": "6h 0m 0s",
+  "thread interval": 3600
 }
