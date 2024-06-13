@@ -209,7 +209,9 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_ttl_single_value(ttl=14400)
     def rank_top_guilds(self) -> List[Tuple[str, int]]:
-        gs = GuildModel.select(GuildModel.name, GuildModel.prestige).order_by(GuildModel.prestige.desc()).limit(20)
+        gs = GuildModel.select(
+            GuildModel.name, GuildModel.prestige
+        ).order_by(GuildModel.prestige.desc()).limit(20).namedtuples()
         return [(guild_row.name, guild_row.prestige) for guild_row in gs]
 
     # zones ----
@@ -234,7 +236,7 @@ class PilgramORMDatabase(PilgramDatabase):
     @cache_ttl_single_value(ttl=86400)
     def get_all_zones(self) -> List[Zone]:
         try:
-            zs = ZoneModel.select()
+            zs = ZoneModel.select().namedtuples()
         except ZoneModel.DoesNotExist:
             return []
         return [self.build_zone_object(x) for x in zs]
@@ -277,10 +279,15 @@ class PilgramORMDatabase(PilgramDatabase):
         # cache lasts only 10 seconds to optimize the most frequent use case
         try:
             if zone:
-                zes = ZoneEventModel.select().where(ZoneEventModel.zone_id == zone.zone_id).order_by(fn.Random()).limit(1)
+                zes = ZoneEventModel.select(
+                    ZoneEventModel.id, ZoneEventModel.zone_id, ZoneEventModel.event_text
+                ).where(ZoneEventModel.zone_id == zone.zone_id).order_by(fn.Random()).limit(1).namedtuples()
             else:
-                zes = ZoneEventModel.select().where(ZoneEventModel.zone_id == 0).order_by(fn.Random()).limit(1)
-            return self.build_zone_event_object(zes)
+                zes = ZoneEventModel.select(
+                    ZoneEventModel.id, ZoneEventModel.zone_id, ZoneEventModel.event_text
+                ).where(ZoneEventModel.zone_id == 0).order_by(fn.Random()).limit(1).namedtuples()
+            for ze in zes:
+                return self.build_zone_event_object(ze)
         except ZoneEventModel.DoesNotExist:
             raise KeyError(f"Could not find any zone events within zone {zone.zone_id}")
 
@@ -385,7 +392,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def build_adventure_container(self, qps) -> AdventureContainer:
         player = self.get_player_data(qps.player)
-        quest = self.get_quest(qps.quest)
+        quest = self.get_quest(qps.quest) if qps.quest else None
         return AdventureContainer(player, quest, qps.end_time)
 
     @cache_ttl_quick(ttl=1800)

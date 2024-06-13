@@ -68,7 +68,7 @@ def cache_ttl_quick(ttl=3600):
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
-            key = (*args,)
+            key = args
 
             # Check if their return value is already known
             if key in storage:
@@ -80,12 +80,12 @@ def cache_ttl_quick(ttl=3600):
                 ttls[key] = time.time() + ttl
                 keys.append(key)
 
-            while True:
+            while len(keys) != 0:
                 oldest_key = keys[0]
                 # If they key has expired, remove the entry, and it's quick access key if quick_key_access=True
                 if ttls[oldest_key] < time.time():
-                    del storage[oldest_key]
-                    del keys[0]
+                    storage.pop(oldest_key)
+                    keys.pop(0)
                 else:
                     break
 
@@ -114,8 +114,8 @@ def cache_sized_quick(size_limit=256):
                 # If a size limit has been set, make sure the size hasn't been exceeded
                 if len(storage) > size_limit:
                     oldest_key = keys[0]
-                    del keys[0]
-                    del storage[oldest_key]
+                    keys.pop(0)
+                    storage.pop(oldest_key)
 
             return result
         return wrapper
@@ -144,15 +144,15 @@ def cache_sized_ttl_quick(size_limit=256, ttl=3600):
                 # Make sure the size hasn't been exceeded
                 if len(storage) > size_limit:
                     oldest_key = keys[0]
-                    del keys[0]
-                    del storage[oldest_key]
+                    keys.pop(0)
+                    storage.pop(oldest_key)
             # Check ttls
-            while True:
+            while len(keys) != 0:
                 oldest_key = keys[0]
                 # If they key has expired, remove the entry and it's quick access key
                 if ttls[oldest_key] < time.time():
-                    del storage[oldest_key]
-                    del keys[0]
+                    storage.pop(oldest_key)
+                    keys.pop(0)
                 else:
                     break
 

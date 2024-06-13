@@ -380,7 +380,7 @@ class AdventureContainer:
 
     def quest_id(self):
         """ non-verbose way to get quest id """
-        return self.quest.quest_id
+        return self.quest.quest_id if self.quest else None
 
     def zone(self) -> Union[Zone, None]:
         """ returns Zone if player is on a quest, None if player is in town """

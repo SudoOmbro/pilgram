@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Tuple
 
@@ -57,6 +58,7 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.process_cache = TempIntCache()
         self.interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
+        self.__loop = asyncio.new_event_loop()
 
     def get_user_context(self, update: Update) -> Tuple[UserContext, bool]:
         user_id: int = update.effective_user.id
@@ -85,7 +87,8 @@ class PilgramBot(PilgramNotifier):
         await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
 
     def notify(self, player: Player, text: str):
-        notify(self.get_bot(), player, text)
+        # this seems to work? IDK honestly I hate using async, it spreads like cancer
+        self.__loop.run_until_complete(notify(self.get_bot(), player, text))
 
     def get_bot(self) -> Bot:
         return self.__app.bot
