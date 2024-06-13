@@ -5,7 +5,7 @@ from time import sleep
 from datetime import timedelta
 from typing import List, Dict
 
-from pilgram.classes import Quest, Player, AdventureContainer, Zone
+from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from ui.strings import Strings
@@ -115,12 +115,9 @@ class GeneratorManager:
         """ wrapper around the acquire method to make calling it less verbose """
         return self.database.acquire()
 
-    def __get_all_zones(self) -> List[Zone]:
-        return self.db().get_all_zones()
-
     def __get_zones_to_generate(self) -> List[Zone]:
         result: List[Zone] = []
-        zones = self.__get_all_zones()
+        zones = self.db().get_all_zones()
         hq = _HighestQuests.load_from_file()
         quest_counts = self.db().get_quests_counts()
         for zone, count in zip(zones, quest_counts):
@@ -147,3 +144,11 @@ class GeneratorManager:
                 log.error(f"Encountered an error while generating for zone {zone.zone_id}: {e}")
             finally:
                 sleep(timeout_between_ai_calls)
+        if len(zones) > 0:
+            # generate something for the town if you generated something for other zones
+            try:
+                zone_events = self.generator.generate_zone_events(TOWN_ZONE)
+                for zone_event in zone_events:
+                    self.db().add_zone_event(zone_event)
+            except Exception as e:
+                log.error(f"Encountered an error while generating for town zone: {e}")

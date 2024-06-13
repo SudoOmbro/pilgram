@@ -388,3 +388,6 @@ class AdventureContainer:
 
     def __hash__(self):
         return hash(self.player_id())
+
+
+TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, "world.city.description")
