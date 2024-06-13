@@ -130,10 +130,10 @@ class GeneratorManager:
 
     def run(self, timeout_between_ai_calls: float):
         zones = self.__get_zones_to_generate()
+        quest_numbers = self.db().get_quests_counts()
         log.info(f"Found {len(zones)} zones to generate quests/events for")
         for zone in zones:
             try:
-                quest_numbers = self.db().get_quests_counts()
                 quests = self.generator.generate_quests(zone, quest_numbers)
                 for quest in quests:
                     self.db().add_quest(quest)
