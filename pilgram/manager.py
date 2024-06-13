@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 from time import sleep
 from datetime import timedelta
@@ -10,8 +11,13 @@ from pilgram.globals import ContentMeta
 from ui.strings import Strings
 
 
+log = logging.getLogger(__name__)
+
+
 MONEY = ContentMeta.get("money.name")
 QUEST_THRESHOLD = 5
+
+MAX_QUESTS_FOR_EVENTS = 120  # * 25 = 3000
 
 
 def _gain(xp: int, money: int) -> str:
@@ -124,12 +130,20 @@ class GeneratorManager:
 
     def run(self, timeout_between_ai_calls: float):
         zones = self.__get_zones_to_generate()
+        log.info(f"Found {len(zones)} zones to generate quests/events for")
         for zone in zones:
-            quests = self.generator.generate_quests(zone, self.db().get_quests_counts())
-            sleep(timeout_between_ai_calls)
-            for quest in quests:
-                self.db().add_quest(quest)
-            zone_events = self.generator.generate_zone_events(zone)
-            for zone_event in zone_events:
-                self.db().add_zone_event(zone_event)
-            sleep(timeout_between_ai_calls)
+            try:
+                quest_numbers = self.db().get_quests_counts()
+                quests = self.generator.generate_quests(zone, quest_numbers)
+                for quest in quests:
+                    self.db().add_quest(quest)
+                sleep(timeout_between_ai_calls)
+                if quest_numbers[zone.zone_id - 1] < MAX_QUESTS_FOR_EVENTS:
+                    # only generate zone events if there are less than MAX_QUESTS_FOR_EVENTS
+                    zone_events = self.generator.generate_zone_events(zone)
+                    for zone_event in zone_events:
+                        self.db().add_zone_event(zone_event)
+            except Exception as e:
+                log.error(f"Encountered an error while generating for zone {zone.zone_id}: {e}")
+            finally:
+                sleep(timeout_between_ai_calls)

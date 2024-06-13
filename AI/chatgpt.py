@@ -1,4 +1,5 @@
 import logging
+import re
 from functools import cache
 from typing import Union, List
 
@@ -23,6 +24,13 @@ EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
+
+QUEST_NAME_REGEX: str = r"^[Qq]uest\s[\d]+:\s(.*)$"
+QUEST_DESCRIPTION_REGEX: str = r"^[Oo]bjective:\s(.*)$"
+QUEST_SUCCESS_REGEX: str = r"^[Ss]uccess:\s(.*)$"
+QUEST_FAILURE_REGEX: str = r"^[Ff]ailure:\s(.*)$"
+
+EVENT_REGEX: str = r"^[\d]+\.\s(.*)$"
 
 
 def build_messages(role: str, *messages: str) -> List[dict]:
@@ -54,6 +62,11 @@ class GPTAPIError(Exception):
         super().__init__()
         self.status_code = response.status_code
         self.response = response
+
+
+class GPTMisbehaveError(Exception):
+    """ thrown when the AI did not generate what it was supposed to generate. """
+    pass
 
 
 class ChatGPTAPI:
@@ -117,47 +130,47 @@ class ChatGPTGenerator(PilgramGenerator):
         self.api_wrapper = api_wrapper
 
     @staticmethod
-    def __get_quests_from_generated_text(input_text: str, zone: Zone, starting_number: int) -> List[Quest]:
+    def __get_regex_match(regex: str, text: str, attr_name: str) -> str:
+        result = re.search(regex, text, re.MULTILINE)
+        if result:
+            return result.groups()[0]
+        raise GPTMisbehaveError(f"Could not find {attr_name} in generated text:\n\n{text}")
+
+    def _get_quests_from_generated_text(self, input_text: str, zone: Zone, starting_number: int) -> List[Quest]:
         result = []
         split_text = input_text.split("\n\n")
+        if len(split_text) != QUESTS_PER_BATCH:
+            raise GPTMisbehaveError(f"AI did not generate {QUESTS_PER_BATCH} quests. AI output:\n\n{input_text}")
         for text in split_text:
-
             new_quest = Quest.create_default(
                 zone,
                 starting_number,
-                "",
-                "",
-                "",
-                ""
+                self.__get_regex_match(QUEST_NAME_REGEX, text, "quest name"),
+                self.__get_regex_match(QUEST_DESCRIPTION_REGEX, text, "description"),
+                self.__get_regex_match(QUEST_SUCCESS_REGEX, text, "success"),
+                self.__get_regex_match(QUEST_FAILURE_REGEX, text, "failure")
             )
             starting_number += 1
             result.append(new_quest)
         return result
 
-    @staticmethod
-    def __get_events_from_generated_text(input_text: str, zone: Zone) -> List[ZoneEvent]:
+    def _get_events_from_generated_text(self, input_text: str, zone: Zone) -> List[ZoneEvent]:
         result = []
-        split_text = input_text.split("\n\n")
-        for text in split_text:
+        matches = re.findall(EVENT_REGEX, input_text, re.MULTILINE)
+        if (not matches) or len(matches) != EVENTS_PER_BATCH:
+            raise GPTMisbehaveError(f"AI did not generate {EVENTS_PER_BATCH} events. AI output:\n\n{input_text}")
+        for text in matches:
             new_event = ZoneEvent.create_default(zone, text)
             result.append(new_event)
         return result
 
     def generate_quests(self, zone: Zone, quest_numbers: List[int]) -> List[Quest]:
-        try:
-            messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
-            generated_text = self.api_wrapper.create_completion(messages)
-            starting_number = quest_numbers[zone.zone_id - 1]
-            return self.__get_quests_from_generated_text(generated_text, zone, starting_number)
-        except GPTAPIError as e:
-            log.error(f"could not generate quests, error: {e}")
-            return []
+        messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        starting_number = quest_numbers[zone.zone_id - 1]
+        return self._get_quests_from_generated_text(generated_text, zone, starting_number)
 
     def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
-        try:
-            messages = get_quests_system_prompt(zone) + build_messages("user", EVENTS_PROMPT)
-            generated_text = self.api_wrapper.create_completion(messages)
-            return self.__get_events_from_generated_text(generated_text, zone)
-        except GPTAPIError as e:
-            log.error(f"could not generate quests, error: {e}")
-            return []
+        messages = get_quests_system_prompt(zone) + build_messages("user", EVENTS_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        return self._get_events_from_generated_text(generated_text, zone)

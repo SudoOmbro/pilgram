@@ -1,7 +1,7 @@
 import json, unittest
 
 from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
-    EVENTS_PROMPT
+    EVENTS_PROMPT, ChatGPTGenerator
 from pilgram.classes import Zone
 
 SETTINGS = json.load(open('settings.json'))
@@ -15,6 +15,7 @@ def _read_file(filename: str) -> str:
 class TestChatGPT(unittest.TestCase):
     ZONE: Zone = Zone(1, "Test zone", 1, "forest at the edge of the city")
     api_wrapper = ChatGPTAPI(SETTINGS["ChatGPT token"], "gpt-3.5-turbo")
+    generator: ChatGPTGenerator = ChatGPTGenerator(api_wrapper)
 
     def test_build_messages(self):
         messages = build_messages("system", "aaa", "bbb")
@@ -48,11 +49,15 @@ class TestChatGPT(unittest.TestCase):
 
     def test_build_quests_from_generated_text(self):
         text = _read_file("mock_quests_response.txt")
-        split_text = text.split("\n\n")
-        for x in split_text:
-            print(x)
-            print("---")
+        quests = self.generator._get_quests_from_generated_text(text, self.ZONE, 5)
+        for quest in quests:
+            print(f"{quest}\nnum: {quest.number}, success: '{quest.success_text}', failure: '{quest.failure_text}'\n")
 
+    def test_build_events_from_generated_text(self):
+        text = _read_file("mock_events_response.txt")
+        events = self.generator._get_events_from_generated_text(text, self.ZONE)
+        for event in events:
+            print(event)
 
     def _test_chatgpt_api(self):
         response = self.api_wrapper.create_completion(
