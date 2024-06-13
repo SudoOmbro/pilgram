@@ -37,7 +37,7 @@ class _HighestQuests:
         if os.path.isfile(cls.FILENAME):
             with open(cls.FILENAME, "r") as f:
                 return _HighestQuests(json.load(f))
-        return {}
+        return _HighestQuests({})
 
     def save(self):
         with open(self.FILENAME, "w") as f:
@@ -49,7 +49,7 @@ class _HighestQuests:
             self.save()
 
     def is_quest_number_too_low(self, zone: Zone, number_of_quests: int) -> bool:
-        return number_of_quests < self.__data.get(zone.zone_id - 1, 0) + QUEST_THRESHOLD
+        return number_of_quests < (self.__data.get(zone.zone_id - 1, 0) + QUEST_THRESHOLD)
 
 
 class QuestManager:
@@ -121,6 +121,7 @@ class GeneratorManager:
         zones = self.db().get_all_zones()
         hq = _HighestQuests.load_from_file()
         quest_counts = self.db().get_quests_counts()
+        print(quest_counts)
         for zone, count in zip(zones, quest_counts):
             if hq.is_quest_number_too_low(zone, count):
                 result.append(zone)
@@ -132,11 +133,13 @@ class GeneratorManager:
         log.info(f"Found {len(zones)} zones to generate quests/events for")
         for zone in zones:
             try:
+                log.info(f"generating quests for zone {zone.zone_id}")
                 quests = self.generator.generate_quests(zone, quest_numbers)
                 for quest in quests:
                     self.db().add_quest(quest)
                 sleep(timeout_between_ai_calls)
                 if quest_numbers[zone.zone_id - 1] < MAX_QUESTS_FOR_EVENTS:
+                    log.info(f"generating zone events for zone {zone.zone_id}")
                     # only generate zone events if there are less than MAX_QUESTS_FOR_EVENTS
                     zone_events = self.generator.generate_zone_events(zone)
                     for zone_event in zone_events:
@@ -148,6 +151,7 @@ class GeneratorManager:
         if len(zones) > 0:
             # generate something for the town if you generated something for other zones
             try:
+                log.info(f"generating zone events for town")
                 zone_events = self.generator.generate_zone_events(TOWN_ZONE)
                 for zone_event in zone_events:
                     self.db().add_zone_event(zone_event)

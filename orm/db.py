@@ -357,7 +357,7 @@ class PilgramORMDatabase(PilgramDatabase):
         """ returns a list of quest amounts per zone, position in the list is determined by zone id """
         query = (ZoneModel.select(fn.Count(QuestModel.id).alias('quest_count')).
                  join(QuestModel, JOIN.LEFT_OUTER).
-                 group_by(QuestModel.id).
+                 group_by(ZoneModel.id).
                  order_by(ZoneModel.id.desc()))
         return [x.quest_count for x in query]
 

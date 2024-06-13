@@ -25,7 +25,7 @@ ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
 
-QUEST_NAME_REGEX: str = r"^[Qq]uest\s[\d]+:\s(.*)$"
+QUEST_NAME_REGEX: str = r"^[Qq]uest\s?[\d]*:\s(.*)$"
 QUEST_DESCRIPTION_REGEX: str = r"^[Oo]bjective:\s(.*)$"
 QUEST_SUCCESS_REGEX: str = r"^[Ss]uccess:\s(.*)$"
 QUEST_FAILURE_REGEX: str = r"^[Ff]ailure:\s(.*)$"
