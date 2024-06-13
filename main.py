@@ -2,7 +2,6 @@ import logging
 import sys
 import threading
 from time import sleep
-from datetime import timedelta
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
@@ -25,7 +24,9 @@ log.addHandler(logging.StreamHandler(sys.stderr))
 def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running quest manager")
     quest_manager = QuestManager(database, notifier, UPDATE_INTERVAL)
+    sleep(INTERVAL / 2)  # offset the starting of the process by half the interval so that the threads don't run at the same time.
     while True:
+        log.info("Quest manager update")
         try:
             updates = quest_manager.get_updates()
             for update in updates:
@@ -47,6 +48,7 @@ def run_generator_manager(database: PilgramDatabase):
     )
     while True:
         try:
+            log.info("Generator manager update")
             generator_manager.run(1)
             sleep(INTERVAL)
         except Exception as e:

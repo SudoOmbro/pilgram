@@ -230,9 +230,12 @@ class PilgramORMDatabase(PilgramDatabase):
         except ZoneModel.DoesNotExist:
             raise KeyError(f"Could not find zone with id {zone_id}")
 
-    @cache_ttl_quick(ttl=86400)
+    @cache_ttl_single_value(ttl=86400)
     def get_all_zones(self) -> List[Zone]:
-        zs = ZoneModel.select()
+        try:
+            zs = ZoneModel.select()
+        except ZoneModel.DoesNotExist:
+            return []
         return [self.build_zone_object(x) for x in zs]
 
     def update_zone(self, zone: Zone):  # this will basically never be called, but it's good to have
