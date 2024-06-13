@@ -29,6 +29,7 @@ class Strings:
     # quests
     check_board = "You check the quest board, you see there are quests available in the following zones:"
     already_on_a_quest = "You already are on a quest!"
+    not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
     quest_success = "You have completed the quest '*{name}*'!"
     quest_fail = "You have failed to complete the quest '*{name}*', you return to town sad, empty handed and a bit bruised."
