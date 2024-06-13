@@ -74,6 +74,7 @@ def start_add_obj_process(context: UserContext, obj_type: str = "zone") -> str:
         context.set("type", obj_type)
         context.set("obj", target_object)
         context.start_process(f"add {obj_type}")
+        context.set("Ptype", "add")
         return context.get_process_prompt(ADMIN_PROCESSES)
     except Exception as e:
         return str(e)
@@ -89,6 +90,8 @@ def start_edit_obj_process(context: UserContext, obj_id: int, obj_type: str = "z
         context.set("type", obj_type)
         context.set("obj", target_object)
         context.start_process(f"edit {obj_type}")
+        context.set("Ptype", "edit")
+        print(target_object.__dict__)
         return context.get_process_prompt(ADMIN_PROCESSES)
     except Exception as e:
         return str(e)
@@ -105,6 +108,8 @@ class ProcessGetObjStrAttr:
         self.target_attr = target_attr
 
     def __call__(self, context: UserContext, user_input: str) -> str:
+        if (user_input == "") and (context.get("Ptype") == "edit"):
+            return f"{context.get('type')} {self.target_attr} not edited.\n" + _progress(context)
         obj = context.get("obj")
         obj.__dict__[self.target_attr] = user_input
         print(obj.__dict__)
@@ -114,6 +119,8 @@ class ProcessGetObjStrAttr:
 class ProcessGetObjIntAttr(ProcessGetObjStrAttr):
 
     def __call__(self, context: UserContext, user_input: str) -> str:
+        if (user_input == "") and (context.get("Ptype") == "edit"):
+            return f"{context.get('type')} {self.target_attr} not edited.\n" + _progress(context)
         obj = context.get("obj")
         try:
             obj.__dict__[self.target_attr] = int(user_input)
@@ -160,6 +167,8 @@ def process_obj_edit_confirm(context: UserContext, user_input: str) -> str:
 
 
 def process_quest_add_zone(context: UserContext, user_input: str) -> str:
+    if (user_input == "") and (context.get("Ptype") == "edit"):
+        return f"{context.get('type')} zone_id not edited.\n" + _progress(context)
     quest: Quest = context.get("obj")
     try:
         zone_id = int(user_input)
@@ -174,6 +183,8 @@ def process_quest_add_zone(context: UserContext, user_input: str) -> str:
 
 
 def process_event_add_zone(context: UserContext, user_input: str) -> str:
+    if (user_input == "") and (context.get("Ptype") == "edit"):
+        return f"{context.get('type')} zone_id not edited.\n" + _progress(context)
     event: ZoneEvent = context.get("obj")
     try:
         zone_id = int(user_input)
@@ -261,6 +272,7 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "edit quest": (
         ("Write Quest name", ProcessGetObjStrAttr("name")),
         ("Write Quest zone id", process_quest_add_zone),
+        ("Write Quest number", ProcessGetObjIntAttr("number")),
         ("Write Quest description", ProcessGetObjStrAttr("description")),
         ("Write Quest success text", ProcessGetObjStrAttr("success_text")),
         ("Write Quest failure text", ProcessGetObjStrAttr("failure_text")),

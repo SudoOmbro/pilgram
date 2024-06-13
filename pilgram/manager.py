@@ -121,7 +121,6 @@ class GeneratorManager:
         zones = self.db().get_all_zones()
         hq = _HighestQuests.load_from_file()
         quest_counts = self.db().get_quests_counts()
-        print(quest_counts)
         for zone, count in zip(zones, quest_counts):
             if hq.is_quest_number_too_low(zone, count):
                 result.append(zone)
