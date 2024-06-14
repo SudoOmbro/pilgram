@@ -17,7 +17,7 @@ log.setLevel(logging.INFO)
 
 
 MONEY = ContentMeta.get("money.name")
-QUEST_THRESHOLD = 5
+QUEST_THRESHOLD = 2
 
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
