@@ -4,7 +4,7 @@ import logging
 import os
 from time import sleep
 from datetime import timedelta
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
@@ -121,7 +121,7 @@ class GeneratorManager:
         """ wrapper around the acquire method to make calling it less verbose """
         return self.database.acquire()
 
-    def __get_zones_to_generate(self) -> List[Zone]:
+    def __get_zones_to_generate(self) -> Tuple[List[Zone], List[int]]:
         result: List[Zone] = []
         zones = self.db().get_all_zones()
         hq = _HighestQuests.load_from_file()
@@ -131,11 +131,10 @@ class GeneratorManager:
         for zone, count in zip(zones, quest_counts):
             if hq.is_quest_number_too_low(zone, count):
                 result.append(zone)
-        return result
+        return result, quest_counts
 
     def run(self, timeout_between_ai_calls: float):
-        zones = self.__get_zones_to_generate()
-        quest_numbers: List[int] = self.db().get_quests_counts()
+        zones, quest_numbers = self.__get_zones_to_generate()
         log.info(f"Found {len(zones)} zones to generate quests/events for")
         for zone in zones:
             try:
