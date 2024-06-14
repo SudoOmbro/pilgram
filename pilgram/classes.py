@@ -114,12 +114,15 @@ class Progress:
     def __init__(self, zone_progress: Dict[int, int]):
         """
         :param zone_progress:
-            dictionary that contains the player quest progress in the zone, stored like this: [zone, progress]
+            dictionary that contains the player quest progress in the zone, stored like this: {zone: progress, ...}
         """
         self.zone_progress = zone_progress
 
     def get_zone_progress(self, zone: Zone) -> int:
-        return self.zone_progress.get(zone.zone_id, 0)
+        return self.zone_progress.get(zone.zone_id - 1, 0)
+
+    def set_zone_progress(self, zone: Zone, progress: int):
+        self.zone_progress[zone.zone_id - 1] = progress
 
     def __str__(self):
         return "\n".join(f"zone {zone}: progress {progress}" for zone, progress in self.zone_progress)

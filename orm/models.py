@@ -65,8 +65,8 @@ class ZoneEventModel(BaseModel):
 
 class QuestProgressModel(BaseModel):
     """ Table that tracks the progress of player quests & controls when to send events/finish the quest """
-    player = ForeignKeyField(PlayerModel, unique=True)
-    quest = ForeignKeyField(QuestModel, null=True, default=None)
+    player_id = ForeignKeyField(PlayerModel, unique=True, primary_key=True)
+    quest_id = ForeignKeyField(QuestModel, null=True, default=None)
     end_time = DateTimeField(default=datetime.now)
     last_update = DateTimeField(default=datetime.now)
 

@@ -17,7 +17,7 @@ from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick,
 log = logging.getLogger(__name__)
 
 
-def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:
+def decode_progress(data: Union[str, None]) -> Dict[int, int]:
     """
         decodes the bytestring saved in progress field to an integer map.
         Even bytes represent zone ids, odd bytes represent the progress in the associated zone.
@@ -25,7 +25,12 @@ def decode_progress(data: Union[bytes, None]) -> Dict[int, int]:
     if not data:
         return {}
     progress_dictionary: Dict[int, int] = {}
-    unpacked_array = np.frombuffer(data, dtype=np.uint16).reshape((2, len(data) >> 2))
+    encoded_data = bytes(data, "UTF-8")
+    if len(encoded_data) == 4:
+        # special case for progress with a single element, numpy returned the wrong array shape
+        unpacked_array = np.frombuffer(encoded_data, dtype=np.uint16).reshape(2)
+        return {unpacked_array[0].item(): unpacked_array[1].item()}
+    unpacked_array = np.frombuffer(encoded_data, dtype=np.uint16).reshape((2, len(data) >> 2))
     for zone_id, progress in unpacked_array:
         progress_dictionary[zone_id.item()] = progress.item()
     return progress_dictionary
@@ -196,6 +201,7 @@ class PilgramORMDatabase(PilgramDatabase):
         gs.name = guild.name
         gs.description = guild.description
         gs.level = guild.level
+        gs.prestige = guild.prestige
         gs.save()
 
     def add_guild(self, guild: Guild):
@@ -391,29 +397,29 @@ class PilgramORMDatabase(PilgramDatabase):
     # in progress quest management ----
 
     def build_adventure_container(self, qps) -> AdventureContainer:
-        player = self.get_player_data(qps.player)
-        quest = self.get_quest(qps.quest) if qps.quest else None
+        player = self.get_player_data(int(qps.player_id))
+        quest = self.get_quest(int(qps.quest_id)) if qps.quest_id else None
         return AdventureContainer(player, quest, qps.end_time)
 
     @cache_ttl_quick(ttl=1800)
     def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
         try:
-            qps = QuestProgressModel.get(QuestProgressModel.player == player.player_id)
-            return qps.quest
+            qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
+            return qps.quest_id
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {player.player_id}")
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
         try:
-            qps = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta)
+            qps = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta).namedtuples()
             return [self.build_adventure_container(x) for x in qps]
         except QuestProgressModel.DoesNotExist:
             return []
 
     def update_quest_progress(self, adventure_container: AdventureContainer):
         try:
-            qps = QuestProgressModel.get(QuestProgressModel.player == adventure_container.player_id())
-            qps.quest = adventure_container.quest_id()
+            qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
+            qps.quest_id = adventure_container.quest_id()
             qps.last_update = datetime.now()
             qps.end_time = adventure_container.finish_time
             qps.save()

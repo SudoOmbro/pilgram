@@ -17,22 +17,24 @@ log.setLevel(logging.INFO)
 
 
 MONEY = ContentMeta.get("money.name")
-QUEST_THRESHOLD = 2
+QUEST_THRESHOLD = 3
 
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
 
 def _gain(xp: int, money: int) -> str:
-    return f"\n\nYou gain {xp} xp & {money} {MONEY}"
+    return f"\n\n_You gain {xp} xp & {money} {MONEY}_"
 
 
 class _HighestQuests:
     """ records highest reached quest by players per zone, useful to the generator to see what it has to generate """
     FILENAME = "questprogressdata.json"
 
-    def __init__(self, data: Dict[int, int]) -> None:
-        self.__data = data
+    def __init__(self, data: Dict[str, int]) -> None:
+        self.__data: Dict[int, int] = {}
+        for k, v in data.items():
+            self.__data[int(k)] = v
 
     @classmethod
     def load_from_file(cls):
@@ -46,8 +48,8 @@ class _HighestQuests:
             json.dump(self.__data, f)
 
     def update(self, zone_id: int, progress: int):
-        if self.__data[zone_id] < progress:
-            self.__data[zone_id] = progress
+        if self.__data.get(zone_id - 1, 0) < progress:
+            self.__data[zone_id - 1] = progress
             self.save()
 
     def is_quest_number_too_low(self, zone: Zone, number_of_quests: int) -> bool:
@@ -74,16 +76,17 @@ class QuestManager:
             xp, money = quest.get_rewards(player)
             player.add_xp(xp)
             player.money += money
-            self.db().update_player_data(player)
             if player.guild:
                 player.guild.prestige += quest.get_prestige()
                 self.db().update_guild(player.guild)
-            self.notifier.notify(player, Strings.quest_success.format(name=quest.name) + _gain(xp, money))
+            self.notifier.notify(player, quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money))
         else:
-            self.notifier.notify(player, Strings.quest_fail.format(name=quest.name))
-        self.highest_quests.update(ac.zone().zone_id, ac.quest.number)  # zone() will return a zone and not None since player must be in a quest to reach this part of the code
+            self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))
+        self.highest_quests.update(ac.zone().zone_id, ac.quest.number + 1)  # zone() will return a zone and not None since player must be in a quest to reach this part of the code
         ac.quest = None
         self.db().update_quest_progress(ac)
+        player.progress.set_zone_progress(quest.zone, quest.number + 1)
+        self.db().update_player_data(player)
 
     def _process_event(self, ac: AdventureContainer):
         zone = ac.zone()
@@ -93,7 +96,7 @@ class QuestManager:
         ac.player.money += money
         self.db().update_player_data(ac.player)
         self.db().update_quest_progress(ac)
-        text = f"{event.event_text}\n\n{_gain(xp, money)}"
+        text = f"*{event.event_text}*{_gain(xp, money)}"
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):

@@ -39,7 +39,7 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running quest manager")
     quest_manager = QuestManager(database, notifier, UPDATE_INTERVAL)
     # offset the starting of the process by half the interval so that the threads don't run at the same time.
-    if is_killed(INTERVAL):
+    if is_killed(INTERVAL / 2):
         return
     while True:
         log.info("Quest manager update")

@@ -92,7 +92,7 @@ class PilgramBot(PilgramNotifier):
     def notify(self, player: Player, text: str):
         try:
             chat_id = player.player_id
-            url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&text={quote(text)}"
+            url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={quote(text)}"
             return requests.get(url).json()
         except Exception as e:
             log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")

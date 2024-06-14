@@ -33,8 +33,8 @@ class Strings:
     level_too_low = "Your level is too low! You must be at least level {lv}."
     not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
-    quest_success = "You have completed the quest '*{name}*'!"
-    quest_fail = f"You have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, for there is more to do."
+    quest_success = "\n\nYou have completed the quest '*{name}*'!"
+    quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, for there is more to do."
 
     # upgrade
     upgrade_object_confirmation = "Are you sure you want to upgrade your {obj}? It will cost you {price}"
