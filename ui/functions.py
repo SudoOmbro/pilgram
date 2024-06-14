@@ -145,6 +145,7 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     db().add_guild(guild)
     guild = db().get_owned_guild(player)
     player.guild = guild
+    player.money -= ContentMeta.get("guilds.creation_cost")
     db().update_player_data(player)
     context.end_process()
     return Strings.guild_creation_success.format(name=guild.name)

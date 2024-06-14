@@ -201,12 +201,12 @@ class Player:
         return self.money >= self.get_home_upgrade_required_money()
 
     def upgrade_gear(self):
-        self.gear_level += 1
         self.money -= self.get_gear_upgrade_required_money()
+        self.gear_level += 1
 
     def upgrade_home(self):
-        self.home_level += 1
         self.money -= self.get_home_upgrade_required_money()
+        self.home_level += 1
 
     def level_up(self):
         req_xp = self.get_required_xp()
