@@ -26,9 +26,7 @@ kill_signal = threading.Event()
 
 def is_killed(sleep_interval: float):
     killed = kill_signal.wait(sleep_interval)
-    if killed:
-        return True
-    return False
+    return killed
 
 
 def kill_all_threads():
