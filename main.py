@@ -83,6 +83,11 @@ def run_admin_cli():
             print(result)
             if kill_signal.is_set():
                 return
+        except EOFError:
+            # silence all EOF errors
+            if is_killed(5):
+                # sleep for 5 seconds to avoid being always active
+                return
         except Exception as e:
             log.error(f"error in admin CLI thread: {e}")
             print(e)
