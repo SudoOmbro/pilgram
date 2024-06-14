@@ -1,3 +1,4 @@
+import io
 import logging
 import sys
 import threading
@@ -20,11 +21,26 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 log.addHandler(logging.StreamHandler(sys.stderr))
 
+kill_signal = threading.Event()
+
+
+def is_killed(sleep_interval: float):
+    killed = kill_signal.wait(sleep_interval)
+    if killed:
+        return True
+    return False
+
+
+def kill_all_threads():
+    kill_signal.set()
+
 
 def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running quest manager")
     quest_manager = QuestManager(database, notifier, UPDATE_INTERVAL)
-    sleep(INTERVAL / 2)  # offset the starting of the process by half the interval so that the threads don't run at the same time.
+    # offset the starting of the process by half the interval so that the threads don't run at the same time.
+    if is_killed(INTERVAL):
+        return
     while True:
         log.info("Quest manager update")
         try:
@@ -32,7 +48,8 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
             for update in updates:
                 quest_manager.process_update(update)
                 sleep(0.1)
-            sleep(INTERVAL)
+            if is_killed(INTERVAL):
+                return
         except Exception as e:
             log.error(f"error in quest manager thread: {e}")
 
@@ -50,7 +67,8 @@ def run_generator_manager(database: PilgramDatabase):
         try:
             log.info("Generator manager update")
             generator_manager.run(1)
-            sleep(INTERVAL)
+            if is_killed(INTERVAL):
+                return
         except Exception as e:
             log.error(f"error in generator manager thread: {e}")
 
@@ -60,9 +78,11 @@ def run_admin_cli():
     user_context: UserContext = UserContext({"id": 69, "username": "God"})
     while True:
         try:
-            command: str = input()
+            command = input()  # this is blocking & causes the thread to never finish if joined.
             result: str = ADMIN_INTERPRETER.context_aware_execute(user_context, command)
             print(result)
+            if kill_signal.is_set():
+                return
         except Exception as e:
             log.error(f"error in admin CLI thread: {e}")
             print(e)
@@ -73,13 +93,17 @@ def main():
     database = PilgramORMDatabase
     threads = [
         threading.Thread(target=lambda: run_quest_manager(database, bot), name="quest-manager"),
-        threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager"),
-        threading.Thread(target=run_admin_cli, name="admin-CLI"),
+        threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager")
     ]
+    cli_thread = threading.Thread(target=run_admin_cli, name="admin-CLI", daemon=True)
     for thread in threads:
         thread.start()
+    cli_thread.start()
+    # not joining the CLI thread is the only way I found to close the program "gracefully" (no SIGKILL).
+    # It still causes a Fatal Python error and ends with 134, but since it only happens at program termination... 🤷‍♂️
     bot.run()
     bot.stop()
+    kill_all_threads()
     for thread in threads:
         thread.join()
 

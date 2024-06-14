@@ -1,4 +1,5 @@
 import re
+from cmd import Cmd
 from typing import Union, Tuple, Callable, List, Any, Dict
 
 from pilgram.utils import PathDict
@@ -206,3 +207,17 @@ def reconstruct_delimited_arguments(separated_strings: List[str], delimiter: str
                 continue
             built_string += f"{string} "
     return result
+
+
+class AdminCLI(Cmd):
+    intro = "Welcome to the admin CLI. Type 'help' to list commands.\n"
+    prompt = "(admin) "
+
+    def do_greet(self, name):
+        "Greet the user"
+        print(f'Hello, {name}')
+
+    def do_exit(self, _):
+        "Exit the CLI"
+        print('Goodbye!')
+        return True
