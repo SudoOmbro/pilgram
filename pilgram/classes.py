@@ -2,9 +2,15 @@ import random
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Any, Callable, Union
 
-from pilgram.globals import ContentMeta, BASE_QUEST_DURATION, DURATION_PER_ZONE_LEVEL, DURATION_PER_QUEST_NUMBER, \
-    RANDOM_DURATION
+from pilgram.globals import ContentMeta, GlobalSettings
+from pilgram.utils import read_update_interval
 from ui.strings import MONEY
+
+
+BASE_QUEST_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.base duration"))
+DURATION_PER_ZONE_LEVEL: timedelta = read_update_interval(GlobalSettings.get("quest.duration per level"))
+DURATION_PER_QUEST_NUMBER: timedelta = read_update_interval(GlobalSettings.get("quest.duration per number"))
+RANDOM_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.random duration"))
 
 
 class Zone:

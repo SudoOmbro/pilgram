@@ -16,11 +16,6 @@ DESCRIPTION_REGEX = fr"^{__INNER_REGEX}{{10,250}}$"
 POSITIVE_INTEGER_REGEX = r"^[\d]+$"
 YES_NO_REGEX = r"^(?:y|n)$"
 
-BASE_QUEST_DURATION: timedelta = timedelta(days=2)
-DURATION_PER_ZONE_LEVEL: timedelta = timedelta(minutes=30)
-DURATION_PER_QUEST_NUMBER: timedelta = timedelta(hours=1)
-RANDOM_DURATION: timedelta = timedelta(minutes=30)
-
 
 class __GenericGlobalSettings(ABC):
     """ read only singleton that holds global variables """

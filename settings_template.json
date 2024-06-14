@@ -3,5 +3,11 @@
   "ChatGPT project": "XXX",
   "Telegram bot token": "XXX",
   "update interval": "6h 0m 0s",
-  "thread interval": 3600
+  "thread interval": 3600,
+  "quest": {
+    "base duration": "1d",
+    "duration per level": "1h",
+    "duration per number": "2h",
+    "random duration": "3h"
+  }
 }
