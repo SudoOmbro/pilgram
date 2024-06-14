@@ -391,7 +391,7 @@ class PilgramORMDatabase(PilgramDatabase):
         query = (ZoneModel.select(fn.Count(QuestModel.id).alias('quest_count')).
                  join(QuestModel, JOIN.LEFT_OUTER).
                  group_by(ZoneModel.id).
-                 order_by(ZoneModel.id.desc()))
+                 order_by(ZoneModel.id.asc()))
         return [x.quest_count for x in query]
 
     # in progress quest management ----
