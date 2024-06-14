@@ -183,13 +183,16 @@ class Player:
         self.home_level = home_level
 
     def get_required_xp(self) -> int:
-        return 100 * self.level + (5 * self.level * self.level)
+        lv = self.level
+        return (1000 * (lv * lv)) + (500 * lv)
 
     def get_gear_upgrade_required_money(self) -> int:
-        return 100 * self.gear_level + (self.gear_level * self.gear_level)
+        lv = self.gear_level
+        return (100 * (lv * lv)) + (1000 * lv)
 
     def get_home_upgrade_required_money(self) -> int:
-        return 1000 * self.home_level + (4 * self.home_level * self.home_level)
+        lv = self.home_level + 1
+        return (1000 * (lv * lv)) + (600 * lv)
 
     def can_upgrade_gear(self) -> bool:
         return self.money >= self.get_gear_upgrade_required_money()
@@ -292,7 +295,8 @@ class Guild:
         return (self.level < self.MAX_LEVEL) and (self.founder.money >= self.get_upgrade_required_money())
 
     def get_upgrade_required_money(self) -> int:
-        return 10000 * self.level + (5 * self.level * self.level)
+        lv = self.level
+        return (10000 * (lv * lv)) + (1000 * lv)
 
     def upgrade(self):
         self.founder.money -= self.get_upgrade_required_money()
