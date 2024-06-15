@@ -75,19 +75,24 @@ class PilgramBot(PilgramNotifier):
 
     async def handle_message(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
         user_context, was_cached = self.get_user_context(update)
-        result = self.interpreter.context_aware_execute(user_context, update.message.text)
-        event = user_context.get_event_data()
-        if event:
-            # if an event happened notify the target
-            string, target = get_event_notification_string(event)
-            await notify(c.bot, target, string)
-        if user_context.is_in_a_process():
-            # if user is in a process then save the context to use later
-            self.process_cache.set(update.effective_user.id, user_context)
-        elif was_cached:
-            # if the context was retrieved from cache and the process is finished then remove context from cache
-            self.process_cache.drop(update.effective_user.id)
-        await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
+        try:
+            result = self.interpreter.context_aware_execute(user_context, update.message.text)
+            event = user_context.get_event_data()
+            if event:
+                # if an event happened notify the target
+                string, target = get_event_notification_string(event)
+                await notify(c.bot, target, string)
+            if user_context.is_in_a_process():
+                # if user is in a process then save the context to use later
+                self.process_cache.set(update.effective_user.id, user_context)
+            elif was_cached:
+                # if the context was retrieved from cache and the process is finished then remove context from cache
+                self.process_cache.drop(update.effective_user.id)
+            await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
+        except TelegramError as e:
+            raise e
+        except Exception as e:
+            await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}", parse_mode=ParseMode.MARKDOWN)
 
     def notify(self, player: Player, text: str):
         try:
