@@ -405,7 +405,7 @@ class PilgramORMDatabase(PilgramDatabase):
     def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
         try:
             qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
-            return self.get_quest(int(qps.quest_id))
+            return self.get_quest(qps.quest_id)
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {player.player_id}")
 
