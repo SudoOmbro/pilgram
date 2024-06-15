@@ -176,7 +176,7 @@ class PilgramDatabase(ABC):
 
     def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
         """
-        returns True if the player is currently on a quest. This will actually be called by players
+        returns the quest the player is on if the player is currently on a quest.
 
         :raises KeyError: if no quest progress is found for the player.
         """
