@@ -339,7 +339,7 @@ class ZoneEvent:
         self.event_id = event_id
         self.zone = zone
         self.event_text = event_text
-        self.base_xp_value = (zone.level + 1) if zone else 1
+        self.base_xp_value = (zone.level + 2) if zone else 2
         self.base_money_value = self.base_xp_value
 
     def get_rewards(self, player: Player) -> Tuple[int, int]:
