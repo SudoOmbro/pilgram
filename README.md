@@ -81,4 +81,4 @@ wpc() {
   journalctl --unit=pilgram.service -n 1 --no-pager
 }
 ```
-by using the previous echo + piping thing just becomes `wpc "your command here"`, which is much more convenient.
+by using this function the previous echo + piping thing just becomes `wpc "your command here"`, which is much more convenient.
