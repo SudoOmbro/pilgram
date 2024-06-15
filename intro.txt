@@ -1,9 +1,11 @@
-Greetings stranger! Welcome to the wonderful world of {wn}!
+Greetings stranger. Welcome to the grim & dark world of {wn}.
 
-Prepare to embark on endless quests and become the ultimate adventurer!
-Gain wealth ({mn}) and experience, meet new friends during your travels, acquire powerful gear & beautiful homes!
+Test your strength and your gear by going on endless quests and become the ultimate adventurer.
+Gain wealth ({mn}) and experience, meet friendly faces during your travels, acquire powerful gear & beautiful homes!
 
 You can do all that & more in Pilgram, you just have to create a character with the `create character` command!
 Then after that, use the `embark 1` command to begin your first quest! Enjoy!
+
+Use the `help` command to see all the commands you can use.
 
 And thanks for playing :)
