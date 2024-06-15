@@ -67,7 +67,7 @@ StartLimitIntervalSec=0
 ListenFIFO=%t/pilgram.stdin
 Service=pilgram.service
 ```
-Again, exit Nano and save.
+Again, exit nano and save.
 
 Now that everything is set up, you can run `systemctl daemon-reload` to reaload all your daemons (and load the new ones you just added).
 Now all that remains to do is starting your new daemons, so just run `systemctl start pilgram.socket` & `systemctl start pilgram.service` and everything should work fine.
