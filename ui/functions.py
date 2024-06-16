@@ -92,6 +92,17 @@ def check_my_guild(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
+def check_guild_mates(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        if not player.guild:
+            return Strings.not_in_a_guild
+        members = db().get_guild_members_data(player.guild)
+        return Strings.here_are_your_mates.format(num=len(members)) + "\n".join(f"{name} | {level}" for name, level in members)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def start_character_creation(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -110,6 +121,8 @@ def process_get_character_name(context: UserContext, user_input) -> str:
 
 
 def process_get_character_description(context: UserContext, user_input) -> str:
+    if not re.match(DESCRIPTION_REGEX, user_input):
+        return Strings.description_validation_error
     player = Player.create_default(
         context.get("id"), context.get("name"), user_input
     )
@@ -140,6 +153,8 @@ def process_get_guild_name(context: UserContext, user_input) -> str:
 
 
 def process_get_guild_description(context: UserContext, user_input) -> str:
+    if not re.match(DESCRIPTION_REGEX, user_input):
+        return Strings.description_validation_error
     player = db().get_player_data(context.get("id"))
     guild = Guild.create_default(player, context.get("name"), user_input)
     db().add_guild(guild)
@@ -305,6 +320,22 @@ def rank_guilds(context: UserContext) -> str:
     return result
 
 
+def retire(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        # TODO
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def back_to_work(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        # TODO
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
@@ -317,7 +348,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild.")
-        }
+        },
+        "mates": IFW(None, check_guild_mates, "Shows your guild mates")
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
@@ -345,6 +377,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     }
+    # "retire": IFW(None, retire, "Take a 1 year vacation (pauses the game for 1 year)"),
+    # "back to work": IFW(None, back_to_work, "Come back from your vacation"),
 }
 
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {

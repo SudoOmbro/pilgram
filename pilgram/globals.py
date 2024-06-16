@@ -1,7 +1,6 @@
 import json
 import logging
 from abc import ABC
-from datetime import timedelta
 from typing import Any
 
 from pilgram.utils import PathDict
@@ -12,7 +11,7 @@ __INNER_REGEX = r"[A-Za-z0-9\-,.!?;:\(\)\/+=\"'@#$%^&]"
 
 PLAYER_NAME_REGEX = fr"^{__INNER_REGEX}{{4,20}}$"
 GUILD_NAME_REGEX = fr"^{__INNER_REGEX}{{2,30}}$"
-DESCRIPTION_REGEX = fr"^{__INNER_REGEX}{{10,250}}$"
+DESCRIPTION_REGEX = fr"^{__INNER_REGEX}{{10,300}}$"
 POSITIVE_INTEGER_REGEX = r"^[\d]+$"
 YES_NO_REGEX = r"^(?:y|n)$"
 

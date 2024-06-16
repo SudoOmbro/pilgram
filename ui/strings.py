@@ -13,13 +13,13 @@ class Strings:
     # character creation
     character_already_created = "You already have a character! Their name is {name} and they are very sad now :("
     character_creation_get_name = "Ok, let's start by naming your character. Send me a name (4 - 20 characters)."
-    character_creation_get_description = "Ok now send me your character's description (10 - 250 characters)."
+    character_creation_get_description = "Ok now send me your character's description (10 - 300 characters)."
     welcome_to_the_world = f"Your character has been created! Welcome to the world of {ContentMeta.get('world.name')}!"
 
     # guild creation
     guild_already_created = "You already created a guild! You can't create another guild, you can only modify your current guild or join another."
     guild_creation_get_name = "Ok, let's start by naming your guild. Send me a name (2 - 30 characters)."
-    guild_creation_get_description = "Ok now send me your guild's description (10 - 250 characters)."
+    guild_creation_get_description = "Ok now send me your guild's description (10 - 300 characters)."
     guild_creation_success = "Your guild '{name}' has been created!"
 
     # joining guilds
@@ -35,6 +35,9 @@ class Strings:
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
     quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, for there is more to do."
+
+    # guilds
+    here_are_your_mates = "You have {num} guild mates:\n\n"
 
     # upgrade
     upgrade_object_confirmation = "Are you sure you want to upgrade your {obj}? It will cost you {price}"
@@ -63,7 +66,7 @@ class Strings:
     __must_only_contain = "must contain only letters, numbers and the following symbols: -,.!?;:()/+=\"'@#$%^&"
     player_name_validation_error = "Player names must only be 4 to 20 characters long and " + __must_only_contain
     guild_name_validation_error = "Player names must only be 2 to 30 characters long and " + __must_only_contain
-    description_validation_error = "Player names must only be 10 to 250 characters long and " + __must_only_contain
+    description_validation_error = "Descriptions must only be 10 to 300 characters long and " + __must_only_contain
     zone_number_error = "Zone number must be a positive integer number."
     zone_does_not_exist = "The zone does not exist!"
     not_in_a_guild = "You are not in a guild!"

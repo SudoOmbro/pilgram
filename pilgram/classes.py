@@ -184,15 +184,15 @@ class Player:
 
     def get_required_xp(self) -> int:
         lv = self.level
-        return (1000 * (lv * lv)) + (500 * lv)
+        return (100 * (lv * lv)) + (1000 * lv)
 
     def get_gear_upgrade_required_money(self) -> int:
         lv = self.gear_level
-        return (100 * (lv * lv)) + (1000 * lv)
+        return (50 * (lv * lv)) + (1000 * lv)
 
     def get_home_upgrade_required_money(self) -> int:
         lv = self.home_level + 1
-        return (1000 * (lv * lv)) + (600 * lv)
+        return (100 * (lv * lv)) + (5000 * lv)
 
     def can_upgrade_gear(self) -> bool:
         return self.money >= self.get_gear_upgrade_required_money()
