@@ -9,6 +9,10 @@ from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureCont
 log = logging.getLogger(__name__)
 
 
+class AlreadyExists(Exception):
+    pass
+
+
 class PilgramDatabase(ABC):
 
     def acquire(self) -> "PilgramDatabase":
@@ -21,7 +25,7 @@ class PilgramDatabase(ABC):
         """
         returns a complete player object
 
-        :raise KeyError: if player does not exist
+        :raises KeyError: if player does not exist
         """
         raise NotImplementedError
 
@@ -40,8 +44,10 @@ class PilgramDatabase(ABC):
 
     def add_player(self, player: Player):
         """
-            add a new player to the database. Happens at the end of character creation.
-            Should also create the quest progress row related to the player.
+        add a new player to the database. Happens at the end of character creation.
+        Should also create the quest progress row related to the player.
+
+        :raises AlreadyExists: if player already exists
         """
         raise NotImplementedError
 
@@ -51,7 +57,7 @@ class PilgramDatabase(ABC):
         """
         get a guild given its id
 
-        :raise KeyError: if the guild does not exist
+        :raises KeyError: if the guild does not exist
         """
         raise NotImplementedError
 
@@ -81,8 +87,8 @@ class PilgramDatabase(ABC):
 
     def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
         """
-            return a list of all members name and level given a guild.
-            We avoid creating the entire player object 'cause we don't need it.
+        return a list of all members name and level given a guild.
+        We avoid creating the entire player object 'cause we don't need it.
         """
         raise NotImplementedError
 
@@ -95,7 +101,11 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     def add_guild(self, guild: Guild):
-        """ create a new guild. Check if a player already has a guild before letting them create a new guild """
+        """
+        create a new guild. Check if a player already has a guild before letting them create a new guild
+
+        :raises AlreadyExists: if guild already exists
+        """
         raise NotImplementedError
 
     def rank_top_guilds(self) -> List[Tuple[str, int]]:

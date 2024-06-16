@@ -78,3 +78,4 @@ class Strings:
     not_in_a_guild = "You are not in a guild!"
     guild_not_owned = "You don't own a guild!"
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"
+    name_object_already_exists = "{obj} with name {name} already exists, give your {obj} a different name (names are case sensitive)"

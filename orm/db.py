@@ -6,12 +6,12 @@ import numpy as np
 
 from typing import Dict, Union, List, Tuple, Any
 
-from peewee import fn, JOIN
+from peewee import fn, JOIN, IntegrityError
 
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, db
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
-from pilgram.generics import PilgramDatabase
+from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
@@ -125,22 +125,25 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f'Player with id {player.player_id} not found')
 
     def add_player(self, player: Player):
-        with db.atomic():
-            PlayerModel.create(
-                id=player.player_id,
-                name=player.name,
-                description=player.description,
-                guild=player.guild.guild_id if player.guild else None,
-                level=player.level,
-                xp=player.xp,
-                money=player.money,
-                progress=encode_progress(player.progress.zone_progress) if player.progress else None,
-                gear_level=player.gear_level
-            )
-            # also create quest progress model related to the player
-            QuestProgressModel.create(
-                player_id=player.player_id
-            )
+        try:
+            with db.atomic():
+                PlayerModel.create(
+                    id=player.player_id,
+                    name=player.name,
+                    description=player.description,
+                    guild=player.guild.guild_id if player.guild else None,
+                    level=player.level,
+                    xp=player.xp,
+                    money=player.money,
+                    progress=encode_progress(player.progress.zone_progress) if player.progress else None,
+                    gear_level=player.gear_level
+                )
+                # also create quest progress model related to the player
+                QuestProgressModel.create(
+                    player_id=player.player_id
+                )
+        except IntegrityError:
+            raise AlreadyExists(f"Player with name {player.name} already exists")
 
     # guilds ----
 
@@ -209,13 +212,16 @@ class PilgramORMDatabase(PilgramDatabase):
         gs.save()
 
     def add_guild(self, guild: Guild):
-        with db.atomic():
-            GuildModel.create(
-                name=guild.name,
-                description=guild.description,
-                founder_id=guild.founder.player_id,
-                creation_date=guild.creation_date
-            )
+        try:
+            with db.atomic():
+                GuildModel.create(
+                    name=guild.name,
+                    description=guild.description,
+                    founder_id=guild.founder.player_id,
+                    creation_date=guild.creation_date
+                )
+        except IntegrityError:
+            raise AlreadyExists(f"Guild with name {guild.name} already exists")
 
     @cache_ttl_single_value(ttl=14400)
     def rank_top_guilds(self) -> List[Tuple[str, int]]:

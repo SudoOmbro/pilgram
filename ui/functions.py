@@ -4,7 +4,7 @@ from typing import Tuple, Dict, Union, Callable
 
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild, TOWN_ZONE
-from pilgram.generics import PilgramDatabase
+from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
@@ -126,9 +126,13 @@ def process_get_character_description(context: UserContext, user_input) -> str:
     player = Player.create_default(
         context.get("id"), context.get("name"), user_input
     )
-    db().add_player(player)
-    context.end_process()
-    return Strings.welcome_to_the_world
+    try:
+        db().add_player(player)
+        context.end_process()
+        return Strings.welcome_to_the_world
+    except AlreadyExists:
+        context.end_process()
+        return Strings.name_object_already_exists.format(obj="character", name=player.name)
 
 
 def start_guild_creation(context: UserContext) -> str:
@@ -161,9 +165,13 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     guild = db().get_owned_guild(player)
     player.guild = guild
     player.money -= ContentMeta.get("guilds.creation_cost")
-    db().update_player_data(player)
-    context.end_process()
-    return Strings.guild_creation_success.format(name=guild.name)
+    try:
+        db().update_player_data(player)
+        context.end_process()
+        return Strings.guild_creation_success.format(name=guild.name)
+    except AlreadyExists:
+        context.end_process()
+        return Strings.name_object_already_exists.format(obj="guild", name=player.name)
 
 
 def upgrade(context: UserContext, obj: str = "gear") -> str:
