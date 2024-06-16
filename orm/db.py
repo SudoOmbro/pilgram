@@ -411,7 +411,7 @@ class PilgramORMDatabase(PilgramDatabase):
         quest = self.get_quest(qps.quest_id) if qps.quest_id else None
         return AdventureContainer(player, quest, qps.end_time)
 
-    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
+    @cache_sized_ttl_quick(size_limit=200, ttl=60)
     def get_player_adventure_container(self, player: Player) -> AdventureContainer:
         try:
             qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
