@@ -1,6 +1,7 @@
 from pilgram.globals import ContentMeta
 
 
+WORLD = ContentMeta.get('world.name')
 MONEY = ContentMeta.get("money.name")
 TOWN = ContentMeta.get("world.city.name")
 
@@ -14,7 +15,7 @@ class Strings:
     character_already_created = "You already have a character! Their name is {name} and they are very sad now :("
     character_creation_get_name = "Ok, let's start by naming your character. Send me a name (4 - 20 characters)."
     character_creation_get_description = "Ok now send me your character's description (10 - 300 characters)."
-    welcome_to_the_world = f"Your character has been created! Welcome to the world of {ContentMeta.get('world.name')}!"
+    welcome_to_the_world = f"Your character has been created! Welcome to the world of {WORLD}!"
 
     # guild creation
     guild_already_created = "You already created a guild! You can't create another guild, you can only modify your current guild or join another."
@@ -40,9 +41,10 @@ class Strings:
     here_are_your_mates = "You have {num} guild mates:\n\n"
 
     # upgrade
+    you_paid = f"you paid {{paid}} {MONEY}."
     upgrade_object_confirmation = "Are you sure you want to upgrade your {obj}? It will cost you {price}"
     not_enough_money = f"You don't have enough {MONEY}. You need {{amount}} more."
-    upgrade_successful = f"The upgrade to your {{obj}} was successful, you paid {{paid}} {MONEY}."
+    upgrade_successful = "The upgrade to your {{obj}} was successful, " + you_paid
     upgrade_cancelled = "The upgrade was cancelled."
     guild_already_maxed = "Your guild is already at the maximum level."
 
@@ -58,6 +60,10 @@ class Strings:
     donation_received = f"{{donor}} just donated you {{amm}} {MONEY}!"
     donation_successful = f"You successfully sent {{amm}} {MONEY} to {{rec}}. They are certainly going to be happy :)"
     invalid_money_amount = "The specified amount must be greater than zero!"
+
+    # retiring
+    you_retired = "You retire from adventuring for a year."
+    you_came_back = f"You ended your retirement, resuming your adventures in the world of {WORLD}."
 
     # errors
     no_character_yet = "You haven't made a character yet!"

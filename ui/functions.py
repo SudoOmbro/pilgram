@@ -1,5 +1,5 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable
 
 from orm.db import PilgramORMDatabase
@@ -63,8 +63,8 @@ def check_player(context: UserContext, player_name: str) -> str:
 
 def check_guild(context: UserContext, guild_name: str) -> str:
     try:
-        guild_id = db().get_guild(db().get_guild_id_from_name(guild_name))
-        return str(guild_id)
+        guild = db().get_guild(db().get_guild_id_from_name(guild_name))
+        return str(guild)
     except KeyError:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
 
@@ -320,18 +320,21 @@ def rank_guilds(context: UserContext) -> str:
     return result
 
 
-def retire(context: UserContext) -> str:
+def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, msg: str = "default", cost: Union[int, None] = None) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        # TODO
-    except KeyError:
-        return Strings.no_character_yet
-
-
-def back_to_work(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        # TODO
+        if cost and player.money < cost:
+            return Strings.not_enough_money.format(amount=cost-player.money)
+        try:
+            adventure_container = db().get_player_adventure_container(player)
+            db().update_quest_progress(adventure_container, last_update=(datetime.now() + timedelta(days=365)) if delta else datetime.now())
+            if cost:
+                player.money -= cost
+                db().update_player_data(player)
+                return msg + "\n\n" + Strings.you_paid.format(paid=cost)
+            return msg
+        except KeyError:
+            return "Fatal error: adventure container not found"
     except KeyError:
         return Strings.no_character_yet
 
@@ -376,9 +379,13 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient."),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
+    },
+    "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
+    "back": {
+        "to": {
+            "work": IFW(None, set_last_update, "Come back from your vacation", default_args={"delta": None, "msg": Strings.you_came_back})
+        }
     }
-    # "retire": IFW(None, retire, "Take a 1 year vacation (pauses the game for 1 year)"),
-    # "back to work": IFW(None, back_to_work, "Come back from your vacation"),
 }
 
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {

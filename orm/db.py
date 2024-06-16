@@ -171,7 +171,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with id {guild_id} not found')
 
-    @cache_sized_quick(size_limit=200)
+    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
     def get_guild_id_from_name(self, guild_name: str) -> int:
         try:
             return GuildModel.get(GuildModel.name == guild_name).id
@@ -185,12 +185,16 @@ class PilgramORMDatabase(PilgramDatabase):
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild founded by player with id {player.player_id} not found')
 
-    @cache_sized_ttl_quick(size_limit=50, ttl=21600)
-    def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
-        pns = GuildModel.get(guild.guild_id == GuildModel.id).members
-        return [(x.name, x.level) for x in pns]
+    @cache_sized_ttl_quick(size_limit=50, ttl=3600)
+    def __get_guild_members_data(self, guild_id: int) -> List[Tuple[str, int]]:
+        """ cache based on the id should work a bit better """
+        gms = GuildModel.get(guild_id == GuildModel.id).members
+        return [(x.name, x.level) for x in gms]
 
-    @cache_ttl_quick(ttl=15)
+    def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
+        return self.__get_guild_members_data(guild.guild_id)
+
+    @cache_ttl_quick(ttl=60)
     def get_guild_members_number(self, guild: Guild) -> int:
         return GuildModel.get(guild.guild_id == GuildModel.id).members.count()
 
@@ -396,18 +400,22 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # in progress quest management ----
 
-    def build_adventure_container(self, qps) -> AdventureContainer:
-        player = self.get_player_data(int(qps.player_id))
-        quest = self.get_quest(int(qps.quest_id)) if qps.quest_id else None
+    def build_adventure_container(self, qps, owner: Union[Player, None] = None) -> AdventureContainer:
+        player = self.get_player_data(int(qps.player_id)) if owner is None else owner
+        quest = self.get_quest(qps.quest_id) if qps.quest_id else None
         return AdventureContainer(player, quest, qps.end_time)
 
-    @cache_ttl_quick(ttl=30)
-    def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
+    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
+    def get_player_adventure_container(self, player: Player) -> AdventureContainer:
         try:
             qps = QuestProgressModel.get(QuestProgressModel.player_id == player.player_id)
-            return self.get_quest(qps.quest_id) if qps.quest_id else None
+            return self.build_adventure_container(qps, owner=player)
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {player.player_id}")
+
+    def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
+        adventure_container = self.get_player_adventure_container(player)
+        return adventure_container.quest
 
     def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
         try:
@@ -416,11 +424,11 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestProgressModel.DoesNotExist:
             return []
 
-    def update_quest_progress(self, adventure_container: AdventureContainer):
+    def update_quest_progress(self, adventure_container: AdventureContainer, last_update: Union[datetime, None] = None):
         try:
             qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
             qps.quest_id = adventure_container.quest_id()
-            qps.last_update = datetime.now()
+            qps.last_update = datetime.now() if last_update is None else last_update
             qps.end_time = adventure_container.finish_time
             qps.save()
         except QuestProgressModel.DoesNotExist:

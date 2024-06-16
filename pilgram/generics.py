@@ -1,6 +1,6 @@
 import logging
 from abc import ABC
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import List, Tuple, Union, Any
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
@@ -174,6 +174,10 @@ class PilgramDatabase(ABC):
 
     # in progress quests management ----
 
+    def get_player_adventure_container(self, player: Player) -> AdventureContainer:
+        """ returns a player's adventure container. """
+        raise NotImplementedError
+
     def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
         """
         returns the quest the player is on if the player is currently on a quest.
@@ -194,7 +198,7 @@ class PilgramDatabase(ABC):
         """ get all quest progress that was last updated timedelta hours ago or more """
         raise NotImplementedError
 
-    def update_quest_progress(self, adventure_container: AdventureContainer):
+    def update_quest_progress(self, adventure_container: AdventureContainer, last_update: Union[datetime, None] = None):
         """ update quest player progress, either complete quests or just change last update """
         raise NotImplementedError
 

@@ -231,7 +231,7 @@ class Player:
 
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        return f"{self.name} | lv. {self.level}{guild}\n{self.money} {MONEY}\nHome lv. {self.home_level}, Gear lv. {self.gear_level}\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
+        return f"{self.name} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n{self.money} {MONEY}\nHome lv. {self.home_level}, Gear lv. {self.gear_level}\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
 
     def __repr__(self):
         return str(self.__dict__)
@@ -306,7 +306,7 @@ class Guild:
         return self.guild_id == other.guild
 
     def __str__(self):
-        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: _{self.founder.name}\nSince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: _{self.founder.name if self.founder else '???'}\nSince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 
     def __hash__(self):
         return hash(self.guild_id)

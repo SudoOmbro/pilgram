@@ -93,6 +93,7 @@ class PilgramBot(PilgramNotifier):
             raise e
         except Exception as e:
             await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}", parse_mode=ParseMode.MARKDOWN)
+            raise e
 
     def notify(self, player: Player, text: str):
         try:
