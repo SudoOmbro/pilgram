@@ -1,3 +1,5 @@
+from typing import List
+
 from pilgram.globals import ContentMeta
 
 
@@ -64,6 +66,23 @@ class Strings:
     # retiring
     you_retired = "You retire from adventuring for a year."
     you_came_back = f"You ended your retirement, resuming your adventures in the world of {WORLD}."
+
+    # player meeting
+    players_meet_in_town = "While in town you meet {name} and you {act}"
+    players_meet_on_a_quest = "You stumble upon {name} and you {act}"
+    town_actions: List[str] = [
+        "visit the tavern together, sharing stories of your adventures.",
+        "check out the market stalls together.",
+        "train together.",
+        "play a couple games of the royal game of Ur."
+    ]
+    quest_actions: List[str] = [
+        "spend some time around a campfire roasting some freshly hunted small game.",
+        "walk together for a bit, sharing knowledge about the area.",
+        "Silently nod to each-other, for there are monsters nearby.",
+        "Clear the way ahead together, protecting each-other from danger."
+    ]
+    xp_gain = "You gain {xp} xp"
 
     # errors
     no_character_yet = "You haven't made a character yet!"

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import random
 from time import sleep
 from datetime import timedelta
 from typing import List, Dict, Tuple
@@ -55,14 +56,37 @@ class _HighestQuests:
         return number_of_quests < (self.__data.get(zone.zone_id - 1, 0) + QUEST_THRESHOLD)
 
 
+def add_to_zones_players_map(zones_player_map: Dict[int, List[Player]], adventure_container: AdventureContainer):
+    """ add the player to a map that indicates which zone it is in. Used for meeting other players. """
+    zone = adventure_container.zone()
+    if zone is None:
+        zone = 0
+    if zone not in zones_player_map:
+        zones_player_map[zone] = []
+    zones_player_map[zone].append(adventure_container.player)
+
+
 class QuestManager:
     """ helper class to neatly manage zone events & quests """
 
-    def __init__(self, database: PilgramDatabase, notifier: PilgramNotifier, update_interval: timedelta):
+    def __init__(
+            self,
+            database: PilgramDatabase,
+            notifier: PilgramNotifier,
+            update_interval: timedelta,
+            updates_per_second: int = 10
+    ):
+        """
+        :param database: database adapter to use to get & set data
+        :param notifier: notifier adapter to use to send notifications
+        :param update_interval: the amount of time that has to pass since the last update before another update
+        :param updates_per_second: the amount of time in seconds between notifications
+        """
         self.database = database
         self.notifier = notifier
         self.update_interval = update_interval
         self.highest_quests = _HighestQuests.load_from_file()
+        self.updates_per_second = 1 / updates_per_second
 
     def db(self) -> PilgramDatabase:
         """ wrapper around the acquire method to make calling it less verbose """
@@ -99,7 +123,6 @@ class QuestManager:
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):
-        # TODO add interactions between players in same zone (post launch) (maybe)
         if ac.is_on_a_quest() and ac.is_quest_finished():
             self._complete_quest(ac)
         else:
@@ -108,11 +131,54 @@ class QuestManager:
     def get_updates(self) -> List[AdventureContainer]:
         return self.db().get_all_pending_updates(self.update_interval)
 
+    def handle_players_meeting(self, zones_players_map: Dict[int, List[Player]]):
+        """
+        handle the meeting of 2 players for each visited zone this update.
+
+        The more time passes between quest manager thread calls, the better this works, because it accumulates more
+        players. Too much time however and very few players will ever be notified. Gotta find a balance.
+        """
+        for zone in zones_players_map:
+            if len(zones_players_map[zone]) < 2:  # only notify if there's more than one player
+                continue
+            if random.randint(0, 10) > 3:  # only notify sometimes, based on a roll
+                continue
+            players: List[Player] = zones_players_map[zone]
+            player1: Player = random.choice(players)
+            players.remove(player1)
+            player2: Player = random.choice(players)
+            if zone == 0:
+                string, actions = Strings.players_meet_in_town, Strings.town_actions
+            else:
+                string, actions = Strings.players_meet_on_a_quest, Strings.quest_actions
+            xp = 400 * (zone + 1)
+            text = f"{string} {random.choice(actions)}\n\n{Strings.xp_gain.format(xp=xp)}"
+            player1.add_xp(xp)
+            player2.add_xp(xp)
+            self.db().update_player_data(player1)
+            self.db().update_player_data(player2)
+            self.notifier.notify(player1, text.format(name=player2.name))
+            self.notifier.notify(player2, text.format(name=player1.name))
+            sleep(self.updates_per_second * 2)
+
+    def run(self):
+        zones_players_map: Dict[int, List[Player]] = {}
+        updates = self.get_updates()
+        for update in updates:
+            add_to_zones_players_map(zones_players_map, update)
+            self.process_update(update)
+            sleep(self.updates_per_second)
+        self.handle_players_meeting(zones_players_map)
+
 
 class GeneratorManager:
     """ helper class to manage the quest & zone event generator """
 
     def __init__(self, database: PilgramDatabase, generator: PilgramGenerator):
+        """
+        :param database: database adapter to use to get & set data
+        :param generator: generator adapter to used to generate quests & events
+        """
         self.database = database
         self.generator = generator
 

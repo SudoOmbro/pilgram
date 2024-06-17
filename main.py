@@ -42,10 +42,7 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     while True:
         log.info("Quest manager update")
         try:
-            updates = quest_manager.get_updates()
-            for update in updates:
-                quest_manager.process_update(update)
-                sleep(0.1)
+            quest_manager.run()
             if is_killed(INTERVAL):
                 return
         except Exception as e:
