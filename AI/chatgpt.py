@@ -151,7 +151,7 @@ class ChatGPTGenerator(PilgramGenerator):
             new_quest = Quest.create_default(
                 zone,
                 starting_number,
-                title.replace("*", "").replace("\"", ""),
+                title.replace("*", "").replace("\"", "").replace(":", ""),
                 descr,
                 success,
                 failure
