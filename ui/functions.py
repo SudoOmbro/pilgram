@@ -140,8 +140,9 @@ def start_guild_creation(context: UserContext) -> str:
         player = db().get_player_data(context.get("id"))
         if db().get_owned_guild(player):
             return Strings.guild_already_created
-        if player.money < ContentMeta.get("guilds.creation_cost"):
-            return Strings.not_enough_money
+        creation_cost = ContentMeta.get("guilds.creation_cost")
+        if player.money < creation_cost:
+            return Strings.not_enough_money.format(amount=creation_cost - player.money)
         context.start_process("guild creation")
         return context.get_process_prompt(USER_PROCESSES)
     except KeyError:
