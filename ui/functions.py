@@ -1,11 +1,12 @@
 import re
 from datetime import datetime, timedelta
-from typing import Tuple, Dict, Union, Callable
+from typing import Tuple, Dict, Union, Callable, Type
 
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX
+from pilgram.minigames import PilgramMinigame
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -348,6 +349,14 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
         return Strings.no_character_yet
 
 
+def start_minigame(context: UserContext, minigame: Type[PilgramMinigame]) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        return str(player)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
@@ -405,5 +414,8 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "guild creation": (
         (Strings.guild_creation_get_name, process_get_guild_name),
         (Strings.guild_creation_get_description, process_get_guild_description)
-    )
+    ),
+    "minigame": {
+
+    }
 }

@@ -58,12 +58,10 @@ class _HighestQuests:
 
 def add_to_zones_players_map(zones_player_map: Dict[int, List[Player]], adventure_container: AdventureContainer):
     """ add the player to a map that indicates which zone it is in. Used for meeting other players. """
-    zone = adventure_container.zone()
-    if zone is None:
-        zone = 0
-    if zone not in zones_player_map:
-        zones_player_map[zone] = []
-    zones_player_map[zone].append(adventure_container.player)
+    zone_id = adventure_container.zone().zone_id if adventure_container.zone() else 0
+    if zone_id not in zones_player_map:
+        zones_player_map[zone_id] = []
+    zones_player_map[zone_id].append(adventure_container.player)
 
 
 class QuestManager:
@@ -138,20 +136,20 @@ class QuestManager:
         The more time passes between quest manager thread calls, the better this works, because it accumulates more
         players. Too much time however and very few players will ever be notified. Gotta find a balance.
         """
-        for zone in zones_players_map:
-            if len(zones_players_map[zone]) < 2:  # only notify if there's more than one player
+        for zone_id in zones_players_map:
+            if len(zones_players_map[zone_id]) < 2:  # only notify if there's more than one player
                 continue
-            if random.randint(0, 10) > 3:  # only notify sometimes, based on a roll
+            if random.randint(0, 10) > 5:  # only notify sometimes, based on a roll
                 continue
-            players: List[Player] = zones_players_map[zone]
+            players: List[Player] = zones_players_map[zone_id]
             player1: Player = random.choice(players)
             players.remove(player1)
             player2: Player = random.choice(players)
-            if zone == 0:
+            if zone_id == 0:
                 string, actions = Strings.players_meet_in_town, Strings.town_actions
             else:
                 string, actions = Strings.players_meet_on_a_quest, Strings.quest_actions
-            xp = 400 * (zone + 1)
+            xp = 400 * (zone_id + 1)
             text = f"{string} {random.choice(actions)}\n\n{Strings.xp_gain.format(xp=xp)}"
             player1.add_xp(xp)
             player2.add_xp(xp)

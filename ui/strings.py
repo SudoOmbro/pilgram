@@ -84,6 +84,10 @@ class Strings:
     ]
     xp_gain = "You gain {xp} xp"
 
+    # minigames
+    start_hands_minigame = "A mysterious stranger approaches you, he asks if you want to play 'Hands'. You say yes"
+    start_fate_minigame = "You stumble upon a misterious stranger & 3 other adventurers playing 'Fate', they ask if you want to join them. You say yes."
+
     # errors
     no_character_yet = "You haven't made a character yet!"
     no_guild_yet = "You haven't created a guild yet!"

@@ -21,5 +21,17 @@
   "modify_cost": 1000,
   "money": {
     "name": "Boromian Alloy"
+  },
+  "minigames": {
+    "hands": {
+      "min_buy_in": 25,
+      "max_buy_in": 200,
+      "payout": 1.5
+    },
+    "fate": {
+      "min_buy_in": 50,
+      "max_buy_in": 500,
+      "payout": 3.2
+    }
   }
 }
