@@ -1,4 +1,8 @@
+import logging
 import time
+
+
+log = logging.getLogger(__name__)
 
 
 def cache(size_limit=0, ttl=0, quick_key_access=False):
@@ -44,7 +48,7 @@ def cache(size_limit=0, ttl=0, quick_key_access=False):
                     else:
                         oldest_key = list(storage.keys())[0]
 
-                    # If they key has expired, remove the entry and it's quick access key if quick_key_access=True
+                    # If the key has expired, remove the entry, and it's quick access key if quick_key_access=True
                     if ttls[oldest_key] < time.time():
                         del storage[oldest_key]
                         if quick_key_access:
@@ -58,6 +62,21 @@ def cache(size_limit=0, ttl=0, quick_key_access=False):
 
 
 # more specialized & optimized versions of the above function
+
+
+def __delete_old_records(storage: dict, ttls: dict, keys: list):
+    while len(keys) != 0:
+        oldest_key = keys[0]
+        # If the key has expired, remove the entry, and it's quick access key if quick_key_access=True
+        if ttls[oldest_key] < time.time():
+            try:
+                storage.pop(oldest_key)
+                keys.pop(0)
+            except KeyError as e:
+                log.error(f"error encountered while deleting old record: {e}\n\nState:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}")
+                break
+        else:
+            break
 
 
 def cache_ttl_quick(ttl=3600):
@@ -79,15 +98,8 @@ def cache_ttl_quick(ttl=3600):
                 storage[key] = result
                 ttls[key] = time.time() + ttl
                 keys.append(key)
-
-            while len(keys) != 0:
-                oldest_key = keys[0]
-                # If they key has expired, remove the entry, and it's quick access key if quick_key_access=True
-                if ttls[oldest_key] < time.time():
-                    storage.pop(oldest_key)
-                    keys.pop(0)
-                else:
-                    break
+            # check ttls
+            __delete_old_records(storage, ttls, keys)
 
             return result
         return wrapper
@@ -113,9 +125,13 @@ def cache_sized_quick(size_limit=256):
                 keys.append(key)
                 # If a size limit has been set, make sure the size hasn't been exceeded
                 if len(storage) > size_limit:
-                    oldest_key = keys[0]
-                    keys.pop(0)
-                    storage.pop(oldest_key)
+                    try:
+                        oldest_key = keys[0]
+                        keys.pop(0)
+                        storage.pop(oldest_key)
+                    except KeyError as e:
+                        log.error(f"cache_sized_quick error encountered while deleting oldest record: {e}\n\nState:\nStorage: {storage}\nkeys: {keys}")
+                        pass
 
             return result
         return wrapper
@@ -143,18 +159,15 @@ def cache_sized_ttl_quick(size_limit=256, ttl=3600):
                 keys.append(key)
                 # Make sure the size hasn't been exceeded
                 if len(storage) > size_limit:
-                    oldest_key = keys[0]
-                    keys.pop(0)
-                    storage.pop(oldest_key)
+                    try:
+                        oldest_key = keys[0]
+                        keys.pop(0)
+                        storage.pop(oldest_key)
+                    except KeyError as e:
+                        log.error(f"cache_sized_ttl_quick error encountered while deleting oldest record: {e}\n\nState:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}")
+                        pass
             # Check ttls
-            while len(keys) != 0:
-                oldest_key = keys[0]
-                # If they key has expired, remove the entry and it's quick access key
-                if ttls[oldest_key] < time.time():
-                    storage.pop(oldest_key)
-                    keys.pop(0)
-                else:
-                    break
+            __delete_old_records(storage, ttls, keys)
 
             return result
         return wrapper
