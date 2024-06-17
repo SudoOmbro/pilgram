@@ -365,7 +365,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
-        "guild": IFW(None, start_guild_creation, "Create your own Guild.")
+        "guild": IFW(None, start_guild_creation, f"Create your own Guild (cost: {ContentMeta.get('guilds.creation_cost')} {MONEY}).")
     },
     "upgrade": {
         "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
