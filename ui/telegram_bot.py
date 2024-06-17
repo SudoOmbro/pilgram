@@ -90,6 +90,7 @@ class PilgramBot(PilgramNotifier):
                 self.process_cache.drop(update.effective_user.id)
             await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
         except TelegramError as e:
+            log.error(f"TelegramError encountered while executing '{update.message}' for user with id {update.effective_user.id} {e.message}")
             raise e
         except Exception as e:
             await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}", parse_mode=ParseMode.MARKDOWN)
