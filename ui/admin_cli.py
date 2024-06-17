@@ -228,8 +228,8 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "prestige": __generate_int_op_command("home", "guild", "add"),
         },
         "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"}),
-        "quest": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "quest"}),
-        "event": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "event"})
+        "quest": IFW(None, start_add_obj_process, "Create a new quest", {"obj_type": "quest"}),
+        "event": IFW(None, start_add_obj_process, "Create a new event", {"obj_type": "event"})
     },
     "set": {
         "player": {
@@ -256,9 +256,9 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "edit": {
-        "zone": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "zone"}),
-        "quest": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "quest"}),
-        "event": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "event"})
+        "zone": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit a zone", {"obj_type": "zone"}),
+        "quest": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit a quest", {"obj_type": "quest"}),
+        "event": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit an event", {"obj_type": "event"})
     },
     "generate": {
         "events": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_zone_events, "Generate new zone events")
@@ -301,7 +301,7 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Confirm?", process_obj_edit_confirm)
     ),
     "edit event": (
-        ("Write event description", ProcessGetObjStrAttr("description")),
+        ("Write event description", ProcessGetObjStrAttr("event_text")),
         ("Write Quest zone id", process_quest_add_zone),
         ("Confirm?", process_obj_edit_confirm)
     )
