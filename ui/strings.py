@@ -68,8 +68,8 @@ class Strings:
     you_came_back = f"You ended your retirement, resuming your adventures in the world of {WORLD}."
 
     # player meeting
-    players_meet_in_town = "While in town you meet {name} and you {act}"
-    players_meet_on_a_quest = "You stumble upon {name} and you {act}"
+    players_meet_in_town = "While in town you meet {name} and you"
+    players_meet_on_a_quest = "You stumble upon {name} and you"
     town_actions: List[str] = [
         "visit the tavern together, sharing stories of your adventures.",
         "check out the market stalls together.",
