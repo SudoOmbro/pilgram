@@ -101,7 +101,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player_id} not found')  # raising exceptions makes sure invalid queries aren't cached
 
-    @cache_sized_quick(size_limit=200)
+    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
     def get_player_id_from_name(self, name: str) -> int:
         try:
             return PlayerModel.get(PlayerModel.name == name).id
