@@ -82,7 +82,7 @@ class Quest:
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = (self.zone.level + self.number) + player.guild.level if player.guild else 0
-        return 500 * multiplier, 600 * multiplier  # XP, Money
+        return 850 * multiplier, 600 * multiplier  # XP, Money
 
     def get_duration(self) -> timedelta:
         return (BASE_QUEST_DURATION +
