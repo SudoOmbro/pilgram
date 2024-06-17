@@ -46,7 +46,7 @@ def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
             if is_killed(INTERVAL):
                 return
         except Exception as e:
-            log.error(f"error in quest manager thread: {e}")
+            log.exception(f"error in quest manager thread: {e}")
 
 
 def run_generator_manager(database: PilgramDatabase):
@@ -65,7 +65,7 @@ def run_generator_manager(database: PilgramDatabase):
             if is_killed(INTERVAL):
                 return
         except Exception as e:
-            log.error(f"error in generator manager thread: {e}")
+            log.exception(f"error in generator manager thread: {e}")
 
 
 def run_admin_cli():

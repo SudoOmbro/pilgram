@@ -323,7 +323,7 @@ class PilgramORMDatabase(PilgramDatabase):
             )
 
     def add_zone_events(self, events: List[ZoneEvent]):
-        data_to_insert = [{"zone_id": e.zone.zone_id, "event_text": e.event_text} for e in events]
+        data_to_insert = [{"zone_id": e.zone.zone_id if e.zone else 0, "event_text": e.event_text} for e in events]
         with db.atomic():
             ZoneEventModel.insert_many(data_to_insert).execute()
 
@@ -353,7 +353,7 @@ class PilgramORMDatabase(PilgramDatabase):
     @cache_sized_ttl_quick(size_limit=200)
     def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
         try:
-            qs = QuestModel.get(QuestModel.zone_id == zone.zone_id and QuestModel.number == quest_number)
+            qs = QuestModel.get((QuestModel.zone_id == zone.zone_id) and (QuestModel.number == quest_number))
             return self.build_quest_object(qs, zone=zone)
         except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest number {quest_number} in zone {zone.zone_id}")
