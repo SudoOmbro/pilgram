@@ -186,25 +186,39 @@ class GeneratorManager:
         """ wrapper around the acquire method to make calling it less verbose """
         return self.database.acquire()
 
-    def __get_zones_to_generate(self) -> Tuple[List[Zone], List[int]]:
+    def __get_zones_to_generate(self, biases: Dict[int, int]) -> Tuple[List[Zone], List[int]]:
         result: List[Zone] = []
         zones = self.db().get_all_zones()
         hq = _HighestQuests.load_from_file()
         quest_counts = self.db().get_quests_counts()
         for zone, count in zip(zones, quest_counts):
-            if hq.is_quest_number_too_low(zone, count):
+            if hq.is_quest_number_too_low(zone, count - biases.get(zone.zone_id, 0)):
                 result.append(zone)
         return result, quest_counts
 
-    def run(self, timeout_between_ai_calls: float):
-        zones, quest_numbers = self.__get_zones_to_generate()
+    def run(self, timeout_between_ai_calls: float, biases: Dict[int, int] = None):
+        """
+        Run the generator manager process, checking
+
+        :param timeout_between_ai_calls: amount of time in seconds to wait between AI generator calls
+        :param biases:
+            biases to add to QUEST_THRESHOLD when checking for zones to generate divided by zone. Used to force the
+            manager to generate for certain zones if needed.
+        :return: None
+        """
+        if not biases:
+            biases = {}
+        zones, quest_numbers = self.__get_zones_to_generate(biases)
         log.info(f"Found {len(zones)} zones to generate quests/events for")
         for zone in zones:
             try:
-                log.info(f"generating quests for zone {zone.zone_id}")
-                quests = self.generator.generate_quests(zone, quest_numbers)
-                self.db().add_quests(quests)
-                log.info(f"Quest generation done for zone {zone.zone_id}")
+                try:
+                    log.info(f"generating quests for zone {zone.zone_id}")
+                    quests = self.generator.generate_quests(zone, quest_numbers)
+                    self.db().add_quests(quests)
+                    log.info(f"Quest generation done for zone {zone.zone_id}")
+                except Exception as e:
+                    log.error(f"Encountered an error while generating quests for zone {zone.zone_id}: {e}")
                 sleep(timeout_between_ai_calls)
                 if quest_numbers[zone.zone_id - 1] < MAX_QUESTS_FOR_EVENTS:
                     log.info(f"generating zone events for zone {zone.zone_id}")
@@ -213,7 +227,7 @@ class GeneratorManager:
                     self.db().add_zone_events(zone_events)
                     log.info(f"Zone event generation done for zone {zone.zone_id}")
             except Exception as e:
-                log.error(f"Encountered an error while generating for zone {zone.zone_id}: {e}")
+                log.error(f"Encountered an error while generating events for zone {zone.zone_id}: {e}")
             finally:
                 sleep(timeout_between_ai_calls)
         if len(zones) > 0:

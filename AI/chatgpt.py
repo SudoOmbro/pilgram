@@ -1,10 +1,11 @@
 import logging
 import re
 from functools import cache
-from typing import Union, List, Tuple
+from typing import Union, List
 
 import requests
 
+from AI.utils import filter_string_list_remove_empty, get_string_list_from_tuple_list, remove_leading_numbers
 from pilgram.classes import Zone, Quest, ZoneEvent
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
@@ -162,16 +163,14 @@ class ChatGPTGenerator(PilgramGenerator):
     def _get_events_from_generated_text(self, input_text: str, zone: Zone) -> List[ZoneEvent]:
         result = []
         matches = re.findall(EVENT_REGEX, input_text.replace("\n\n", "\n"), re.MULTILINE)
-        if (not matches) or len(matches) != EVENTS_PER_BATCH:
+        if not matches:
+            raise GPTMisbehaveError(f"AI output events in an unknown format:\n\n{input_text}")
+        event_strings = filter_string_list_remove_empty(get_string_list_from_tuple_list(matches, -1))
+        if len(event_strings) != EVENTS_PER_BATCH:
             raise GPTMisbehaveError(f"AI did not generate {EVENTS_PER_BATCH} events. AI output:\n\n{input_text}")
-        if type(matches[0]) is str:
-            for text in matches:
-                new_event = ZoneEvent.create_default(zone, text)
-                result.append(new_event)
-        else:
-            for match in matches:
-                new_event = ZoneEvent.create_default(zone, match[1])
-                result.append(new_event)
+        for text in event_strings:
+            new_event = ZoneEvent.create_default(zone, remove_leading_numbers(text))
+            result.append(new_event)
         return result
 
     def generate_quests(self, zone: Zone, quest_numbers: List[int]) -> List[Quest]:

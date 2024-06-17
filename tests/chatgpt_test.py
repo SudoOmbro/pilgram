@@ -2,6 +2,7 @@ import json, unittest
 
 from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
     EVENTS_PROMPT, ChatGPTGenerator
+from AI.utils import filter_string_list_remove_empty, remove_leading_numbers
 from pilgram.classes import Zone
 
 SETTINGS = json.load(open('settings.json'))
@@ -37,12 +38,12 @@ class TestChatGPT(unittest.TestCase):
         print(get_quests_system_prompt(self.ZONE))
         print(get_events_system_prompt(self.ZONE))
 
-    def test_generate_quests(self):
+    def _test_generate_quests(self):
         messages = get_quests_system_prompt(self.ZONE) + build_messages("user", QUESTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
 
-    def test_generate_events(self):
+    def _test_generate_events(self):
         messages = get_events_system_prompt(self.ZONE) + build_messages("user", EVENTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
@@ -59,6 +60,22 @@ class TestChatGPT(unittest.TestCase):
         events = self.generator._get_events_from_generated_text(text, self.ZONE)
         for event in events:
             print(event)
+
+    def test_filter_string_list_remove_empty_strings(self):
+        string_list = ["aaa", "bbb", "", "\n", "ccc"]
+        result = filter_string_list_remove_empty(string_list)
+        self.assertEqual(result, ["aaa", "bbb", "ccc"])
+
+    def test_remove_leading_numbers(self):
+        string = "1.aaa 1"
+        result = remove_leading_numbers(string)
+        self.assertEqual(result, "aaa 1")
+        string = "568.bbb 34 cc"
+        result = remove_leading_numbers(string)
+        self.assertEqual(result, "bbb 34 cc")
+        string = "aaaa bbbb"
+        result = remove_leading_numbers(string)
+        self.assertEqual(result, string)
 
     def _test_chatgpt_api(self):
         response = self.api_wrapper.create_completion(
