@@ -281,7 +281,7 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Confirm?", process_obj_add_confirm)
     ),
     "add event": (
-        ("Write event description", ProcessGetObjStrAttr("description")),
+        ("Write event description", ProcessGetObjStrAttr("event_text")),
         ("Write Quest zone id", process_quest_add_zone),
         ("Confirm?", process_obj_add_confirm)
     ),
