@@ -12,6 +12,7 @@ from pilgram.globals import ContentMeta
 
 
 log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 QUESTS_PER_BATCH: int = 5
@@ -116,7 +117,9 @@ class ChatGPTAPI:
         if response.ok:
             json_response = response.json()
             log.info(json_response)
-            return json_response["choices"][0]["message"]["content"]
+            content = json_response["choices"][0]["message"]["content"]
+            log.info(f"AI input:\n\n{messages}\n\nAI output:\n\n{content}")
+            return content
         log.error(f"could not create completion, response: {response.text}")
         raise GPTAPIError(response)
 

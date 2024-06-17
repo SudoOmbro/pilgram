@@ -1,10 +1,12 @@
 import re
 from typing import Dict, Union, Tuple, Callable
 
+from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Zone, Quest, ZoneEvent
-from pilgram.generics import PilgramDatabase
-from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX
+from pilgram.generics import PilgramDatabase, PilgramGenerator
+from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
+    GlobalSettings
 from ui.interpreter import CLIInterpreter
 from ui.strings import Strings
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
@@ -196,6 +198,23 @@ def process_event_add_zone(context: UserContext, user_input: str) -> str:
         return str(e)
 
 
+def force_generate_zone_events(context: UserContext, zone_id_str: str) -> str:
+    generator = ChatGPTGenerator(ChatGPTAPI(
+        GlobalSettings.get("ChatGPT token"),
+        "gpt-3.5-turbo"
+    ))
+    try:
+        zone_id = int(zone_id_str)
+        zone = db().get_zone(zone_id)
+        events = generator.generate_zone_events(zone)
+        db().add_zone_events(events)
+        return f"Zone events for zone '{zone.zone_name}' generated successfully"
+    except KeyError:
+        return Strings.zone_does_not_exist
+    except Exception as e:
+        return str(e)
+
+
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "add": {
         "player": {
@@ -240,6 +259,9 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "zone": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "zone"}),
         "quest": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "quest"}),
         "event": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Create a new zone", {"obj_type": "event"})
+    },
+    "generate": {
+        "events": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_zone_events, "Generate new zone events")
     }
 }
 
