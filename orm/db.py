@@ -80,7 +80,7 @@ class PilgramORMDatabase(PilgramDatabase):
         # with their database record; Thus making it always valid.
         try:
             pls = PlayerModel.get(PlayerModel.id == player_id)
-            guild = self.get_guild(pls.guild, calling_player_id=pls.id) if pls.guild else None
+            guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
             player = Player(
                 pls.id,
