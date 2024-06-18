@@ -380,7 +380,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
             player.add_xp(xp),
             player.money += money
             db().update_player_data(minigame.player)
-            return message + f"\n\nYou gain {xp} xp & {money} money."
+            return message + f"\n\nYou gain {xp} xp & {money} {MONEY}."
         player.add_xp(xp)
         db().update_player_data(minigame.player)
         return message + f"\n\n{Strings.xp_gain.format(xp=xp)}"
