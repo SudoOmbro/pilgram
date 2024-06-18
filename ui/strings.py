@@ -102,7 +102,7 @@ class Strings:
     # errors
     no_character_yet = "You haven't made a character yet!"
     no_guild_yet = "You haven't created a guild yet!"
-    named_object_not_exist = "{obj} with name {name} does not exist"
+    named_object_not_exist = "{obj} with name {name} does not exist."
     __must_only_contain = "must contain only letters, numbers and the following symbols: -,.!?;:()/+=\"'@#$%^&"
     player_name_validation_error = "Player names must only be 4 to 20 characters long and " + __must_only_contain
     guild_name_validation_error = "Player names must only be 2 to 30 characters long and " + __must_only_contain

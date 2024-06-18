@@ -103,7 +103,7 @@ class GamblingMinigame(PilgramMinigame):
             return Strings.money_pot_too_low.format(amount=self.MIN_BUY_IN)
         if amount > self.MAX_BUY_IN:
             return Strings.money_pot_too_high.format(amount=self.MAX_BUY_IN)
-        self.player -= amount
+        self.player.money -= amount
         self.money_pot = amount
         self.has_started = True
         return Strings.money_pot_ok.format(amount=amount)

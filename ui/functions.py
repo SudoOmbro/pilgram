@@ -391,7 +391,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
 def explain_minigame(context: UserContext, user_input: str) -> str:
     minigame = MINIGAMES.get(user_input, None)
     if not minigame:
-        return Strings.named_object_not_exist.format(obj="minigame", name=user_input)
+        return Strings.named_object_not_exist.format(obj="minigame", name=user_input) + "\n\nValid names:\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
     return minigame.EXPLANATION
 
 
