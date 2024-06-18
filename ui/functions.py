@@ -284,7 +284,9 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     if player.level < zone.level:
         return Strings.level_too_low.format(lv=zone.level)
     quest = db().get_next_quest(zone, player)
-    adventure_container = AdventureContainer(player, quest, datetime.now() + quest.get_duration())
+    adventure_container = db().get_player_adventure_container(player)
+    adventure_container.quest = quest
+    adventure_container.finish_time = datetime.now() + quest.get_duration()
     db().update_quest_progress(adventure_container)
     return Strings.quest_embark.format(name=quest.name, descr=quest.description)
 
