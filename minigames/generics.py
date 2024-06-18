@@ -1,11 +1,14 @@
 import re
 from abc import ABC
 from random import randint
-from typing import Tuple, Union
+from typing import Tuple, Union, Type, Dict
 
 from pilgram.classes import Player
 from pilgram.globals import ContentMeta, POSITIVE_INTEGER_REGEX
 from ui.strings import Strings
+
+
+MINIGAMES: Dict[str, Type["PilgramMinigame"]] = {}
 
 
 def roll(dice_faces: int) -> int:
@@ -43,6 +46,8 @@ class PilgramMinigame(ABC):
     def __init_subclass__(cls, game: str = "hands", **kwargs):
         super().__init_subclass__(**kwargs)
         cls.XP_REWARD = ContentMeta.get(f"minigames.{game}.xp_reward")
+        cls.EXPLANATION = ContentMeta.get(f"minigames.{game}.explanation")
+        MINIGAMES[game] = cls
 
     def __init__(self, player: Player):
         self.player = player
@@ -98,6 +103,7 @@ class GamblingMinigame(PilgramMinigame):
             return Strings.money_pot_too_low.format(amount=self.MIN_BUY_IN)
         if amount > self.MAX_BUY_IN:
             return Strings.money_pot_too_high.format(amount=self.MAX_BUY_IN)
+        self.player -= amount
         self.money_pot = amount
         self.has_started = True
         return Strings.money_pot_ok.format(amount=amount)

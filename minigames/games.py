@@ -1,9 +1,14 @@
+import logging
 import random
 from typing import Tuple, List
 
-from minigames.generics import GamblingMinigame, get_positive_integer_from_string, roll
+from minigames.generics import GamblingMinigame, get_positive_integer_from_string, roll, PilgramMinigame
 from pilgram.classes import Player
 from ui.strings import Strings
+
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 class HandsMinigame(GamblingMinigame, game="hands"):

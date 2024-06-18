@@ -88,6 +88,8 @@ class PilgramBot(PilgramNotifier):
         user_context, was_cached = self.get_user_context(update)
         try:
             result = self.interpreter.context_aware_execute(user_context, update.message.text)
+            if (result is None) or (result == ""):
+                result = f"The dev forgot to put a message here, report to {DEV_NAME}"
             event = user_context.get_event_data()
             if event:
                 # if an event happened notify the target

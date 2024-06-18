@@ -3,11 +3,12 @@ from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type
 
 from minigames.games import HandsMinigame
-from minigames.generics import PilgramMinigame
+from minigames.generics import PilgramMinigame, MINIGAMES
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, AlreadyExists
-from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX
+from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
+    MINIGAME_NAME_REGEX
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -387,6 +388,13 @@ def minigame_process(context: UserContext, user_input: str) -> str:
     return message
 
 
+def explain_minigame(context: UserContext, user_input: str) -> str:
+    minigame = MINIGAMES.get(user_input, None)
+    if not minigame:
+        return Strings.named_object_not_exist.format(obj="minigame", name=user_input)
+    return minigame.EXPLANATION
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
@@ -436,7 +444,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "play": {
         "hands": IFW(None, start_minigame, "Play a game of Hands", default_args={"minigame": HandsMinigame})
-    }
+    },
+    "explain": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
 }
 
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {

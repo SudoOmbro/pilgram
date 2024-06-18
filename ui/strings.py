@@ -96,6 +96,9 @@ class Strings:
     you_win = "You win."
     you_lose = "You lose."
 
+    # explain
+    invalid_minigame_name = "Minigame name is not valid."
+
     # errors
     no_character_yet = "You haven't made a character yet!"
     no_guild_yet = "You haven't created a guild yet!"

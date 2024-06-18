@@ -11,6 +11,7 @@ __INNER_REGEX = r"[A-Za-z0-9\-,.!?;:\(\)\/+=\"'@#$%^&]"
 __DESCR_INNER_REGEX = r"[A-Za-z0-9\-,.!?;:\(\)\/+=\"'@#$%^&\s]"
 
 PLAYER_NAME_REGEX = fr"^{__INNER_REGEX}{{4,20}}$"
+MINIGAME_NAME_REGEX = r"^[A-Za-z]+$"
 GUILD_NAME_REGEX = fr"^{__INNER_REGEX}{{2,30}}$"
 DESCRIPTION_REGEX = fr"^{__DESCR_INNER_REGEX}{{10,300}}$"
 POSITIVE_INTEGER_REGEX = r"^[\d]+$"
