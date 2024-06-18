@@ -44,6 +44,8 @@ class Zone:
 
 class Quest:
     """ contains info about a human written or AI generated quest """
+    BASE_XP_REWARD = ContentMeta.get("quests.base_xp_reward")
+    BASE_MONEY_REWARD = ContentMeta.get("quests.base_money_reward")
 
     def __init__(
             self,
@@ -82,7 +84,7 @@ class Quest:
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = (self.zone.level + self.number) + player.guild.level if player.guild else 0
-        return 850 * multiplier, 600 * multiplier  # XP, Money
+        return self.BASE_XP_REWARD * multiplier, self.BASE_MONEY_REWARD * multiplier  # XP, Money
 
     def get_duration(self) -> timedelta:
         return (BASE_QUEST_DURATION +
