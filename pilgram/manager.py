@@ -157,6 +157,7 @@ class QuestManager:
             self.db().update_player_data(player2)
             self.notifier.notify(player1, text.format(name=player2.name))
             self.notifier.notify(player2, text.format(name=player1.name))
+            log.info(f"Players {player1.name} & {player2.name} have met")
             sleep(self.updates_per_second * 2)
 
     def run(self):
