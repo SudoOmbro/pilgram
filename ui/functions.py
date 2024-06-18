@@ -1,3 +1,4 @@
+import logging
 import re
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type
@@ -11,6 +12,10 @@ from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, PO
     MINIGAME_NAME_REGEX
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
+
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 def db() -> PilgramDatabase:
@@ -112,6 +117,7 @@ def start_character_creation(context: UserContext) -> str:
         return Strings.character_already_created.format(name=player.name)
     except KeyError:
         context.start_process("character creation")
+        log.info(f"User {context.get('id')} is creating a character")
         return context.get_process_prompt(USER_PROCESSES)
 
 
@@ -132,6 +138,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
     try:
         db().add_player(player)
         context.end_process()
+        log.info(f"User {context.get('id')} created character {player.name}")
         return Strings.welcome_to_the_world
     except AlreadyExists:
         context.end_process()
