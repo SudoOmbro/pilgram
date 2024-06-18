@@ -110,17 +110,18 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_player_data(self, player: Player):
         try:
-            pls = PlayerModel.get(PlayerModel.id == player.player_id)
-            pls.name = player.name
-            pls.description = player.description
-            pls.guild = player.guild.guild_id if player.guild else None
-            pls.level = player.level
-            pls.xp = player.xp
-            pls.money = player.money
-            pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
-            pls.home_level = player.home_level
-            pls.gear_level = player.gear_level
-            pls.save()
+            with db.atomic():
+                pls = PlayerModel.get(PlayerModel.id == player.player_id)
+                pls.name = player.name
+                pls.description = player.description
+                pls.guild = player.guild.guild_id if player.guild else None
+                pls.level = player.level
+                pls.xp = player.xp
+                pls.money = player.money
+                pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
+                pls.home_level = player.home_level
+                pls.gear_level = player.gear_level
+                pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
 

@@ -24,14 +24,16 @@
   },
   "minigames": {
     "hands": {
-      "min_buy_in": 25,
-      "max_buy_in": 200,
-      "payout": 1.5
+      "min_buy_in": 5,
+      "max_buy_in": 50,
+      "payout": 1.5,
+      "xp_reward": 1
     },
     "fate": {
       "min_buy_in": 50,
       "max_buy_in": 500,
-      "payout": 3.2
+      "payout": 3.2,
+      "xp_reward": 1
     }
   }
 }

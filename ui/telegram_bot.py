@@ -11,7 +11,7 @@ from telegram.error import TelegramError
 
 from pilgram.classes import Player
 from pilgram.generics import PilgramNotifier
-from pilgram.globals import ContentMeta
+from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.utils import read_text_file, TempIntCache
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
@@ -23,8 +23,8 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
-
-INFO_STRING = "Made with ❤️ by @LordOmbro\n\n--> [visit my github](https://github.com/SudoOmbro)\n\n--> [offer me a beer](https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2)"
+DEV_NAME = GlobalSettings.get('dev contacts.telegram')
+INFO_STRING = f"Made with ❤️ by {DEV_NAME}\n\n--> [visit my github](https://github.com/SudoOmbro)\n\n--> [offer me a beer](https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2)"
 START_STRING = read_text_file("intro.txt").format(wn=ContentMeta.get("world.name"), mn=ContentMeta.get("money.name"))
 
 
@@ -52,6 +52,13 @@ async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
     await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
+def _delimit_markdown_entities(text: str) -> str:
+    result = text
+    for char in ["_", "*"]:
+        result = result.replace(char, f"\\{char}")
+    return result
+
+
 class PilgramBot(PilgramNotifier):
 
     def __init__(self, bot_token: str):
@@ -70,10 +77,14 @@ class PilgramBot(PilgramNotifier):
             return cached_value, True
         return UserContext({
             "id": user_id,
-            "username": update.effective_user.username,
+            "username": _delimit_markdown_entities(update.effective_user.username),
         }), False
 
     async def handle_message(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
+        if (update.message is None) or (update.message.text is None):
+            log.error(f"Invalid update received: {update}")
+            await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occurred while trying to handle your message, try again")
+            return
         user_context, was_cached = self.get_user_context(update)
         try:
             result = self.interpreter.context_aware_execute(user_context, update.message.text)
@@ -92,8 +103,8 @@ class PilgramBot(PilgramNotifier):
         except TelegramError as e:
             log.error(f"TelegramError encountered while executing '{update.message}' for user with id {update.effective_user.id} {e.message}")
         except Exception as e:
-            await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}", parse_mode=ParseMode.MARKDOWN)
-            raise e
+            await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}.\n\nContact the developer: {DEV_NAME}")
+            log.exception(e)
 
     def notify(self, player: Player, text: str):
         try:

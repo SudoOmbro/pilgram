@@ -2,11 +2,12 @@ import re
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type
 
+from minigames.games import HandsMinigame
+from minigames.generics import PilgramMinigame
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, AdventureContainer, Guild, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX
-from pilgram.minigames import PilgramMinigame
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -349,12 +350,41 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
         return Strings.no_character_yet
 
 
-def start_minigame(context: UserContext, minigame: Type[PilgramMinigame]) -> str:
+def start_minigame(context: UserContext, minigame: Type[PilgramMinigame] = None) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        return str(player)
+        can_play, error = minigame.can_play(player)
+        if not can_play:
+            return minigame.INTRO_TEXT + "\n\n" + error
+        minigame_instance = minigame(player)
+        context.set("minigame instance", minigame_instance)
+        context.start_process("minigame")
+        return minigame.INTRO_TEXT + "\n\n" + minigame.SETUP_TEXT
     except KeyError:
         return Strings.no_character_yet
+
+
+def minigame_process(context: UserContext, user_input: str) -> str:
+    minigame: PilgramMinigame = context.get("minigame instance")
+    if not minigame.has_started:
+        message = minigame.setup_game(user_input)
+        if minigame.has_started:
+            return message + f"\n\n{minigame.START_TEXT}"
+        return message
+    message = minigame.play_turn(user_input)
+    if minigame.has_ended:
+        context.end_process()
+        player: Player = minigame.player
+        xp, money = minigame.get_rewards()
+        if minigame.won:
+            player.add_xp(xp),
+            player.money += money
+            db().update_player_data(minigame.player)
+            return message + f"\n\nYou gain {xp} xp & {money} money."
+        player.add_xp(xp)
+        db().update_player_data(minigame.player)
+        return message + f"\n\n{Strings.xp_gain.format(xp=xp)}"
+    return message
 
 
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
@@ -403,6 +433,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "to": {
             "work": IFW(None, set_last_update, "Come back from your vacation", default_args={"delta": None, "msg": Strings.you_came_back})
         }
+    },
+    "play": {
+        "hands": IFW(None, start_minigame, "Play a game of Hands", default_args={"minigame": HandsMinigame})
     }
 }
 
@@ -415,7 +448,7 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         (Strings.guild_creation_get_name, process_get_guild_name),
         (Strings.guild_creation_get_description, process_get_guild_description)
     ),
-    "minigame": {
-
-    }
+    "minigame": (
+        ("minigame turn", minigame_process),
+    )
 }

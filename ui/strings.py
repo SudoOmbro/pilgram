@@ -85,8 +85,16 @@ class Strings:
     xp_gain = "You gain {xp} xp"
 
     # minigames
-    start_hands_minigame = "A mysterious stranger approaches you, he asks if you want to play 'Hands'. You say yes"
+    how_much_do_you_bet = f"How much {MONEY} do you want to bet? (min: {{min}}, max: {{max}})"
+    money_pot_too_low = f"You didn't bet enough money, the minimum buy in is {{amount}} {MONEY}"
+    money_pot_too_high = f"You bet too much {MONEY}, the maximum buy in is {{amount}} {MONEY}"
+    money_pot_ok = f"You bet {{amount}} {MONEY}, the game can begin."
+    invalid_bet = "Invalid bet, try again."
+    start_hands_minigame = "A mysterious stranger approaches you, he asks if you want to play 'Hands'. You say yes."
+    hands_minigame_bet = "What value are you betting? (3 - 18, 10 & 5 excluded)"
     start_fate_minigame = "You stumble upon a misterious stranger & 3 other adventurers playing 'Fate', they ask if you want to join them. You say yes."
+    you_win = "You win."
+    you_lose = "You lose."
 
     # errors
     no_character_yet = "You haven't made a character yet!"
