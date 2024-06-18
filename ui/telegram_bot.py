@@ -77,7 +77,7 @@ class PilgramBot(PilgramNotifier):
             return cached_value, True
         return UserContext({
             "id": user_id,
-            "username": _delimit_markdown_entities(update.effective_user.username),
+            "username": _delimit_markdown_entities(update.effective_user.username if update.effective_user.username else update.effective_user.name),
         }), False
 
     async def handle_message(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
