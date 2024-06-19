@@ -74,6 +74,9 @@ def __delete_old_records(storage: dict, ttls: dict, keys: list):
                 keys.pop(0)
             except KeyError as e:
                 log.error(f"error encountered while deleting old record: {e}\n\nState:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}")
+                if len(storage) == 0:
+                    ttls.clear()
+                    keys.clear()
                 break
         else:
             break
