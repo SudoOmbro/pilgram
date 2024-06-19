@@ -29,7 +29,6 @@ START_STRING = read_text_file("intro.txt").format(wn=ContentMeta.get("world.name
 
 
 async def notify(bot: Bot, player: Player, text: str):
-    # fuck this
     try:
         await bot.send_message(player.player_id, text, parse_mode=ParseMode.MARKDOWN)
     except TelegramError as e:
@@ -42,6 +41,10 @@ def get_event_notification_string(event: dict) -> Tuple[str, Player]:
         "player kicked": lambda: (Strings.you_have_been_kicked.format(guild=event["guild"].name), event["player"]),
         "guild joined": lambda: (Strings.player_joined_your_guild.format(player=event["player"].name, guild=event["guild"].name), event["guild"].founder),
     }.get(event["type"])()
+
+
+async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
+    log.error("Telegram unhandled exception encountered:", exc_info=context.error)
 
 
 async def start(update: Update, c: ContextTypes.DEFAULT_TYPE):
@@ -67,6 +70,7 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
+        self.__app.add_error_handler(error_handler)
         self.process_cache = TempIntCache()
         self.interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
 
