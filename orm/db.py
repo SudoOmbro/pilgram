@@ -12,7 +12,7 @@ from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_t
     QuestProgressModel, db
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
 from pilgram.generics import PilgramDatabase, AlreadyExists
-from orm.utils import cache_ttl_quick, cache_sized_quick, cache_sized_ttl_quick, cache_ttl_single_value
+from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
 
@@ -73,7 +73,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # player ----
 
-    @cache_sized_quick(size_limit=2000)
+    @cache_sized_ttl_quick(size_limit=2000, ttl=3600)
     def get_player_data(self, player_id) -> Player:
         # we are using a cache in front of this function since it's going to be called a lot, because of how the
         # function is structured the cache will store the Player objects which will always be updated in memory along
@@ -167,7 +167,7 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.prestige
         )
 
-    @cache_sized_ttl_quick(size_limit=400, ttl=3600)
+    @cache_sized_ttl_quick(size_limit=400, ttl=10)
     def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:
         try:
             gs = GuildModel.get(GuildModel.id == guild_id)
@@ -175,14 +175,14 @@ class PilgramORMDatabase(PilgramDatabase):
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with id {guild_id} not found')
 
-    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
+    @cache_sized_ttl_quick(size_limit=200, ttl=10)
     def get_guild_id_from_name(self, guild_name: str) -> int:
         try:
             return GuildModel.get(GuildModel.name == guild_name).id
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with name {guild_name} not found')
 
-    @cache_sized_quick(size_limit=100)
+    @cache_sized_ttl_quick(size_limit=100)
     def get_guild_id_from_founder(self, player: Player) -> int:
         try:
             return GuildModel.get(GuildModel.founder == player.player_id).id

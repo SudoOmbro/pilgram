@@ -1,203 +1,73 @@
 import logging
 import time
+from typing import Dict, Any, Tuple
 
+
+__VALUE, __TTL = (0, 1)
 
 log = logging.getLogger(__name__)
 
 
-def cache(size_limit=0, ttl=0, quick_key_access=False):
-    def decorator(func):
-        storage = {}
-        ttls = {}
-        keys = []
-
-        def wrapper(*args, **kwargs):
-            # Generate a key based on arguments being passed
-            key = args
-
-            # Check if their return value is already known
-            if key in storage:
-                result = storage[key]
-            else:
-                # If not, get the result
-                result = func(*args, **kwargs)
-                storage[key] = result
-
-                # If a ttl has been set, remember when it is going to expire
-                if ttl != 0:
-                    ttls[key] = time.time() + ttl
-
-                # If quick_key_access is being used, remember the key
-                if quick_key_access:
-                    keys.append(key)
-
-                # If a size limit has been set, make sure the size hasn't been exceeded
-                if size_limit != 0 and len(storage) > size_limit:
-                    if quick_key_access:
-                        oldest_key = keys[0]
-                        del keys[0]
-                    else:
-                        oldest_key = list(storage.keys())[0]
-                    del storage[oldest_key]
-
-            # Check ttls if it is enabled
-            if ttl != 0:
-                while True:
-                    if quick_key_access:
-                        oldest_key = keys[0]
-                    else:
-                        oldest_key = list(storage.keys())[0]
-
-                    # If the key has expired, remove the entry, and it's quick access key if quick_key_access=True
-                    if ttls[oldest_key] < time.time():
-                        del storage[oldest_key]
-                        if quick_key_access:
-                            del keys[0]
-                    else:
-                        break
-
-            return result
-        return wrapper
-    return decorator
-
-
-# more specialized & optimized versions of the above function
-
-
-def __delete_error(action: str, target: str, error):
-    return f"error encountered while {action} from {target}: error: {error}"
-
-
-def __print_cache_state(storage, ttls, keys):
-    return f"State:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}"
-
-
-def __delete_old_records(storage: dict, ttls: dict, keys: list):
-    while len(keys) != 0:
-        oldest_key = keys[0]
-        # If the key has expired, remove the entry, and it's quick access key if quick_key_access=True
-        if ttls[oldest_key] < time.time():
-            error_flag = False
-            try:
-                storage.pop(oldest_key)
-            except KeyError as e:
-                log.error(__delete_error("popping", "storage", e))
-                error_flag = True
-            try:
-                del keys[0]
-            except IndexError as e:
-                log.error(__delete_error("deleting at index 0", "keys", e))
-                error_flag = True
-                try:
-                    keys.remove(oldest_key)
-                except IndexError as e:
-                    log.error(__delete_error("removing", "keys", e))
-            try:
-                del ttls[oldest_key]
-            except KeyError as e:
-                log.error(__delete_error("deleting", "ttls", e))
-                error_flag = True
-                try:
-                    ttls.pop(oldest_key)
-                except IndexError as e:
-                    log.error(__delete_error("popping", "ttls", e))
-            if error_flag:
-                log.error(__print_cache_state(storage, ttls, keys))
-        else:
-            break
-
-
 def cache_ttl_quick(ttl=3600):
     def decorator(func):
-        storage = {}
-        ttls = {}
-        keys = []
+        storage: Dict[Any, Tuple[Any, float]] = {}
 
         def wrapper(*args, **kwargs):
-            # Generate a key based on arguments being passed
-            key = args
-
-            # Check if their return value is already known
-            if key in storage:
-                result = storage[key]
-            else:
-                # If not, get the result
+            try:
+                # Generate a key based on arguments being passed
+                key = args
+                # if value is cached and isn't expired then return
+                if key in storage:
+                    cache_record = storage[key]
+                    if cache_record[__TTL] > time.time():
+                        return cache_record[__VALUE]
+                # calculate value
                 result = func(*args, **kwargs)
-                storage[key] = result
-                ttls[key] = time.time() + ttl
-                keys.append(key)
-            # check ttls
-            __delete_old_records(storage, ttls, keys)
-
-            return result
+                # add value to storage and return the resulting value
+                storage[key] = (result, time.time() + ttl)
+                return result
+            except Exception as e:
+                log.exception(f"Exception when accessing cache_ttl_quick: {e}")
+                return func(*args, **kwargs)
         return wrapper
     return decorator
 
 
-def cache_sized_quick(size_limit=256):
-    def decorator(func):
-        storage = {}
-        keys = []
-
-        def wrapper(*args, **kwargs):
-            # Generate a key based on arguments being passed
-            key = args
-
-            # Check if their return value is already known
-            if key in storage:
-                result = storage[key]
-            else:
-                # If not, get the result
-                result = func(*args, **kwargs)
-                storage[key] = result
-                keys.append(key)
-                # If a size limit has been set, make sure the size hasn't been exceeded
-                if len(storage) > size_limit:
-                    try:
-                        oldest_key = keys[0]
-                        keys.pop(0)
-                        storage.pop(oldest_key)
-                    except KeyError as e:
-                        log.error(f"cache_sized_quick error encountered while deleting oldest record: {e}\n\nState:\nStorage: {storage}\nkeys: {keys}")
-                        pass
-
-            return result
-        return wrapper
-    return decorator
+def __get_oldest_key(storage: dict, ttl: float):
+    oldest_time = time.time() + (ttl * 2)
+    oldest_key = None
+    for key, record in storage.values():
+        if record[__TTL] < oldest_time:
+            oldest_time = record[__TTL]
+            oldest_key = key
+    return oldest_key
 
 
 def cache_sized_ttl_quick(size_limit=256, ttl=3600):
     def decorator(func):
-        storage = {}
-        ttls = {}
-        keys = []
+        storage: Dict[Any, Tuple[Any, float]] = {}
 
         def wrapper(*args, **kwargs):
-            # Generate a key based on arguments being passed
-            key = args
-
-            # Check if their return value is already known
-            if key in storage:
-                result = storage[key]
-            else:
-                # If not, get the result
+            try:
+                # Generate a key based on arguments being passed
+                key = args
+                # if value is cached and isn't expired then return
+                if key in storage:
+                    cache_record = storage[key]
+                    if cache_record[__TTL] > time.time():
+                        return cache_record[__VALUE]
+                # calculate value
                 result = func(*args, **kwargs)
-                storage[key] = result
-                ttls[key] = time.time() + ttl
-                keys.append(key)
-                # Make sure the size hasn't been exceeded
-                if len(storage) > size_limit:
-                    try:
-                        oldest_key = keys[0]
-                        keys.pop(0)
-                        storage.pop(oldest_key)
-                    except KeyError as e:
-                        log.error(f"cache_sized_ttl_quick error encountered while deleting oldest record: {e}\n\nState:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}")
-                        pass
-            # Check ttls
-            __delete_old_records(storage, ttls, keys)
-
-            return result
+                # if cache is full then remove oldest record
+                while len(storage) >= size_limit:
+                    oldest_key = __get_oldest_key(storage, ttl)
+                    storage.pop(oldest_key)
+                # add value to storage and return the resulting value
+                storage[key] = (result, time.time() + ttl)
+                return result
+            except Exception as e:
+                log.exception(f"Exception when accessing cache_sized_ttl_quick: {e}")
+                return func(*args, **kwargs)
         return wrapper
     return decorator
 
