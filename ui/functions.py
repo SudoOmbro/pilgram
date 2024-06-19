@@ -24,7 +24,7 @@ def db() -> PilgramDatabase:
 
 def check_board(context: UserContext) -> str:
     zones = db().get_all_zones()
-    return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones)
+    return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones) + "\n\n" + Strings.embark_underleveled
 
 
 def check_current_quest(context: UserContext) -> str:
