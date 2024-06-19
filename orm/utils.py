@@ -64,20 +64,45 @@ def cache(size_limit=0, ttl=0, quick_key_access=False):
 # more specialized & optimized versions of the above function
 
 
+def __delete_error(action: str, target: str, error):
+    return f"error encountered while {action} from {target}: error: {error}"
+
+
+def __print_cache_state(storage, ttls, keys):
+    return f"State:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}"
+
+
 def __delete_old_records(storage: dict, ttls: dict, keys: list):
     while len(keys) != 0:
         oldest_key = keys[0]
         # If the key has expired, remove the entry, and it's quick access key if quick_key_access=True
         if ttls[oldest_key] < time.time():
+            error_flag = False
             try:
                 storage.pop(oldest_key)
-                keys.pop(0)
             except KeyError as e:
-                log.error(f"error encountered while deleting old record: {e}\n\nState:\nStorage: {storage}\nttls: {ttls}\nkeys: {keys}")
-                if len(storage) == 0:
-                    ttls.clear()
-                    keys.clear()
-                break
+                log.error(__delete_error("popping", "storage", e))
+                error_flag = True
+            try:
+                del keys[0]
+            except IndexError as e:
+                log.error(__delete_error("deleting at index 0", "keys", e))
+                error_flag = True
+                try:
+                    keys.remove(oldest_key)
+                except IndexError as e:
+                    log.error(__delete_error("removing", "keys", e))
+            try:
+                del ttls[oldest_key]
+            except KeyError as e:
+                log.error(__delete_error("deleting", "ttls", e))
+                error_flag = True
+                try:
+                    ttls.pop(oldest_key)
+                except IndexError as e:
+                    log.error(__delete_error("popping", "ttls", e))
+            if error_flag:
+                log.error(__print_cache_state(storage, ttls, keys))
         else:
             break
 
