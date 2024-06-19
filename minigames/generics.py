@@ -1,7 +1,8 @@
 import logging
 import re
+import time
 from abc import ABC
-from typing import Tuple, Type, Dict
+from typing import Tuple, Type, Dict, List
 
 from pilgram.classes import Player
 from pilgram.globals import ContentMeta, POSITIVE_INTEGER_REGEX
@@ -25,6 +26,8 @@ class PilgramMinigame(ABC):
             cls.XP_REWARD = ContentMeta.get(f"minigames.{game}.xp_reward", default=0)
             cls.MONEY_REWARD = ContentMeta.get(f"minigames.{game}.money_reward", default=0)
             cls.EXPLANATION = ContentMeta.get(f"minigames.{game}.explanation")
+            cls.COOLDOWN = ContentMeta.get(f"minigames.{game}.cooldown", default=60)
+            cls.STORAGE: Dict[int, float] = {}  # player id --> cooldown expire timestamp map
             log.info("registered ")
             MINIGAMES[game] = cls
 
@@ -43,6 +46,23 @@ class PilgramMinigame(ABC):
         self.has_ended = True
         self.won = False
         return f"{message}\n{Strings.you_lose}"
+
+    @classmethod
+    def has_played_too_recently(cls, user_id: int) -> bool:
+        if user_id in cls.STORAGE:
+            cooldown_expire = cls.STORAGE[user_id]
+            if cooldown_expire > time.time():
+                return True
+        # clear cache of expired values
+        keys_to_delete: List[int] = []
+        for key, cooldown_expire in cls.STORAGE.items():
+            if cooldown_expire <= time.time():
+                keys_to_delete.append(key)
+        for key in keys_to_delete:
+            del cls.STORAGE[key]
+        # set cooldown
+        cls.STORAGE[user_id] = time.time() + cls.COOLDOWN
+        return False
 
     @classmethod
     def can_play(cls, player: Player) -> Tuple[bool, str]:

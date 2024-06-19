@@ -381,6 +381,8 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
 
 def start_minigame(context: UserContext, minigame: Type[PilgramMinigame] = None) -> str:
     try:
+        if minigame.has_played_too_recently(context.get("id")):
+            return Strings.minigame_played_too_recently.format(seconds=minigame.COOLDOWN)
         player = db().get_player_data(context.get("id"))
         can_play, error = minigame.can_play(player)
         if not can_play:

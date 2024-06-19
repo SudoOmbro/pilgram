@@ -32,6 +32,7 @@
       "max_buy_in": 50,
       "payout": 1.5,
       "xp_reward": 1,
+      "cooldown": 120,
       "explanation": "_\"Do not hold the pilgrim's hands for he is blinded by faith\"_\n\n2 player game played with *3 d6 each*.\n\nBoth you & the other player choose a *target number between 3 and 18*, then you roll until someone wins.\n\nIf a player gets either *5 or 10 they lose*. If a player gets their *target number* with either *all 3 or just 2 of their dices* they win.\n\nPays 150% of the pot."
     },
     "fate": {

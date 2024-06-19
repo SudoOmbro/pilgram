@@ -113,6 +113,7 @@ class Strings:
     start_fate_minigame = "You stumble upon a misterious stranger & 3 other adventurers playing 'Fate', they ask if you want to join them. You say yes."
     you_win = "You win."
     you_lose = "You lose."
+    minigame_played_too_recently = "You played this minigame too recently, wait {seconds} seconds and try again."
 
     # explain
     invalid_minigame_name = "Minigame name is not valid."

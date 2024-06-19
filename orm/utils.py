@@ -36,7 +36,7 @@ def cache_ttl_quick(ttl=3600):
 def __get_oldest_key(storage: dict, ttl: float):
     oldest_time = time.time() + (ttl * 2)
     oldest_key = None
-    for key, record in storage.values():
+    for key, record in storage.items():
         if record[__TTL] < oldest_time:
             oldest_time = record[__TTL]
             oldest_key = key

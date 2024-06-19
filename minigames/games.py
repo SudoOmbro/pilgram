@@ -77,7 +77,7 @@ class HangmanMinigame(PilgramMinigame, game="open"):
         super().__init__(player)
         self.has_started = True  # skip active setup, not needed
         self.word = get_random_word()
-        self.remaining_tries: int = 2 + (len(self.word) // 2)
+        self.remaining_tries: int = 3 + (len(self.word) // 2)
         # setup game
         self.guessed_word = ["\\_" for _ in range(len(self.word))]
         index = random.randint(0, len(self.guessed_word) - 1)
