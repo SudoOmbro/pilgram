@@ -39,7 +39,7 @@ class Strings:
     not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
-    quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, for there is more to do."
+    quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, for there is more to do and so your contract still stands."
 
     # guilds
     here_are_your_mates = "You have {num} guild mates:\n\n"
@@ -76,13 +76,29 @@ class Strings:
         "visit the tavern together, sharing stories of your adventures.",
         "check out the market stalls together.",
         "train together.",
-        "play a couple games of the royal game of Ur."
+        "play a couple games of the royal game of Ur.",
+        "walk on the town walls together, taking in the view.",
+        "hunt plague rats with flaming bolts.",
+        "visit the smithy together to perform maintenance your equipment",
+        "exchange trinkets you collected during your adventures",
+        "spend some time together, enjoying each-other's company.",
+        "accompany them to the cemetery to mourn your loved ones.",
+        "talk about conspiracy theories for an hour. You are convinced they are all true.",
+        "greet them tiredly, then you immediately go home where you take an invigorating nap."
     ]
     quest_actions: List[str] = [
         "spend some time around a campfire roasting some freshly hunted small game.",
         "walk together for a bit, sharing knowledge about the area.",
-        "Silently nod to each-other, for there are monsters nearby.",
-        "Clear the way ahead together, protecting each-other from danger."
+        "silently nod to each-other, for there are monsters nearby.",
+        "clear the way ahead together, protecting each-other from danger.",
+        "gather supplies to prepare for the dangers ahead.",
+        "polish your equipment in silence, watching each-others back",
+        "play a couple of games of 'Hands', as it is a traditional game most played by adventurers on a quest.",
+        "help them open a particularly stubborn chest. It turns out it was a mimic, so you killed it.",
+        "help each-other climb a particularly tall wall.",
+        "throw rocks at some monsters below you. They can't reach you and they make funny noises when hit.",
+        "share a pemmican & hardtack meal since lighting a fire was not an option.",
+        "hide from them until they leave. You are not feeling too sociable right now."
     ]
     xp_gain = "You gain {xp} xp"
 
