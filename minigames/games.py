@@ -123,3 +123,11 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         super().__init__(player)
         self.has_started = True
         # TODO
+
+
+class FateMinigame(GamblingMinigame, game="fate"):
+
+    def __init__(self, player: Player):
+        super().__init__(player)
+        self.has_started = True
+        # TODO

@@ -40,7 +40,8 @@
       "max_buy_in": 500,
       "payout": 3.2,
       "xp_reward": 1,
-      "explanation": "\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world. Lucky, some might say...\"\n\nComing soon..."
+      "cooldown": 120,
+      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world.\n\nLucky, some might say...\"_\n\nComing soon..."
     },
     "open": {
       "xp_reward": 5,

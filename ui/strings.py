@@ -35,11 +35,11 @@ class Strings:
     already_on_a_quest = "You already are on a quest!"
     embark_underleveled = "You can still choose zones for which you are under-leveled, but you will be more likely to fail quests. Make sure to upgrade your gear!"
     embark_underleveled_confirm = "Are you sure you want go to {zone}? You should be at least level {lv} for this zone.\n\nWrite 'y' or 'n' (yes or no)"
-    embark_underleveled_cancel = ""
+    embark_underleveled_cancel = "Good riddance."
     not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
-    quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, for there is more to do and so your contract still stands."
+    quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
 
     # guilds
     here_are_your_mates = "You have {num} guild mates:\n\n"
@@ -84,7 +84,8 @@ class Strings:
         "spend some time together, enjoying each-other's company.",
         "accompany them to the cemetery to mourn your loved ones.",
         "talk about conspiracy theories for an hour. You are convinced they are all true.",
-        "greet them tiredly, then you immediately go home where you take an invigorating nap."
+        "greet them tiredly, then you immediately go home where you take an invigorating nap.",
+        "spot a Pilgrim watching you two talk. He sees you are bound by the Ouroboros contract. He sees your chains"
     ]
     quest_actions: List[str] = [
         "spend some time around a campfire roasting some freshly hunted small game.",
@@ -98,7 +99,8 @@ class Strings:
         "help each-other climb a particularly tall wall.",
         "throw rocks at some monsters below you. They can't reach you and they make funny noises when hit.",
         "share a pemmican & hardtack meal since lighting a fire was not an option.",
-        "hide from them until they leave. You are not feeling too sociable right now."
+        "hide from them until they leave. You are not feeling too sociable right now.",
+        "come across a Pilgrim, undying & blindly following the path his faith lays for him. You watch him, mesmerized."
     ]
     xp_gain = "You gain {xp} xp"
 

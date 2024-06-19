@@ -300,11 +300,12 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
 
 
 def process_embark_confirm(context: UserContext, user_input: str) -> str:
+    processed_user_input = user_input[0].lower()
     player = db().get_player_data(context.get("id"))  # player must exist to get to this point
-    if not re.match(YES_NO_REGEX, user_input):
+    if not re.match(YES_NO_REGEX, processed_user_input):
         return Strings.yes_no_error
     context.end_process()
-    if user_input == "n":
+    if processed_user_input == "n":
         return Strings.embark_underleveled_cancel
     return __start_quest_in_zone(player, context.get("zone"))
 
