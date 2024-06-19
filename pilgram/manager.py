@@ -92,14 +92,17 @@ class QuestManager:
 
     def _complete_quest(self, ac: AdventureContainer):
         quest: Quest = ac.quest
-        player: Player = ac.player
+        player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
+        ac.player = player
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
             player.add_xp(xp)
             player.money += money
             if player.guild:
-                player.guild.prestige += quest.get_prestige()
-                self.db().update_guild(player.guild)
+                guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
+                guild.prestige += quest.get_prestige()
+                self.db().update_guild(guild)
+                player.guild = guild
             self.notifier.notify(player, quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money))
         else:
             self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))
@@ -113,9 +116,11 @@ class QuestManager:
         zone = ac.zone()
         event = self.db().get_random_zone_event(zone)
         xp, money = event.get_rewards(ac.player)
-        ac.player.add_xp(xp)
-        ac.player.money += money
-        self.db().update_player_data(ac.player)
+        player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
+        player.add_xp(xp)
+        player.money += money
+        ac.player = player
+        self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money)}"
         self.notifier.notify(ac.player, text)
@@ -139,12 +144,14 @@ class QuestManager:
         for zone_id in zones_players_map:
             if len(zones_players_map[zone_id]) < 2:  # only notify if there's more than one player
                 continue
-            if random.randint(0, 10) > 5:  # only notify sometimes, based on a roll
-                continue
+            # choose randomly the players that will meet
             players: List[Player] = zones_players_map[zone_id]
             player1: Player = random.choice(players)
             players.remove(player1)
             player2: Player = random.choice(players)
+            # get the most up to date objects
+            player1 = self.db().get_player_data(player1.player_id)
+            player2 = self.db().get_player_data(player2.player_id)
             if zone_id == 0:
                 string, actions = Strings.players_meet_in_town, Strings.town_actions
             else:

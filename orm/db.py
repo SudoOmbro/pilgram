@@ -167,7 +167,7 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.prestige
         )
 
-    @cache_sized_ttl_quick(size_limit=400, ttl=10)
+    @cache_sized_ttl_quick(size_limit=400, ttl=3600)
     def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:
         try:
             gs = GuildModel.get(GuildModel.id == guild_id)
@@ -175,7 +175,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with id {guild_id} not found')
 
-    @cache_sized_ttl_quick(size_limit=200, ttl=10)
+    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
     def get_guild_id_from_name(self, guild_name: str) -> int:
         try:
             return GuildModel.get(GuildModel.name == guild_name).id
