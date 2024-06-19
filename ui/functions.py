@@ -6,10 +6,10 @@ from typing import Tuple, Dict, Union, Callable, Type
 from minigames.games import HandsMinigame
 from minigames.generics import PilgramMinigame, MINIGAMES
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, AdventureContainer, Guild, TOWN_ZONE
+from pilgram.classes import Player, Guild, TOWN_ZONE, Zone
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
-    MINIGAME_NAME_REGEX
+    MINIGAME_NAME_REGEX, YES_NO_REGEX
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -270,6 +270,14 @@ def join_guild(context: UserContext, guild_name: str) -> str:
         return Strings.no_character_yet
 
 
+def __start_quest_in_zone(player: Player, zone: Zone) -> str:
+    quest = db().get_next_quest(zone, player)
+    adventure_container = db().get_player_adventure_container(player)
+    adventure_container.quest = quest
+    adventure_container.finish_time = datetime.now() + quest.get_duration()
+    db().update_quest_progress(adventure_container)
+    return Strings.quest_embark.format(name=quest.name, descr=quest.description)
+
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -282,13 +290,20 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     except KeyError:
         return Strings.zone_does_not_exist
     if player.level < zone.level:
-        return Strings.level_too_low.format(lv=zone.level)
-    quest = db().get_next_quest(zone, player)
-    adventure_container = db().get_player_adventure_container(player)
-    adventure_container.quest = quest
-    adventure_container.finish_time = datetime.now() + quest.get_duration()
-    db().update_quest_progress(adventure_container)
-    return Strings.quest_embark.format(name=quest.name, descr=quest.description)
+        context.start_process("embark confirm")
+        context.set("zone", zone)
+        return Strings.embark_underleveled_confirm.format(zone=zone.zone_name, lv=zone.level)
+    return __start_quest_in_zone(player, zone)
+
+
+def process_embark_confirm(context: UserContext, user_input: str) -> str:
+    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    if not re.match(YES_NO_REGEX, user_input):
+        return Strings.yes_no_error
+    context.end_process()
+    if user_input == "n":
+        return Strings.embark_underleveled_cancel
+    return __start_quest_in_zone(player, context.get("zone"))
 
 
 def kick(context: UserContext, player_name: str) -> str:
@@ -465,6 +480,9 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "guild creation": (
         (Strings.guild_creation_get_name, process_get_guild_name),
         (Strings.guild_creation_get_description, process_get_guild_description)
+    ),
+    "embark confirm": (
+        ("confirm", process_embark_confirm)
     ),
     "minigame": (
         ("minigame turn", minigame_process),

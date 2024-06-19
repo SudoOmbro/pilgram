@@ -1,3 +1,4 @@
+import math
 import random
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Any, Callable, Union
@@ -75,11 +76,19 @@ class Quest:
 
     def finish_quest(self, player: "Player") -> bool:
         """ return true if the player has successfully finished the quest """
-        roll = random.randint(0, 11)
-        if roll == 0:
+        roll = random.randint(1, 20)
+        if roll == 1:
             return False  # you can still get a critical failure
-        result = player.level + player.gear_level + roll
-        return result >= self.zone.level + (self.number * 2)
+        if roll == 20:
+            return True  # you can also get a critical success
+        sqrt_multiplier = self.zone.level - player.level + 2.5
+        if sqrt_multiplier < 1:
+            sqrt_multiplier = 1
+        num_multiplier = (self.zone.level + 5) / player.gear_level
+        value_to_beat = (sqrt_multiplier * math.sqrt(num_multiplier * self.number)) + 5
+        if value_to_beat > 18:
+            value_to_beat = 18
+        return roll >= value_to_beat
 
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """

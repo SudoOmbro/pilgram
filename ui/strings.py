@@ -33,7 +33,9 @@ class Strings:
     # quests
     check_board = "You check the quest board, you see there are quests available in the following zones:\n\n"
     already_on_a_quest = "You already are on a quest!"
-    level_too_low = "Your level is too low! You must be at least level {lv}."
+    embark_underleveled = "You can still choose zones for which you are under-leveled, but you will be more likely to fail quests. Make sure to upgrade your gear!"
+    embark_underleveled_confirm = "Are you sure you want go to {zone}? You should be at least level {lv} for this zone.\n\nWrite 'y' or 'n' (yes or no)"
+    embark_underleveled_cancel = ""
     not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
