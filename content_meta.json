@@ -40,7 +40,7 @@
       "max_buy_in": 500,
       "payout": 3.2,
       "xp_reward": 1,
-      "explanation": "\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world. Lucky, some might say...\" TODO"
+      "explanation": "\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world. Lucky, some might say...\"\n\nComing soon..."
     },
     "open": {
       "xp_reward": 5,
@@ -50,7 +50,7 @@
     "illusion": {
       "xp_reward": 5,
       "money_reward": 5,
-      "explanation": "_\"Some walls are mere illusions... But you might not like what they hide.\"_\n\nSolve a maze"
+      "explanation": "_\"Some walls are mere illusions... But you might not like what they hide.\"_\n\nComing soon..."
     }
   }
 }
