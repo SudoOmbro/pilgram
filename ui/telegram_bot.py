@@ -24,7 +24,7 @@ logging.basicConfig(
 )
 
 DEV_NAME = GlobalSettings.get('dev contacts.telegram')
-INFO_STRING = f"Made with ❤️ by {DEV_NAME}\n\n--> [visit my github](https://github.com/SudoOmbro)\n\n--> [offer me a beer](https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2)"
+INFO_STRING = f"Made with ❤️ by {DEV_NAME}\n\n" + "\n\n".join(f"[{name}]({link})" for name, link in GlobalSettings.get("links").items())
 START_STRING = read_text_file("intro.txt").format(wn=ContentMeta.get("world.name"), mn=ContentMeta.get("money.name"))
 
 

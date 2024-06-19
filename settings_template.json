@@ -2,6 +2,14 @@
   "dev contacts": {
     "telegram": "@LordOmbro"
   },
+  "links": {
+    "\uD83C\uDFE0 Visit the Forum": "https://t.me/pilgramforum",
+    "\uD83D\uDC68\u200D\uD83D\uDCBB Look at the code": "https://github.com/SudoOmbro/pilgram",
+    "\uD83D\uDDA5\uFE0F Visit my Github": "https://github.com/SudoOmbro/pilgram",
+    "\uD83E\uDD13 Find me on Reddit": "https://www.reddit.com/user/LordOmbro/",
+    "\uD83D\uDCF7 Visit my Instagram": "https://www.instagram.com/_m_o_r_b_o_/",
+    "\uD83C\uDF7A Offer me a beer": "https://www.paypal.com/donate?hosted_button_id=UBNSEND5E96H2"
+  },
   "ChatGPT token": "XXX",
   "ChatGPT project": "XXX",
   "Telegram bot token": "XXX",
