@@ -86,6 +86,13 @@ class HangmanMinigame(PilgramMinigame, game="open"):
     def __print_word_to_guess(self) -> str:
         return "  ".join([x.upper() for x in self.guessed_word])
 
+    def __get_guessed_letters_number(self):
+        result: int = 0
+        for letter in self.guessed_word:
+            if letter != "\\_":
+                result += 1
+        return result
+
     def turn_text(self) -> str:
         return "*Word:*\n\n" + self.__print_word_to_guess() + f"\n\n_guesses left: {self.remaining_tries}_"
 
@@ -107,4 +114,4 @@ class HangmanMinigame(PilgramMinigame, game="open"):
 
     def get_rewards(self) -> Tuple[int, int]:
         multiplier = ((len(self.word) // 2) * self.remaining_tries) + 1
-        return (self.XP_REWARD * multiplier), (self.MONEY_REWARD * multiplier)
+        return ((self.XP_REWARD * multiplier) + self.__get_guessed_letters_number()), (self.MONEY_REWARD * multiplier)
