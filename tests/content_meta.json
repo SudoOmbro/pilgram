@@ -40,6 +40,13 @@
       "payout": 3.2,
       "xp_reward": 1,
       "explanation": "testificate"
+    },
+    "open": {
+      "min_buy_in": 50,
+      "max_buy_in": 500,
+      "payout": 3.2,
+      "xp_reward": 1,
+      "explanation": "testificate"
     }
   }
 }

@@ -3,7 +3,7 @@ import re
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type
 
-from minigames.games import HandsMinigame
+from minigames.games import HandsMinigame, HangmanMinigame
 from minigames.generics import PilgramMinigame, MINIGAMES
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, TOWN_ZONE, Zone
@@ -388,7 +388,9 @@ def start_minigame(context: UserContext, minigame: Type[PilgramMinigame] = None)
         minigame_instance = minigame(player)
         context.set("minigame instance", minigame_instance)
         context.start_process("minigame")
-        return minigame.INTRO_TEXT + "\n\n" + minigame.SETUP_TEXT
+        if not minigame_instance.has_started:  # skip setup if it is not needed
+            return minigame.INTRO_TEXT + "\n\n" + minigame_instance.setup_text()
+        return minigame.INTRO_TEXT + "\n\n" + minigame_instance.turn_text()
     except KeyError:
         return Strings.no_character_yet
 
@@ -398,7 +400,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
     if not minigame.has_started:
         message = minigame.setup_game(user_input)
         if minigame.has_started:
-            return message + f"\n\n{minigame.START_TEXT}"
+            return message + f"\n\n{minigame.turn_text()}"
         return message
     message = minigame.play_turn(user_input)
     if minigame.has_ended:
@@ -471,7 +473,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "play": {
-        "hands": IFW(None, start_minigame, "Play a game of Hands", default_args={"minigame": HandsMinigame})
+        "hands": IFW(None, start_minigame, "Play the 'Hands' minigame", default_args={"minigame": HandsMinigame}),
+        "open": IFW(None, start_minigame, "Play the 'Open the sealed magical door' minigame'", default_args={"minigame": HangmanMinigame})
     },
     "explain": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
 }

@@ -36,8 +36,13 @@ class __GenericGlobalSettings(ABC):
         return cls._instance
 
     @classmethod
-    def get(cls, path: str, separator: str = ".") -> Any:
-        return cls.__instance().dictionary.path_get(path, separator)
+    def get(cls, path: str, separator: str = ".", default: Any = None) -> Any:
+        try:
+            return cls.__instance().dictionary.path_get(path, separator)
+        except KeyError as e:
+            if default is not None:
+                return default
+            raise e
 
 
 class ContentMeta(__GenericGlobalSettings):

@@ -3,6 +3,7 @@ from random import choice
 from typing import List
 
 from minigames.generics import PilgramMinigame
+from minigames.utils import get_random_word, get_word_letters
 from pilgram.classes import Player
 from minigames.games import HandsMinigame
 
@@ -59,4 +60,12 @@ class TestMinigames(unittest.TestCase):
             losses_and_wins[int(result)] += 1
         # print(f"HANDS random win rate: {losses_and_wins[1] / sample_size:.2f}% ({losses_and_wins[0]} losses & {losses_and_wins[1]} wins)")
         self.assertLessEqual(losses_and_wins[1], losses_and_wins[0])
+
+    def test_get_random_word(self):
+        word = get_random_word()
+        self.assertTrue(word in ["elden", "cock", "ring"])
+
+    def test_get_word_letters(self):
+        letters = get_word_letters("ombro")
+        self.assertEqual(letters, ['o', 'm', 'b', 'r'])
 

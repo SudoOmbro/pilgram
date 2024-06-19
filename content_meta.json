@@ -40,6 +40,11 @@
       "payout": 3.2,
       "xp_reward": 1,
       "explanation": "testificate"
+    },
+    "open": {
+      "xp_reward": 5,
+      "money_reward": 5,
+      "explanation": "_\"Some doors get possessed by fragments of their dead former owners and only open when a word they identified with is whispered in the key lock\"_\n\nGuess a random word in the given amount of tries."
     }
   }
 }
