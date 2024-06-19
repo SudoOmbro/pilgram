@@ -153,6 +153,7 @@ def start_guild_creation(context: UserContext) -> str:
         creation_cost = ContentMeta.get("guilds.creation_cost")
         if player.money < creation_cost:
             return Strings.not_enough_money.format(amount=creation_cost - player.money)
+        log.info(f"Player '{player.name}' is creating a guild")
         context.start_process("guild creation")
         return context.get_process_prompt(USER_PROCESSES)
     except KeyError:
@@ -179,6 +180,7 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     try:
         db().update_player_data(player)
         context.end_process()
+        log.info(f"Player '{player.name}' is created guild '{guild.name}'")
         return Strings.guild_creation_success.format(name=guild.name)
     except AlreadyExists:
         context.end_process()
@@ -278,6 +280,7 @@ def __start_quest_in_zone(player: Player, zone: Zone) -> str:
     db().update_quest_progress(adventure_container)
     return Strings.quest_embark.format(name=quest.name, descr=quest.description)
 
+
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -343,6 +346,7 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
         db().update_player_data(player)
         # use context to communicate to the external interface that a notification should be sent to the recipient
         context.set_event("donation", {"amount": amount, "donor": player, "recipient": recipient})
+        log.info(f"player '{player.name}' donated {amount} to '{recipient_name}'")
         return Strings.donation_successful.format(amm=amount_str, rec=recipient_name)
     except KeyError:
         return Strings.no_character_yet
@@ -482,7 +486,7 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         (Strings.guild_creation_get_description, process_get_guild_description)
     ),
     "embark confirm": (
-        ("confirm", process_embark_confirm)
+        ("confirm", process_embark_confirm),
     ),
     "minigame": (
         ("minigame turn", minigame_process),

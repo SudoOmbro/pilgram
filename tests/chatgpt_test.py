@@ -1,8 +1,8 @@
 import json, unittest
 
 from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
-    EVENTS_PROMPT, ChatGPTGenerator
-from AI.utils import filter_string_list_remove_empty, remove_leading_numbers
+    EVENTS_PROMPT, ChatGPTGenerator, EVENTS_PER_BATCH
+from AI.utils import filter_string_list_remove_empty, remove_leading_numbers, filter_strings_list_remove_too_short
 from pilgram.classes import Zone
 
 SETTINGS = json.load(open('settings.json'))
@@ -58,6 +58,7 @@ class TestChatGPT(unittest.TestCase):
     def test_build_events_from_generated_text(self):
         text = _read_file("mock_events_response.txt")
         events = self.generator._get_events_from_generated_text(text, self.ZONE)
+        self.assertEqual(len(events), EVENTS_PER_BATCH)
         for event in events:
             print(event)
 
@@ -65,6 +66,11 @@ class TestChatGPT(unittest.TestCase):
         string_list = ["aaa", "bbb", "", "\n", "ccc"]
         result = filter_string_list_remove_empty(string_list)
         self.assertEqual(result, ["aaa", "bbb", "ccc"])
+
+    def test_filter_string_list_remove_too_short(self):
+        string_list = ["aaaa", "bbbbb", "ccc", "ccc", "eee"]
+        result = filter_strings_list_remove_too_short(string_list, 4)
+        self.assertEqual(result, ["aaaa", "bbbbb"])
 
     def test_remove_leading_numbers(self):
         string = "1.aaa 1"

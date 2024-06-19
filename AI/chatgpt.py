@@ -5,7 +5,8 @@ from typing import Union, List
 
 import requests
 
-from AI.utils import filter_string_list_remove_empty, get_string_list_from_tuple_list, remove_leading_numbers
+from AI.utils import filter_string_list_remove_empty, get_string_list_from_tuple_list, remove_leading_numbers, \
+    filter_strings_list_remove_too_short
 from pilgram.classes import Zone, Quest, ZoneEvent
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
@@ -168,6 +169,7 @@ class ChatGPTGenerator(PilgramGenerator):
         if not matches:
             raise GPTMisbehaveError(f"AI output events in an unknown format:\n\n{input_text}")
         event_strings = filter_string_list_remove_empty(get_string_list_from_tuple_list(matches, -1))
+        event_strings = filter_strings_list_remove_too_short(event_strings, 5)
         if len(event_strings) != EVENTS_PER_BATCH:
             raise GPTMisbehaveError(f"AI did not generate {EVENTS_PER_BATCH} events. AI output:\n\n{input_text}")
         for text in event_strings:

@@ -10,6 +10,15 @@ def filter_string_list_remove_empty(target: List[str]) -> List[str]:
     return result
 
 
+def filter_strings_list_remove_too_short(target: List[str], min_length: int) -> List[str]:
+    result: List[str] = []
+    for item in target:
+        if len(item) < min_length:
+            continue
+        result.append(item)
+    return result
+
+
 def get_string_list_from_tuple_list(tuple_list: List[tuple], location: int) -> List[str]:
     result: List[str] = []
     for item in tuple_list:

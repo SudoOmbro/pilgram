@@ -354,7 +354,7 @@ class PilgramORMDatabase(PilgramDatabase):
     @cache_sized_ttl_quick(size_limit=200)
     def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
         try:
-            qs = QuestModel.get((QuestModel.zone_id == zone.zone_id) and (QuestModel.number == quest_number))
+            qs = QuestModel.get((QuestModel.zone_id == zone.zone_id) & (QuestModel.number == quest_number))
             return self.build_quest_object(qs, zone=zone)
         except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest number {quest_number} in zone {zone.zone_id}")

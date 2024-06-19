@@ -105,7 +105,16 @@ class PilgramBot(PilgramNotifier):
             elif was_cached:
                 # if the context was retrieved from cache and the process is finished then remove context from cache
                 self.process_cache.drop(update.effective_user.id)
-            await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
+            try:
+                await c.bot.send_message(chat_id=update.effective_chat.id, text=result, parse_mode=ParseMode.MARKDOWN)
+            except TelegramError as e:
+                if e.message.startswith("Can't parse entities"):
+                    # if the message sending fails because of a markdown error, try sending it again without markdown
+                    log.error(f"Markdown error: {e.message} in message: '{result}'")
+                    await c.bot.send_message(chat_id=update.effective_chat.id, text=result)
+                    return
+                # if was not a markdown error then raise it again and let the main error handler handle it
+                raise e
         except TelegramError as e:
             log.error(f"TelegramError encountered while executing '{update.message}' for user with id {update.effective_user.id} {e.message}")
         except Exception as e:

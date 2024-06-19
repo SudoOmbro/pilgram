@@ -1,3 +1,4 @@
+import logging
 import math
 import random
 from datetime import datetime, timedelta
@@ -6,6 +7,10 @@ from typing import Tuple, Dict, Any, Callable, Union
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.utils import read_update_interval
 from ui.strings import MONEY
+
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 BASE_QUEST_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.base duration"))
@@ -24,6 +29,7 @@ class Zone:
         :param level: zone level, control the minimum level a player is required to be to accept quests in the zone
         :param zone_description: zone description
         """
+        assert level > 0
         self.zone_id = zone_id
         self.zone_name = zone_name
         self.level = level
@@ -40,7 +46,7 @@ class Zone:
 
     @classmethod
     def get_empty(cls) -> "Zone":
-        return Zone(0, "", 0, "")
+        return Zone(0, "", 1, "")
 
 
 class Quest:
@@ -78,16 +84,22 @@ class Quest:
         """ return true if the player has successfully finished the quest """
         roll = random.randint(1, 20)
         if roll == 1:
+            log.info(f"{player.name} rolled a critical failure on quest {self.name}")
             return False  # you can still get a critical failure
         if roll == 20:
+            log.info(f"{player.name} rolled a critical success on quest {self.name}")
             return True  # you can also get a critical success
-        sqrt_multiplier = self.zone.level - player.level + 2.5
+        sqrt_multiplier = (1.2 * self.zone.level) - ((player.level + player.gear_level) / 2)
         if sqrt_multiplier < 1:
             sqrt_multiplier = 1
-        num_multiplier = (self.zone.level + 5) / player.gear_level
-        value_to_beat = (sqrt_multiplier * math.sqrt(num_multiplier * self.number)) + 5
+        num_multiplier = 4 / self.zone.level
+        offset = 6 + self.zone.level - player.level
+        if offset < 0:
+            offset = 0
+        value_to_beat = int((sqrt_multiplier * math.sqrt(num_multiplier * self.number)) + offset)
         if value_to_beat > 18:
             value_to_beat = 18
+        log.info(f"{self.name}: to beat: {value_to_beat}, {player.name} rolled: {roll}")
         return roll >= value_to_beat
 
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
