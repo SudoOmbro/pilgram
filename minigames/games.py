@@ -115,3 +115,11 @@ class HangmanMinigame(PilgramMinigame, game="open"):
     def get_rewards(self) -> Tuple[int, int]:
         multiplier = ((len(self.word) // 2) * self.remaining_tries) + 1
         return ((self.XP_REWARD * multiplier) + self.__get_guessed_letters_number()), (self.MONEY_REWARD * multiplier)
+
+
+class MazeMinigame(PilgramMinigame, game="illusion"):
+
+    def __init__(self, player: Player):
+        super().__init__(player)
+        self.has_started = True
+        # TODO

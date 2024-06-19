@@ -40,12 +40,17 @@
       "max_buy_in": 500,
       "payout": 3.2,
       "xp_reward": 1,
-      "explanation": "testificate"
+      "explanation": "\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world. Lucky, some might say...\" TODO"
     },
     "open": {
       "xp_reward": 5,
       "money_reward": 5,
       "explanation": "_\"Some doors get possessed by fragments of their dead former owners and only open when a word they identified with is whispered in the key lock\"_\n\nGuess a random word in the given amount of tries."
+    },
+    "illusion": {
+      "xp_reward": 5,
+      "money_reward": 5,
+      "explanation": "_\"Some walls are mere illusions... But you might not like what they hide.\"_\n\nSolve a maze"
     }
   }
 }

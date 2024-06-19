@@ -69,3 +69,6 @@ class TestMinigames(unittest.TestCase):
         letters = get_word_letters("ombro")
         self.assertEqual(letters, ['o', 'm', 'b', 'r'])
 
+    def test_generate_maze(self):
+        # TODO
+        pass
