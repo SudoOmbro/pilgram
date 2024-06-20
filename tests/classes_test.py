@@ -30,4 +30,8 @@ class TestClasses(unittest.TestCase):
             fail_rate = _get_quest_fail_rate(quest, player)
             _print_quest_fail_rate(fail_rate, quest, player)
 
-
+    def test_quest_rewards(self):
+        player = Player.create_default(0, "test", "")
+        zone = Zone(0, "test", 5, "test")
+        quest = Quest(0, zone, 0, "test", "", "", "")
+        print(quest.get_rewards(player))
