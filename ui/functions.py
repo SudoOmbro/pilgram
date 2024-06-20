@@ -17,6 +17,8 @@ from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithEr
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
+MODIFY_COST = ContentMeta.get("modify_cost")
+
 
 def db() -> PilgramDatabase:
     return PilgramORMDatabase.instance()
@@ -228,10 +230,12 @@ def upgrade_guild(context: UserContext) -> str:
 def modify_player(context: UserContext, user_input: str, target: str = "name") -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if player.money < ContentMeta.get("modify_cost"):
+        # check if the player has enough money
+        if player.money < MODIFY_COST:
             return Strings.not_enough_money
+        # set the attribute
         player.__dict__[target] = user_input
-        player.money -= ContentMeta.get("modify_cost")
+        player.money -= MODIFY_COST
         db().update_player_data(player)
         return Strings.obj_attr_modified.format(obj="character", attr=target)
     except KeyError:
@@ -242,13 +246,15 @@ def modify_guild(context: UserContext, user_input: str, target: str = "name") ->
     try:
         player = db().get_player_data(context.get("id"))
         guild = db().get_owned_guild(player)
+        # check if the player doesn't already have a guild of his own & has enough money
         if not guild:
             return Strings.guild_not_owned
-        if player.money < ContentMeta.get("modify_cost"):
+        if player.money < MODIFY_COST:
             return Strings.not_enough_money
+        # set the attribute
         guild.__dict__[target] = user_input
         db().update_guild(guild)
-        player.money -= ContentMeta.get("modify_cost")
+        player.money -= MODIFY_COST
         db().update_player_data(player)
         return Strings.obj_attr_modified.format(obj="guild", attr=target)
     except KeyError:
