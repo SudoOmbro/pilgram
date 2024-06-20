@@ -7,8 +7,8 @@ from pilgram.utils import PathDict
 
 log = logging.getLogger(__name__)
 
-__INNER_REGEX = r"[A-Za-z0-9\-,.!?;:\(\)\/+=\"'@#$%^&]"
-__DESCR_INNER_REGEX = r"[A-Za-z0-9\-,.!?;:\(\)\/+=\"'@#$%^&\s]"
+__INNER_REGEX = r"[^*_`\[\]~\n\s]"
+__DESCR_INNER_REGEX = r"[^*_`\[\]~\n]"
 
 PLAYER_NAME_REGEX = fr"^{__INNER_REGEX}{{4,20}}$"
 MINIGAME_NAME_REGEX = r"^[A-Za-z]+$"

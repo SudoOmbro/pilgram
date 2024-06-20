@@ -124,10 +124,10 @@ class Strings:
     no_character_yet = "You haven't made a character yet!"
     no_guild_yet = "You haven't created a guild yet!"
     named_object_not_exist = "{obj} with name {name} does not exist."
-    __must_only_contain = "must contain only letters, numbers and the following symbols: -,.!?;:()/+=\"'@#$%^&"
-    player_name_validation_error = "Player names must only be 4 to 20 characters long and " + __must_only_contain
-    guild_name_validation_error = "Player names must only be 2 to 30 characters long and " + __must_only_contain
-    description_validation_error = "Descriptions must only be 10 to 300 characters long and " + __must_only_contain
+    __must_not_contain = "must not contain new lines & the following characters: \\_, \\*, \\`, \\[, ], ~"
+    player_name_validation_error = "Player names must only be 4 to 20 characters long, must not contain spaces and " + __must_not_contain
+    guild_name_validation_error = "Guild names must only be 2 to 30 characters long, must not contain spaces and " + __must_not_contain
+    description_validation_error = "Descriptions must only be 10 to 300 characters long and " + __must_not_contain
     zone_number_error = "Zone number must be a positive integer number."
     zone_does_not_exist = "The zone does not exist!"
     not_in_a_guild = "You are not in a guild!"
