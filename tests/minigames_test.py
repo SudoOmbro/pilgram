@@ -3,7 +3,7 @@ from random import choice
 from typing import List
 
 from minigames.generics import PilgramMinigame
-from minigames.utils import get_random_word, get_word_letters
+from minigames.utils import get_random_word, get_word_letters, generate_maze, print_maze, get_direction_plus_90_degrees
 from pilgram.classes import Player
 from minigames.games import HandsMinigame
 
@@ -69,6 +69,13 @@ class TestMinigames(unittest.TestCase):
         letters = get_word_letters("ombro")
         self.assertEqual(letters, ['o', 'm', 'b', 'r'])
 
+    def test_get_direction_plus_90_degrees(self):
+        result = get_direction_plus_90_degrees(0)
+        self.assertEqual(result, (0, 1))
+        result = get_direction_plus_90_degrees(3)
+        self.assertEqual(result, (1, 0))
+
     def test_generate_maze(self):
-        # TODO
-        pass
+        maze = generate_maze(11, 11, 7)
+        string = print_maze(maze)
+        print(string)

@@ -1,9 +1,22 @@
 import itertools
 import re
-from random import randint, randrange
-from typing import Union, Tuple, List
+from random import randint, randrange, shuffle, choice
+from typing import Union, Tuple, List, Dict
 
 from pilgram.globals import POSITIVE_INTEGER_REGEX
+
+
+DIRECTIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
+
+__EMPTY, __WALL, __PLAYER, __TRAP_ON, __TRAP_OFF, __END = range(6)
+TILE_REPRESENTATIONS: Dict[int, str] = {
+    __EMPTY: "◻️",
+    __WALL: "◼️",
+    __PLAYER: "🧑",
+    __TRAP_ON: "⭕",
+    __TRAP_OFF: "✖️",
+    __END: "🏆"
+}
 
 
 WORDS_FILE_SIZE: int
@@ -55,3 +68,61 @@ def replace_character_at_string_index(string: str, index: int, char: str) -> str
     string_list = list(string)
     string_list[index] = char
     return "".join(string_list)
+
+
+def print_maze(maze) -> str:
+    result = ""
+    for row in maze:
+        result += "".join(TILE_REPRESENTATIONS[tile] for tile in row) + "\n"
+    return result
+
+
+def get_direction_plus_90_degrees(direction_index: int) -> Tuple[int, int]:
+    return DIRECTIONS[(direction_index + 1) % 4]
+
+
+def generate_maze(width: int, height: int, trap_probability: int):
+    # Initialize the maze grid
+    maze = [[__WALL for _ in range(width)] for _ in range(height)]
+    # Start at a random position
+    start_x, start_y = choice(((1, 1), (width - 2, 1), (width - 2, height - 2), (1, height - 2)))
+    maze[start_y][start_x] = __PLAYER
+    max_depth_reached = 0, (start_x, start_y)
+
+    def try_placing_trap(x, y):
+        if (randint(0, 10) < trap_probability) and (maze[y][x] != __PLAYER):
+            # try to place a trap
+            can_place_trap: bool = True
+            for index, (dir_y, dir_x) in enumerate(DIRECTIONS):
+                if maze[y + dir_y][x + dir_x] == __TRAP_ON + int((dir_y + dir_y) > 0):
+                    # don't place traps besides other trap
+                    can_place_trap = False
+                    break
+                p_dir_y, p_dir_x = get_direction_plus_90_degrees(index)
+                # print(print_maze(maze))
+                if (maze[y + p_dir_y][x + p_dir_x] == __EMPTY) and (maze[y + dir_y][x + dir_x] == __EMPTY):
+                    # don't place traps on corners
+                    can_place_trap = False
+                    break
+            if can_place_trap:
+                # by doing this we are 90% sure the maze will be solvable without taking damage
+                maze[y][x] = choice((__TRAP_ON, __TRAP_OFF))
+
+    def dfs(x, y, depth):
+        nonlocal max_depth_reached
+        directions = DIRECTIONS[:]
+        shuffle(directions)
+        for dx, dy in directions:
+            new_x, new_y = x + (2 * dx), y + (2 * dy)
+            if (0 <= new_x < width) and (0 <= new_y < height) and (maze[new_y][new_x] == __WALL):
+                maze[new_y - dy][new_x - dx] = __EMPTY
+                maze[new_y][new_x] = __EMPTY
+                try_placing_trap(x, y)
+                dfs(new_x, new_y, depth + 1)
+        if depth > max_depth_reached[0]:
+            max_depth_reached = (depth, (x, y))
+
+    dfs(start_x, start_y, 0)
+    end_x, end_y = max_depth_reached[1]
+    maze[end_y][end_x] = __END
+    return maze
