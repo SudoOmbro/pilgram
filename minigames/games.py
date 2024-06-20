@@ -1,10 +1,13 @@
 import logging
 import random
+import re
 from typing import Tuple, List
 
 from minigames.generics import GamblingMinigame, PilgramMinigame
-from minigames.utils import get_positive_integer_from_string, roll, get_random_word, get_word_letters
+from minigames.utils import get_positive_integer_from_string, roll, get_random_word, get_word_letters, generate_maze, \
+    print_maze, TILE_REPRESENTATIONS as TR, MAZE
 from pilgram.classes import Player
+from pilgram.globals import POSITIVE_INTEGER_REGEX
 from ui.strings import Strings
 
 
@@ -118,16 +121,116 @@ class HangmanMinigame(PilgramMinigame, game="open"):
 
 
 class MazeMinigame(PilgramMinigame, game="illusion"):
+    INTRO_TEXT = "You spot a wall that looks transparent, upon closer inspection it turns out that is is indeed an illusion.\nAn illusion you want to explore."
+    REFERENCE = f"{TR[0]}: Empty space\n{TR[1]}: Wall\n{TR[2]}: You\n{TR[3]}: Active trap\n{TR[4]}: Deactivated trap\n{TR[5]}: Treasure\n{TR[-1]}: Visited tiles"
+    DIRECTIONS = {
+        "n": (-1, 0),
+        "s": (1, 0),
+        "e": (0, 1),
+        "w": (0, -1),
+        "i": (0, 0)
+    }
+    INSTRUCTIONS = "Where do you want to go? write n/w/e/s/i \\[steps (optional)]"
 
     def __init__(self, player: Player):
         super().__init__(player)
+        self.hp: int = 0
+        self.maze: List[List[int]] = []
+        self.remaining_turns: int = 10
+        self.difficulty: int = 1
+
+    def __update_maze(self, player_direction: Tuple[int, int]) -> int:
+        """
+        updates the maze by switching traps on & off and moving the player.
+
+        :param player_direction: direction where the player wants to move (or stay)
+        :return: 0 if player hasn't hit anything, 1 if player hit a wall, 2 if player hit a trap, 3 if player wins, 4 if player idled
+        """
+        return_code: int = 0
+        px, py = player_direction
+        for y, row in enumerate(self.maze):
+            for x, tile in enumerate(row):
+                if tile < 2:
+                    continue  # optimize for the most common scenario
+                if tile == MAZE.TRAP_ON:
+                    self.maze[y][x] = MAZE.TRAP_OFF
+                elif tile == MAZE.TRAP_OFF:
+                    self.maze[y][x] = MAZE.TRAP_ON
+                elif tile == MAZE.PLAYER:
+                    px, py = x, y
+        if player_direction == (0, 0):
+            return 4
+        next_x, next_y = px + player_direction[1], py + player_direction[0]
+        if self.maze[next_y][next_x] == MAZE.WALL:
+            return 1
+        if self.maze[next_y][next_x] == MAZE.TRAP_ON:
+            self.hp -= 1
+            return_code = 2
+        elif self.maze[next_y][next_x] == MAZE.END:
+            return_code = 3
+        self.maze[py][px] = MAZE.VISITED
+        self.maze[next_y][next_x] = MAZE.PLAYER
+        return return_code
+
+    def setup_text(self) -> str:
+        return "How brave are you feeling? send a number from 1 to 4\n\n(note that numbers greater than 2 might not render correctly on android phones due to limitations of the app, while 4 might be too wide for some phones)"
+
+    def turn_text(self) -> str:
+        return "*Illusion*:\n\n" + print_maze(self.maze) + f"\nHP: {self.hp}, turns left: {self.remaining_turns}\n\n{self.INSTRUCTIONS}"
+
+    def setup_game(self, command: str) -> str:
+        if not re.match(POSITIVE_INTEGER_REGEX, command):
+            return "Not a number"
+        number = int(command)
+        if number not in range(1, 5):
+            return "send a number ONLY from 1 to 4"
+        self.difficulty = number
+        size = 7 + 2 * (number - 1)
+        self.maze = generate_maze(size, size, 7)
+        self.hp = 3
+        self.remaining_turns = 10 * number
         self.has_started = True
-        # TODO
+        return "You take a deep breath and run into the illusion.\n\n" + self.REFERENCE
+
+    def play_turn(self, command: str) -> str:
+        split_command = command.split()
+        direction_command = split_command[0].lower()
+        direction = self.DIRECTIONS.get(direction_command, None)
+        if not direction:
+            return f"Invalid command. Example of 2 valid commands:\n`n`\n`n 2`\n\n" + self.turn_text()
+        steps: int = -1
+        if len(split_command) > 1:
+            steps_string = split_command[1]
+            if re.match(POSITIVE_INTEGER_REGEX, steps_string):
+                steps = int(steps_string)
+                if steps == 0:
+                    steps = -1
+        code: int = 0
+        while (code == 0) and steps != 0:
+            code = self.__update_maze(direction)
+            steps -= 1
+        message = "You hit a wall." if code == 1 else "You idled for a turn."
+        if code == 2:
+            message = "You hit a trap!"
+            if self.hp < 1:
+                return self.lose("You hit too many traps. Just as you feel your life slipping away you are ejected from the illusion, bruised and bleeding but in one piece.")
+        elif code == 3:
+            return self.win(print_maze(self.maze) + "\n\nYou manage to find the treasure hidden in the illusion.")
+        self.remaining_turns -= 1
+        if self.remaining_turns == 0:
+            return self.lose("The illusion has become too unstable, you are ejected empty handed.")
+        return f"{message}\n\n{self.turn_text()}"
+
+    def get_rewards(self) -> Tuple[int, int]:
+        multiplier = self.difficulty + self.hp
+        bonus = self.remaining_turns
+        return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
 
 
-class FateMinigame(GamblingMinigame, game="fate"):
-
-    def __init__(self, player: Player):
-        super().__init__(player)
-        self.has_started = True
-        # TODO
+# class FateMinigame(GamblingMinigame, game="fate"):
+#     INTRO_TEXT = "TODO"
+#
+#     def __init__(self, player: Player):
+#         super().__init__(player)
+#         self.has_started = True
+#         # TODO

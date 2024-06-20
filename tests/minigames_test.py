@@ -76,6 +76,6 @@ class TestMinigames(unittest.TestCase):
         self.assertEqual(result, (1, 0))
 
     def test_generate_maze(self):
-        maze = generate_maze(11, 11, 7)
+        maze = generate_maze(15, 15, 7)
         string = print_maze(maze)
         print(string)

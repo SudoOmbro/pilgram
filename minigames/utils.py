@@ -8,14 +8,25 @@ from pilgram.globals import POSITIVE_INTEGER_REGEX
 
 DIRECTIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
-__EMPTY, __WALL, __PLAYER, __TRAP_ON, __TRAP_OFF, __END = range(6)
+
+class MAZE:
+    VISITED = -1
+    EMPTY = 0
+    WALL = 1
+    PLAYER = 2
+    TRAP_ON = 3
+    TRAP_OFF = 4
+    END = 5
+
+
 TILE_REPRESENTATIONS: Dict[int, str] = {
-    __EMPTY: "◻️",
-    __WALL: "◼️",
-    __PLAYER: "🧑",
-    __TRAP_ON: "⭕",
-    __TRAP_OFF: "✖️",
-    __END: "🏆"
+    MAZE.EMPTY: "⬜",
+    MAZE.WALL: "⬛",
+    MAZE.PLAYER: "🧑",
+    MAZE.TRAP_ON: "⭕",
+    MAZE.TRAP_OFF: "❌",
+    MAZE.END: "🏆",
+    MAZE.VISITED: "👣"
 }
 
 
@@ -83,28 +94,28 @@ def get_direction_plus_90_degrees(direction_index: int) -> Tuple[int, int]:
 
 def generate_maze(width: int, height: int, trap_probability: int):
     # Initialize the maze grid
-    maze = [[__WALL for _ in range(width)] for _ in range(height)]
+    maze = [[MAZE.WALL for _ in range(width)] for _ in range(height)]
     # Start at a random position
     start_x, start_y = choice(((1, 1), (width - 2, 1), (width - 2, height - 2), (1, height - 2)))
-    maze[start_y][start_x] = __PLAYER
+    maze[start_y][start_x] = MAZE.PLAYER
     max_depth_reached = 0, (start_x, start_y)
     trap_placing_func: Callable = choice((
-        lambda dx, dy: __TRAP_ON + int((dx + dy) > 0),
-        lambda dx, dy: __TRAP_OFF - int((dx + dy) > 0),
+        lambda dx, dy: MAZE.TRAP_ON + int((dx + dy) > 0),
+        lambda dx, dy: MAZE.TRAP_OFF - int((dx + dy) > 0),
     ))
 
     def try_placing_trap(x, y, dx, dy):
-        if (randint(0, 10) < trap_probability) and (maze[y][x] != __PLAYER):
+        if (randint(0, 10) < trap_probability) and (maze[y][x] != MAZE.PLAYER):
             # try to place a trap
             can_place_trap: bool = True
             for index, (dir_y, dir_x) in enumerate(DIRECTIONS):
-                if maze[y + dir_y][x + dir_x] == (__TRAP_ON or __TRAP_OFF):
+                if maze[y + dir_y][x + dir_x] == (MAZE.TRAP_ON or MAZE.TRAP_OFF):
                     # don't place traps besides other trap
                     can_place_trap = False
                     break
                 p_dir_y, p_dir_x = get_direction_plus_90_degrees(index)
                 # print(print_maze(maze))
-                if (maze[y + p_dir_y][x + p_dir_x] == __EMPTY) and (maze[y + dir_y][x + dir_x] == __EMPTY):
+                if (maze[y + p_dir_y][x + p_dir_x] == MAZE.EMPTY) and (maze[y + dir_y][x + dir_x] == MAZE.EMPTY):
                     # don't place traps on corners
                     can_place_trap = False
                     break
@@ -118,9 +129,9 @@ def generate_maze(width: int, height: int, trap_probability: int):
         shuffle(directions)
         for dx, dy in directions:
             new_x, new_y = x + (2 * dx), y + (2 * dy)
-            if (0 <= new_x < width) and (0 <= new_y < height) and (maze[new_y][new_x] == __WALL):
-                maze[new_y - dy][new_x - dx] = __EMPTY
-                maze[new_y][new_x] = __EMPTY
+            if (0 <= new_x < width) and (0 <= new_y < height) and (maze[new_y][new_x] == MAZE.WALL):
+                maze[new_y - dy][new_x - dx] = MAZE.EMPTY
+                maze[new_y][new_x] = MAZE.EMPTY
                 try_placing_trap(x, y, dx, dy)
                 dfs(new_x, new_y, depth + 1)
         if depth > max_depth_reached[0]:
@@ -130,5 +141,5 @@ def generate_maze(width: int, height: int, trap_probability: int):
     dfs(start_x, start_y, 0)
     # add end goal
     end_x, end_y = max_depth_reached[1]
-    maze[end_y][end_x] = __END
+    maze[end_y][end_x] = MAZE.END
     return maze

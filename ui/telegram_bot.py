@@ -69,6 +69,7 @@ class PilgramBot(PilgramNotifier):
         self.__app = ApplicationBuilder().token(bot_token).build()
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
+        self.__app.add_handler(CommandHandler("quit", self.quit))
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.__app.add_error_handler(error_handler)
         self.process_cache = TempIntCache()
@@ -83,6 +84,23 @@ class PilgramBot(PilgramNotifier):
             "id": user_id,
             "username": _delimit_markdown_entities(update.effective_user.username if update.effective_user.username else update.effective_user.name),
         }), False
+
+    async def quit(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
+        if self.process_cache.get(update.effective_user.id):
+            self.process_cache.drop(update.effective_user.id)
+            await c.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Your context was cleared. Whatever minigame or process you were in, you are not in it anymore.",
+                parse_mode=ParseMode.MARKDOWN,
+                disable_web_page_preview=True
+            )
+        else:
+            await c.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="You are not doing anything that requires quitting",
+                parse_mode=ParseMode.MARKDOWN,
+                disable_web_page_preview=True
+            )
 
     async def handle_message(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
         if (update.message is None) or (update.message.text is None):
