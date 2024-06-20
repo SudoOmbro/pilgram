@@ -100,7 +100,7 @@ class Strings:
         "throw rocks at some monsters below you. They can't reach you and they make funny noises when hit.",
         "share a pemmican & hardtack meal since lighting a fire was not an option.",
         "hide from them until they leave. You are not feeling too sociable right now.",
-        "come across a Pilgrim, undying & blindly following the path his faith lays for him. You watch him, mesmerized."
+        "come across a Pilgrim, undying & blindly following the path his faith lays for him. You both watch him, mesmerized."
     ]
     xp_gain = "You gain {xp} xp"
 

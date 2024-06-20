@@ -11,6 +11,7 @@ from pilgram.classes import Player, Guild, TOWN_ZONE, Zone
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX
+from pilgram.utils import read_text_file
 from ui.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
@@ -52,8 +53,8 @@ def check_zone(context: UserContext, zone_id_str: int) -> str:
         return Strings.zone_does_not_exist
 
 
-def check_town(context: UserContext) -> str:
-    return str(TOWN_ZONE)
+def return_string(context: UserContext, string: str = "") -> str:
+    return string
 
 
 def check_self(context: UserContext) -> str:
@@ -451,7 +452,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name & objective (if you are on a quest)."),
-        "town": IFW(None, check_town, f"Shows a description of {ContentMeta.get('world.city.name')}."),
+        "town": IFW(None, return_string, f"Shows a description of {ContentMeta.get('world.city.name')}.", default_args={"string": str(TOWN_ZONE)}),
         "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], check_zone, "Shows a description of the given zone."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -473,12 +474,12 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "modify": {
         "character": {
-            "name": IFW([RWE("name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, "Modify your character's name.", default_args={"target": "name"}),
-            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, "Modify your character's description.", default_args={"target": "description"})
+            "name": IFW([RWE("name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, "Modify your character's name (for a price).", default_args={"target": "name"}),
+            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, "Modify your character's description (for a price).", default_args={"target": "description"})
         },
         "guild": {
-            "name": IFW([RWE("name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name.", default_args={"target": "name"}),
-            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description.", default_args={"target": "description"})
+            "name": IFW([RWE("name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name (for a price).", default_args={"target": "name"}),
+            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description (for a price).", default_args={"target": "description"})
         }
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
@@ -498,7 +499,10 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "minigames": IFW(None, list_minigames, "Shows all the minigames")
     },
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
-    "explain": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
+    "explain": {
+        "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
+        "mechanics": IFW(None, return_string, "Explains the mechanics of the game", default_args={"string": read_text_file("mechanics.txt")})
+    }
 }
 
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
