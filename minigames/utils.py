@@ -89,12 +89,12 @@ def generate_maze(width: int, height: int, trap_probability: int):
     maze[start_y][start_x] = __PLAYER
     max_depth_reached = 0, (start_x, start_y)
 
-    def try_placing_trap(x, y):
+    def try_placing_trap(x, y, dx, dy):
         if (randint(0, 10) < trap_probability) and (maze[y][x] != __PLAYER):
             # try to place a trap
             can_place_trap: bool = True
             for index, (dir_y, dir_x) in enumerate(DIRECTIONS):
-                if maze[y + dir_y][x + dir_x] == __TRAP_ON + int((dir_y + dir_y) > 0):
+                if maze[y + dir_y][x + dir_x] == (__TRAP_ON or __TRAP_OFF):
                     # don't place traps besides other trap
                     can_place_trap = False
                     break
@@ -105,8 +105,8 @@ def generate_maze(width: int, height: int, trap_probability: int):
                     can_place_trap = False
                     break
             if can_place_trap:
-                # by doing this we are 90% sure the maze will be solvable without taking damage
-                maze[y][x] = choice((__TRAP_ON, __TRAP_OFF))
+                # by doing this we are 95% sure the maze will be solvable without taking damage
+                maze[y][x] = __TRAP_ON + int((dx + dy) > 0)
 
     def dfs(x, y, depth):
         nonlocal max_depth_reached
@@ -117,12 +117,14 @@ def generate_maze(width: int, height: int, trap_probability: int):
             if (0 <= new_x < width) and (0 <= new_y < height) and (maze[new_y][new_x] == __WALL):
                 maze[new_y - dy][new_x - dx] = __EMPTY
                 maze[new_y][new_x] = __EMPTY
-                try_placing_trap(x, y)
+                try_placing_trap(x, y, dx, dy)
                 dfs(new_x, new_y, depth + 1)
         if depth > max_depth_reached[0]:
             max_depth_reached = (depth, (x, y))
 
+    # generate maze
     dfs(start_x, start_y, 0)
+    # add end goal
     end_x, end_y = max_depth_reached[1]
     maze[end_y][end_x] = __END
     return maze
