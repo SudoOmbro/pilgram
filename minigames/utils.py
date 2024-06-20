@@ -1,7 +1,7 @@
 import itertools
 import re
 from random import randint, randrange, shuffle, choice
-from typing import Union, Tuple, List, Dict
+from typing import Union, Tuple, List, Dict, Callable
 
 from pilgram.globals import POSITIVE_INTEGER_REGEX
 
@@ -88,6 +88,10 @@ def generate_maze(width: int, height: int, trap_probability: int):
     start_x, start_y = choice(((1, 1), (width - 2, 1), (width - 2, height - 2), (1, height - 2)))
     maze[start_y][start_x] = __PLAYER
     max_depth_reached = 0, (start_x, start_y)
+    trap_placing_func: Callable = choice((
+        lambda dx, dy: __TRAP_ON + int((dx + dy) > 0),
+        lambda dx, dy: __TRAP_OFF - int((dx + dy) > 0),
+    ))
 
     def try_placing_trap(x, y, dx, dy):
         if (randint(0, 10) < trap_probability) and (maze[y][x] != __PLAYER):
@@ -106,7 +110,7 @@ def generate_maze(width: int, height: int, trap_probability: int):
                     break
             if can_place_trap:
                 # by doing this we are 95% sure the maze will be solvable without taking damage
-                maze[y][x] = __TRAP_ON + int((dx + dy) > 0)
+                maze[y][x] = trap_placing_func(dx, dy)
 
     def dfs(x, y, depth):
         nonlocal max_depth_reached
