@@ -326,7 +326,7 @@ class Guild:
         self.level += 1
 
     def __eq__(self, other):
-        return self.guild_id == other.guild
+        return self.guild_id == other.guild_id
 
     def __str__(self):
         return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: _{self.founder.name if self.founder else '???'}\nSince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
