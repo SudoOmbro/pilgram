@@ -34,4 +34,4 @@ class TestClasses(unittest.TestCase):
         player = Player.create_default(0, "test", "")
         zone = Zone(0, "test", 5, "test")
         quest = Quest(0, zone, 0, "test", "", "", "")
-        print(quest.get_rewards(player))
+        self.assertEqual(quest.get_rewards(player), (4250, 3000))
