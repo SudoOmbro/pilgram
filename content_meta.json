@@ -51,7 +51,7 @@
     "illusion": {
       "xp_reward": 5,
       "money_reward": 5,
-      "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nComing soon..."
+      "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nNavigate a maze by typing 'n'(north), 's'(south), 'e'(east) & 'w'(west), or 'i'(idle) for a tick. Moving in a direction moves you until you hit a wall, the exit or an active trap.\n\nBeware of spike traps that activate & deactivate each tick.\n\nFinish the maze in the given number of turns"
     }
   }
 }

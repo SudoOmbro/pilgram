@@ -82,10 +82,11 @@ def check_guild(context: UserContext, guild_name: str) -> str:
 def check_prices(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        result: str = f"Gear upgrade: {player.get_gear_upgrade_required_money()} {MONEY}\nHome upgrade: {player.get_home_upgrade_required_money()} {MONEY}"
+        result: str = f"*Gear upgrade*: {player.get_gear_upgrade_required_money()} {MONEY}\n*Home upgrade*: {player.get_home_upgrade_required_money()} {MONEY}"
         if player.guild:
-            result += f"\nGuild upgrade: {player.guild.get_upgrade_required_money()} {MONEY}"
-        result += f"\n\nCreate guild: {ContentMeta.get('guilds.creation_cost')} {MONEY}\nModify: {ContentMeta.get('modify_cost')} {MONEY}"
+            result += f"\n*Guild upgrade*: {player.guild.get_upgrade_required_money()} {MONEY}"
+        result += f"\n\n*Create guild*: {ContentMeta.get('guilds.creation_cost')} {MONEY}\n*Modify*: {MODIFY_COST} {MONEY}"
+        result += f"\n\n*You have*: {player.money} {MONEY}"
         return result
     except KeyError:
         return Strings.no_character_yet
@@ -386,8 +387,19 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
         return Strings.no_character_yet
 
 
-def start_minigame(context: UserContext, minigame: Type[PilgramMinigame] = None) -> str:
+def __list_minigames() -> str:
+    return "Valid minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
+
+
+def list_minigames(context: UserContext) -> str:
+    return "here's all the " + __list_minigames()
+
+
+def start_minigame(context: UserContext, minigame_name: str) -> str:
     try:
+        minigame: Union[Type[PilgramMinigame], None] = MINIGAMES.get(minigame_name, None)
+        if not minigame:
+            return Strings.named_object_not_exist.format(obj="minigame", name=minigame_name) + f"\n\n{__list_minigames()}"
         if minigame.has_played_too_recently(context.get("id")):
             return Strings.minigame_played_too_recently.format(seconds=minigame.COOLDOWN)
         player = db().get_player_data(context.get("id"))
@@ -430,7 +442,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
 def explain_minigame(context: UserContext, user_input: str) -> str:
     minigame = MINIGAMES.get(user_input, None)
     if not minigame:
-        return Strings.named_object_not_exist.format(obj="minigame", name=user_input) + "\n\nValid names:\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
+        return Strings.named_object_not_exist.format(obj="minigame", name=user_input) + f"\n\n{__list_minigames()}"
     return minigame.EXPLANATION
 
 
@@ -460,18 +472,18 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "modify": {
         "character": {
-            "name": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, f"Modify your character's name for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "name"}),
-            "description": IFW([RWE("player description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, f"Modify your character's description for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "description"})
+            "name": IFW([RWE("name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, "Modify your character's name.", default_args={"target": "name"}),
+            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, "Modify your character's description.", default_args={"target": "description"})
         },
         "guild": {
-            "name": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "name"}),
-            "description": IFW([RWE("guild description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description for a price ({ContentMeta.get('modify_cost')} {MONEY}).", default_args={"target": "description"})
+            "name": IFW([RWE("name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name.", default_args={"target": "name"}),
+            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description.", default_args={"target": "description"})
         }
     },
-    "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join the guild with the given name."),
-    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts a quest in specified zone."),
-    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks specified player from your own guild."),
-    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, "donates the specified amount of money to the recipient."),
+    "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
+    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts quest in specified zone."),
+    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
+    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     },
@@ -481,10 +493,10 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "work": IFW(None, set_last_update, "Come back from your vacation", default_args={"delta": None, "msg": Strings.you_came_back})
         }
     },
-    "play": {
-        "hands": IFW(None, start_minigame, "Play the 'Hands' minigame", default_args={"minigame": HandsMinigame}),
-        "open": IFW(None, start_minigame, "Play the 'Open the sealed magical door' minigame'", default_args={"minigame": HangmanMinigame})
+    "list": {
+        "minigames": IFW(None, list_minigames, "Shows all the minigames")
     },
+    "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
 }
 
