@@ -3,6 +3,8 @@ import re
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type
 
+import minigames.games  # this is necessary for the minigame classes to ve initialized
+
 from minigames.generics import PilgramMinigame, MINIGAMES
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, TOWN_ZONE, Zone

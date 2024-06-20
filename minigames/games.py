@@ -227,10 +227,10 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
 
 
-# class FateMinigame(GamblingMinigame, game="fate"):
-#     INTRO_TEXT = "TODO"
-#
-#     def __init__(self, player: Player):
-#         super().__init__(player)
-#         self.has_started = True
-#         # TODO
+class FateMinigame(GamblingMinigame, game="fate"):
+    INTRO_TEXT = "Do not play, work in progress!"
+
+    def __init__(self, player: Player):
+        super().__init__(player)
+        self.has_started = False
+        # TODO
