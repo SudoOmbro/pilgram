@@ -57,7 +57,7 @@ async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
 
 def _delimit_markdown_entities(text: str) -> str:
     result = text
-    for char in ["_", "*"]:
+    for char in ["_", "*", "~"]:
         result = result.replace(char, f"\\{char}")
     return result
 
@@ -66,14 +66,15 @@ class PilgramBot(PilgramNotifier):
 
     def __init__(self, bot_token: str):
         self.__token: str = bot_token
+        self.interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
         self.__app = ApplicationBuilder().token(bot_token).build()
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
         self.__app.add_handler(CommandHandler("quit", self.quit))
+        # TODO add reply keyboards for easier command handling (use interpreter.command_tree)
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.__app.add_error_handler(error_handler)
         self.process_cache = TempIntCache()
-        self.interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
 
     def get_user_context(self, update: Update) -> Tuple[UserContext, bool]:
         user_id: int = update.effective_user.id

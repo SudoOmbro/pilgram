@@ -19,6 +19,15 @@ def _help_dfs(dictionary: Dict[str, Union[dict, IFW]], previous_command: str, fo
     return result_string
 
 
+def populate_commands_tree(commands_tree: Dict[str, Union[dict, str]], commands_dict: Dict[str, Union[dict, IFW]]):
+    for key, value in commands_dict.items():
+        if isinstance(value, dict):
+            commands_tree[key] = {}
+            populate_commands_tree(commands_tree[key], value)
+        elif isinstance(value, IFW):
+            commands_tree[key] = value.number_of_args
+
+
 class CLIInterpreter:
     """ generic CLI interpreter that can be used with any commands list """
 
@@ -40,6 +49,8 @@ class CLIInterpreter:
                 "Shows and describes all commands",
                 default_args={"formatting": help_formatting}
             )
+        self.command_tree = {}
+        populate_commands_tree(self.command_tree, self.commands_dict)
 
     def help_function(self, context: UserContext, formatting: str = "{c}{a}- {d}\n") -> str:
         """ basically do a depth first search on the COMMANDS dictionary and print what you find """
