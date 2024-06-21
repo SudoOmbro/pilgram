@@ -189,13 +189,13 @@ class PilgramORMDatabase(PilgramDatabase):
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild founded by player with id {player.player_id} not found')
 
-    @cache_sized_ttl_quick(size_limit=50, ttl=3600)
-    def __get_guild_members_data(self, guild_id: int) -> List[Tuple[str, int]]:
+    @cache_sized_ttl_quick(size_limit=50, ttl=300)
+    def __get_guild_members_data(self, guild_id: int) -> List[Tuple[int, str, int]]:
         """ cache based on the id should work a bit better """
         gms = GuildModel.get(guild_id == GuildModel.id).members
-        return [(x.name, x.level) for x in gms]
+        return [(x.id, x.name, x.level) for x in gms]
 
-    def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
+    def get_guild_members_data(self, guild: Guild) -> List[Tuple[int, str, int]]:  # id, name, level
         return self.__get_guild_members_data(guild.guild_id)
 
     @cache_ttl_quick(ttl=60)

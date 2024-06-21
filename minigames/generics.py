@@ -6,6 +6,7 @@ from typing import Tuple, Type, Dict, List
 
 from pilgram.classes import Player
 from pilgram.globals import ContentMeta, POSITIVE_INTEGER_REGEX
+from pilgram.utils import has_recently_accessed_cache
 from ui.strings import Strings
 
 
@@ -49,20 +50,7 @@ class PilgramMinigame(ABC):
 
     @classmethod
     def has_played_too_recently(cls, user_id: int) -> bool:
-        if user_id in cls.STORAGE:
-            cooldown_expire = cls.STORAGE[user_id]
-            if cooldown_expire > time.time():
-                return True
-        # clear cache of expired values
-        keys_to_delete: List[int] = []
-        for key, cooldown_expire in cls.STORAGE.items():
-            if cooldown_expire <= time.time():
-                keys_to_delete.append(key)
-        for key in keys_to_delete:
-            del cls.STORAGE[key]
-        # set cooldown
-        cls.STORAGE[user_id] = time.time() + cls.COOLDOWN
-        return False
+        return has_recently_accessed_cache(cls.STORAGE, user_id, cls.COOLDOWN)
 
     @classmethod
     def can_play(cls, player: Player) -> Tuple[bool, str]:

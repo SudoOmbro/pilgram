@@ -1,5 +1,6 @@
+import time
 from datetime import timedelta
-from typing import Union, Dict, Any
+from typing import Union, Dict, Any, List
 
 
 class IntervalError(Exception):
@@ -30,6 +31,23 @@ def read_update_interval(interval_str: str) -> timedelta:
         interval = LETTERS_TO_INTERVALS[letter]
         result += interval * int(token[:-1])
     return result
+
+
+def has_recently_accessed_cache(storage: Dict[int, float], user_id: int, cooldown: int):
+    if user_id in storage:
+        cooldown_expire = storage[user_id]
+        if cooldown_expire > time.time():
+            return True
+    # clear cache of expired values
+    keys_to_delete: List[int] = []
+    for key, cooldown_expire in storage.items():
+        if cooldown_expire <= time.time():
+            keys_to_delete.append(key)
+    for key in keys_to_delete:
+        del storage[key]
+    # set cooldown
+    storage[user_id] = time.time() + cooldown
+    return False
 
 
 class PathDict:

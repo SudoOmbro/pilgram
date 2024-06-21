@@ -1,7 +1,7 @@
 import logging
 import re
 from datetime import datetime, timedelta
-from typing import Tuple, Dict, Union, Callable, Type
+from typing import Tuple, Dict, Union, Callable, Type, List
 
 import minigames.games  # this is necessary for the minigame classes to ve initialized
 
@@ -111,7 +111,7 @@ def check_guild_mates(context: UserContext) -> str:
         if not player.guild:
             return Strings.not_in_a_guild
         members = db().get_guild_members_data(player.guild)
-        return Strings.here_are_your_mates.format(num=len(members)) + "\n".join(f"{name} | lv. {level}" for name, level in members)
+        return Strings.here_are_your_mates.format(num=len(members)) + "\n".join(f"{name} | lv. {level}" for _, name, level in members)
     except KeyError:
         return Strings.no_character_yet
 
@@ -363,11 +363,49 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
 
 
 def rank_guilds(context: UserContext) -> str:
-    result = "Here are the top guilds (guild | prestige):\n\n"
+    result = Strings.rank_guilds
     guilds = db().rank_top_guilds()
     for guild in guilds:
         result += f"{guild[0]} | {guild[1]}\n"
     return result
+
+
+def send_message_to_player(context: UserContext, player_name: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        if player.name == player_name:
+            return Strings.no_self_message
+        target = db().get_player_from_name(player_name)
+        if not target:
+            return Strings.named_object_not_exist.format(obj="Player", name=player_name)
+        context.set("targets", [target.player_id])
+        context.set("text", f"{{name}} sent you a message:\n\n")
+        context.start_process("message")
+        return Strings.write_your_message
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def send_message_to_owned_guild(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        owned_guild = db().get_owned_guild(player)
+        if not owned_guild:
+            return Strings.no_guild_yet
+        members: List[Tuple[int, str, int]] = db().get_guild_members_data(owned_guild)
+        context.set("targets", [member[0] for member in members])
+        context.set("text", f"{{name}} sent a message to the guild ({owned_guild.name}):\n\n")
+        context.start_process("message")
+        return Strings.write_your_message
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def send_message_process(context: UserContext, message: str):
+    player = db().get_player_data(context.get("id"))
+    context.set_event("message", {"sender": player, "targets": context.get("targets"), "text": context.get("text") + message})
+    context.end_process()
+    return Strings.message_sent
 
 
 def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, msg: str = "default", cost: Union[int, None] = None) -> str:
@@ -384,17 +422,13 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
                 return msg + "\n\n" + Strings.you_paid.format(paid=cost)
             return msg
         except KeyError:
-            return "Fatal error: adventure container not found"
+            return "Fatal error: adventure container not found. THIS SHOULD NOT HAPPEN. EVER."
     except KeyError:
         return Strings.no_character_yet
 
 
 def __list_minigames() -> str:
-    return "Valid minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
-
-
-def list_minigames(context: UserContext) -> str:
-    return "here's all the " + __list_minigames()
+    return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
 
 
 def start_minigame(context: UserContext, minigame_name: str) -> str:
@@ -489,6 +523,10 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     },
+    "message": {
+        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], send_message_to_player, "Send message to a single player."),
+        "guild": IFW(None, send_message_to_owned_guild, "Send message to every member of your owned guild.")
+    },
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {
         "to": {
@@ -496,7 +534,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "list": {
-        "minigames": IFW(None, list_minigames, "Shows all the minigames")
+        "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()})
     },
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
@@ -519,5 +557,8 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     ),
     "minigame": (
         ("minigame turn", minigame_process),
-    )
+    ),
+    "message": (
+        (Strings.write_your_message, send_message_process),
+    ),
 }

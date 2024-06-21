@@ -42,7 +42,13 @@ class Strings:
     quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
 
     # guilds
+    rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
     here_are_your_mates = "You have {num} guild mates:\n\n"
+
+    # messages
+    write_your_message = "Write the message you want to send"
+    message_sent = "Your message has been sent."
+    no_self_message = "You can't send a message to yourself. Weirdo."
 
     # upgrade
     you_paid = f"you paid {{paid}} {MONEY}."
@@ -57,7 +63,7 @@ class Strings:
 
     # kick
     player_not_in_own_guild = "player '{name}' is not in your guild."
-    player_kicked_successfully = "player '{name} has been successfully kicked from guild {guild}.'"
+    player_kicked_successfully = "player '{name}' has been successfully kicked from guild '{guild}'. Note that guild members may take some time to update."
     you_have_been_kicked = "You have been kicked from guild {guild}."
 
     # donations
@@ -72,36 +78,8 @@ class Strings:
     # player meeting
     players_meet_in_town = "While in town you meet {name} and you"
     players_meet_on_a_quest = "You stumble upon {name} and you"
-    town_actions: List[str] = [
-        "visit the tavern together, sharing stories of your adventures.",
-        "check out the market stalls together.",
-        "train together.",
-        "play a couple games of the royal game of Ur.",
-        "walk on the town walls together, taking in the view.",
-        "hunt plague rats with flaming bolts.",
-        "visit the smithy together to perform maintenance your equipment",
-        "exchange trinkets you collected during your adventures",
-        "spend some time together, enjoying each-other's company.",
-        "accompany them to the cemetery to mourn your loved ones.",
-        "talk about conspiracy theories for an hour. You are convinced they are all true.",
-        "greet them tiredly, then you immediately go home where you take an invigorating nap.",
-        "spot a Pilgrim watching you two talk. He sees you are bound by the Ouroboros contract. He sees your chains"
-    ]
-    quest_actions: List[str] = [
-        "spend some time around a campfire roasting some freshly hunted small game.",
-        "walk together for a bit, sharing knowledge about the area.",
-        "silently nod to each-other, for there are monsters nearby.",
-        "clear the way ahead together, protecting each-other from danger.",
-        "gather supplies to prepare for the dangers ahead.",
-        "polish your equipment in silence, watching each-others back",
-        "play a couple of games of 'Hands', as it is a traditional game most played by adventurers on a quest.",
-        "help them open a particularly stubborn chest. It turns out it was a mimic, so you killed it.",
-        "help each-other climb a particularly tall wall.",
-        "throw rocks at some monsters below you. They can't reach you and they make funny noises when hit.",
-        "share a pemmican & hardtack meal since lighting a fire was not an option.",
-        "hide from them until they leave. You are not feeling too sociable right now.",
-        "come across a Pilgrim, undying & blindly following the path his faith lays for him. You both watch him, mesmerized."
-    ]
+    town_actions: List[str] = ContentMeta.get("meeting events.town")
+    quest_actions: List[str] = ContentMeta.get("meeting events.zones")
     xp_gain = "You gain {xp} xp"
 
     # minigames

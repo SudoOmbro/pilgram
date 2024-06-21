@@ -85,7 +85,7 @@ class PilgramDatabase(ABC):
         except KeyError:
             return None
 
-    def get_guild_members_data(self, guild: Guild) -> List[Tuple[str, int]]:
+    def get_guild_members_data(self, guild: Guild) -> List[Tuple[int, str, int]]:  # id, name, level
         """
         return a list of all members name and level given a guild.
         We avoid creating the entire player object 'cause we don't need it.

@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import Tuple
+from datetime import time
+from typing import Tuple, List, Dict
 from urllib.parse import quote
 
 import requests
@@ -12,7 +13,7 @@ from telegram.error import TelegramError, NetworkError
 from pilgram.classes import Player
 from pilgram.generics import PilgramNotifier
 from pilgram.globals import ContentMeta, GlobalSettings
-from pilgram.utils import read_text_file, TempIntCache
+from pilgram.utils import read_text_file, TempIntCache, has_recently_accessed_cache
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
 from ui.utils import UserContext
@@ -28,6 +29,13 @@ INFO_STRING = f"Made with ❤️ by {DEV_NAME}\n\n" + "\n\n".join(f"[{name}]({li
 START_STRING = read_text_file("intro.txt").format(wn=ContentMeta.get("world.name"), mn=ContentMeta.get("money.name"))
 
 
+async def notify_with_id(bot: Bot, player_id: int, text: str):
+    try:
+        await bot.send_message(player_id, text, parse_mode=ParseMode.MARKDOWN)
+    except TelegramError as e:
+        log.error(f"An error occurred while trying to notify user {player_id}: {e}")
+
+
 async def notify(bot: Bot, player: Player, text: str):
     try:
         await bot.send_message(player.player_id, text, parse_mode=ParseMode.MARKDOWN)
@@ -35,11 +43,12 @@ async def notify(bot: Bot, player: Player, text: str):
         log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")
 
 
-def get_event_notification_string(event: dict) -> Tuple[str, Player]:
+def get_event_notification_string_and_targets(event: dict) -> Tuple[str, Player]:
     return {
         "donation": lambda: (Strings.donation_received.format(donor=event["donor"].print_username(), amm=event["amount"]), event["recipient"]),
         "player kicked": lambda: (Strings.you_have_been_kicked.format(guild=event["guild"].name), event["player"]),
         "guild joined": lambda: (Strings.player_joined_your_guild.format(player=event["player"].print_username(), guild=event["guild"].name), event["guild"].founder),
+        "message": lambda: (event["text"].format(name=event["sender"].print_username()), None)
     }.get(event["type"])()
 
 
@@ -71,11 +80,12 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
         self.__app.add_handler(CommandHandler("quit", self.quit))
-        self.__app.add_handler(CommandHandler("c", self.show_commands_keyboard))
+        self.__app.add_handler(CommandHandler("c", self.show_bot_commands_keyboard))
         # TODO add reply keyboards for easier command handling (use interpreter.command_tree)
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.__app.add_error_handler(error_handler)
         self.process_cache = TempIntCache()
+        self.storage: Dict[int, float] = {}  # used to avoid message spam
 
     def get_user_context(self, update: Update) -> Tuple[UserContext, bool]:
         user_id: int = update.effective_user.id
@@ -118,8 +128,16 @@ class PilgramBot(PilgramNotifier):
             event = user_context.get_event_data()
             if event:
                 # if an event happened notify the target
-                string, target = get_event_notification_string(event)
-                await notify(c.bot, target, string)
+                string, target = get_event_notification_string_and_targets(event)
+                if not target:
+                    cooldown = (2 + len(event["targets"])) * 2
+                    if self.has_sent_a_message_too_recently(update.effective_chat.id, cooldown):
+                        result = "You sent too many messages recently! Wait a few minutes then try again."  # override positive result
+                    else:
+                        await asyncio.create_task(self.notify_group(event["targets"], string))
+                        await asyncio.sleep(0)
+                else:
+                    await notify(c.bot, target, string)
             if user_context.is_in_a_process():
                 # if user is in a process then save the context to use later
                 self.process_cache.set(update.effective_user.id, user_context)
@@ -142,9 +160,22 @@ class PilgramBot(PilgramNotifier):
             await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}.\n\nContact the developer: {DEV_NAME}")
             log.exception(e)
 
-    async def show_commands_keyboard(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
-        keyboard = ReplyKeyboardMarkup([["aaa", "bbb", "ccc"]], True, True, False, "???")
+    async def show_bot_commands_keyboard(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
+        keyboard = ReplyKeyboardMarkup(
+            [["check self"], ["check my guild"], ["list minigames"], ["rank guilds"], ["explain mechanics"], ["help"]],
+            True,
+            True,
+            False,
+            "command",
+            False
+        )
         await c.bot.send_message(chat_id=update.effective_chat.id, text="command wizard", reply_markup=keyboard)
+
+    async def notify_group(self, player_ids: List[int], text: str, timeout: int = 2):
+        """ notify a group of players """
+        for player_id in player_ids:
+            await notify_with_id(self.get_bot(), player_id, text)
+            await asyncio.sleep(timeout)
 
     def notify(self, player: Player, text: str):
         try:
@@ -153,6 +184,9 @@ class PilgramBot(PilgramNotifier):
             return requests.get(url).json()
         except Exception as e:
             log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")
+
+    def has_sent_a_message_too_recently(self, user_id: int, cooldown: int) -> bool:
+        return has_recently_accessed_cache(self.storage, user_id, cooldown)
 
     def get_bot(self) -> Bot:
         return self.__app.bot
