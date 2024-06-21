@@ -71,6 +71,7 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
         self.__app.add_handler(CommandHandler("quit", self.quit))
+        self.__app.add_handler(CommandHandler("c", self.show_commands_keyboard))
         # TODO add reply keyboards for easier command handling (use interpreter.command_tree)
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.__app.add_error_handler(error_handler)
@@ -139,6 +140,10 @@ class PilgramBot(PilgramNotifier):
         except Exception as e:
             await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}.\n\nContact the developer: {DEV_NAME}")
             log.exception(e)
+
+    async def show_commands_keyboard(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
+        # TODO
+        pass
 
     def notify(self, player: Player, text: str):
         try:
