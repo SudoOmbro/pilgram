@@ -334,7 +334,7 @@ class Guild:
         return self.guild_id == other.guild_id
 
     def __str__(self):
-        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: _{self.founder.name if self.founder else '???'}\nSince {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: {self.founder.print_username() if self.founder else '???'}\n_Since {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
 
     def __hash__(self):
         return hash(self.guild_id)

@@ -85,6 +85,7 @@ class PilgramBot(PilgramNotifier):
         return UserContext({
             "id": user_id,
             "username": _delimit_markdown_entities(update.effective_user.username if update.effective_user.username else update.effective_user.name),
+            "env": "telegram"
         }), False
 
     async def quit(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
