@@ -114,7 +114,7 @@ class FateMinigame(GamblingMinigame, game="fate"):
         return f"{self.print_game_state()}\n\nWhat do you want to do? (r)oll D13 or (s)tay?"
 
     def play_turn(self, command: str) -> str:
-        action = command[0]
+        action = command[0].lower()
         message = f"Turns remaining {self.turns_remaining - 1}:\n\n"
         if action == "r":
             your_roll = roll(self.DICE_FACES)
