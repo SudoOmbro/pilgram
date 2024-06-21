@@ -363,7 +363,7 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
 
 
 def rank_guilds(context: UserContext) -> str:
-    result = Strings.rank_guilds
+    result = Strings.rank_guilds + "\n"
     guilds = db().rank_top_guilds()
     for guild in guilds:
         result += f"{guild[0]} | {guild[1]}\n"
