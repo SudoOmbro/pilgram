@@ -189,7 +189,7 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
         return Strings.guild_creation_success.format(name=guild.name)
     except AlreadyExists:
         context.end_process()
-        return Strings.name_object_already_exists.format(obj="guild", name=player.name)
+        return Strings.name_object_already_exists.format(obj="guild", name=guild.name)
 
 
 def upgrade(context: UserContext, obj: str = "gear") -> str:
