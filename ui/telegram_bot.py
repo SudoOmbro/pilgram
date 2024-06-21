@@ -7,7 +7,7 @@ import requests
 from telegram import Update, Bot
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from telegram.constants import ParseMode
-from telegram.error import TelegramError
+from telegram.error import TelegramError, NetworkError
 
 from pilgram.classes import Player
 from pilgram.generics import PilgramNotifier
@@ -151,7 +151,10 @@ class PilgramBot(PilgramNotifier):
         return self.__app.bot
 
     def run(self):
-        self.__app.run_polling()
+        try:
+            self.__app.run_polling()
+        except NetworkError as e:
+            log.error(f"encountered a network error: {str(e)}")
 
     def stop(self):
         self.__app.stop()

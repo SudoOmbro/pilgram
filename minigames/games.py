@@ -1,10 +1,10 @@
 import logging
 import random
 import re
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 from minigames.generics import GamblingMinigame, PilgramMinigame
-from minigames.utils import get_positive_integer_from_string, roll, get_random_word, get_word_letters, generate_maze, \
+from minigames.utils import get_positive_integer_from_string, roll, get_random_word, generate_maze, \
     print_maze, TILE_REPRESENTATIONS as TR, MAZE
 from pilgram.classes import Player
 from pilgram.globals import POSITIVE_INTEGER_REGEX
@@ -73,6 +73,70 @@ class HandsMinigame(GamblingMinigame, game="hands"):
         return self.win(message)
 
 
+class FateMinigame(GamblingMinigame, game="fate"):
+    INTRO_TEXT = Strings.start_fate_minigame
+    DICE_FACES = 13
+    MAX_SCORE = 27
+
+    def __init__(self, player: Player):
+        super().__init__(player)
+        self.score: int = 0
+        self.pilgrim_score: int = 0
+        self.turns_remaining: int = 3
+        self.pilgrim_safety: int = random.randint(1, 4)
+
+    def __print_too_high(self, score: int):
+        if score > self.MAX_SCORE:
+            return " --> *OUT!*"
+        return ""
+
+    def print_game_state(self):
+        return f"*Pilgrim's score*: {self.pilgrim_score}{self.__print_too_high(self.pilgrim_score)}\n*Your score*: {self.score}{self.__print_too_high(self.score)}"
+
+    def __pilgrim_turn(self) -> int:
+        if self.pilgrim_score > (self.MAX_SCORE - self.pilgrim_safety):
+            return 0
+        return roll(self.DICE_FACES)
+
+    def __check_win(self, message: str) -> Union[str, None]:
+        if self.score > self.MAX_SCORE:
+            return self.lose(message + Strings.fate_minigame_lose)
+        if self.pilgrim_score > self.MAX_SCORE:
+            return self.win(message + Strings.fate_minigame_win)
+        if self.turns_remaining == 0:
+            if self.pilgrim_score > self.score:
+                return self.lose(message + Strings.fate_minigame_lose)
+            else:
+                return self.win(message + Strings.fate_minigame_win)
+        return None
+
+    def turn_text(self) -> str:
+        return f"{self.print_game_state()}\n\nWhat do you want to do? (r)oll D13 or (s)tay?"
+
+    def play_turn(self, command: str) -> str:
+        action = command[0]
+        message = f"Turns remaining {self.turns_remaining - 1}:\n\n"
+        if action == "r":
+            your_roll = roll(self.DICE_FACES)
+            self.score += your_roll
+            message += f"You rolled {your_roll}.\n"
+        elif action != "s":
+            return "Invliad input send either 'r' or 's'"
+        else:
+            message += "You stayed.\n\n"
+        pilgrim_roll = self.__pilgrim_turn()
+        self.pilgrim_score += pilgrim_roll
+        if pilgrim_roll == 0:
+            message += "The Pilgrim stayed.\n\n"
+        else:
+            message += f"The Pilgrim rolled {pilgrim_roll}.\n\n"
+        self.turns_remaining -= 1
+        has_game_ended = self.__check_win(message + self.print_game_state() + "\n\n")
+        if has_game_ended:
+            return has_game_ended
+        return message + self.turn_text()
+
+
 class HangmanMinigame(PilgramMinigame, game="open"):
     INTRO_TEXT = "You stumble upon a door that won't open. It whispers _Say the word and i'll finally be free..._"
 
@@ -106,13 +170,13 @@ class HangmanMinigame(PilgramMinigame, game="open"):
         if len(user_input) < len(self.word):
             return "Guess too short"
         if guess == self.word:
-            return self.win("You guessed correctly, the door opens silently.")
+            return self.win("You guessed correctly, the door opens with a relieved breath.")
         for index, letter in enumerate(guess):
             if self.word[index] == letter:
                 self.guessed_word[index] = letter
         self.remaining_tries -= 1
         if self.remaining_tries == 0:
-            return self.lose(f"The word was '{self.word}'. The door remains closed.")
+            return self.lose(f"The word was '{self.word}'. The door remains closed. It whimpers.")
         return self.turn_text()
 
     def get_rewards(self) -> Tuple[int, int]:
@@ -225,12 +289,3 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         multiplier = self.difficulty + self.hp
         bonus = self.remaining_turns
         return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
-
-
-class FateMinigame(GamblingMinigame, game="fate"):
-    INTRO_TEXT = "Do not play, work in progress!"
-
-    def __init__(self, player: Player):
-        super().__init__(player)
-        self.has_started = False
-        # TODO

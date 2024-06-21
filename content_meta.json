@@ -31,17 +31,18 @@
       "min_buy_in": 5,
       "max_buy_in": 50,
       "payout": 1.5,
-      "xp_reward": 1,
+      "xp_reward": 2,
       "cooldown": 120,
       "explanation": "_\"Do not hold the pilgrim's hands for he is blinded by faith\"_\n\n2 player game played with *3 d6 each*.\n\nBoth you & the other player choose a *target number between 3 and 18*, then you roll until someone wins.\n\nIf a player gets either *5 or 10 they lose*. If a player gets their *target number* with either *all 3 or just 2 of their dices* they win.\n\nPays 150% of the pot."
     },
     "fate": {
       "min_buy_in": 50,
-      "max_buy_in": 500,
-      "payout": 3.2,
-      "xp_reward": 1,
-      "cooldown": 120,
-      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\nComing soon..."
+      "max_buy_in": 200,
+      "payout": 2,
+      "xp_reward": 7,
+      "cooldown": 300,
+      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\n2 player dice game. Roll a D13 3 times.\n\nIf a player exceeds 27 they lose.\n\nWins who gets the highest score without exceeding 27."
+
     },
     "open": {
       "xp_reward": 5,

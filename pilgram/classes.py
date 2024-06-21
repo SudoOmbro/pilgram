@@ -426,4 +426,16 @@ class AdventureContainer:
         return hash(self.player_id())
 
 
+class Artifact:
+    """
+    rare & unique items player can acquire by combining fragments they find while questing.
+    Each artifact should be unique, owned by a single player.
+    """
+
+    def __init__(self, artifact_id: int, name: str, description: str):
+        self.artifact_id = artifact_id
+        self.name = name
+        self.description = description
+
+
 TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))
