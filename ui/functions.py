@@ -185,7 +185,7 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     try:
         db().update_player_data(player)
         context.end_process()
-        log.info(f"Player '{player.name}' is created guild '{guild.name}'")
+        log.info(f"Player '{player.name}' created guild '{guild.name}'")
         return Strings.guild_creation_success.format(name=guild.name)
     except AlreadyExists:
         context.end_process()
