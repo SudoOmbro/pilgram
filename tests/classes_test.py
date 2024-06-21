@@ -1,6 +1,6 @@
 import unittest
 
-from pilgram.classes import Quest, Zone, Player
+from pilgram.classes import Quest, Zone, Player, ZoneEvent
 
 
 def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 10000) -> float:
@@ -35,3 +35,14 @@ class TestClasses(unittest.TestCase):
         zone = Zone(0, "test", 5, "test")
         quest = Quest(0, zone, 0, "test", "", "", "")
         self.assertEqual(quest.get_rewards(player), (4250, 3000))
+
+    def test_zone_events(self):
+        player = Player.create_default(0, "test", "")
+        player.level = 1
+        zone = Zone(8, "test", 5, "test")
+        zone.level = 100
+        zone_event = ZoneEvent(0, zone, "test")
+        rewards_under_leveled = zone_event.get_rewards(player)
+        player.level = 100
+        rewards_normal = zone_event.get_rewards(player)
+        self.assertTrue(rewards_normal[0] > rewards_under_leveled[0])

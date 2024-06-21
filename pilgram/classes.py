@@ -105,7 +105,8 @@ class Quest:
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = (self.zone.level + self.number) + (player.guild.level if player.guild else 0)
-        return self.BASE_XP_REWARD * multiplier, self.BASE_MONEY_REWARD * multiplier  # XP, Money
+        rand = random.randint(1, 50)
+        return (self.BASE_XP_REWARD * multiplier) + rand, (self.BASE_MONEY_REWARD * multiplier) + rand  # XP, Money
 
     def get_duration(self) -> timedelta:
         return (BASE_QUEST_DURATION +
@@ -367,14 +368,18 @@ class ZoneEvent:
         self.event_id = event_id
         self.zone = zone
         self.event_text = event_text
-        self.base_xp_value = (zone.level + 2) if zone else 2
-        self.base_money_value = self.base_xp_value
+        self.zone_level = zone.level if zone else 0
+        self.base_value = 2
+        self.bonus = zone.zone_id if zone else 0
+
+    def __val(self, player: Player):
+        if player.level >= (self.zone_level - 3):
+            return ((self.base_value + self.zone_level + player.home_level) * random.randint(1, 10)) + self.bonus
+        return ((self.base_value + player.home_level) * random.randint(1, 10)) + self.bonus
 
     def get_rewards(self, player: Player) -> Tuple[int, int]:
         """ returns xp & money rewards for the event. Influenced by player home level """
-        xp = (self.base_xp_value + player.home_level) * random.randint(1, 10)
-        money = (self.base_money_value + player.home_level) * random.randint(1, 10)
-        return xp, money
+        return self.__val(player), self.__val(player)
 
     def __str__(self):
         return self.event_text

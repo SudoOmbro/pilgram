@@ -36,8 +36,9 @@ Once you fail a quest you can't retry it, but don't worry about it since there i
 
 The formula for quest rewards is a bit simpler:
 `MULT = zl x qn + (guild level)
-XP REWARD = 850 x MULT
-MONEY REWARD = 600 x MULT`
+rand = rand(1 to 50)
+XP REWARD = 950 x MULT + rand
+MONEY REWARD = 760 x MULT + rand`
 
 Quests also provide *prestige* for the guild you are currently in.
 The amount of prestige a quest gives upon successful completion is determined by the *formula*:
@@ -62,14 +63,18 @@ The random updates you are sent every once in a while.
 You get events even while not on a quest, so you can still (really slowly) level up even by staying in town.
 Both xp & money rewards follow the formula:
 
-`REWARD = (zl + 2 + hl) * rand(1 to 10)` where `zl` = zone level, `hl` = player home level.
+if the player's level is higher or equal to (zone level - 3):
+`REWARD = (zl + 2 + hl) * rand(1 to 10)`
+else
+`EWARD = (2 + hl) * rand(1 to 10)`
+where `zl` = zone level, `hl` = player home level.
 
 Sometimes you can meet other players going through their own journey.
 This gives you a lot of XP, following the formula:
 
 `XP REWARD = 400 * zone id + 1`, so in zone 2 you'd get 1200 xp for meeting another player.
 
-_Note: Town is considered zone 0, so you only get 400 XP for town meetings._
+_Note: Town is considered zone 0 (level 0), so you only get 400 XP for town meetings._
 
 ♦️♦️*Minigames*♦️♦️
 You can play these to earn some more money & xp, plus they are fun!

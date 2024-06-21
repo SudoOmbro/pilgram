@@ -23,8 +23,8 @@
     "name": "Boromian Alloy"
   },
   "quests": {
-    "base_xp_reward": 850,
-    "base_money_reward": 600
+    "base_xp_reward": 950,
+    "base_money_reward": 760
   },
   "minigames": {
     "hands": {

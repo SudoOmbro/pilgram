@@ -4,7 +4,7 @@ from typing import Tuple
 from urllib.parse import quote
 
 import requests
-from telegram import Update, Bot
+from telegram import Update, Bot, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from telegram.constants import ParseMode
 from telegram.error import TelegramError, NetworkError
@@ -85,7 +85,7 @@ class PilgramBot(PilgramNotifier):
         return UserContext({
             "id": user_id,
             "username": _delimit_markdown_entities(update.effective_user.username if update.effective_user.username else update.effective_user.name),
-            "env": "telegram"
+            "env": "telegram"  # should be used to correctly format objects based on the environment
         }), False
 
     async def quit(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
@@ -143,8 +143,8 @@ class PilgramBot(PilgramNotifier):
             log.exception(e)
 
     async def show_commands_keyboard(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
-        # TODO
-        pass
+        keyboard = ReplyKeyboardMarkup([["aaa", "bbb", "ccc"]], True, True, False, "???")
+        await c.bot.send_message(chat_id=update.effective_chat.id, text="command wizard", reply_markup=keyboard)
 
     def notify(self, player: Player, text: str):
         try:
