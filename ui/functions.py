@@ -111,7 +111,7 @@ def check_guild_mates(context: UserContext) -> str:
         if not player.guild:
             return Strings.not_in_a_guild
         members = db().get_guild_members_data(player.guild)
-        return Strings.here_are_your_mates.format(num=len(members)) + "\n".join(f"{name} | {level}" for name, level in members)
+        return Strings.here_are_your_mates.format(num=len(members)) + "\n".join(f"{name} | lv. {level}" for name, level in members)
     except KeyError:
         return Strings.no_character_yet
 
