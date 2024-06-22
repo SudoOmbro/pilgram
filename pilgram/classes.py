@@ -118,7 +118,7 @@ class Quest:
         return self.zone.level + self.number
 
     def __str__(self):
-        return f"*{self.name}*\n\n{self.description}"
+        return f"*{self.number + 1} - {self.name}*\n\n{self.description}"
 
     def __hash__(self):
         return hash(self.quest_id)
