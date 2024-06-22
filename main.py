@@ -1,8 +1,7 @@
-import io
+import asyncio
 import logging
 import sys
 import threading
-from time import sleep
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
@@ -90,6 +89,7 @@ def run_admin_cli():
 
 def main():
     bot = PilgramBot(GlobalSettings.get("Telegram bot token"))
+    asyncio.run_coroutine_threadsafe(bot.set_bot_commands(), asyncio.get_event_loop())  # this seems to work, even if it's being deprecated, so whatever, it's fine
     database = PilgramORMDatabase
     threads = [
         threading.Thread(target=lambda: run_quest_manager(database, bot), name="quest-manager"),

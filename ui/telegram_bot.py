@@ -1,11 +1,10 @@
 import asyncio
 import logging
-from datetime import time
 from typing import Tuple, List, Dict
 from urllib.parse import quote
 
 import requests
-from telegram import Update, Bot, ReplyKeyboardMarkup
+from telegram import Update, Bot, BotCommand
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from telegram.constants import ParseMode
 from telegram.error import TelegramError, NetworkError
@@ -80,12 +79,23 @@ class PilgramBot(PilgramNotifier):
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
         self.__app.add_handler(CommandHandler("quit", self.quit))
-        self.__app.add_handler(CommandHandler("c", self.show_bot_commands_keyboard))
-        # TODO add reply keyboards for easier command handling (use interpreter.command_tree)
+        for command, args, _ in self.interpreter.commands_list:
+            self.__app.add_handler(CommandHandler(command, self.handle_message, has_args=args))
         self.__app.add_handler(MessageHandler(filters.TEXT, self.handle_message))
         self.__app.add_error_handler(error_handler)
         self.process_cache = TempIntCache()
         self.storage: Dict[int, float] = {}  # used to avoid message spam
+
+    async def set_bot_commands(self):
+        """ Set the commands for the running bot """
+        commands: List[BotCommand] = [
+            BotCommand("start", "start your adventure and show world lore"),
+            BotCommand("info", "shows info about the bot & developer + useful links"),
+            BotCommand("quit", "quits any ongoing process / minigame"),
+        ]
+        commands.extend([BotCommand(command, descr) for command, _, descr in self.interpreter.commands_list])
+        await self.get_bot().set_my_commands(commands)
+        log.info("Bot commands set")
 
     def get_user_context(self, update: Update) -> Tuple[UserContext, bool]:
         user_id: int = update.effective_user.id
@@ -122,7 +132,12 @@ class PilgramBot(PilgramNotifier):
             return
         user_context, was_cached = self.get_user_context(update)
         try:
-            result = self.interpreter.context_aware_execute(user_context, update.message.text)
+            # get the commands sent by the user
+            command: str = update.message.text
+            if command[0] == "/":
+                command = update.message.text.lstrip("/").replace("_", " ") + (" " + " ".join(c.args) if c.args else "")
+            # execute the command
+            result = self.interpreter.context_aware_execute(user_context, command)
             if (result is None) or (result == ""):
                 result = f"The dev forgot to put a message here, report to {DEV_NAME}"
             event = user_context.get_event_data()
@@ -159,17 +174,6 @@ class PilgramBot(PilgramNotifier):
         except Exception as e:
             await c.bot.send_message(chat_id=update.effective_chat.id, text=f"An error occured: {str(e)}.\n\nContact the developer: {DEV_NAME}")
             log.exception(e)
-
-    async def show_bot_commands_keyboard(self, update: Update, c: ContextTypes.DEFAULT_TYPE):
-        keyboard = ReplyKeyboardMarkup(
-            [["check self"], ["check my guild"], ["list minigames"], ["rank guilds"], ["explain mechanics"], ["help"]],
-            True,
-            True,
-            False,
-            "command",
-            False
-        )
-        await c.bot.send_message(chat_id=update.effective_chat.id, text="command wizard", reply_markup=keyboard)
 
     async def notify_group(self, player_ids: List[int], text: str, timeout: int = 2):
         """ notify a group of players """

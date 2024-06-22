@@ -221,7 +221,7 @@ def upgrade_guild(context: UserContext) -> str:
             return Strings.guild_already_maxed
         price = guild.get_upgrade_required_money()
         if player.money < price:
-            return Strings.not_enough_money
+            return Strings.not_enough_money.format(amount=price-player.money)
         guild.upgrade()
         db().update_guild(guild)
         db().update_player_data(player)
