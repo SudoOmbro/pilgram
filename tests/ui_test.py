@@ -1,4 +1,5 @@
 import unittest
+from timeit import timeit
 
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
@@ -45,3 +46,9 @@ class TestUi(unittest.TestCase):
         context = UserContext({"id": 1234})
         result = interpreter.context_aware_execute(context, "check board")
         print(result)
+
+    def test_help_caching(self):
+        user_context = UserContext({"id": 1234, "username": "Test"})
+        time1 = timeit(lambda: interpreter.context_aware_execute(user_context, "help"))
+        time2 = timeit(lambda: interpreter.context_aware_execute(user_context, "help"))
+        self.assertTrue(time1 > time2)

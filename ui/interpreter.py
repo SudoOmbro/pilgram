@@ -1,3 +1,4 @@
+from functools import cache
 from typing import List, Dict, Union, Tuple, Callable
 
 from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as CPS, UserContext, \
@@ -52,9 +53,14 @@ class CLIInterpreter:
         self.commands_list: List[Tuple[str, int, str]] = []
         populate_sc_commands_list(self.commands_list, self.commands_dict, "")
 
+    @cache
+    def __help(self, formatting: str) -> str:
+        """  does the dfs & caches the result for later use, slightly speeds up execution """
+        return f"here's a list of all commands:\n\n" + _help_dfs(self.commands_dict, "", formatting)
+
     def help_function(self, context: UserContext, formatting: str = "{c}{a}- {d}\n") -> str:
         """ basically do a depth first search on the COMMANDS dictionary and print what you find """
-        return f"hey {context.get('username')}, here's a list of all commands:\n\n" + _help_dfs(self.commands_dict, "", formatting)
+        return f"hey {context.get('username')}, {self.__help(formatting)}"
 
     def parse_command(self, command: str) -> CPS:
         """ parses the given command and returns a CommandParsingResult object."""

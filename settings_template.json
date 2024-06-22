@@ -13,7 +13,7 @@
   "ChatGPT token": "XXX",
   "ChatGPT project": "XXX",
   "Telegram bot token": "XXX",
-  "update interval": "2h 0m 0s",
+  "update interval": "2h 30m 0s",
   "thread interval": 3600,
   "quest": {
     "base duration": "1d",
