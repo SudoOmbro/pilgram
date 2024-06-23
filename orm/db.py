@@ -1,5 +1,6 @@
 import logging
 import os
+import random
 from datetime import timedelta, datetime
 
 import numpy as np
@@ -435,7 +436,8 @@ class PilgramORMDatabase(PilgramDatabase):
         try:
             qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
             qps.quest_id = adventure_container.quest_id()
-            qps.last_update = datetime.now() if last_update is None else last_update
+            # stagger updates using randomness
+            qps.last_update = datetime.now() + timedelta(minutes=random.randint(0, 40)) if last_update is None else last_update
             qps.end_time = adventure_container.finish_time
             qps.save()
         except QuestProgressModel.DoesNotExist:
