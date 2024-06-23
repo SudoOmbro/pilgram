@@ -30,7 +30,7 @@ def decode_progress(data: Union[str, None]) -> Dict[int, int]:
         # special case for progress with a single element, numpy returned the wrong array shape
         unpacked_array = np.frombuffer(encoded_data, dtype=np.uint16).reshape(2)
         return {unpacked_array[0].item(): unpacked_array[1].item()}
-    unpacked_array = np.frombuffer(encoded_data, dtype=np.uint16).reshape((2, len(data) >> 2))
+    unpacked_array = np.frombuffer(encoded_data, dtype=np.uint16).reshape((len(data) >> 2, 2))
     for zone_id, progress in unpacked_array:
         progress_dictionary[zone_id.item()] = progress.item()
     return progress_dictionary
