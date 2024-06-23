@@ -19,10 +19,10 @@ class TestClasses(unittest.TestCase):
     def test_finish_quest(self):
         # setup player
         player = Player.create_default(0, "test", "")
-        player.level = 5
-        player.gear_level = 6
+        player.level = 4
+        player.gear_level = 3
         # setup quest
-        zone = Zone(0, "test", 5, "test")
+        zone = Zone(0, "test", 45, "test")
         quest = Quest(0, zone, 0, "test", "", "", "")
         # do tests
         for num in range(10):

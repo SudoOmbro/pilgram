@@ -31,6 +31,7 @@ For the *in between numbers*, the minimum value that your roll has to beat is ca
 where `zl` = zone level, `pl` = player level, `gl` = gear level, `qn` = quest number.
 
 _Note: quest number is the amount of quests you did in the zone._
+_Note: zone level is the minimum required level for the zone, NOT the zone number._
 
 Once you fail a quest you can't retry it, but don't worry about it since there is literally an infinite amount of them.
 
