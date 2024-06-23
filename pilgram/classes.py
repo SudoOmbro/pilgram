@@ -454,10 +454,11 @@ class Artifact:
     Each artifact should be unique, owned by a single player.
     """
 
-    def __init__(self, artifact_id: int, name: str, description: str):
+    def __init__(self, artifact_id: int, name: str, description: str, owner: Player):
         self.artifact_id = artifact_id
         self.name = name
         self.description = description
+        self.owner = owner
 
 
 TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))

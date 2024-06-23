@@ -1,7 +1,10 @@
 import unittest
 from datetime import timedelta
 
+import numpy as np
+
 from pilgram.utils import PathDict, read_update_interval
+from pilgram.flags import LuckFlag, MoneyFlag, XpFlag
 
 
 class TestUtils(unittest.TestCase):
@@ -26,3 +29,10 @@ class TestUtils(unittest.TestCase):
         interval_string = "4w 3d 2s"
         interval = read_update_interval(interval_string)
         self.assertEqual(interval, timedelta(weeks=4, days=3, seconds=2))
+
+    def test_flags(self):
+        flags = np.uint32(0)
+        flags = LuckFlag.set(flags)
+        flags = XpFlag.set(flags)
+        flags = MoneyFlag.set(flags)
+        self.assertEqual(np.binary_repr(flags), "111")
