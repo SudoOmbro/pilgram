@@ -27,7 +27,7 @@ if you *roll 1* you *fail* the quest.
 if you *roll 18* or more you *succeed* the quest.
 For the *in between numbers*, the minimum value for your roll is calculated using the *formula*:
 
-`MIN ROLL = 6 + zl - pl + (1.2 x zl - (gl + pl) / 2) x sqrt((4 / zl) x qn)`
+`MIN ROLL = 6 + zl - pl + (1.2 x zl - (gl + pl) / 2) x sqrt((4 / zl) x (qn - 1))`
 where `zl` = zone level, `pl` = player level, `gl` = gear level, `qn` = quest number.
 
 _Note: quest number is the amount of quests you did in the zone._

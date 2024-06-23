@@ -35,10 +35,10 @@ def check_current_quest(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         try:
-            quest = db().get_player_current_quest(player)
-            if quest is None:
+            ac = db().get_player_adventure_container(player)
+            if ac.quest is None:
                 return Strings.not_on_a_quest
-            return str(quest)
+            return str(ac)
         except KeyError as e:
             return f"Fatal error: {e}"
     except KeyError:
