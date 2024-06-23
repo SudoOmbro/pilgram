@@ -437,7 +437,7 @@ class AdventureContainer:
             if datetime.now() >= self.finish_time:
                 return f"{self.quest}\n\n_Time left: Should be done very soon..._"
             tl: timedelta = self.finish_time - datetime.now()
-            days_str = f"{tl.days} day{'s' if tl.days > 1 else ''}"
+            days_str = f"{tl.days} day{'' if tl.days == 1 else 's'}"
             hours = tl.seconds // 3600
             hours_str = f"{hours} hour{'' if hours == 1 else 's'}"
             return f"{self.quest}\n\n_Time left: about {days_str} & {hours_str}_"

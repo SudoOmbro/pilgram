@@ -287,7 +287,7 @@ def __start_quest_in_zone(player: Player, zone: Zone) -> str:
     adventure_container.quest = quest
     adventure_container.finish_time = datetime.now() + quest.get_duration()
     db().update_quest_progress(adventure_container)
-    return Strings.quest_embark.format(name=quest.name, descr=quest.description)
+    return Strings.quest_embark.format(quest=str(quest))
 
 
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:

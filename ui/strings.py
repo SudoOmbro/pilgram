@@ -37,7 +37,7 @@ class Strings:
     embark_underleveled_confirm = "Are you sure you want go to {zone}? You should be at least level {lv} for this zone.\n\nWrite 'y' or 'n' (yes or no)"
     embark_underleveled_cancel = "Good riddance."
     not_on_a_quest = "You are not on a quest!"
-    quest_embark = "You have embarked on the quest:\n\n*{name}*:\n{descr}\n\nGood luck!"
+    quest_embark = "You have embarked on the quest:\n\n{quest}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
     quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
 
