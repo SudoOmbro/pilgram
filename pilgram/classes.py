@@ -97,8 +97,8 @@ class Quest:
         if offset < 0:
             offset = 0
         value_to_beat = int((sqrt_multiplier * math.sqrt(num_multiplier * self.number)) + offset)
-        if value_to_beat > 18:
-            value_to_beat = 18
+        if value_to_beat > 19:
+            value_to_beat = 19
         log.info(f"{self.name}: to beat: {value_to_beat}, {player.name} rolled: {roll}")
         return roll >= value_to_beat
 
