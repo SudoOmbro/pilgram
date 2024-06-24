@@ -451,6 +451,13 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {adventure_container.player_id()}")
 
+    def get_artifact(self, artifact_id: int) -> Artifact:
+        try:
+            arse = ArtifactModel.get(ArtifactModel.artifact_id == artifact_id)
+            return Artifact(arse.id, arse.name, arse.description)
+        except ArtifactModel.DoesNotExist:
+            raise KeyError(f"Could not find any artifact with id {artifact_id}")
+
     def get_player_artifacts(self, player: Player) -> List[Artifact]:
         try:
             ps = PlayerModel.get(PlayerModel.id == player.player_id)
@@ -460,6 +467,19 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find player with id {player.player_id}")
         except ArtifactModel.DoesNotExist:
             raise NoArtifactsError(f"Could not find any artifacts belonging to player with id {player.player_id}")
+
+    def get_unclaimed_artifact(self) -> Artifact:
+        try:
+            arse = ArtifactModel.select().where(ArtifactModel.owner is None).limit(1)
+            return Artifact(arse.id, arse.name, arse.description)
+        except ArtifactModel.DoesNotExist:
+            raise KeyError("No artifacts in database")
+
+    def get_number_of_unclaimed_artifacts(self) -> int:
+        try:
+            return ArtifactModel.select().where(ArtifactModel.owner is None).count()
+        except ArtifactModel.DoesNotExist:
+            raise KeyError("No artifacts in database")
 
     def add_artifact(self, artifact: Artifact):
         with db.atomic():
@@ -476,12 +496,13 @@ class PilgramORMDatabase(PilgramDatabase):
         with db.atomic():
             ArtifactModel.insert_many(data_to_insert).execute()
 
-    def update_artifact(self, artifact: Artifact, owner: Player):
+    def update_artifact(self, artifact: Artifact, owner: Union[Player, None]):
         try:
             arse = ArtifactModel.get(ArtifactModel.id == artifact.artifact_id)
             arse.name = artifact.name
             arse.description = artifact.description
-            arse.owner = owner.player_id
+            if owner is not None:
+                arse.owner = owner.player_id
             arse.save()
         except ArtifactModel.DoesNotExist:
             raise KeyError(f"Could not find artifact with id {artifact.artifact_id}")

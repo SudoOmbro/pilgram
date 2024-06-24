@@ -3,7 +3,7 @@ from typing import Dict, Union, Tuple, Callable
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Zone, Quest, ZoneEvent
+from pilgram.classes import Zone, Quest, ZoneEvent, Artifact
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
     GlobalSettings
@@ -71,7 +71,8 @@ def start_add_obj_process(context: UserContext, obj_type: str = "zone") -> str:
         target_object = {
             "zone": Zone.get_empty(),
             "quest": Quest.get_empty(),
-            "event": ZoneEvent.get_empty()
+            "event": ZoneEvent.get_empty(),
+            "artifact": Artifact.get_empty()
         }.get(obj_type)
         context.set("type", obj_type)
         context.set("obj", target_object)
@@ -87,7 +88,8 @@ def start_edit_obj_process(context: UserContext, obj_id: int, obj_type: str = "z
         target_object = {
             "zone": lambda: db().get_zone(obj_id),
             "quest": lambda: db().get_quest(obj_id),
-            "event": lambda: db().get_zone_event(obj_id)
+            "event": lambda: db().get_zone_event(obj_id),
+            "artifact": lambda: db().get_artifact(obj_id)
         }.get(obj_type)()
         context.set("type", obj_type)
         context.set("obj", target_object)
@@ -161,7 +163,7 @@ def process_obj_edit_confirm(context: UserContext, user_input: str) -> str:
             "zone": lambda: db().update_zone(obj),
             "quest": lambda: db().update_quest(obj),
             "event": lambda: db().update_zone_event(obj),
-            "artifact": lambda: db().update_artifact(obj)
+            "artifact": lambda: db().update_artifact(obj, None)
         }.get(obj_type)
         func()
         context.end_process()

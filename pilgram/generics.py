@@ -217,11 +217,25 @@ class PilgramDatabase(ABC):
 
     # artifacts ----------------------------------
 
+    def get_artifact(self, artifact_id: int) -> Artifact:
+        """ returns an artifact given its id """
+        raise NotImplementedError
+
     def get_player_artifacts(self, player: Player) -> List[Artifact]:
         """
         get all artifacts owned by the specified player
 
         :raises NoArtifactsError if player has no artifacts, KeyError if player does not exist
+        """
+        raise NotImplementedError
+
+    def get_unclaimed_artifact(self) -> Artifact:
+        """ get the first unclaimed artifact in the db """
+        raise NotImplementedError
+
+    def get_number_of_unclaimed_artifacts(self) -> int:
+        """
+        get the number of unclaimed artifacts in the db, useful for the generator to see if it has to generate new ones
         """
         raise NotImplementedError
 
@@ -233,7 +247,7 @@ class PilgramDatabase(ABC):
         """ add the given list of artifacts to the database """
         raise NotImplementedError
 
-    def update_artifact(self, artifacts: Artifact, owner: Player):
+    def update_artifact(self, artifacts: Artifact, owner: Union[Player, None]):
         """ save the given artifact to the database (used when assigning an owner basically) """
         raise NotImplementedError
 
