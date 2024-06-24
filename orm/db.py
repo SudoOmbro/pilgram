@@ -130,6 +130,9 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
                 pls.home_level = player.home_level
                 pls.gear_level = player.gear_level
+                pls.last_spell_cast = player.last_cast
+                pls.artifact_pieces = player.artifact_pieces
+                pls.flags = player.flags
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

@@ -18,6 +18,7 @@ log.setLevel(logging.INFO)
 
 MONEY = ContentMeta.get("money.name")
 QUEST_THRESHOLD = 3
+ARTIFACTS_THRESHOLD = 12
 
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
@@ -151,7 +152,7 @@ class QuestManager:
             player1: Player = random.choice(players)
             players.remove(player1)
             player2: Player = random.choice(players)
-            # get the most up to date objects
+            # get the most up-to-date objects
             player1 = self.db().get_player_data(player1.player_id)
             player2 = self.db().get_player_data(player2.player_id)
             if zone_id == 0:
@@ -250,3 +251,11 @@ class GeneratorManager:
                 log.info(f"Zone event generation done for town")
             except Exception as e:
                 log.error(f"Encountered an error while generating for town zone: {e}")
+        # generate artifacts if needed
+        available_artifacts = self.db().get_number_of_unclaimed_artifacts()
+        if available_artifacts < ARTIFACTS_THRESHOLD:
+            log.info(f"generating artifacts")
+            artifacts = self.generator.generate_artifacts()
+            self.db().add_artifacts(artifacts)
+            log.info("artifact generation done")
+

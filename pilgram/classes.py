@@ -321,10 +321,10 @@ class Player:
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}"
         if self.artifacts:
             string += f"\nEldritch power: {self.get_spell_charge()} / {len(self.artifacts)}"
-            string += f"\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
+            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
             string += f"\n\nArtifacts:\n\n" + "\n".join(f"n.{a.artifact_id} - *{a.name}*" for a in self.artifacts)
         else:
-            string += f"\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
+            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
         return string
 
     def __repr__(self):

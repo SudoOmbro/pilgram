@@ -7,7 +7,7 @@ import requests
 
 from AI.utils import filter_string_list_remove_empty, get_string_list_from_tuple_list, remove_leading_numbers, \
     filter_strings_list_remove_too_short
-from pilgram.classes import Zone, Quest, ZoneEvent
+from pilgram.classes import Zone, Quest, ZoneEvent, Artifact
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
 
@@ -17,15 +17,18 @@ log = logging.getLogger(__name__)
 
 QUESTS_PER_BATCH: int = 5
 EVENTS_PER_BATCH: int = 25
+ARTIFACTS_PER_BATCH: int = 25
 
 WORLD_PROMPT = f"You write about a dark fantasy world named {ContentMeta.get('world.name')}"
 STYLE_PROMPT = "Refer to the protagonist as \"You\"."
 QUEST_FORMATTING_PROMPT = "Leave 2 lines between each quest"
 EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
+ARTIFACTS_FORMATTING_PROMPT = "Separate name and description with ':'"
 
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
+ARTIFACTS_PROMPT = f"Write name and description of {ARTIFACTS_PER_BATCH} rare artifacts found in the world"
 
 QUEST_NAME_REGEX: str = r"^\d*\.?\**#*\s?[Qq]uest\s?[\d]*:\s(.*)$"
 QUEST_DESCRIPTION_REGEX: str = r"^\**[Oo]bjective\**:\**\s(.*)$"
@@ -33,6 +36,7 @@ QUEST_SUCCESS_REGEX: str = r"^\**[Ss]uccess\**:\**\s(.*)$"
 QUEST_FAILURE_REGEX: str = r"^\**[Ff]ailure\**:\**\s(.*)$"
 
 EVENT_REGEX: str = r"^([\d]+\.\s)?(.*)$"
+ARTIFACT_REGEX: str = r"^([\d]+\.\s)?\**(.*)[:\-]{1}\s(.*)$"
 
 
 def build_messages(role: str, *messages: str) -> List[dict]:
@@ -55,6 +59,15 @@ def get_events_system_prompt(zone: Zone) -> List[dict]:
         WORLD_PROMPT,
         STYLE_PROMPT,
         ZONE_PROMPT.format(name=zone.zone_name, descr=zone.zone_description)
+    )
+
+
+def get_artifacts_system_prompt():
+    return build_messages(
+        "system",
+        WORLD_PROMPT,
+        ARTIFACTS_PROMPT,
+        ARTIFACTS_FORMATTING_PROMPT
     )
 
 
@@ -177,6 +190,26 @@ class ChatGPTGenerator(PilgramGenerator):
             result.append(new_event)
         return result
 
+    def _get_artifacts_from_generated_text(self, input_text: str) -> List[Artifact]:
+        result = []
+        matches = re.findall(ARTIFACT_REGEX, input_text.replace("\n\n", "\n"), re.MULTILINE)
+        if not matches:
+            raise GPTMisbehaveError(f"AI output artifacts in an unknown format:\n\n{input_text}")
+        artifact_names = filter_string_list_remove_empty(get_string_list_from_tuple_list(matches, -2))
+        artifact_names = filter_strings_list_remove_too_short(artifact_names, 5)
+        artifact_descriptions = filter_string_list_remove_empty(get_string_list_from_tuple_list(matches, -1))
+        artifact_descriptions = filter_strings_list_remove_too_short(artifact_descriptions, 5)
+        if len(artifact_names) != EVENTS_PER_BATCH:
+            raise GPTMisbehaveError(f"AI did not generate {EVENTS_PER_BATCH} events. AI output:\n\n{input_text}")
+        for name, description in zip(artifact_names, artifact_descriptions):
+            new_artifact = Artifact(
+                0,
+                name.replace("*", "").replace("\"", ""),
+                description
+            )
+            result.append(new_artifact)
+        return result
+
     def generate_quests(self, zone: Zone, quest_numbers: List[int]) -> List[Quest]:
         messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
@@ -187,3 +220,8 @@ class ChatGPTGenerator(PilgramGenerator):
         messages = get_quests_system_prompt(zone) + build_messages("user", EVENTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         return self._get_events_from_generated_text(generated_text, zone)
+
+    def generate_artifacts(self) -> List[Artifact]:
+        messages = get_artifacts_system_prompt() + build_messages("user", ARTIFACTS_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        return self._get_artifacts_from_generated_text(generated_text)

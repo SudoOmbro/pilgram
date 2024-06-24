@@ -443,6 +443,23 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
         return Strings.no_character_yet
 
 
+def assemble_artifact(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        if player.artifact_pieces < 10:
+            return Strings.not_enough_pieces.format(amount=10 - player.artifact_pieces)
+        try:
+            artifact = db().get_unclaimed_artifact()
+            player.artifact_pieces -= 10
+            db().update_artifact(artifact, player)
+            db().update_player_data(player)
+            return Strings.craft_successful.format(name=artifact.name)
+        except KeyError:
+            return "ERROR: no artifacts available! Try again in a few hours!"
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def __list_minigames() -> str:
     return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
 
@@ -544,6 +561,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "message": {
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], send_message_to_player, "Send message to a single player."),
         "guild": IFW(None, send_message_to_owned_guild, "Send message to every member of your owned guild.")
+    },
+    "assemble": {
+        "artifact": IFW(None, assemble_artifact, "Assemble an artifact using 10 artifact pieces")
     },
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {

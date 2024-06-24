@@ -260,6 +260,9 @@ class PilgramGenerator(ABC):
     def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
         raise NotImplementedError
 
+    def generate_artifacts(self) -> List[Artifact]:
+        raise NotImplementedError
+
 
 class PilgramNotifier(ABC):
 

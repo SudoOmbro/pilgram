@@ -1,7 +1,8 @@
 import json, unittest
 
 from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
-    EVENTS_PROMPT, ChatGPTGenerator, EVENTS_PER_BATCH
+    EVENTS_PROMPT, ChatGPTGenerator, EVENTS_PER_BATCH, ARTIFACTS_PER_BATCH, get_artifacts_system_prompt, \
+    ARTIFACTS_PROMPT
 from AI.utils import filter_string_list_remove_empty, remove_leading_numbers, filter_strings_list_remove_too_short
 from pilgram.classes import Zone
 
@@ -48,6 +49,11 @@ class TestChatGPT(unittest.TestCase):
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
 
+    def _test_generate_artifacts(self):
+        messages = get_artifacts_system_prompt() + build_messages("user", ARTIFACTS_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        print(generated_text)
+
     def test_build_quests_from_generated_text(self):
         text = _read_file("mock_quests_response.txt")
         quests = self.generator._get_quests_from_generated_text(text, self.ZONE, 5)
@@ -61,6 +67,13 @@ class TestChatGPT(unittest.TestCase):
         self.assertEqual(len(events), EVENTS_PER_BATCH)
         for event in events:
             print(event)
+
+    def test_build_artifacts_from_generated_text(self):
+        text = _read_file("mock_artifacts_response.txt")
+        artifacts = self.generator._get_artifacts_from_generated_text(text)
+        self.assertEqual(len(artifacts), ARTIFACTS_PER_BATCH)
+        for artifact in artifacts:
+            print(artifact)
 
     def test_filter_string_list_remove_empty_strings(self):
         string_list = ["aaa", "bbb", "", "\n", "ccc"]
