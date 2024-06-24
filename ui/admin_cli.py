@@ -214,7 +214,7 @@ def force_generate_zone_events(context: UserContext, zone_id_str: str) -> str:
         db().add_zone_events(events)
         return f"Zone events for zone '{zone.zone_name}' generated successfully"
     except KeyError:
-        return Strings.zone_does_not_exist
+        return Strings.obj_does_not_exist.format(obj="zone")
     except Exception as e:
         return str(e)
 

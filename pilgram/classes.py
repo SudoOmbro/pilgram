@@ -541,7 +541,7 @@ class Artifact:
 
     @classmethod
     def get_empty(cls) -> "Artifact":
-        return Artifact(0, "", "")
+        return Artifact(0, "", "", None)
 
 
 TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))
