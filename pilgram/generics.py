@@ -221,7 +221,7 @@ class PilgramDatabase(ABC):
         """ returns an artifact given its id """
         raise NotImplementedError
 
-    def get_player_artifacts(self, player: Player) -> List[Artifact]:
+    def get_player_artifacts(self, player_id: int) -> List[Artifact]:
         """
         get all artifacts owned by the specified player
 

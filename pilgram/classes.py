@@ -320,9 +320,9 @@ class Player:
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}"
         if self.artifacts:
-            string += f"\nEldritch power: {self.get_spell_charge()} / {len(self.artifacts)}"
+            string += f"\n*Eldritch power*: {self.get_spell_charge()} / {len(self.artifacts) * 10}"
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
-            string += f"\n\nArtifacts:\n\n" + "\n".join(f"n.{a.artifact_id} - *{a.name}*" for a in self.artifacts)
+            string += f"\n\nArtifacts:\n" + "\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)
         else:
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
         return string
@@ -523,12 +523,20 @@ class Artifact:
     Each artifact should be unique, owned by a single player.
     """
 
-    def __init__(self, artifact_id: int, name: str, description: str):
+    def __init__(self, artifact_id: int, name: str, description: str, owner: Union[Player, None], owned_by_you: bool = False):
         self.artifact_id = artifact_id
         self.name = name
         self.description = description
+        if owned_by_you:
+            self.owner = "you"
+        elif owner:
+            self.owner = owner.name
+        else:
+            self.owner = None
 
     def __str__(self):
+        if self.owner:
+            return f"n. {self.artifact_id} - *{self.name}*\nOwned by {self.owner}\n\n_{self.description}_\n\n"
         return f"n. {self.artifact_id} - *{self.name}*\n\n_{self.description}_"
 
     @classmethod

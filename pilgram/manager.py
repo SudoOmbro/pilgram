@@ -99,12 +99,16 @@ class QuestManager:
             xp, money = quest.get_rewards(player)
             player.add_xp(xp)
             player.add_money(money)
+            piece: bool = False
+            if random.randint(1, 10) < 3:  # 20% chance to gain a piece of an artifact
+                player.artifact_pieces += 1
+                piece = True
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
                 self.db().update_guild(guild)
                 player.guild = guild
-            self.notifier.notify(player, quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money))
+            self.notifier.notify(player, quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money) + (Strings.piece_found if piece else ""))
         else:
             self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))
         self.highest_quests.update(ac.zone().zone_id, ac.quest.number + 1)  # zone() will return a zone and not None since player must be in a quest to reach this part of the code
@@ -253,6 +257,7 @@ class GeneratorManager:
                 log.error(f"Encountered an error while generating for town zone: {e}")
         # generate artifacts if needed
         available_artifacts = self.db().get_number_of_unclaimed_artifacts()
+        log.info(f"Available artifacts: {available_artifacts}, threshold: {ARTIFACTS_THRESHOLD}")
         if available_artifacts < ARTIFACTS_THRESHOLD:
             log.info(f"generating artifacts")
             artifacts = self.generator.generate_artifacts()

@@ -50,6 +50,10 @@ Quest duration follows the formula:
 
 `DURATION = 1 day + (1 hour x zone level) + (2 hours x quest number) + (3 hours x rand(0 to zone level))`
 
+On quest success you have a 20% chance of finding a piece of an artifact.
+
+----
+
 ♦️♦️*Guilds*♦️♦️
 Clubs for you and your friends! Or ways to "compete" with others.
 Guilds can hold 4 players per level; The maximum level for guilds is 10 (so 40 players).
@@ -88,4 +92,4 @@ The use the command `play [minigame name]` to, well, play the minigame.
 
 ♦️♦️*Artifacts*♦️♦️
 Exceedingly rare mysterious artifacts you can craft with 10 artifact pieces, each artifact increases your maximum eldritch power by 10 (starts from 0).
-You can use your eldritch power to cast spells.
+You can use your eldritch power to cast spells (WIP).

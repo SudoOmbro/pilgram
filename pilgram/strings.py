@@ -104,6 +104,7 @@ class Strings:
     invalid_minigame_name = "Minigame name is not valid."
 
     # artifacts
+    piece_found = "\n\nYou find a piece of a mysterious artifact."
     not_enough_pieces = "You don't have enough artifact pieces, you need {amount} more."
     craft_successful = "You crated the artifact '{name}'. You feel powerful."
 

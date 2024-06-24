@@ -577,7 +577,10 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
-        "mechanics": IFW(None, return_string, "Explains the mechanics of the game", default_args={"string": read_text_file("mechanics.txt")})
+        "mechanics": {
+            "1": IFW(None, return_string, "Explains the mechanics of the game (page 1)", default_args={"string": read_text_file("mechanics.txt").split("\n\n----\n\n")[0]}),
+            "2": IFW(None, return_string, "Explains the mechanics of the game (page 2)", default_args={"string": read_text_file("mechanics.txt").split("\n\n----\n\n")[1]})
+        }
     }
 }
 

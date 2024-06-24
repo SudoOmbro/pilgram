@@ -13,7 +13,7 @@ from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, db, ArtifactModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact
-from pilgram.generics import PilgramDatabase, AlreadyExists, NoArtifactsError
+from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
@@ -86,7 +86,7 @@ class PilgramORMDatabase(PilgramDatabase):
             pls = PlayerModel.get(PlayerModel.id == player_id)
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
-            artifacts = []  # TODO get artifacts from database
+            artifacts = self.get_player_artifacts(player_id)
             player = Player(
                 pls.id,
                 pls.name,
@@ -458,44 +458,46 @@ class PilgramORMDatabase(PilgramDatabase):
     def get_artifact(self, artifact_id: int) -> Artifact:
         try:
             arse = ArtifactModel.get(ArtifactModel.id == artifact_id)
-            return Artifact(arse.id, arse.name, arse.description)
+            return Artifact(arse.id, arse.name, arse.description, self.get_player_data(arse.owner_id) if arse.owner_id else None)
         except ArtifactModel.DoesNotExist:
             raise KeyError(f"Could not find any artifact with id {artifact_id}")
 
     @cache_sized_ttl_quick(size_limit=200, ttl=300)
-    def get_player_artifacts(self, player: Player) -> List[Artifact]:
+    def get_player_artifacts(self, player_id: int) -> List[Artifact]:
         try:
-            ps = PlayerModel.get(PlayerModel.id == player.player_id)
-            arse = ps.artifacts.all()  # ARtifact SElection.  :)
-            return [Artifact(x.id, x.name, x.description) for x in arse]
+            ps = PlayerModel.get(PlayerModel.id == player_id)
+            arse = ps.artifacts  # ARtifact SElection.  :)
+            return [Artifact(x.id, x.name, x.description, None, owned_by_you=True) for x in arse]
         except PlayerModel.DoesNotExist:
-            raise KeyError(f"Could not find player with id {player.player_id}")
+            raise KeyError(f"Could not find player with id {player_id}")
         except ArtifactModel.DoesNotExist:
-            raise NoArtifactsError(f"Could not find any artifacts belonging to player with id {player.player_id}")
+            return []
 
     def get_unclaimed_artifact(self) -> Artifact:
         try:
-            arse = ArtifactModel.select().where(ArtifactModel.owner is None).limit(1)
-            return Artifact(arse.id, arse.name, arse.description)
+            arse = ArtifactModel.select(
+                ArtifactModel.id, ArtifactModel.name, ArtifactModel.description
+            ).where(ArtifactModel.owner_id == None).order_by(ArtifactModel.id).limit(1).namedtuples()
+            for a in arse:
+                return Artifact(a.id, a.name, a.description, None)
         except ArtifactModel.DoesNotExist:
             raise KeyError("No artifacts in database")
 
     def get_number_of_unclaimed_artifacts(self) -> int:
         try:
-            return ArtifactModel.select().where(ArtifactModel.owner is None).count()
+            return ArtifactModel.select().where(ArtifactModel.owner_id == None).count()
         except ArtifactModel.DoesNotExist:
             raise KeyError("No artifacts in database")
 
     def add_artifact(self, artifact: Artifact):
         with db.atomic():
-            ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
+            ArtifactModel.create(name=artifact.name, description=artifact.description)
 
     def add_artifacts(self, artifacts: List[Artifact]):
         data_to_insert: List[Dict[str, Any]] = [
             {
                 "name": a.name,
-                "description": a.description,
-                "owner": None
+                "description": a.description
             } for a in artifacts
         ]
         with db.atomic():
