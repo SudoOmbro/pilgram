@@ -205,7 +205,8 @@ class ChatGPTGenerator(PilgramGenerator):
             new_artifact = Artifact(
                 0,
                 name.replace("*", "").replace("\"", ""),
-                description
+                description,
+                None
             )
             result.append(new_artifact)
         return result
