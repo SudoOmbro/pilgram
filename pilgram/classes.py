@@ -308,6 +308,7 @@ class Player:
         returns spell charge of the player, calculated as the amount of time passed since the last spell cast.
         max charge = 10 * number of artifacts; 1 day = 100 charge
         """
+        print(self.last_cast)
         charge = int(((datetime.now() - self.last_cast).total_seconds() / 86400) * 100)
         max_charge = len(self.artifacts) * 10
         if charge > max_charge:
@@ -316,7 +317,15 @@ class Player:
 
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        return f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n{self.money} {MONEY}\nHome lv. {self.home_level}, Gear lv. {self.gear_level}\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
+        string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n"
+        string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}"
+        if not self.artifacts:
+            string += f"\nEldritch power: {self.get_spell_charge()} / {len(self.artifacts)}"
+            string += f"\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
+            string += f"\n\nArtifacts:\n\n" + "\n".join(f"n.{a.artifact_id} - *{a.name}*" for a in self.artifacts)
+        else:
+            string += f"\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
+        return string
 
     def __repr__(self):
         return str(self.__dict__)
@@ -518,6 +527,9 @@ class Artifact:
         self.artifact_id = artifact_id
         self.name = name
         self.description = description
+
+    def __str__(self):
+        return f"n. {self.artifact_id} - *{self.name}*\n\n_{self.description}_"
 
     @classmethod
     def get_empty(cls) -> "Artifact":

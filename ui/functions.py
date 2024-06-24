@@ -48,7 +48,7 @@ def check_zone(context: UserContext, zone_id_str: int) -> str:
         zone = db().get_zone(int(zone_id_str))
         return str(zone)
     except KeyError:
-        return Strings.zone_does_not_exist
+        return Strings.obj_does_not_exist.format(obj="zone")
 
 
 def return_string(context: UserContext, string: str = "") -> str:
@@ -63,15 +63,6 @@ def check_self(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
-def check_my_artifacts(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        # TODO
-        return str(player)
-    except KeyError:
-        return Strings.no_character_yet
-
-
 def check_player(context: UserContext, player_name: str) -> str:
     try:
         player = db().get_player_data(db().get_player_id_from_name(player_name))
@@ -80,13 +71,13 @@ def check_player(context: UserContext, player_name: str) -> str:
         return Strings.named_object_not_exist.format(obj="player", name=player_name)
 
 
-def check_player_artifacts(context: UserContext, player_name: str) -> str:
+def check_artifact(context: UserContext, artifact_id_str: str) -> str:
     try:
-        player = db().get_player_data(db().get_player_id_from_name(player_name))
-        # TODO
-        return str(player)
+        artifact_id = int(artifact_id_str)
+        artifact = db().get_artifact(artifact_id)
+        return str(artifact)
     except KeyError:
-        return Strings.named_object_not_exist.format(obj="player", name=player_name)
+        return Strings.obj_does_not_exist.format(obj="Artifact")
 
 
 def check_guild(context: UserContext, guild_name: str) -> str:
@@ -320,7 +311,7 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
     try:
         zone = db().get_zone(int(zone_id_str))
     except KeyError:
-        return Strings.zone_does_not_exist
+        return Strings.obj_does_not_exist.format(obj="zone")
     if player.level < zone.level:
         context.start_process("embark confirm")
         context.set("zone", zone)
@@ -360,7 +351,7 @@ def kick(context: UserContext, player_name: str) -> str:
 
 def cast_spell(context: UserContext, spell_name: str) -> str:
     # TODO
-    pass
+    return "Work in progress"
 
 
 def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
@@ -512,15 +503,14 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name & objective (if you are on a quest)."),
         "town": IFW(None, return_string, f"Shows a description of {ContentMeta.get('world.city.name')}.", default_args={"string": str(TOWN_ZONE)}),
-        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], check_zone, "Shows a description of the given zone."),
+        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Shows a description of the given zone."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
         "self": IFW(None, check_self, "Shows your own stats."),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
-        "artifacts": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player_artifacts, "Shows player artifacts."),
+        "artifact": IFW([RWE("Artifact number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Artifact number"))], check_artifact, "Shows a description of the given Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
-            "artifacts": IFW(None, check_my_artifacts, "Shows your own artifacts.")
         },
         "mates": IFW(None, check_guild_mates, "Shows your guild mates")
     },
@@ -544,7 +534,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
-    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts quest in specified zone."),
+    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "cast": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], cast_spell, "Cast a spell."),

@@ -114,6 +114,6 @@ class Strings:
     player_name_validation_error = "Player names must only be 4 to 20 characters long, must not contain spaces and " + __must_not_contain
     guild_name_validation_error = "Guild names must only be 2 to 30 characters long, must not contain spaces and " + __must_not_contain
     description_validation_error = "Descriptions must only be 10 to 300 characters long and " + __must_not_contain
-    zone_number_error = "Zone number must be a positive integer number."
-    zone_does_not_exist = "The zone does not exist!"
+    obj_number_error = "{obj} must be a positive integer number."
+    obj_does_not_exist = "The {obj} does not exist!"
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"

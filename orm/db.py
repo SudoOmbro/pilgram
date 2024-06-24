@@ -98,8 +98,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 progress,
                 pls.gear_level,
                 pls.home_level,
-                pls.last_spell_cast,
                 pls.artifact_pieces,
+                pls.last_spell_cast,
                 artifacts,
                 pls.flags
             )
@@ -451,13 +451,15 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {adventure_container.player_id()}")
 
+    @cache_sized_ttl_quick(size_limit=200, ttl=86400)
     def get_artifact(self, artifact_id: int) -> Artifact:
         try:
-            arse = ArtifactModel.get(ArtifactModel.artifact_id == artifact_id)
+            arse = ArtifactModel.get(ArtifactModel.id == artifact_id)
             return Artifact(arse.id, arse.name, arse.description)
         except ArtifactModel.DoesNotExist:
             raise KeyError(f"Could not find any artifact with id {artifact_id}")
 
+    @cache_sized_ttl_quick(size_limit=200, ttl=300)
     def get_player_artifacts(self, player: Player) -> List[Artifact]:
         try:
             ps = PlayerModel.get(PlayerModel.id == player.player_id)
