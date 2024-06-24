@@ -50,7 +50,9 @@ Quest duration follows the formula:
 
 `DURATION = 1 day + (1 hour x zone level) + (2 hours x quest number) + (3 hours x rand(0 to zone level))`
 
-On quest success you have a 20% chance of finding a piece of an artifact.
+On quest success you have a 20% chance of finding a piece of an artifact (explained later).
+
+use the command `explain mechanics 2` to continue
 
 ----
 
@@ -91,5 +93,5 @@ Then use the command `explain minigame [minigame name]` to get more info about e
 The use the command `play [minigame name]` to, well, play the minigame.
 
 ♦️♦️*Artifacts*♦️♦️
-Exceedingly rare mysterious artifacts you can craft with 10 artifact pieces, each artifact increases your maximum eldritch power by 10 (starts from 0).
+Exceedingly rare mysterious artifacts you can craft with 10 artifact pieces, each artifact is unique & increases your maximum eldritch power by 10 (starts from 0).
 You can use your eldritch power to cast spells (WIP).
