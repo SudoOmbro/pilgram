@@ -38,11 +38,13 @@ class TestClasses(unittest.TestCase):
 
     def test_zone_events(self):
         player = Player.create_default(0, "test", "")
-        player.level = 1
-        zone = Zone(8, "test", 5, "test")
-        zone.level = 100
+        player.level = 10
+        zone = Zone(9, "test", 5, "test")
+        zone.level = 30
         zone_event = ZoneEvent(0, zone, "test")
         rewards_under_leveled = zone_event.get_rewards(player)
+        print(rewards_under_leveled)
         player.level = 100
         rewards_normal = zone_event.get_rewards(player)
+        print(rewards_normal)
         self.assertTrue(rewards_normal[0] > rewards_under_leveled[0])

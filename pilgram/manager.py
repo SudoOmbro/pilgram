@@ -97,7 +97,7 @@ class QuestManager:
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
             player.add_xp(xp)
-            player.money += money
+            player.add_money(money)
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
@@ -118,7 +118,7 @@ class QuestManager:
         xp, money = event.get_rewards(ac.player)
         player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
         player.add_xp(xp)
-        player.money += money
+        player.add_money(money)
         ac.player = player
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
@@ -142,8 +142,10 @@ class QuestManager:
         players. Too much time however and very few players will ever be notified. Gotta find a balance.
         """
         for zone_id in zones_players_map:
-            if len(zones_players_map[zone_id]) < 2:  # only notify if there's more than one player
-                continue
+            if len(zones_players_map[zone_id]) < 4:  # only let players meet if there's more than 4 players in a zone
+                if (len(zones_players_map[zone_id]) > 1) and (random.randint(1, 20) < 15):
+                    # if there's less than 4 but more than one, have a very low chance of an encounter
+                    continue
             # choose randomly the players that will meet
             players: List[Player] = zones_players_map[zone_id]
             player1: Player = random.choice(players)
@@ -156,7 +158,7 @@ class QuestManager:
                 string, actions = Strings.players_meet_in_town, Strings.town_actions
             else:
                 string, actions = Strings.players_meet_on_a_quest, Strings.quest_actions
-            xp = 400 * (zone_id + 1)
+            xp = (10 * zone_id * max([player1.level, player2.level])) if zone_id > 0 else 10
             text = f"{string} {random.choice(actions)}\n\n{Strings.xp_gain.format(xp=xp)}"
             player1.add_xp(xp)
             player2.add_xp(xp)

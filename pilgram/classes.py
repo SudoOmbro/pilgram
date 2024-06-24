@@ -319,7 +319,7 @@ class Player:
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}"
-        if not self.artifacts:
+        if self.artifacts:
             string += f"\nEldritch power: {self.get_spell_charge()} / {len(self.artifacts)}"
             string += f"\n\n{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}"
             string += f"\n\nArtifacts:\n\n" + "\n".join(f"n.{a.artifact_id} - *{a.name}*" for a in self.artifacts)

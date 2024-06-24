@@ -73,7 +73,10 @@ where `zl` = zone level, `hl` = player home level.
 Sometimes you can meet other players going through their own journey.
 This gives you a lot of XP, following the formula:
 
-`XP REWARD = 400 * zone id + 1`, so in zone 2 you'd get 1200 xp for meeting another player.
+if not in town:
+`XP REWARD = 10 x zone id x highest level between the 2 players meeting`
+if in town:
+`XP REWARD = 10`
 
 _Note: Town is considered zone 0 (level 0), so you only get 400 XP for town meetings._
 
