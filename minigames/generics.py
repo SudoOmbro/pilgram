@@ -1,13 +1,12 @@
 import logging
 import re
-import time
 from abc import ABC
-from typing import Tuple, Type, Dict, List
+from typing import Tuple, Type, Dict
 
 from pilgram.classes import Player
 from pilgram.globals import ContentMeta, POSITIVE_INTEGER_REGEX
 from pilgram.utils import has_recently_accessed_cache
-from ui.strings import Strings
+from pilgram.strings import Strings
 
 
 log = logging.getLogger(__name__)

@@ -9,6 +9,7 @@ from typing import Dict, Union, List, Tuple, Any
 
 from peewee import fn, JOIN, IntegrityError
 
+from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, db
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
@@ -62,6 +63,8 @@ class PilgramORMDatabase(PilgramDatabase):
         if cls._instance is None:
             log.info('Creating new database instance')
             cls._instance = cls.__new__(cls)
+            while migrate_older_dbs():  # automatically migrate any DB to the newest version
+                log.info("migration done.")
             if not os.path.isfile(DB_FILENAME):
                 create_tables()
                 log.info("tables created")
@@ -83,6 +86,7 @@ class PilgramORMDatabase(PilgramDatabase):
             pls = PlayerModel.get(PlayerModel.id == player_id)
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
+            artifacts = []  # TODO get artifacts from database
             player = Player(
                 pls.id,
                 pls.name,
@@ -93,7 +97,11 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.money,
                 progress,
                 pls.gear_level,
-                pls.home_level
+                pls.home_level,
+                pls.last_spell_cast,
+                pls.artifact_pieces,
+                artifacts,
+                pls.flags
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved

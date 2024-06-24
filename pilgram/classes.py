@@ -2,11 +2,13 @@ import logging
 import math
 import random
 from datetime import datetime, timedelta
-from typing import Tuple, Dict, Any, Callable, Union
+from typing import Tuple, Dict, Any, Callable, Union, List
+
+import numpy as np
 
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.utils import read_update_interval
-from ui.strings import MONEY
+from pilgram.strings import MONEY
 
 
 log = logging.getLogger(__name__)
@@ -167,6 +169,35 @@ class Progress:
         return cls(zone_progress)
 
 
+class Spell:
+
+    def __init__(
+            self,
+            name: str,
+            description: str,
+            cast_text: str,
+            required_power: int,
+            required_args: int,
+            function: Callable[["Player", List[str]], str]
+    ):
+        self.name = name
+        self.description = description
+        self.cast_text = cast_text
+        self.required_power = required_power
+        self.required_args = required_args
+        self.function = function
+
+    def can_cast(self, player: "Player") -> bool:
+        return player.get_spell_charge() >= self.required_power
+
+    def cast(self, player: "Player", args: List[str]) -> str:
+        result = self.function(player, args)
+        if result:
+            return result
+        player.last_cast = datetime.now()  # TODO: make spells only use the charge they require
+        return self.cast_text
+
+
 class Player:
     """ contains all information about a player """
 
@@ -181,7 +212,11 @@ class Player:
             money: int,
             progress: Progress,
             gear_level: int,
-            home_level: int
+            home_level: int,
+            artifact_pieces: int,
+            last_cast: datetime,
+            artifacts: List["Artifact"],
+            flags: np.uint32
     ):
         """
         :param player_id (int): unique id of the player
@@ -194,6 +229,9 @@ class Player:
         :param progress (Progress): contains progress object, which tracks the player progress in each zone,
         :param gear_level (int): current gear level of the player, potentially unlimited
         :param home_level(int): current level of the home owned by the player, potentially unlimited
+        :param artifact_pieces (int): number of artifact pieces of the player. Use 10 to build a new artifact.
+        :param last_cast (datetime): last spell cast datetime.
+        :param flags (np.uint32): flags of the player, can be used for anything
         """
         self.player_id = player_id
         self.name = name
@@ -205,6 +243,10 @@ class Player:
         self.xp = xp
         self.gear_level = gear_level
         self.home_level = home_level
+        self.artifact_pieces = artifact_pieces
+        self.last_cast = last_cast
+        self.artifacts = artifacts
+        self.flags = flags
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -247,6 +289,9 @@ class Player:
             return True
         return False
 
+    def add_money(self, amount: int):
+        self.money += amount
+
     def get_number_of_completed_quests(self) -> int:
         result: int = 0
         for zone, progress in self.progress.zone_progress.items():
@@ -257,6 +302,17 @@ class Player:
         if mode == "telegram":
             return f"[{self.name}](tg://user?id={self.player_id})"
         return self.name
+
+    def get_spell_charge(self) -> int:
+        """
+        returns spell charge of the player, calculated as the amount of time passed since the last spell cast.
+        max charge = 10 * number of artifacts; 1 day = 100 charge
+        """
+        charge = int(((datetime.now() - self.last_cast).total_seconds() / 86400) * 100)
+        max_charge = len(self.artifacts) * 10
+        if charge > max_charge:
+            return max_charge
+        return charge
 
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
@@ -281,7 +337,11 @@ class Player:
             player_defaults["money"],
             Progress({}),
             player_defaults["gear"],
-            player_defaults["home"]
+            player_defaults["home"],
+            0,
+            datetime.now(),
+            [],
+            np.uint32(0)
         )
 
 
@@ -454,11 +514,10 @@ class Artifact:
     Each artifact should be unique, owned by a single player.
     """
 
-    def __init__(self, artifact_id: int, name: str, description: str, owner: Player):
+    def __init__(self, artifact_id: int, name: str, description: str):
         self.artifact_id = artifact_id
         self.name = name
         self.description = description
-        self.owner = owner
 
 
 TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))

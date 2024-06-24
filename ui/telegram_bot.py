@@ -16,7 +16,7 @@ from pilgram.utils import read_text_file, TempIntCache, has_recently_accessed_ca
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
 from ui.utils import UserContext
-from ui.strings import Strings
+from pilgram.strings import Strings
 
 log = logging.getLogger(__name__)
 logging.basicConfig(

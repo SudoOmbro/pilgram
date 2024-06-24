@@ -8,7 +8,7 @@ from minigames.utils import get_positive_integer_from_string, roll, get_random_w
     print_maze, TILE_REPRESENTATIONS as TR, MAZE
 from pilgram.classes import Player
 from pilgram.globals import POSITIVE_INTEGER_REGEX
-from ui.strings import Strings
+from pilgram.strings import Strings
 
 
 log = logging.getLogger(__name__)

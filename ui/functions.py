@@ -3,8 +3,6 @@ import re
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type, List
 
-import minigames.games  # this is necessary for the minigame classes to ve initialized
-
 from minigames.generics import PilgramMinigame, MINIGAMES
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, TOWN_ZONE, Zone
@@ -12,7 +10,7 @@ from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX
 from pilgram.utils import read_text_file
-from ui.strings import Strings, MONEY
+from pilgram.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
 
@@ -65,9 +63,27 @@ def check_self(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
+def check_my_artifacts(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        # TODO
+        return str(player)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def check_player(context: UserContext, player_name: str) -> str:
     try:
         player = db().get_player_data(db().get_player_id_from_name(player_name))
+        return str(player)
+    except KeyError:
+        return Strings.named_object_not_exist.format(obj="player", name=player_name)
+
+
+def check_player_artifacts(context: UserContext, player_name: str) -> str:
+    try:
+        player = db().get_player_data(db().get_player_id_from_name(player_name))
+        # TODO
         return str(player)
     except KeyError:
         return Strings.named_object_not_exist.format(obj="player", name=player_name)
@@ -243,6 +259,8 @@ def modify_player(context: UserContext, user_input: str, target: str = "name") -
         return Strings.obj_attr_modified.format(obj="character", attr=target)
     except KeyError:
         return Strings.no_character_yet
+    except AlreadyExists:
+        return Strings.name_object_already_exists.format(obj="character", name=user_input)
 
 
 def modify_guild(context: UserContext, user_input: str, target: str = "name") -> str:
@@ -262,6 +280,8 @@ def modify_guild(context: UserContext, user_input: str, target: str = "name") ->
         return Strings.obj_attr_modified.format(obj="guild", attr=target)
     except KeyError:
         return Strings.no_character_yet
+    except AlreadyExists:
+        return Strings.name_object_already_exists.format(obj="guild", name=user_input)
 
 
 def join_guild(context: UserContext, guild_name: str) -> str:
@@ -336,6 +356,11 @@ def kick(context: UserContext, player_name: str) -> str:
         return Strings.player_kicked_successfully.format(name=player_name, guild=guild.name)
     except KeyError:
         return Strings.no_character_yet
+
+
+def cast_spell(context: UserContext, spell_name: str) -> str:
+    # TODO
+    pass
 
 
 def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
@@ -491,9 +516,11 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
         "self": IFW(None, check_self, "Shows your own stats."),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
+        "artifacts": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player_artifacts, "Shows player artifacts."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
-            "guild": IFW(None, check_my_guild, "Shows your own guild.")
+            "guild": IFW(None, check_my_guild, "Shows your own guild."),
+            "artifacts": IFW(None, check_my_artifacts, "Shows your own artifacts.")
         },
         "mates": IFW(None, check_guild_mates, "Shows your guild mates")
     },
@@ -520,6 +547,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.zone_number_error)], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
+    "cast": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], cast_spell, "Cast a spell."),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     },

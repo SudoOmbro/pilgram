@@ -9,7 +9,7 @@ from typing import List, Dict, Tuple
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
-from ui.strings import Strings
+from pilgram.strings import Strings
 
 
 log = logging.getLogger(__name__)

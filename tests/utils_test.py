@@ -36,3 +36,5 @@ class TestUtils(unittest.TestCase):
         flags = XpFlag.set(flags)
         flags = MoneyFlag.set(flags)
         self.assertEqual(np.binary_repr(flags), "111")
+        flags = XpFlag.unset(flags)
+        self.assertEqual(np.binary_repr(flags), "101")

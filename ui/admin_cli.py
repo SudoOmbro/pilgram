@@ -4,11 +4,11 @@ from typing import Dict, Union, Tuple, Callable
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Zone, Quest, ZoneEvent
-from pilgram.generics import PilgramDatabase, PilgramGenerator
+from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
     GlobalSettings
 from ui.interpreter import CLIInterpreter
-from ui.strings import Strings
+from pilgram.strings import Strings
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
 
 

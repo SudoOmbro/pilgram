@@ -3,7 +3,7 @@ from timeit import timeit
 
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
-from ui.strings import Strings
+from pilgram.strings import Strings
 from ui.utils import UserContext, reconstruct_delimited_arguments
 
 

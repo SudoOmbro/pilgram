@@ -5,7 +5,8 @@ from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyFie
     AutoField
 
 
-DB_FILENAME: str = f"pilgram_v1.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = f"pilgram.db"
+
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -46,9 +47,6 @@ class PlayerModel(BaseModel):
     gear_level = IntegerField(default=0)
     progress = CharField(null=True, default=None)  # progress is stored as a char string in the player table.
     home_level = IntegerField(default=0)
-    last_spell_cast = DateTimeField(default=datetime.now)
-    artifact_pieces = IntegerField(default=0)
-    flags = IntegerField(default=0)
 
 
 class GuildModel(BaseModel):
@@ -75,13 +73,6 @@ class QuestProgressModel(BaseModel):
     last_update = DateTimeField(default=datetime.now)
 
 
-class ArtifactModel(BaseModel):
-    id = AutoField(primary_key=True)
-    name = CharField(null=False, unique=True)
-    description = CharField(null=False)
-    owner = ForeignKeyField(PlayerModel, backref="artifacts", index=True)
-
-
 def db_connect():
     log.info("Connecting to database")
     db.connect()
@@ -101,7 +92,6 @@ def create_tables():
         PlayerModel,
         GuildModel,
         ZoneEventModel,
-        QuestProgressModel,
-        ArtifactModel
+        QuestProgressModel
     ], safe=True)
     db_disconnect()
