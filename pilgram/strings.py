@@ -44,6 +44,9 @@ class Strings:
     # guilds
     rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
     here_are_your_mates = "You have {num} guild mates:\n\n"
+    not_in_a_guild = "You are not in a guild!"
+    guild_not_owned = "You don't own a guild!"
+    no_guild_yet = "You haven't created a guild yet!"
 
     # messages
     write_your_message = "Write the message you want to send"
@@ -100,17 +103,17 @@ class Strings:
     # explain
     invalid_minigame_name = "Minigame name is not valid."
 
+    # spells
+    not_enough_power = "You don't have enough stored power to cast this spell."
+
     # errors
     no_character_yet = "You haven't made a character yet!"
-    no_guild_yet = "You haven't created a guild yet!"
     named_object_not_exist = "{obj} with name {name} does not exist."
+    name_object_already_exists = "{obj} with name {name} already exists, give your {obj} a different name (names are case sensitive)"
     __must_not_contain = "must not contain new lines & the following characters: \\_, \\*, \\`, \\[, ], ~"
     player_name_validation_error = "Player names must only be 4 to 20 characters long, must not contain spaces and " + __must_not_contain
     guild_name_validation_error = "Guild names must only be 2 to 30 characters long, must not contain spaces and " + __must_not_contain
     description_validation_error = "Descriptions must only be 10 to 300 characters long and " + __must_not_contain
     zone_number_error = "Zone number must be a positive integer number."
     zone_does_not_exist = "The zone does not exist!"
-    not_in_a_guild = "You are not in a guild!"
-    guild_not_owned = "You don't own a guild!"
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"
-    name_object_already_exists = "{obj} with name {name} already exists, give your {obj} a different name (names are case sensitive)"

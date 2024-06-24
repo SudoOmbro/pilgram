@@ -141,7 +141,8 @@ def process_obj_add_confirm(context: UserContext, user_input: str) -> str:
         func: Callable = {
             "zone": lambda: db().add_zone(obj),
             "quest": lambda: db().add_quest(obj),
-            "event": lambda: db().add_zone_event(obj)
+            "event": lambda: db().add_zone_event(obj),
+            "artifact": lambda: db().add_artifact(obj)
         }.get(obj_type)
         func()
         context.end_process()
@@ -159,7 +160,8 @@ def process_obj_edit_confirm(context: UserContext, user_input: str) -> str:
         func: Callable = {
             "zone": lambda: db().update_zone(obj),
             "quest": lambda: db().update_quest(obj),
-            "event": lambda: db().update_zone_event(obj)
+            "event": lambda: db().update_zone_event(obj),
+            "artifact": lambda: db().update_artifact(obj)
         }.get(obj_type)
         func()
         context.end_process()
@@ -222,6 +224,7 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "xp": __generate_int_op_command("xp", "player", "add"),
             "gear": __generate_int_op_command("gear_level", "player", "add"),
             "home": __generate_int_op_command("home_level", "player", "add"),
+            "pieces": __generate_int_op_command("artifact_pieces", "player", "add"),
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),
@@ -229,7 +232,8 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         },
         "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"}),
         "quest": IFW(None, start_add_obj_process, "Create a new quest", {"obj_type": "quest"}),
-        "event": IFW(None, start_add_obj_process, "Create a new event", {"obj_type": "event"})
+        "event": IFW(None, start_add_obj_process, "Create a new event", {"obj_type": "event"}),
+        "artifact": IFW(None, start_add_obj_process, "Create a new artifact", {"obj_type": "artifact"})
     },
     "set": {
         "player": {
@@ -237,6 +241,7 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "xp": __generate_int_op_command("xp", "player", "set"),
             "gear": __generate_int_op_command("gear_level", "player", "set"),
             "home": __generate_int_op_command("home_level", "player", "set"),
+            "pieces": __generate_int_op_command("artifact_pieces", "player", "set")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "set"),
@@ -249,6 +254,7 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "xp": __generate_int_op_command("xp", "player", "sub"),
             "gear": __generate_int_op_command("gear_level", "player", "sub"),
             "home": __generate_int_op_command("home_level", "player", "sub"),
+            "pieces": __generate_int_op_command("artifact_pieces", "player", "sub")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "sub"),
@@ -257,8 +263,9 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "edit": {
         "zone": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit a zone", {"obj_type": "zone"}),
-        "quest": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit a quest", {"obj_type": "quest"}),
-        "event": IFW([RWE("Zone id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit an event", {"obj_type": "event"})
+        "quest": IFW([RWE("Quest id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit a quest", {"obj_type": "quest"}),
+        "event": IFW([RWE("Event id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit an event", {"obj_type": "event"}),
+        "artifact": IFW([RWE("Artifact id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit an artifact", {"obj_type": "artifact"}),
     },
     "generate": {
         "events": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_zone_events, "Generate new zone events")
@@ -285,6 +292,11 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write Quest zone id", process_quest_add_zone),
         ("Confirm?", process_obj_add_confirm)
     ),
+    "add artifact": (
+        ("Write artifact name", ProcessGetObjStrAttr("name")),
+        ("Write artifact description", ProcessGetObjStrAttr("description")),
+        ("Confirm?", process_obj_add_confirm)
+    ),
     "edit zone": (
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
@@ -304,6 +316,11 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write event description", ProcessGetObjStrAttr("event_text")),
         ("Write Quest zone id", process_quest_add_zone),
         ("Confirm?", process_obj_edit_confirm)
+    ),
+    "edit artifact": (
+        ("Write artifact name", ProcessGetObjStrAttr("name")),
+        ("Write artifact description", ProcessGetObjStrAttr("description")),
+        ("Confirm?", process_obj_add_confirm)
     )
 }
 

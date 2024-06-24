@@ -3,13 +3,16 @@ from abc import ABC
 from datetime import timedelta, datetime
 from typing import List, Tuple, Union, Any
 
-from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer
-
+from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact
 
 log = logging.getLogger(__name__)
 
 
 class AlreadyExists(Exception):
+    pass
+
+
+class NoArtifactsError(Exception):
     pass
 
 
@@ -210,6 +213,28 @@ class PilgramDatabase(ABC):
 
     def update_quest_progress(self, adventure_container: AdventureContainer, last_update: Union[datetime, None] = None):
         """ update quest player progress, either complete quests or just change last update """
+        raise NotImplementedError
+
+    # artifacts ----------------------------------
+
+    def get_player_artifacts(self, player: Player) -> List[Artifact]:
+        """
+        get all artifacts owned by the specified player
+
+        :raises NoArtifactsError if player has no artifacts, KeyError if player does not exist
+        """
+        raise NotImplementedError
+
+    def add_artifact(self, artifacts: Artifact):
+        """ add the given artifact to the database """
+        raise NotImplementedError
+
+    def add_artifacts(self, artifacts: List[Artifact]):
+        """ add the given list of artifacts to the database """
+        raise NotImplementedError
+
+    def update_artifact(self, artifacts: Artifact, owner: Player):
+        """ save the given artifact to the database (used when assigning an owner basically) """
         raise NotImplementedError
 
 

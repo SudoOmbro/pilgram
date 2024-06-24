@@ -79,7 +79,7 @@ class ArtifactModel(BaseModel):
     id = AutoField(primary_key=True)
     name = CharField(null=False, unique=True)
     description = CharField(null=False)
-    owner = ForeignKeyField(PlayerModel, backref="artifacts", index=True)
+    owner = ForeignKeyField(PlayerModel, backref="artifacts", index=True, null=True)
 
 
 def db_connect():

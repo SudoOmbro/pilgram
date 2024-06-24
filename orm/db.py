@@ -11,9 +11,9 @@ from peewee import fn, JOIN, IntegrityError
 
 from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel, db
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer
-from pilgram.generics import PilgramDatabase, AlreadyExists
+    QuestProgressModel, db, ArtifactModel
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact
+from pilgram.generics import PilgramDatabase, AlreadyExists, NoArtifactsError
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
@@ -450,3 +450,38 @@ class PilgramORMDatabase(PilgramDatabase):
             qps.save()
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {adventure_container.player_id()}")
+
+    def get_player_artifacts(self, player: Player) -> List[Artifact]:
+        try:
+            ps = PlayerModel.get(PlayerModel.id == player.player_id)
+            arse = ps.artifacts.all()  # ARtifact SElection.  :)
+            return [Artifact(x.id, x.name, x.description) for x in arse]
+        except PlayerModel.DoesNotExist:
+            raise KeyError(f"Could not find player with id {player.player_id}")
+        except ArtifactModel.DoesNotExist:
+            raise NoArtifactsError(f"Could not find any artifacts belonging to player with id {player.player_id}")
+
+    def add_artifact(self, artifact: Artifact):
+        with db.atomic():
+            ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
+
+    def add_artifacts(self, artifacts: List[Artifact]):
+        data_to_insert: List[Dict[str, Any]] = [
+            {
+                "name": a.name,
+                "description": a.description,
+                "owner": None
+            } for a in artifacts
+        ]
+        with db.atomic():
+            ArtifactModel.insert_many(data_to_insert).execute()
+
+    def update_artifact(self, artifact: Artifact, owner: Player):
+        try:
+            arse = ArtifactModel.get(ArtifactModel.id == artifact.artifact_id)
+            arse.name = artifact.name
+            arse.description = artifact.description
+            arse.owner = owner.player_id
+            arse.save()
+        except ArtifactModel.DoesNotExist:
+            raise KeyError(f"Could not find artifact with id {artifact.artifact_id}")

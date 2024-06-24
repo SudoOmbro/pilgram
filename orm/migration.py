@@ -9,19 +9,19 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 
-OLD_DATABASE_VERSIONS: Dict[str, Callable] = {}
+__OLD_DATABASE_VERSIONS: Dict[str, Callable] = {}
 
 
 def __add_to_migration_list(db_name: str) -> Callable:
     def decorator(func: Callable) -> Callable:
-        OLD_DATABASE_VERSIONS[db_name] = func
+        __OLD_DATABASE_VERSIONS[db_name] = func
         return func
     return decorator
 
 
 # check if older db versions exist
 def migrate_older_dbs() -> bool:
-    for filename, migration_function in OLD_DATABASE_VERSIONS.items():
+    for filename, migration_function in __OLD_DATABASE_VERSIONS.items():
         if os.path.isfile(filename):
             log.info(f"Starting migration...")
             migration_function()
@@ -38,7 +38,7 @@ def __migrate_v0_to_v1():
         id = AutoField(primary_key=True)
         name = CharField(null=False, unique=True)
         description = CharField(null=False)
-        owner = ForeignKeyField(PlayerModel, backref="artifacts", index=True)
+        owner = ForeignKeyField(PlayerModel, backref="artifacts", index=True, null=True)
 
     log.info(f"Migrating v0 to v1...")
     previous_db.connect()
