@@ -204,7 +204,7 @@ class ChatGPTGenerator(PilgramGenerator):
         for name, description in zip(artifact_names, artifact_descriptions):
             new_artifact = Artifact(
                 0,
-                name.replace("*", "").replace("\"", ""),
+                name.replace("*", "").replace("\"", "").replace(":", "").replace("Name", "").replace("Description", ""),
                 description,
                 None
             )

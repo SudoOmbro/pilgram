@@ -322,7 +322,7 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "edit artifact": (
         ("Write artifact name", ProcessGetObjStrAttr("name")),
         ("Write artifact description", ProcessGetObjStrAttr("description")),
-        ("Confirm?", process_obj_add_confirm)
+        ("Confirm?", process_obj_edit_confirm)
     )
 }
 
