@@ -139,7 +139,7 @@ class QuestManager:
         handle the meeting of 2 players for each visited zone this update.
 
         The more time passes between quest manager thread calls, the better this works, because it accumulates more
-        players. Too much time however and very few players will ever be notified. Gotta find a balance.
+        players. Too much time however and very few players will never be notified. Gotta find a balance.
         """
         for zone_id in zones_players_map:
             if len(zones_players_map[zone_id]) < 4:  # only let players meet if there's more than 4 players in a zone
