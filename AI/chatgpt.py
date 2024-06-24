@@ -28,7 +28,7 @@ ARTIFACTS_FORMATTING_PROMPT = "Separate name and description with ':'"
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
-ARTIFACTS_PROMPT = f"Write name and description of {ARTIFACTS_PER_BATCH} rare artifacts found in the world"
+ARTIFACTS_PROMPT = f"Write name and description of {ARTIFACTS_PER_BATCH} unique & rare artifacts found in the world"
 
 QUEST_NAME_REGEX: str = r"^\d*\.?\**#*\s?[Qq]uest\s?[\d]*:\s(.*)$"
 QUEST_DESCRIPTION_REGEX: str = r"^\**[Oo]bjective\**:\**\s(.*)$"
