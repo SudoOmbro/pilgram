@@ -491,13 +491,14 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def add_artifact(self, artifact: Artifact):
         with db.atomic():
-            ArtifactModel.create(name=artifact.name, description=artifact.description)
+            ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
 
     def add_artifacts(self, artifacts: List[Artifact]):
         data_to_insert: List[Dict[str, Any]] = [
             {
                 "name": a.name,
-                "description": a.description
+                "description": a.description,
+                "owner": None
             } for a in artifacts
         ]
         with db.atomic():

@@ -10,7 +10,7 @@ from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
-
+from pilgram.utils import generate_random_eldritch_name
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -18,7 +18,7 @@ log.setLevel(logging.INFO)
 
 MONEY = ContentMeta.get("money.name")
 QUEST_THRESHOLD = 3
-ARTIFACTS_THRESHOLD = 12
+ARTIFACTS_THRESHOLD = 15
 
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
@@ -148,7 +148,10 @@ class QuestManager:
         """
         for zone_id in zones_players_map:
             if len(zones_players_map[zone_id]) < 4:  # only let players meet if there's more than 4 players in a zone
-                if (len(zones_players_map[zone_id]) > 1) and (random.randint(1, 20) < 15):
+                if len(zones_players_map[zone_id]) < 2:
+                    # if there's only one player then skip
+                    continue
+                if random.randint(1, 20) < 15:
                     # if there's less than 4 but more than one, have a very low chance of an encounter
                     continue
             # choose randomly the players that will meet
@@ -260,7 +263,19 @@ class GeneratorManager:
         log.info(f"Available artifacts: {available_artifacts}, threshold: {ARTIFACTS_THRESHOLD}")
         if available_artifacts < ARTIFACTS_THRESHOLD:
             log.info(f"generating artifacts")
-            artifacts = self.generator.generate_artifacts()
-            self.db().add_artifacts(artifacts)
-            log.info("artifact generation done")
+            try:
+                artifacts = self.generator.generate_artifacts()
+                for artifact in artifacts:
+                    try:
+                        self.db().add_artifact(artifact)
+                    except Exception as e:
+                        log.error(f"Encountered an error while adding artifact '{artifact.name}': {e}")
+                        try:
+                            artifact.name += " of " + generate_random_eldritch_name()
+                            log.info(f"changed name ({artifact.name}), trying to add the artifact again")
+                        except Exception as e:
+                            log.error(f"adding a random name did not work: {e}")
+                log.info("artifact generation done")
+            except Exception as e:
+                log.error(f"Encountered an error while generating artifacts: {e}")
 

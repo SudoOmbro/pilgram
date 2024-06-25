@@ -23,7 +23,7 @@ WORLD_PROMPT = f"You write about a dark fantasy world named {ContentMeta.get('wo
 STYLE_PROMPT = "Refer to the protagonist as \"You\"."
 QUEST_FORMATTING_PROMPT = "Leave 2 lines between each quest"
 EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
-ARTIFACTS_FORMATTING_PROMPT = "Separate name and description with ':'"
+ARTIFACTS_FORMATTING_PROMPT = "Separate name and description with ':' putting the name before and the description after. Do not write 'Name' & 'Description'."
 
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"

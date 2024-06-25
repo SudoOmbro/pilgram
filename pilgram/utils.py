@@ -1,5 +1,7 @@
+import string
 import time
 from datetime import timedelta
+from random import randint, choice
 from typing import Union, Dict, Any, List
 
 
@@ -14,6 +16,11 @@ LETTERS_TO_INTERVALS: Dict[str, timedelta] = {
     "s": timedelta(seconds=1),
     "w": timedelta(weeks=1)
 }
+__ELDRITCH_STUFF: List[str] = ["c't", "d'e", "jh'k", "mh'i", "r-k", "th-k", "b-n", "c'n", "a'l", "g-s", "n't", "d-t"]
+__VOLWELS: List[str] = [*"aeiouy"]
+__CONSONANTS = [*"qwrtpsdfghjklzxcvbnm"]
+__ALL = __ELDRITCH_STUFF + __CONSONANTS + __VOLWELS
+__NO_VOWELS = __CONSONANTS + __ELDRITCH_STUFF
 
 
 def read_text_file(path: str) -> str:
@@ -48,6 +55,19 @@ def has_recently_accessed_cache(storage: Dict[int, float], user_id: int, cooldow
     # set cooldown
     storage[user_id] = time.time() + cooldown
     return False
+
+
+def generate_random_eldritch_name() -> str:
+    iterations: int = randint(4, 10)
+    result = choice(__VOLWELS + __CONSONANTS + __ELDRITCH_STUFF)
+    for _ in range(iterations):
+        if result[-1] in __VOLWELS:
+            result += choice(__NO_VOWELS)
+        elif (randint(1, 6) < 3) and (len(result) > 1) and (result[-2] in __VOLWELS):
+            result += result[-1]
+        else:
+            result += choice(__VOLWELS)
+    return result
 
 
 class PathDict:
