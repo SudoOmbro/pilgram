@@ -109,7 +109,7 @@ class Strings:
     craft_successful = "You crated the artifact '{name}'. You feel powerful."
 
     # spells
-    not_enough_power = "You don't have enough stored power to cast this spell."
+    not_enough_power = "You don't have enough eldritch power to cast this spell. Wait for your abilities to recharge."
 
     # errors
     no_character_yet = "You haven't made a character yet!"

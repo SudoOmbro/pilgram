@@ -5,10 +5,11 @@ from typing import Tuple, Dict, Union, Callable, Type, List
 
 from minigames.generics import PilgramMinigame, MINIGAMES
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, Guild, TOWN_ZONE, Zone
+from pilgram.classes import Player, Guild, TOWN_ZONE, Zone, SpellError
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX
+from pilgram.spells import SPELLS
 from pilgram.utils import read_text_file
 from pilgram.strings import Strings, MONEY
 from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
@@ -349,9 +350,22 @@ def kick(context: UserContext, player_name: str) -> str:
         return Strings.no_character_yet
 
 
-def cast_spell(context: UserContext, spell_name: str) -> str:
-    # TODO
-    return "Work in progress"
+def cast_spell(context: UserContext, spell_name: str, *args) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        if spell_name not in SPELLS:
+            return Strings.named_object_not_exist.format(obj="Spell", name=spell_name)
+        spell = SPELLS[spell_name]
+        if not spell.can_cast(player):
+            return Strings.not_enough_power
+        try:
+            result = spell.cast(player, args)
+            db().update_player_data(player)
+        except SpellError as e:
+            return e.message
+        return result
+    except KeyError:
+        return Strings.no_character_yet
 
 
 def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
@@ -464,6 +478,10 @@ def __list_minigames() -> str:
     return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
 
 
+def __list_spells() -> str:
+    return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}\n_{spell.description}_" for key, spell in SPELLS.items())
+
+
 def start_minigame(context: UserContext, minigame_name: str) -> str:
     try:
         minigame: Union[Type[PilgramMinigame], None] = MINIGAMES.get(minigame_name, None)
@@ -555,6 +573,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "cast": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], cast_spell, "Cast a spell."),
+    "grimoire": IFW(None, return_string, "Shows all the spells", default_args={"string": __list_spells()}),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     },

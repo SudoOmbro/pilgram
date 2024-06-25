@@ -169,33 +169,39 @@ class Progress:
         return cls(zone_progress)
 
 
+class SpellError(Exception):
+
+    def __init__(self, message: str):
+        super().__init__(message)
+        self.message = message
+
+
 class Spell:
 
     def __init__(
             self,
             name: str,
             description: str,
-            cast_text: str,
             required_power: int,
             required_args: int,
             function: Callable[["Player", List[str]], str]
     ):
         self.name = name
         self.description = description
-        self.cast_text = cast_text
         self.required_power = required_power
         self.required_args = required_args
         self.function = function
 
-    def can_cast(self, player: "Player") -> bool:
-        return player.get_spell_charge() >= self.required_power
+    def can_cast(self, caster: "Player") -> bool:
+        return caster.get_spell_charge() >= self.required_power
 
-    def cast(self, player: "Player", args: List[str]) -> str:
-        result = self.function(player, args)
-        if result:
-            return result
-        player.last_cast = datetime.now()  # TODO: make spells only use the charge they require
-        return self.cast_text
+    def cast(self, caster: "Player", args: List[str]) -> str:
+        try:
+            result = self.function(caster, args)
+            caster.last_cast = datetime.now()
+            return f"You cast {self.name}, " + result
+        except SpellError as e:
+            return e.message
 
 
 class Player:
