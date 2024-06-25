@@ -91,5 +91,12 @@
       "do the secret adventurer salute. They reciprocate.",
       "trade some supplies."
     ]
+  },
+  "spells": {
+    "mida": {
+      "name": "Mida's Touch",
+      "description": "Create Boromian Alloy from thin air",
+      "power": 10
+    }
   }
 }
