@@ -380,7 +380,7 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
         if not recipient:
             return Strings.named_object_not_exist.format(obj="Player", name=recipient_name)
         # update money for both player and save data to the database
-        recipient.money += amount
+        recipient.add_money(amount)
         db().update_player_data(recipient)
         player.money -= amount
         db().update_player_data(player)
@@ -517,7 +517,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
         xp, money = minigame.get_rewards()
         if minigame.won:
             player.add_xp(xp),
-            player.money += money
+            player.add_money(money)
             db().update_player_data(minigame.player)
             return message + f"\n\nYou gain {xp} xp & {money} {MONEY}."
         player.add_xp(xp)
