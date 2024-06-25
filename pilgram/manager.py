@@ -273,6 +273,7 @@ class GeneratorManager:
                         try:
                             artifact.name += " of " + generate_random_eldritch_name()
                             log.info(f"changed name ({artifact.name}), trying to add the artifact again")
+                            self.db().add_artifact(artifact)
                         except Exception as e:
                             log.error(f"adding a random name did not work: {e}")
                 log.info("artifact generation done")
