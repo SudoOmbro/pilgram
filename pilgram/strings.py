@@ -44,6 +44,7 @@ class Strings:
     # guilds
     rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
     here_are_your_mates = "You have {num} guild mates:\n\n"
+    show_guild_members = "Guild '{name}' has {num} members:\n\n"
     not_in_a_guild = "You are not in a guild!"
     guild_not_owned = "You don't own a guild!"
     no_guild_yet = "You haven't created a guild yet!"

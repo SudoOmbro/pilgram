@@ -436,6 +436,10 @@ class Guild:
             0
         )
 
+    @classmethod
+    def print_members(cls, members: List[Tuple[int, str, int]]):
+        return "\n".join(f"{name} | lv. {level}" for _, name, level in members)
+
 
 class ZoneEvent:
     """

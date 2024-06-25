@@ -119,7 +119,18 @@ def check_guild_mates(context: UserContext) -> str:
         if not player.guild:
             return Strings.not_in_a_guild
         members = db().get_guild_members_data(player.guild)
-        return Strings.here_are_your_mates.format(num=len(members)) + "\n".join(f"{name} | lv. {level}" for _, name, level in members)
+        return Strings.here_are_your_mates.format(num=len(members)) + Guild.print_members(members)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def check_guild_members(context: UserContext, guild_name: str) -> str:
+    try:
+        guild = db().get_guild(db().get_guild_id_from_name(guild_name))
+        if guild is None:
+            return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+        members = db().get_guild_members_data(guild)
+        return Strings.show_guild_members.format(name=guild.name,num=len(members)) + Guild.print_members(members)
     except KeyError:
         return Strings.no_character_yet
 
@@ -550,7 +561,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
         },
-        "mates": IFW(None, check_guild_mates, "Shows your guild mates")
+        "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
+        "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild")
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
