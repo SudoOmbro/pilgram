@@ -361,9 +361,9 @@ def cast_spell(context: UserContext, spell_name: str, *args) -> str:
         try:
             result = spell.cast(player, args)
             db().update_player_data(player)
+            return result
         except SpellError as e:
             return e.message
-        return result
     except KeyError:
         return Strings.no_character_yet
 
