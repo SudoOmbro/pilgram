@@ -1,4 +1,5 @@
 import re
+from datetime import datetime, timedelta
 from typing import Dict, Union, Tuple, Callable
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
@@ -219,6 +220,13 @@ def force_generate_zone_events(context: UserContext, zone_id_str: str) -> str:
         return str(e)
 
 
+def give_player_eldritch_power(context: UserContext, player_name: str) -> str:
+    player = db().get_player_from_name(player_name)
+    player.last_cast = datetime.now() - timedelta(weeks=1)
+    db().update_player_data(player)
+    return f"recharged eldritch power for player '{player.name}'."
+
+
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "add": {
         "player": {
@@ -271,6 +279,9 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "generate": {
         "events": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_zone_events, "Generate new zone events")
+    },
+    "recharge": {
+        "power": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], give_player_eldritch_power, "recharge players eldritch power")
     }
 }
 

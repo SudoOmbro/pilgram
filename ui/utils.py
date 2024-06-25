@@ -111,8 +111,9 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
             function: Callable[..., str],
             description: str,
             default_args: Union[Dict[str, Any], None] = None,
+            optional_args: int = 0
     ):
-        self.number_of_args = len(args) if args else 0
+        self.number_of_args = (len(args) + optional_args) if (args or (optional_args != 0)) else 0
         self.args_container: Union[Tuple[RegexWithErrorMessage, ...], None] = tuple(args) if args else None
         self.function = function
         self.description = description

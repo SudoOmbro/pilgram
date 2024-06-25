@@ -109,7 +109,9 @@ class Strings:
     craft_successful = "You crated the artifact '{name}'. You feel powerful."
 
     # spells
+    spell_name_validation_error = "Invalid spell name."
     not_enough_power = "You don't have enough eldritch power to cast this spell. Wait for your abilities to recharge."
+    not_enough_args = "Not enough arguments, this spell requires {num} args."
 
     # errors
     no_character_yet = "You haven't made a character yet!"

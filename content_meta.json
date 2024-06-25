@@ -94,9 +94,20 @@
   },
   "spells": {
     "mida": {
-      "name": "Mida's Touch",
-      "description": "Create Boromian Alloy from thin air",
+      "name": "Mida's touch",
+      "description": "Create Boromian Alloy from thin air.",
       "power": 10
+    },
+    "bones": {
+      "name": "Bone recall",
+      "description": "Recall the experiences of the bone's former owner.",
+      "power": 10
+    },
+    "hex": {
+      "name": "Ancient Hex",
+      "description": "Hex someone of your choosing, they will have a harder time finishing their next quest. Send the name after 'hex'.",
+      "power": 50,
+      "args": 1
     }
   }
 }

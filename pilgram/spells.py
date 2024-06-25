@@ -2,6 +2,7 @@ from typing import Dict, List, Callable
 
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Spell, SpellError, Player
+from pilgram.flags import HexedFlag
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta
 
@@ -30,4 +31,20 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
 def __midas_touch(caster: Player, args: List[str]) -> str:
     amount = caster.get_spell_charge() * 10
     caster.add_money(amount)  # we don't need to save the player data, it will be done automatically later
-    return f"{amount} {MONEY} materialize in the air"
+    return f"{amount} {MONEY} materialize in the air."
+
+
+@__add_to_spell_list("bones")
+def __bone_recall(caster: Player, args: List[str]) -> str:
+    amount = caster.get_spell_charge() * 10
+    caster.add_xp(amount)  # we don't need to save the player data, it will be done automatically later
+    return f"You gain {amount} xp from the wisdom of the dead."
+
+
+@__add_to_spell_list("hex")
+def __hex(caster: Player, args: List[str]) -> str:
+    target = _db().get_player_from_name(args[0])
+    if not target:
+        raise SpellError(f"A player named {args[0]} does not exist.")
+    target.flags = HexedFlag.set(target.flags)
+    return f"You hexed {target.name}."

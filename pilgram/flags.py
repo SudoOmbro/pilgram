@@ -16,12 +16,12 @@ class Flag(ABC):
         _NEXT_FLAG = np.left_shift(_NEXT_FLAG, 1)
 
     @classmethod
-    def set(cls, target: np.uint32) -> np.uint64:
+    def set(cls, target: np.uint32) -> np.uint32:
         """ returns the target flag container (a 64 bit int) with the current flag set """
         return np.bitwise_or(cls.__FLAG, target)
 
     @classmethod
-    def unset(cls, target: np.uint32) -> np.uint64:
+    def unset(cls, target: np.uint32) -> np.uint32:
         return np.bitwise_xor(cls.__FLAG, target)
 
     @classmethod
@@ -33,13 +33,5 @@ class Flag(ABC):
         return cls.__FLAG
 
 
-class LuckFlag(Flag):
-    pass
-
-
-class XpFlag(Flag):
-    pass
-
-
-class MoneyFlag(Flag):
+class HexedFlag(Flag):
     pass

@@ -6,6 +6,7 @@ from typing import Tuple, Dict, Any, Callable, Union, List
 
 import numpy as np
 
+from pilgram.flags import HexedFlag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.utils import read_update_interval
 from pilgram.strings import MONEY
@@ -88,6 +89,10 @@ class Quest:
         if roll == 1:
             log.info(f"{player.name} rolled a critical failure on quest {self.name}")
             return False  # you can still get a critical failure
+        if HexedFlag.is_set(player.flags):
+            # give disadvantage on the roll to the player if hexed, prevents critical successes.
+            roll -= 1
+            player.flags = HexedFlag.unset(player.flags)
         if roll == 20:
             log.info(f"{player.name} rolled a critical success on quest {self.name}")
             return True  # you can also get a critical success
@@ -195,7 +200,12 @@ class Spell:
     def can_cast(self, caster: "Player") -> bool:
         return caster.get_spell_charge() >= self.required_power
 
-    def cast(self, caster: "Player", args: List[str]) -> str:
+    def check_args(self, args: Tuple[str, ...]):
+        if self.required_args == 0:
+            return True
+        return len(args) == self.required_args
+
+    def cast(self, caster: "Player", args: Tuple[str, ...]) -> str:
         try:
             result = self.function(caster, args)
             caster.last_cast = datetime.now()
@@ -314,7 +324,6 @@ class Player:
         returns spell charge of the player, calculated as the amount of time passed since the last spell cast.
         max charge = 10 * number of artifacts; 1 day = 100 charge
         """
-        print(self.last_cast)
         charge = int(((datetime.now() - self.last_cast).total_seconds() / 86400) * 100)
         max_charge = len(self.artifacts) * 10
         if charge > max_charge:

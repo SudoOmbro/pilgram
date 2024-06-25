@@ -8,7 +8,7 @@ from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, TOWN_ZONE, Zone, SpellError
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
-    MINIGAME_NAME_REGEX, YES_NO_REGEX
+    MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
 from pilgram.spells import SPELLS
 from pilgram.utils import read_text_file
 from pilgram.strings import Strings, MONEY
@@ -350,7 +350,7 @@ def kick(context: UserContext, player_name: str) -> str:
         return Strings.no_character_yet
 
 
-def cast_spell(context: UserContext, spell_name: str, *args) -> str:
+def cast_spell(context: UserContext, spell_name: str, *extra_args) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         if spell_name not in SPELLS:
@@ -358,8 +358,10 @@ def cast_spell(context: UserContext, spell_name: str, *args) -> str:
         spell = SPELLS[spell_name]
         if not spell.can_cast(player):
             return Strings.not_enough_power
+        if not spell.check_args(extra_args):
+            return Strings.not_enough_args.format(num=spell.required_args)
         try:
-            result = spell.cast(player, args)
+            result = spell.cast(player, extra_args)
             db().update_player_data(player)
             return result
         except SpellError as e:
@@ -465,6 +467,7 @@ def assemble_artifact(context: UserContext) -> str:
         try:
             artifact = db().get_unclaimed_artifact()
             player.artifact_pieces -= 10
+            player.artifacts.append(artifact)
             db().update_artifact(artifact, player)
             db().update_player_data(player)
             return Strings.craft_successful.format(name=artifact.name)
@@ -572,8 +575,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
-    "cast": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], cast_spell, "Cast a spell."),
-    "grimoire": IFW(None, return_string, "Shows & describes all the spells", default_args={"string": __list_spells()}),
+    "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=1),
+    "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     },

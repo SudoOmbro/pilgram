@@ -16,6 +16,7 @@ GUILD_NAME_REGEX = fr"^{__INNER_REGEX}{{2,30}}$"
 DESCRIPTION_REGEX = fr"^{__DESCR_INNER_REGEX}{{10,300}}$"
 POSITIVE_INTEGER_REGEX = r"^[\d]+$"
 YES_NO_REGEX = r"^(?:y|n)$"
+SPELL_NAME_REGEX = fr"^[A-Za-z]+$"
 
 
 class __GenericGlobalSettings(ABC):
