@@ -573,7 +573,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "cast": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], cast_spell, "Cast a spell."),
-    "grimoire": IFW(None, return_string, "Shows all the spells", default_args={"string": __list_spells()}),
+    "grimoire": IFW(None, return_string, "Shows & describes all the spells", default_args={"string": __list_spells()}),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
     },
