@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type, List
 
 from minigames.generics import PilgramMinigame, MINIGAMES
+from minigames.games import AAA
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, TOWN_ZONE, Zone, SpellError
 from pilgram.generics import PilgramDatabase, AlreadyExists
@@ -18,6 +19,7 @@ from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithEr
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
+BBB = AAA
 MODIFY_COST = ContentMeta.get("modify_cost")
 
 

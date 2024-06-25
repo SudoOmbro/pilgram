@@ -11,6 +11,9 @@ from pilgram.globals import POSITIVE_INTEGER_REGEX
 from pilgram.strings import Strings
 
 
+AAA = ""
+
+
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
