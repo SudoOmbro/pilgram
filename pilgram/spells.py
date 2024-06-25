@@ -47,4 +47,5 @@ def __hex(caster: Player, args: List[str]) -> str:
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
     target.flags = HexedFlag.set(target.flags)
+    _db().update_player_data(target)
     return f"You hexed {target.name}."
