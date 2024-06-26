@@ -1,5 +1,6 @@
 import logging
 import re
+from copy import copy
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Union, Callable, Type, List
 
@@ -143,6 +144,7 @@ def start_character_creation(context: UserContext) -> str:
         return Strings.character_already_created.format(name=player.name)
     except KeyError:
         context.start_process("character creation")
+        context.set("operation", "create")
         log.info(f"User {context.get('id')} is creating a character")
         return context.get_process_prompt(USER_PROCESSES)
 
@@ -158,14 +160,29 @@ def process_get_character_name(context: UserContext, user_input) -> str:
 def process_get_character_description(context: UserContext, user_input) -> str:
     if not re.match(DESCRIPTION_REGEX, user_input):
         return Strings.description_validation_error
-    player = Player.create_default(
-        context.get("id"), context.get("name"), user_input
-    )
     try:
-        db().add_player(player)
-        context.end_process()
-        log.info(f"User {context.get('id')} created character {player.name}")
-        return Strings.welcome_to_the_world
+        if context.get("operation") == "edit":
+            player = db().get_player_data(context.get("id"))
+            # make a copy of the original player (to avoid cases in which we set a name that isn't valid in the object
+            player_copy = copy(player)
+            player_copy.name = context.get("name")
+            player_copy.description = user_input
+            player_copy.money -= MODIFY_COST
+            db().update_player_data(player_copy)
+            # if the name is valid then actually update the object
+            player.name = player_copy.name
+            player.description = player_copy.description
+            player.money = player_copy.money
+            context.end_process()
+            return Strings.obj_modified.format(obj="character")
+        else:
+            player = Player.create_default(
+                context.get("id"), context.get("name"), user_input
+            )
+            db().add_player(player)
+            context.end_process()
+            log.info(f"User {context.get('id')} created character {player.name}")
+            return Strings.welcome_to_the_world
     except AlreadyExists:
         context.end_process()
         return Strings.name_object_already_exists.format(obj="character", name=player.name)
@@ -181,6 +198,7 @@ def start_guild_creation(context: UserContext) -> str:
             return Strings.not_enough_money.format(amount=creation_cost - player.money)
         log.info(f"Player '{player.name}' is creating a guild")
         context.start_process("guild creation")
+        context.set("operation", "create")
         return context.get_process_prompt(USER_PROCESSES)
     except KeyError:
         return Strings.no_character_yet
@@ -198,16 +216,31 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
     if not re.match(DESCRIPTION_REGEX, user_input):
         return Strings.description_validation_error
     player = db().get_player_data(context.get("id"))
-    guild = Guild.create_default(player, context.get("name"), user_input)
-    db().add_guild(guild)
-    guild = db().get_owned_guild(player)
-    player.guild = guild
-    player.money -= ContentMeta.get("guilds.creation_cost")
     try:
-        db().update_player_data(player)
-        context.end_process()
-        log.info(f"Player '{player.name}' created guild '{guild.name}'")
-        return Strings.guild_creation_success.format(name=guild.name)
+        if context.get("operation") == "edit":
+            guild = db().get_owned_guild(player)
+            # make a copy of the original guild (to avoid cases in which we set a name that isn't valid in the object
+            guild_copy = copy(guild)
+            guild_copy.name = context.get("name")
+            guild_copy.description = user_input
+            db().update_guild(guild_copy)
+            # if the name is valid then actually update the object
+            guild.name = guild_copy.name
+            guild.description = guild_copy.description
+            player.money -= MODIFY_COST
+            db().update_player_data(player)
+            context.end_process()
+            return Strings.obj_modified.format(obj="guild")
+        else:
+            guild = Guild.create_default(player, context.get("name"), user_input)
+            db().add_guild(guild)
+            guild = db().get_owned_guild(player)
+            player.guild = guild
+            player.money -= ContentMeta.get("guilds.creation_cost")
+            db().update_player_data(player)
+            context.end_process()
+            log.info(f"Player '{player.name}' {context.get("operation")}d guild '{guild.name}'")
+            return Strings.guild_creation_success.format(name=guild.name)
     except AlreadyExists:
         context.end_process()
         return Strings.name_object_already_exists.format(obj="guild", name=guild.name)
@@ -251,24 +284,20 @@ def upgrade_guild(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
-def modify_player(context: UserContext, user_input: str, target: str = "name") -> str:
+def modify_player(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         # check if the player has enough money
         if player.money < MODIFY_COST:
             return Strings.not_enough_money
-        # set the attribute
-        player.__dict__[target] = user_input
-        player.money -= MODIFY_COST
-        db().update_player_data(player)
-        return Strings.obj_attr_modified.format(obj="character", attr=target)
+        context.start_process("character creation")
+        context.set("operation", "edit")
+        return f"`{player.name}`\n\n`{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
     except KeyError:
         return Strings.no_character_yet
-    except AlreadyExists:
-        return Strings.name_object_already_exists.format(obj="character", name=user_input)
 
 
-def modify_guild(context: UserContext, user_input: str, target: str = "name") -> str:
+def modify_guild(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         guild = db().get_owned_guild(player)
@@ -278,15 +307,11 @@ def modify_guild(context: UserContext, user_input: str, target: str = "name") ->
         if player.money < MODIFY_COST:
             return Strings.not_enough_money
         # set the attribute
-        guild.__dict__[target] = user_input
-        db().update_guild(guild)
-        player.money -= MODIFY_COST
-        db().update_player_data(player)
-        return Strings.obj_attr_modified.format(obj="guild", attr=target)
+        context.start_process("guild creation")
+        context.set("operation", "edit")
+        return f"`{guild.name}`\n\n`{guild.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
     except KeyError:
         return Strings.no_character_yet
-    except AlreadyExists:
-        return Strings.name_object_already_exists.format(obj="guild", name=user_input)
 
 
 def join_guild(context: UserContext, guild_name: str) -> str:
@@ -575,15 +600,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "home": IFW(None, upgrade, "Upgrade your home.", default_args={"obj": "home"}),
         "guild": IFW(None, upgrade_guild, "Upgrade your guild.")
     },
-    "modify": {
-        "character": {
-            "name": IFW([RWE("name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], modify_player, "Modify your character's name (for a price).", default_args={"target": "name"}),
-            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_player, "Modify your character's description (for a price).", default_args={"target": "description"})
-        },
-        "guild": {
-            "name": IFW([RWE("name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], modify_guild, f"Modify your guild's name (for a price).", default_args={"target": "name"}),
-            "description": IFW([RWE("description", DESCRIPTION_REGEX, Strings.description_validation_error)], modify_guild, f"Modify your guild's description (for a price).", default_args={"target": "description"})
-        }
+    "edit": {
+        "character": IFW(None, modify_player, "Modify your character (for a price).",),
+        "guild": IFW(None, modify_guild, f"Modify your guild (for a price).",)
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], embark_on_quest, "Starts quest in specified zone."),

@@ -64,6 +64,7 @@ class Strings:
 
     # modify
     obj_attr_modified = f"{{obj}} {{attr}} has been modified correctly. You paid {ContentMeta.get('modify_cost')}"
+    obj_modified = f"Your {{obj}} has been modified correctly. You paid {ContentMeta.get('modify_cost')} {MONEY}"
 
     # kick
     player_not_in_own_guild = "player '{name}' is not in your guild."
