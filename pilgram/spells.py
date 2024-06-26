@@ -49,6 +49,7 @@ def __eldritch_displacement(caster: Player, args: List[str]) -> str:
         raise SpellError("You are not on a quest!")
     ac.finish_time -= timedelta(hours=int(caster.get_spell_charge() / 20))
     _db().update_quest_progress(ac)
+    return "You find yourself in a different place, much closer to your target."
 
 
 @__add_to_spell_list("hex")

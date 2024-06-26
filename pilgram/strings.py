@@ -56,7 +56,7 @@ class Strings:
 
     # upgrade
     you_paid = f"you paid {{paid}} {MONEY}."
-    upgrade_object_confirmation = "Are you sure you want to upgrade your {obj}? It will cost you {price}"
+    upgrade_object_confirmation = f"Are you sure you want to upgrade your {{obj}}? It will cost you {{price}} {MONEY}"
     not_enough_money = f"You don't have enough {MONEY}. You need {{amount}} more."
     upgrade_successful = "The upgrade to your {obj} was successful, " + you_paid
     upgrade_cancelled = "The upgrade was cancelled."
