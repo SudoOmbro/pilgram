@@ -324,8 +324,8 @@ class Player:
         returns spell charge of the player, calculated as the amount of time passed since the last spell cast.
         max charge = 10 * number of artifacts; 1 day = 100 charge
         """
-        charge = int(((datetime.now() - self.last_cast).total_seconds() / 86400) * 100)
         max_charge = len(self.artifacts) * 10
+        charge = int(((datetime.now() - self.last_cast).total_seconds() / 86400) * max_charge)
         if charge > max_charge:
             return max_charge
         return charge

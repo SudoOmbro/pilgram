@@ -103,6 +103,11 @@
       "description": "Recall the experiences of the bone's former owner.",
       "power": 10
     },
+    "displacement": {
+      "name": "Eldritch displacement",
+      "description": "Briefly travel through another dimension where time and space are distorted, gaining time on your quest.",
+      "power": 20
+    },
     "hex": {
       "name": "Ancient Hex",
       "description": "Hex someone of your choosing, they will have a harder time finishing their next quest. Send the name after 'hex'.",

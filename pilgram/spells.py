@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Dict, List, Callable
 
 from orm.db import PilgramORMDatabase
@@ -29,16 +30,25 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
 
 @__add_to_spell_list("mida")
 def __midas_touch(caster: Player, args: List[str]) -> str:
-    amount = caster.get_spell_charge() * 10
+    amount = caster.get_spell_charge() * caster.get_spell_charge()
     caster.add_money(amount)  # we don't need to save the player data, it will be done automatically later
     return f"{amount} {MONEY} materialize in the air."
 
 
 @__add_to_spell_list("bones")
 def __bone_recall(caster: Player, args: List[str]) -> str:
-    amount = caster.get_spell_charge() * 10
+    amount = caster.get_spell_charge() * caster.get_spell_charge()
     caster.add_xp(amount)  # we don't need to save the player data, it will be done automatically later
     return f"You gain {amount} xp from the wisdom of the dead."
+
+
+@__add_to_spell_list("displacement")
+def __eldritch_displacement(caster: Player, args: List[str]) -> str:
+    ac = _db().get_player_adventure_container(caster)
+    if not ac.quest:
+        raise SpellError("You are not on a quest!")
+    ac.finish_time -= timedelta(hours=int(caster.get_spell_charge() / 20))
+    _db().update_quest_progress(ac)
 
 
 @__add_to_spell_list("hex")

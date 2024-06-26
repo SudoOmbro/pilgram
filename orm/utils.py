@@ -20,6 +20,7 @@ def cache_ttl_quick(ttl=3600):
                 if key in storage:
                     cache_record = storage[key]
                     if cache_record[__TTL] > time.time():
+                        storage[key] = (cache_record[__VALUE], time.time() + ttl)  # refresh ttl
                         return cache_record[__VALUE]
             except Exception as e:
                 log.exception(f"Exception when accessing cache_ttl_quick: {e}")
@@ -58,6 +59,7 @@ def cache_sized_ttl_quick(size_limit=256, ttl=3600):
                 if key in storage:
                     cache_record = storage[key]
                     if cache_record[__TTL] > time.time():
+                        storage[key] = (cache_record[__VALUE], time.time() + ttl)  # refresh ttl
                         return cache_record[__VALUE]
             except Exception as e:
                 log.exception(f"Exception when accessing cache_sized_ttl_quick: {e}")

@@ -255,12 +255,16 @@ def upgrade(context: UserContext, obj: str = "gear") -> str:
         }.get(obj)()
         if player.money < price:
             return Strings.not_enough_money.format(amount=price-player.money)
-        {
+        func = {
             "gear": player.upgrade_gear,
             "home": player.upgrade_home
-        }.get(obj)()
+        }.get(obj)
         db().update_player_data(player)
-        return Strings.upgrade_successful.format(obj=obj, paid=price)
+        context.start_process("upgrade confirm")
+        context.set("price", price)
+        context.set("obj", obj)
+        context.set("func", func)
+        return Strings.upgrade_object_confirmation.format(obj=obj, price=price)
     except KeyError:
         return Strings.no_character_yet
 
@@ -276,12 +280,32 @@ def upgrade_guild(context: UserContext) -> str:
         price = guild.get_upgrade_required_money()
         if player.money < price:
             return Strings.not_enough_money.format(amount=price-player.money)
-        guild.upgrade()
-        db().update_guild(guild)
-        db().update_player_data(player)
-        return Strings.upgrade_successful.format(obj="guild", paid=price)
+        context.start_process("upgrade confirm")
+        context.set("price", price)
+        context.set("obj", "guild")
+        context.set("func", guild.upgrade)
+        return Strings.upgrade_object_confirmation.format(obj="guild", price=price)
     except KeyError:
         return Strings.no_character_yet
+
+
+def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
+    processed_user_input = user_input[0].lower()
+    if not re.match(YES_NO_REGEX, processed_user_input):
+        return Strings.yes_no_error
+    player = db().get_player_data(context.get("id"))
+    context.end_process()
+    if processed_user_input == "n":
+        return Strings.upgrade_cancelled
+    obj = context.get("obj")
+    price = context.get("price")
+    func = context.get("func")
+    func()
+    db().update_player_data(player)
+    if obj == "guild":
+        guild = db().get_owned_guild(player)
+        db().update_guild(guild)
+    return Strings.upgrade_successful.format(obj=obj, paid=price)
 
 
 def modify_player(context: UserContext) -> str:
@@ -516,7 +540,7 @@ def assemble_artifact(context: UserContext) -> str:
 
 
 def __list_minigames() -> str:
-    return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys())
+    return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys()) + "\n\nWrite '`play [minigame]`' to play a minigame"
 
 
 def __list_spells() -> str:
@@ -577,13 +601,13 @@ def explain_minigame(context: UserContext, user_input: str) -> str:
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
-        "quest": IFW(None, check_current_quest, "Shows the current quest name & objective (if you are on a quest)."),
+        "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
         "town": IFW(None, return_string, f"Shows a description of {ContentMeta.get('world.city.name')}.", default_args={"string": str(TOWN_ZONE)}),
-        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Shows a description of the given zone."),
+        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Shows a description of a Zone."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
         "self": IFW(None, check_self, "Shows your own stats."),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
-        "artifact": IFW([RWE("Artifact number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Artifact number"))], check_artifact, "Shows a description of the given Artifact."),
+        "artifact": IFW([RWE("Artifact number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Artifact number"))], check_artifact, "Shows a description of an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
@@ -626,9 +650,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "work": IFW(None, set_last_update, "Come back from your vacation", default_args={"delta": None, "msg": Strings.you_came_back})
         }
     },
-    "list": {
-        "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()})
-    },
+    "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
@@ -657,4 +679,7 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "message": (
         (Strings.write_your_message, send_message_process),
     ),
+    "upgrade confirm": (
+        ("confirm", process_upgrade_confirm),
+    )
 }

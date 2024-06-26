@@ -70,6 +70,13 @@ def generate_random_eldritch_name() -> str:
     return result
 
 
+def get_input_first_letter(input_string: str, accepted_letters: str) -> Union[str, None]:
+    letter = input_string[0].lower()
+    if letter in accepted_letters:
+        return letter
+    return None
+
+
 class PathDict:
     """ A dictionary that can only set & get variables using string paths """
 
