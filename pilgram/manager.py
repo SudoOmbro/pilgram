@@ -4,7 +4,7 @@ import os
 import random
 import time
 from time import sleep
-from datetime import timedelta, datetime
+from datetime import timedelta
 from typing import List, Dict, Tuple
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
