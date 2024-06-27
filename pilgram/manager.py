@@ -27,7 +27,8 @@ MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
 def _gain(xp: int, money: int, renown: int, tax: float = 0) -> str:
     tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
-    return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}\n\nYou gain {renown} renown_"
+    renown_str = "" if renown == 0 else f"You gain {renown} renown"
+    return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}\n\n{renown_str}_"
 
 
 class _HighestQuests:
@@ -144,7 +145,7 @@ class QuestManager:
         ac.player = player
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
-        text = f"*{event.event_text}*{_gain(xp, money)}"
+        text = f"*{event.event_text}*{_gain(xp, money, 0)}"
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):
