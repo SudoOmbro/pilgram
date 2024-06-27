@@ -5,7 +5,7 @@ from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyFie
     AutoField
 
 
-DB_FILENAME: str = f"pilgram_v2.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = f"pilgram_v1.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -49,7 +49,6 @@ class PlayerModel(BaseModel):
     last_spell_cast = DateTimeField(default=datetime.now)
     artifact_pieces = IntegerField(default=0)
     flags = IntegerField(default=0)
-    renown = IntegerField(default=0)
 
 
 class GuildModel(BaseModel):
@@ -60,8 +59,6 @@ class GuildModel(BaseModel):
     founder = ForeignKeyField(PlayerModel, backref='owned_guild')
     creation_date = DateTimeField(default=datetime.now)
     prestige = IntegerField(default=0)
-    tourney_score = IntegerField(default=0)
-    tax = IntegerField(default=5)
 
 
 class ZoneEventModel(BaseModel):

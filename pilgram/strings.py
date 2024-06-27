@@ -6,6 +6,7 @@ from pilgram.globals import ContentMeta
 WORLD = ContentMeta.get('world.name')
 MONEY = ContentMeta.get("money.name")
 TOWN = ContentMeta.get("world.city.name")
+MAX_TAX = ContentMeta.get("guilds.max_tax")
 
 
 class Strings:
@@ -24,6 +25,8 @@ class Strings:
     guild_creation_get_name = "Ok, let's start by naming your guild. Send me a name (2 - 30 characters)."
     guild_creation_get_description = "Ok now send me your guild's description (10 - 300 characters)."
     guild_creation_success = "Your guild '{name}' has been created!"
+    invalid_tax = f"Tax must be lower or equal to {MAX_TAX}%"
+    insert_tax = f"Insert the percent you want to tax your member's quest {MONEY} rewards. (max {MAX_TAX}%)"
 
     # joining guilds
     guild_join_success = "You successfully joined guild '{guild}'!"
@@ -48,6 +51,7 @@ class Strings:
     not_in_a_guild = "You are not in a guild!"
     guild_not_owned = "You don't own a guild!"
     no_guild_yet = "You haven't created a guild yet!"
+    tax_gain = f"You gained {{amount}} {MONEY} from guild taxes on {{name}} completing a quest."
 
     # messages
     write_your_message = "Write the message you want to send"
@@ -126,3 +130,4 @@ class Strings:
     obj_number_error = "{obj} must be a positive integer number."
     obj_does_not_exist = "The {obj} does not exist!"
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"
+    positive_integer_error = "You must enter a positive integer (> 0)."

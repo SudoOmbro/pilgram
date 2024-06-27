@@ -292,3 +292,9 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         multiplier = self.difficulty + self.hp
         bonus = self.remaining_turns
         return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
+
+
+# class BossFightMinigame(PilgramMinigame):
+#
+#     def __init__(self, player: Player):
+#         super().__init__(player)

@@ -232,7 +232,8 @@ class Player:
             artifact_pieces: int,
             last_cast: datetime,
             artifacts: List["Artifact"],
-            flags: np.uint32
+            flags: np.uint32,
+            renown: int
     ):
         """
         :param player_id (int): unique id of the player
@@ -248,6 +249,7 @@ class Player:
         :param artifact_pieces (int): number of artifact pieces of the player. Use 10 to build a new artifact.
         :param last_cast (datetime): last spell cast datetime.
         :param flags (np.uint32): flags of the player, can be used for anything
+        :param renown (int): renown of the player, used for ranking
         """
         self.player_id = player_id
         self.name = name
@@ -263,6 +265,7 @@ class Player:
         self.last_cast = last_cast
         self.artifacts = artifacts
         self.flags = flags
+        self.renown = renown
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -333,7 +336,8 @@ class Player:
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n"
-        string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}"
+        string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
+        string += f"_Renown: {self.renown}_"
         if self.artifacts:
             string += f"\n*Eldritch power*: {self.get_spell_charge()} / {len(self.artifacts) * 10}"
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
@@ -347,6 +351,9 @@ class Player:
 
     def __hash__(self):
         return hash(self.player_id)
+
+    def __eq__(self, other):
+        return (self.player_id == other.player_id) if other is not None else False
 
     @classmethod
     def create_default(cls, player_id: int, name: str, description: str) -> "Player":
@@ -365,7 +372,8 @@ class Player:
             0,
             datetime.now(),
             [],
-            np.uint32(0)
+            np.uint32(0),
+            0
         )
 
 
@@ -382,7 +390,9 @@ class Guild:
             description: str,
             founder: Player,
             creation_date: datetime,
-            prestige: int
+            prestige: int,
+            tourney_score: int,
+            tax: int
     ):
         """
         :param guild_id: unique id of the guild
@@ -392,6 +402,8 @@ class Guild:
         :param founder: the player who found the guild,
         :param creation_date: the date the guild was created
         :param prestige: the amount of prestige the guild has
+        :param tourney_score: the score of the bi-weekly tournament the guild has
+        :param tax: how much the quest rewards are taxed by the guild
         """
         self.guild_id = guild_id
         self.name = name
@@ -400,6 +412,8 @@ class Guild:
         self.founder = founder
         self.creation_date = creation_date
         self.prestige = prestige
+        self.tourney_score = tourney_score
+        self.tax = tax
 
     def can_add_member(self, current_members: int) -> bool:
         return current_members < self.level * self.PLAYERS_PER_LEVEL
@@ -419,7 +433,7 @@ class Guild:
         return self.guild_id == other.guild_id
 
     def __str__(self):
-        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: {self.founder.print_username() if self.founder else '???'}\n_Since {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}"
+        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: {self.founder.print_username() if self.founder else '???'}\n_Since {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}\n\n_Tax: {self.tax}%\nTourney score: {self.tourney_score}_"
 
     def __hash__(self):
         return hash(self.guild_id)
@@ -433,7 +447,9 @@ class Guild:
             description,
             founder,
             datetime.now(),
-            0
+            0,
+            0,
+            5
         )
 
     @classmethod

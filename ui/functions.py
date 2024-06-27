@@ -22,6 +22,7 @@ log.setLevel(logging.INFO)
 
 BBB = AAA
 MODIFY_COST = ContentMeta.get("modify_cost")
+MAX_TAX = ContentMeta.get("guilds.max_tax")
 
 
 def db() -> PilgramDatabase:
@@ -212,6 +213,17 @@ def process_get_guild_name(context: UserContext, user_input) -> str:
     return context.get_process_prompt(USER_PROCESSES)
 
 
+def process_get_guild_tax(context: UserContext, user_input) -> str:
+    if not re.match(POSITIVE_INTEGER_REGEX, user_input):
+        return Strings.positive_integer_error
+    tax = int(user_input)
+    if tax > MAX_TAX:
+        return Strings.invalid_tax
+    context.set("tax", tax)
+    context.progress_process()
+    return context.get_process_prompt(USER_PROCESSES)
+
+
 def process_get_guild_description(context: UserContext, user_input) -> str:
     if not re.match(DESCRIPTION_REGEX, user_input):
         return Strings.description_validation_error
@@ -222,17 +234,20 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
             # make a copy of the original guild (to avoid cases in which we set a name that isn't valid in the object
             guild_copy = copy(guild)
             guild_copy.name = context.get("name")
+            guild_copy.tax = context.get("tax")
             guild_copy.description = user_input
             db().update_guild(guild_copy)
             # if the name is valid then actually update the object
             guild.name = guild_copy.name
             guild.description = guild_copy.description
+            guild.tax = guild_copy.tax
             player.money -= MODIFY_COST
             db().update_player_data(player)
             context.end_process()
             return Strings.obj_modified.format(obj="guild")
         else:
             guild = Guild.create_default(player, context.get("name"), user_input)
+            guild.tax = context.get("tax")
             db().add_guild(guild)
             guild = db().get_owned_guild(player)
             player.guild = guild
@@ -313,10 +328,10 @@ def modify_player(context: UserContext) -> str:
         player = db().get_player_data(context.get("id"))
         # check if the player has enough money
         if player.money < MODIFY_COST:
-            return Strings.not_enough_money
+            return Strings.not_enough_money.format(amount=MODIFY_COST-player.money)
         context.start_process("character creation")
         context.set("operation", "edit")
-        return f"`{player.name}`\n\n`{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
+        return f"name: `{player.name}`\n\ndescr: `{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
     except KeyError:
         return Strings.no_character_yet
 
@@ -329,11 +344,11 @@ def modify_guild(context: UserContext) -> str:
         if not guild:
             return Strings.guild_not_owned
         if player.money < MODIFY_COST:
-            return Strings.not_enough_money
+            return Strings.not_enough_money.format(amount=MODIFY_COST-player.money)
         # set the attribute
         context.start_process("guild creation")
         context.set("operation", "edit")
-        return f"`{guild.name}`\n\n`{guild.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
+        return f"name: `{guild.name}`\n\ndescr: `{guild.description}`\n\ntax: `{guild.tax}`\n\n" + context.get_process_prompt(USER_PROCESSES)
     except KeyError:
         return Strings.no_character_yet
 
@@ -668,6 +683,7 @@ USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     ),
     "guild creation": (
         (Strings.guild_creation_get_name, process_get_guild_name),
+        (Strings.insert_tax, process_get_guild_tax),
         (Strings.guild_creation_get_description, process_get_guild_description)
     ),
     "embark confirm": (

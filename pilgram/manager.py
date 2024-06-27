@@ -24,8 +24,9 @@ MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
 
-def _gain(xp: int, money: int) -> str:
-    return f"\n\n_You gain {xp} xp & {money} {MONEY}_"
+def _gain(xp: int, money: int, tax: float = 0) -> str:
+    tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
+    return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}_"
 
 
 class _HighestQuests:
@@ -95,20 +96,32 @@ class QuestManager:
         quest: Quest = ac.quest
         player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
         ac.player = player
+        tax: float = 0
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
+            if player.guild:
+                guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
+                guild.prestige += quest.get_prestige()
+                self.db().update_guild(guild)
+                player.guild = guild
+                if guild.founder != player:  # check if winnings should be taxed
+                    founder = self.db().get_player_data(guild.founder.player_id)  # get most up to date object
+                    tax = guild.tax / 100
+                    amount = int(money * tax)
+                    founder.add_money(amount)
+                    self.db().update_player_data(founder)
+                    self.notifier.notify(founder, Strings.tax_gain.format(amount=amount, name=player.name))
+                    money -= amount
             player.add_xp(xp)
             player.add_money(money)
             piece: bool = False
             if random.randint(1, 10) < 3:  # 20% chance to gain a piece of an artifact
                 player.artifact_pieces += 1
                 piece = True
-            if player.guild:
-                guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
-                guild.prestige += quest.get_prestige()
-                self.db().update_guild(guild)
-                player.guild = guild
-            self.notifier.notify(player, quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money) + (Strings.piece_found if piece else ""))
+            self.notifier.notify(
+                player,
+                quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money, tax=tax) + (Strings.piece_found if piece else "")
+            )
         else:
             self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))
         self.highest_quests.update(ac.zone().zone_id, ac.quest.number + 1)  # zone() will return a zone and not None since player must be in a quest to reach this part of the code

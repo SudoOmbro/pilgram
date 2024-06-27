@@ -52,3 +52,20 @@ def __migrate_v0_to_v1():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram.db", "pilgram_v1.db")
+
+
+@__add_to_migration_list("pilgram_v1.db")
+def __migrate_v1_to_v2():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v1 import db as previous_db
+    log.info(f"Migrating v1 to v2...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('playermodel', 'renown', IntegerField(default=0)),
+        migrator.add_column('guildmodel', 'tourney_score', IntegerField(default=0)),
+        migrator.add_column('guildmodel', 'tax', IntegerField(default=5))
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v1.db", "pilgram_v2.db")

@@ -101,7 +101,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.artifact_pieces,
                 pls.last_spell_cast,
                 artifacts,
-                pls.flags
+                pls.flags,
+                pls.renown,
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -133,6 +134,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.last_spell_cast = player.last_cast
                 pls.artifact_pieces = player.artifact_pieces
                 pls.flags = player.flags
+                pls.renown = player.renown
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
@@ -176,7 +178,9 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.description,
             founder,
             gs.creation_date,
-            gs.prestige
+            gs.prestige,
+            gs.tourney_score,
+            gs.tax
         )
 
     @cache_sized_ttl_quick(size_limit=400, ttl=3600)
@@ -222,6 +226,8 @@ class PilgramORMDatabase(PilgramDatabase):
         gs.description = guild.description
         gs.level = guild.level
         gs.prestige = guild.prestige
+        gs.tourney_score = guild.tourney_score
+        gs.tax = guild.tax
         gs.save()
 
     def add_guild(self, guild: Guild):
@@ -231,7 +237,8 @@ class PilgramORMDatabase(PilgramDatabase):
                     name=guild.name,
                     description=guild.description,
                     founder_id=guild.founder.player_id,
-                    creation_date=guild.creation_date
+                    creation_date=guild.creation_date,
+                    tax=guild.tax
                 )
         except IntegrityError:
             raise AlreadyExists(f"Guild with name {guild.name} already exists")
