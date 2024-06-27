@@ -474,16 +474,24 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
 def rank_guilds(context: UserContext) -> str:
     result = Strings.rank_guilds + "\n"
     guilds = db().rank_top_guilds()
-    for guild in guilds:
-        result += f"{guild[0]} | {guild[1]}\n"
+    for guild, position in zip(guilds, range(len(guilds))):
+        result += f"{position + 1}. {guild[0]} | {guild[1]}\n"
     return result
 
 
 def rank_players(context: UserContext) -> str:
     result = Strings.rank_players + "\n"
     players = db().rank_top_players()
-    for player in players:
-        result += f"{player[0]} | {player[1]}\n"
+    for player, position in zip(players, range(len(players))):
+        result += f"{position + 1}. {player[0]} | {player[1]}\n"
+    return result
+
+
+def rank_tourney(context: UserContext) -> str:
+    result = Strings.rank_tourney + "\n"
+    guilds = db().get_top_n_guilds_by_score(10)
+    for guild, position in zip(guilds, range(len(guilds))):
+        result += f"{position + 1}. {guild.name} | {guild.tourney_score}\n"
     return result
 
 
@@ -608,6 +616,9 @@ def minigame_process(context: UserContext, user_input: str) -> str:
             player.add_money(money)
             player.renown += minigame.RENOWN
             db().update_player_data(minigame.player)
+            if (minigame.RENOWN != 0) and player.guild:
+                guild = db().get_guild(player.guild.guild_id)
+                guild.tourney_score += minigame.RENOWN
             return message + f"\n\nYou gain {xp} xp & {money} {MONEY}." + ("" if minigame.RENOWN == 0 else f"\nYou gain {minigame.RENOWN} renown.")
         player.add_xp(xp)
         db().update_player_data(minigame.player)
@@ -660,7 +671,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige."),
-        "players": IFW(None, rank_players, "Shows the top 20 players, ranked based on their renown.")
+        "players": IFW(None, rank_players, "Shows the top 20 players, ranked based on their renown."),
+        "tourney": IFW(None, rank_tourney, "Shows the top 20 players, ranked based on their renown."),
     },
     "message": {
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], send_message_to_player, "Send message to a single player."),

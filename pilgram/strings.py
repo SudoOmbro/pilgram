@@ -47,6 +47,7 @@ class Strings:
     # rank
     rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
     rank_players = "Here are the top players:\n\n*name | renown*"
+    rank_tourney = "Here are the top guilds (only the top 3 will win):\n\n*guild name | score*"
 
     # guilds
     here_are_your_mates = "You have {num} guild mates:\n\n"

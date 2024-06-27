@@ -2,15 +2,16 @@ import json
 import logging
 import os
 import random
+import time
 from time import sleep
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import List, Dict, Tuple
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
-from pilgram.utils import generate_random_eldritch_name
+from pilgram.utils import generate_random_eldritch_name, read_json_file, save_json_to_file
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -99,10 +100,11 @@ class QuestManager:
         tax: float = 0
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
-            renown = quest.number + quest.zone.level
+            renown = quest.get_prestige()
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
+                guild.tourney_score += quest.get_prestige()
                 self.db().update_guild(guild)
                 player.guild = guild
                 if guild.founder != player:  # check if winnings should be taxed
@@ -295,3 +297,59 @@ class GeneratorManager:
             except Exception as e:
                 log.error(f"Encountered an error while generating artifacts: {e}")
 
+
+class TourneyManager:
+    DURATION = 1209600  # 2 weeks in seconds
+
+    def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase, notification_delay: int):
+        self.notifier = notifier
+        self.database = database
+        self.notification_delay = notification_delay
+        tourney_json = {}
+        if os.path.isfile("tourney.json"):
+            tourney_json = read_json_file("tourney.json")
+        self.tourney_edition = tourney_json.get("edition", 1)
+        self.tourney_start = tourney_json.get("start", time.time())
+        if not tourney_json:
+            self.save()
+
+    def save(self):
+        save_json_to_file("tourney.json", {"edition": self.tourney_edition, "start": self.tourney_start})
+
+    def db(self) -> PilgramDatabase:
+        """ wrapper around the acquire method to make calling it less verbose """
+        return self.database.acquire()
+
+    def has_tourney_ended(self) -> bool:
+        return time.time() >= self.tourney_start + self.DURATION
+
+    def run(self):
+        if not self.has_tourney_ended():
+            return
+        log.info("Tourney has ended")
+        top_guilds = self.db().get_top_n_guilds_by_score(3)
+        # give artifact piece to 1st guild owner
+        first_guild = top_guilds[0]
+        winner = self.db().get_player_data(first_guild.founder.player_id)
+        winner.artifact_pieces += 1
+        self.notifier.notify(winner, f"Your guild won the *biweekly Guild Tourney n.{self.tourney_edition}*!\nyou are awarded an artifact piece!")
+        sleep(self.notification_delay)
+        # award money to top 3 guilds members
+        for guild, reward, position in zip(top_guilds, (10000, 5000, 1000), ("first", "second", "third")):
+            log.info(f"guild '{guild.name}' placed {position}")
+            members = self.db().get_guild_members_data(guild)
+            for player_id, _, _ in members:
+                player = self.db().get_player_data(player_id)
+                player.add_money(reward)
+                self.db().update_player_data(player)
+                self.notifier.notify(
+                    player,
+                    f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{self.tourney_edition}*!\nYou are awarded {reward} {MONEY}!"
+                )
+                sleep(self.notification_delay)
+        # reset all scores & start a new tourney
+        self.db().reset_all_guild_scores()
+        self.tourney_start = time.time()
+        self.tourney_edition += 1
+        log.info(f"New tourney started, edition {self.tourney_edition}, start: {self.tourney_start} (now)")
+        self.save()

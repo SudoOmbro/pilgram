@@ -119,6 +119,14 @@ class PilgramDatabase(ABC):
         """ get top 20 guild names + prestige based on rank """
         raise NotImplementedError
 
+    def get_top_n_guilds_by_score(self, n: int) -> List[Guild]:
+        """ get top n guilds based on score """
+        raise NotImplementedError
+
+    def reset_all_guild_scores(self):
+        """ reset the tourney scores of all guilds """
+        raise NotImplementedError
+
     # zones ----
 
     def get_zone(self, zone_id: int) -> Zone:

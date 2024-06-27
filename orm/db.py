@@ -257,6 +257,17 @@ class PilgramORMDatabase(PilgramDatabase):
         ).order_by(GuildModel.prestige.desc()).limit(20).namedtuples()
         return [(guild_row.name, guild_row.prestige) for guild_row in gs]
 
+    @cache_ttl_quick(ttl=600)
+    def get_top_n_guilds_by_score(self, n: int) -> List[Guild]:
+        gs = GuildModel.select().order_by(GuildModel.tourney_score.desc()).limit(n)
+        return [self.build_guild_object(g, None) for g in gs]
+
+    def reset_all_guild_scores(self):
+        gs = GuildModel.select()
+        for g in gs:
+            g.tourney_score = 0
+            g.save()
+
     # zones ----
 
     @staticmethod

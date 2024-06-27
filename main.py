@@ -7,7 +7,7 @@ from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
 from pilgram.generics import PilgramDatabase, PilgramNotifier
 from pilgram.globals import GlobalSettings
-from pilgram.manager import QuestManager, GeneratorManager
+from pilgram.manager import QuestManager, GeneratorManager, TourneyManager
 from pilgram.utils import read_update_interval
 from ui.admin_cli import ADMIN_INTERPRETER
 from ui.telegram_bot import PilgramBot
@@ -67,6 +67,20 @@ def run_generator_manager(database: PilgramDatabase):
             log.exception(f"error in generator manager thread: {e}")
 
 
+def run_tourney_manager(database: PilgramDatabase, notifier: PilgramNotifier):
+    log.info("Running tourney manager")
+    tourney_manager = TourneyManager(notifier, database, 1)
+    interval = INTERVAL * 4
+    while True:
+        try:
+            log.info("tourney manager update")
+            tourney_manager.run()
+            if is_killed(interval):
+                return
+        except Exception as e:
+            log.exception(f"error in tourney manager thread: {e}")
+
+
 def run_admin_cli():
     print("Admin CLI active!")
     user_context: UserContext = UserContext({"id": 69, "username": "God"})
@@ -93,7 +107,8 @@ def main():
     database = PilgramORMDatabase
     threads = [
         threading.Thread(target=lambda: run_quest_manager(database, bot), name="quest-manager"),
-        threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager")
+        threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager"),
+        threading.Thread(target=lambda: run_tourney_manager(database, bot), name="tourney-manager"),
     ]
     cli_thread = threading.Thread(target=run_admin_cli, name="admin-CLI", daemon=True)
     for thread in threads:

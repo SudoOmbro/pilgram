@@ -1,3 +1,4 @@
+import json
 import string
 import time
 from datetime import timedelta
@@ -26,6 +27,16 @@ __NO_VOWELS = __CONSONANTS + __ELDRITCH_STUFF
 def read_text_file(path: str) -> str:
     with open(path, 'r') as f:
         return f.read()
+
+
+def read_json_file(path: str) -> Dict[str, Any]:
+    with open(path, "r") as f:
+        return json.load(f)
+
+
+def save_json_to_file(path: str, data: Dict[str, Any]):
+    with open(path, "w") as f:
+        json.dump(data, f)
 
 
 def read_update_interval(interval_str: str) -> timedelta:
