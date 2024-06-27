@@ -73,8 +73,8 @@ The *tourney score* is used to compete in the biweekly Guild Tourney.
 It is reset every 2 weeks & at reset time the members in the *top 3* guilds get some money as a reward:
 
 1st = 10000 Boromian Alloy
-2nd = 1000 Boromian Alloy
-3rd = 100 Boromian Alloy
+2nd = 5000 Boromian Alloy
+3rd = 1000 Boromian Alloy
 
 an artifact piece is also rewarded to the owner of the first placed guild
 
