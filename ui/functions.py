@@ -479,6 +479,14 @@ def rank_guilds(context: UserContext) -> str:
     return result
 
 
+def rank_players(context: UserContext) -> str:
+    result = Strings.rank_players + "\n"
+    players = db().rank_top_players()
+    for player in players:
+        result += f"{player[0]} | {player[1]}\n"
+    return result
+
+
 def send_message_to_player(context: UserContext, player_name: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -598,8 +606,9 @@ def minigame_process(context: UserContext, user_input: str) -> str:
         if minigame.won:
             player.add_xp(xp),
             player.add_money(money)
+            player.renown += minigame.RENOWN
             db().update_player_data(minigame.player)
-            return message + f"\n\nYou gain {xp} xp & {money} {MONEY}."
+            return message + f"\n\nYou gain {xp} xp & {money} {MONEY}." + ("" if minigame.RENOWN == 0 else f"\nYou gain {minigame.RENOWN} renown.")
         player.add_xp(xp)
         db().update_player_data(minigame.player)
         return message + f"\n\n{Strings.xp_gain.format(xp=xp)}"
@@ -650,7 +659,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=1),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
-        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige.")
+        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige."),
+        "players": IFW(None, rank_players, "Shows the top 20 players, ranked based on their renown.")
     },
     "message": {
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], send_message_to_player, "Send message to a single player."),

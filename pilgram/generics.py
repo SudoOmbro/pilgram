@@ -54,6 +54,10 @@ class PilgramDatabase(ABC):
         """
         raise NotImplementedError
 
+    def rank_top_players(self) -> List[Tuple[str, int]]:
+        """ get top 20 guild names + prestige based on rank """
+        raise NotImplementedError
+
     # guilds ---
 
     def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:

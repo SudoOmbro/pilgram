@@ -44,8 +44,11 @@ class Strings:
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
     quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
 
-    # guilds
+    # rank
     rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
+    rank_players = "Here are the top players:\n\n*name | renown*"
+
+    # guilds
     here_are_your_mates = "You have {num} guild mates:\n\n"
     show_guild_members = "Guild '{name}' has {num} members:\n\n"
     not_in_a_guild = "You are not in a guild!"

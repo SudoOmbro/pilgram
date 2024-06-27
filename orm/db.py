@@ -160,6 +160,13 @@ class PilgramORMDatabase(PilgramDatabase):
         except IntegrityError:
             raise AlreadyExists(f"Player with name {player.name} already exists")
 
+    @cache_ttl_single_value(ttl=14400)
+    def rank_top_players(self) -> List[Tuple[str, int]]:
+        ps = PlayerModel.select(
+            PlayerModel.name, PlayerModel.renown
+        ).order_by(PlayerModel.renown.desc()).limit(20).namedtuples()
+        return [(player_row.name, player_row.renown) for player_row in ps]
+
     # guilds ----
 
     def build_guild_object(self, gs, calling_player_id: Union[int, None]):

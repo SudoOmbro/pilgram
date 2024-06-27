@@ -24,9 +24,9 @@ MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
 
-def _gain(xp: int, money: int, tax: float = 0) -> str:
+def _gain(xp: int, money: int, renown: int, tax: float = 0) -> str:
     tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
-    return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}_"
+    return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}\n\nYou gain {renown} renown_"
 
 
 class _HighestQuests:
@@ -99,6 +99,7 @@ class QuestManager:
         tax: float = 0
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
+            renown = quest.number + quest.zone.level
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
@@ -114,13 +115,14 @@ class QuestManager:
                     money -= amount
             player.add_xp(xp)
             player.add_money(money)
+            player.renown += renown
             piece: bool = False
             if random.randint(1, 10) < 3:  # 20% chance to gain a piece of an artifact
                 player.artifact_pieces += 1
                 piece = True
             self.notifier.notify(
                 player,
-                quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money, tax=tax) + (Strings.piece_found if piece else "")
+                quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money, renown, tax=tax) + (Strings.piece_found if piece else "")
             )
         else:
             self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))

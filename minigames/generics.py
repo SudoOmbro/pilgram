@@ -27,6 +27,7 @@ class PilgramMinigame(ABC):
             cls.MONEY_REWARD = ContentMeta.get(f"minigames.{game}.money_reward", default=0)
             cls.EXPLANATION = ContentMeta.get(f"minigames.{game}.explanation")
             cls.COOLDOWN = ContentMeta.get(f"minigames.{game}.cooldown", default=60)
+            cls.RENOWN = ContentMeta.get(f"minigames.{game}.renown", default=0)
             cls.STORAGE: Dict[int, float] = {}  # player id --> cooldown expire timestamp map
             log.info("registered ")
             MINIGAMES[game] = cls
