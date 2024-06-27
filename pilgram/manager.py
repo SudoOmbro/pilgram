@@ -101,11 +101,11 @@ class QuestManager:
         tax: float = 0
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
-            renown = quest.get_prestige()
+            renown = quest.get_prestige() * 400
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
-                guild.tourney_score += quest.get_prestige()
+                guild.tourney_score += renown
                 self.db().update_guild(guild)
                 player.guild = guild
                 if guild.founder != player:  # check if winnings should be taxed
