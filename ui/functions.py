@@ -619,6 +619,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
             if (minigame.RENOWN != 0) and player.guild:
                 guild = db().get_guild(player.guild.guild_id)
                 guild.tourney_score += minigame.RENOWN
+                db().update_guild(guild)
             return message + f"\n\nYou gain {xp} xp & {money} {MONEY}." + ("" if minigame.RENOWN == 0 else f"\nYou gain {minigame.RENOWN} renown.")
         player.add_xp(xp)
         db().update_player_data(minigame.player)
@@ -672,7 +673,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige."),
         "players": IFW(None, rank_players, "Shows the top 20 players, ranked based on their renown."),
-        "tourney": IFW(None, rank_tourney, "Shows the top 20 players, ranked based on their renown."),
+        "tourney": IFW(None, rank_tourney, "Shows the top 10 guilds competing in the tourney. Only the top 3 will win."),
     },
     "message": {
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], send_message_to_player, "Send message to a single player."),

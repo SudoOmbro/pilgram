@@ -326,7 +326,7 @@ class TourneyManager:
     def run(self):
         if not self.has_tourney_ended():
             return
-        log.info("Tourney has ended")
+        log.info(f"Tourney {self.tourney_edition} has ended")
         top_guilds = self.db().get_top_n_guilds_by_score(3)
         # give artifact piece to 1st guild owner
         first_guild = top_guilds[0]
