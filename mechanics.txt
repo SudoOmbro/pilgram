@@ -107,4 +107,4 @@ The use the command `play [minigame name]` to, well, play the minigame.
 
 ♦️♦️*Artifacts*♦️♦️
 Exceedingly rare mysterious artifacts you can craft with 10 artifact pieces, each artifact is unique & increases your maximum eldritch power by 10 (starts from 0).
-You can use your eldritch power to cast spells (WIP).
+You can use your eldritch power to cast spells.
