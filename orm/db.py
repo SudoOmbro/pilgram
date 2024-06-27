@@ -160,7 +160,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except IntegrityError:
             raise AlreadyExists(f"Player with name {player.name} already exists")
 
-    @cache_ttl_single_value(ttl=14400)
+    @cache_ttl_single_value(ttl=600)
     def rank_top_players(self) -> List[Tuple[str, int]]:
         ps = PlayerModel.select(
             PlayerModel.name, PlayerModel.renown

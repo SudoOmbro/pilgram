@@ -101,7 +101,7 @@ class QuestManager:
         tax: float = 0
         if quest.finish_quest(player):
             xp, money = quest.get_rewards(player)
-            renown = quest.get_prestige() * 400
+            renown = quest.get_prestige() * 200
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
