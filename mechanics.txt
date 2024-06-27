@@ -20,6 +20,10 @@ Upgrading your gear costs money, the *upgrade cost* is calculated with the follo
 Upgrading your home costs money, the *upgrade cost* is calculated with the *formula*:
 `COST = 100 x lv^2 + 5000 x lv` where `lv` is the current level of your home.
 
+🔷 *Artifact pieces*: Used to assemble artifacts, explained later.
+
+🔷 *Renown*: Does nothing, used for rankings. It is gained by playing non-gambling mini-games & completing quests.
+
 ♦️♦️*Quests*♦️♦️
 Your main source of income & xp. *Succeeding in a quest* depends on a D20 throw:
 
@@ -64,6 +68,15 @@ Creating a guild costs 1000, but upgrading it is extremely expensive:
 `COST = 10000 x lv^2 + 1000 x lv` where `lv` = guild level
 
 Guild prestige does nothing: the higher it is, the higher your guild will be on the ranking. That's it.
+
+The *tourney score* is used to compete in the biweekly Guild Tourney.
+It is reset every 2 weeks & at reset time the members in the *top 3* guilds get some money as a reward:
+
+1st = 10000 Boromian Alloy
+2nd = 1000 Boromian Alloy
+3rd = 100 Boromian Alloy
+
+an artifact piece is also rewarded to the owner of the first placed guild
 
 ♦️♦️*Events*♦️♦️
 The random updates you are sent every once in a while.
