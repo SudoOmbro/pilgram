@@ -43,7 +43,6 @@
       "xp_reward": 7,
       "cooldown": 300,
       "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\n2 player dice game. Roll a D13 3 times.\n\nIf a player exceeds 27 they lose.\n\nWins who gets the highest score without exceeding 27."
-
     },
     "open": {
       "xp_reward": 5,
@@ -101,7 +100,8 @@
       "do the secret adventurer salute. They reciprocate.",
       "trade some supplies.",
       "hide together from a pack of monsters approaching your position",
-      "help each-other move some debris from a blocked passageway."
+      "help each-other move some debris from a blocked passageway.",
+      "carve your names into a wall, as way to leave a mark on this cruel world."
     ]
   },
   "spells": {
