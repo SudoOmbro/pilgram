@@ -3,7 +3,7 @@ from abc import ABC
 import numpy as np
 
 
-_NEXT_FLAG: np.uint32 = np.uint32(1)
+_NEXT_FLAG: np.uint32 = np.uint32(1)  # we can have a maximum of 32 flags
 
 
 class Flag(ABC):
@@ -34,4 +34,28 @@ class Flag(ABC):
 
 
 class HexedFlag(Flag):
+    pass
+
+
+class CursedFlag(Flag):
+    pass
+
+
+class AlloyGlitchFlag1(Flag):
+    pass
+
+
+class AlloyGlitchFlag2(Flag):
+    pass
+
+
+class AlloyGlitchFlag3(Flag):
+    pass
+
+
+class LuckFlag1(Flag):
+    pass
+
+
+class LuckFlag2(Flag):
     pass

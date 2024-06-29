@@ -86,18 +86,16 @@ Both xp & money rewards follow the formula:
 if the player's level is higher or equal to (zone level - 3):
 `REWARD = (zl + 2 + hl) * rand(1 to 10)`
 else
-`EWARD = (2 + hl) * rand(1 to 10)`
+`EWARD = (2 + hl) x rand(1 to 10)`
 where `zl` = zone level, `hl` = player home level.
 
 Sometimes you can meet other players going through their own journey.
-This gives you a lot of XP, following the formula:
+This gives you XP following the formula:
 
 if not in town:
 `XP REWARD = 10 x zone id x highest level between the 2 players meeting`
 if in town:
 `XP REWARD = 10`
-
-_Note: Town is considered zone 0 (level 0), so you only get 400 XP for town meetings._
 
 ♦️♦️*Minigames*♦️♦️
 You can play these to earn some more money & xp, plus they are fun!
@@ -108,3 +106,4 @@ The use the command `play [minigame name]` to, well, play the minigame.
 ♦️♦️*Artifacts*♦️♦️
 Exceedingly rare mysterious artifacts you can craft with 10 artifact pieces, each artifact is unique & increases your maximum eldritch power by 10 (starts from 0).
 You can use your eldritch power to cast spells.
+Spells always use all your power; The more power they use, the more powerful they are.

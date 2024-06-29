@@ -112,12 +112,12 @@ class QuestManager:
                     founder = self.db().get_player_data(guild.founder.player_id)  # get most up to date object
                     tax = guild.tax / 100
                     amount = int(money * tax)
-                    founder.add_money(amount)
+                    amount_am = founder.add_money(amount)  # am = after modifiers
                     self.db().update_player_data(founder)
-                    self.notifier.notify(founder, Strings.tax_gain.format(amount=amount, name=player.name))
+                    self.notifier.notify(founder, Strings.tax_gain.format(amount=amount_am, name=player.name))
                     money -= amount
             player.add_xp(xp)
-            player.add_money(money)
+            money_am = player.add_money(money)  # am = after modifiers
             player.renown += renown
             piece: bool = False
             if random.randint(1, 10) < 3:  # 20% chance to gain a piece of an artifact
@@ -125,7 +125,7 @@ class QuestManager:
                 piece = True
             self.notifier.notify(
                 player,
-                quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money, renown, tax=tax) + (Strings.piece_found if piece else "")
+                quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money_am, renown, tax=tax) + (Strings.piece_found if piece else "")
             )
         else:
             self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))
@@ -141,11 +141,11 @@ class QuestManager:
         xp, money = event.get_rewards(ac.player)
         player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
         player.add_xp(xp)
-        player.add_money(money)
+        money_am = player.add_money(money)  # am = after modifiers
         ac.player = player
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
-        text = f"*{event.event_text}*{_gain(xp, money, 0)}"
+        text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):
@@ -341,11 +341,11 @@ class TourneyManager:
             members = self.db().get_guild_members_data(guild)
             for player_id, _, _ in members:
                 player = self.db().get_player_data(player_id)
-                player.add_money(reward)
+                reward_am = player.add_money(reward)  # am = after modifiers
                 self.db().update_player_data(player)
                 self.notifier.notify(
                     player,
-                    f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{self.tourney_edition}*!\nYou are awarded {reward} {MONEY}!"
+                    f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{self.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!"
                 )
                 sleep(self.notification_delay)
         # reset all scores & start a new tourney

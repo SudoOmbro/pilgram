@@ -99,7 +99,9 @@
       "hide from them until they leave. You are not feeling too sociable right now.",
       "come across a Pilgrim, undying & blindly following the path his faith lays for him. You both watch him, mesmerized.",
       "do the secret adventurer salute. They reciprocate.",
-      "trade some supplies."
+      "trade some supplies.",
+      "hide together from a pack of monsters approaching your position",
+      "help each-other move some debris from a blocked passageway."
     ]
   },
   "spells": {
@@ -118,9 +120,20 @@
       "description": "Briefly travel through another dimension where time and space are distorted, gaining time on your quest.",
       "power": 20
     },
+    "glitch": {
+      "name": "Alloy glitch",
+      "description": "The next time you earn money the amount will be multiplied by 1.5 times for every 30 power used.",
+      "power": 30
+    },
     "hex": {
       "name": "Ancient Hex",
-      "description": "Hex someone of your choosing, they will have a harder time finishing their next quest. Send the name after 'hex'.",
+      "description": "Hex someone of your choosing, they will have a disadvantage finishing their next quest. Send the name after 'hex'. Double the effect if you use 100 power.",
+      "power": 50,
+      "args": 1
+    },
+    "bless": {
+      "name": "Ancient Blessing",
+      "description": "Bless someone of your choosing, they will have an advantage finishing their next quest. Send the name after 'bless'. Triple the effect if you use 100 power.",
       "power": 50,
       "args": 1
     }

@@ -6,7 +6,8 @@ from typing import Tuple, Dict, Any, Callable, Union, List
 
 import numpy as np
 
-from pilgram.flags import HexedFlag
+from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
+    LuckFlag2
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.utils import read_update_interval
 from pilgram.strings import MONEY
@@ -85,14 +86,10 @@ class Quest:
 
     def finish_quest(self, player: "Player") -> bool:
         """ return true if the player has successfully finished the quest """
-        roll = random.randint(1, 20)
+        roll = player.roll(20)
         if roll == 1:
             log.info(f"{player.name} rolled a critical failure on quest {self.name}")
             return False  # you can still get a critical failure
-        if HexedFlag.is_set(player.flags):
-            # give disadvantage on the roll to the player if hexed, prevents critical successes.
-            roll -= 1
-            player.flags = HexedFlag.unset(player.flags)
         if roll == 20:
             log.info(f"{player.name} rolled a critical success on quest {self.name}")
             return True  # you can also get a critical success
@@ -216,6 +213,7 @@ class Spell:
 
 class Player:
     """ contains all information about a player """
+    MAXIMUM_POWER: int = 100
 
     def __init__(
             self,
@@ -308,8 +306,25 @@ class Player:
             return True
         return False
 
-    def add_money(self, amount: int):
+    def add_money(self, amount: int) -> int:
+        """ adds money to the player & returns how much was actually added to the player """
+        for flag in (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3):
+            if flag.is_set(self.flags):
+                amount = int(amount * 1.5)
+                self.flags = flag.unset(self.flags)
         self.money += amount
+        return amount
+
+    def roll(self, dice_faces: int) -> int:
+        """ roll a dice and apply all advantages / disadvantages """
+        roll = random.randint(1, dice_faces)
+        for modifier, flag in zip((-1, -1, 1, 2), (HexedFlag, CursedFlag, LuckFlag1, LuckFlag2)):
+            if flag.is_set(self.flags):
+                roll += modifier
+                self.flags = flag.unset(self.flags)
+        if roll < 1:
+            return 1
+        return roll
 
     def get_number_of_completed_quests(self) -> int:
         result: int = 0
@@ -322,12 +337,18 @@ class Player:
             return f"[{self.name}](tg://user?id={self.player_id})"
         return self.name
 
+    def get_max_charge(self) -> int:
+        max_charge = len(self.artifacts) * 10
+        if max_charge >= self.MAXIMUM_POWER:
+            max_charge = self.MAXIMUM_POWER
+        return max_charge
+
     def get_spell_charge(self) -> int:
         """
         returns spell charge of the player, calculated as the amount of time passed since the last spell cast.
-        max charge = 10 * number of artifacts; 1 day = 100 charge
+        max charge = 10 * number of artifacts; 1 day = max charge; max charge possible = 100
         """
-        max_charge = len(self.artifacts) * 10
+        max_charge = self.get_max_charge()
         charge = int(((datetime.now() - self.last_cast).total_seconds() / 86400) * max_charge)
         if charge > max_charge:
             return max_charge
@@ -339,7 +360,7 @@ class Player:
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
         string += f"_Renown: {self.renown}_"
         if self.artifacts:
-            string += f"\n*Eldritch power*: {self.get_spell_charge()} / {len(self.artifacts) * 10}"
+            string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
             string += f"\n\nArtifacts:\n" + "\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)
         else:
