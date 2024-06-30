@@ -9,7 +9,7 @@ import numpy as np
 from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
     LuckFlag2
 from pilgram.globals import ContentMeta, GlobalSettings
-from pilgram.utils import read_update_interval
+from pilgram.utils import read_update_interval, FuncWithParam
 from pilgram.strings import MONEY
 
 
@@ -315,6 +315,9 @@ class Player:
         self.money += amount
         return amount
 
+    def add_artifact_pieces(self, amount: int):
+        self.artifact_pieces += amount
+
     def roll(self, dice_faces: int) -> int:
         """ roll a dice and apply all advantages / disadvantages """
         roll = random.randint(1, dice_faces)
@@ -600,4 +603,101 @@ class Artifact:
         return Artifact(0, "", "", None)
 
 
+def _add_money(player: Player, amount: int):
+    player.add_money(amount)
+
+
+def _add_xp(player: Player, amount: int):
+    player.add_xp(amount)
+
+
+def _add_artifact_pieces(player: Player, amount: int):
+    player.add_artifact_pieces(amount)
+
+
+class QuickTimeEvent:
+    LIST: List["QuickTimeEvent"] = []
+
+    def __init__(
+            self,
+            description: str,
+            successes: List[str],
+            failures: List[str],
+            options: List[Tuple[str, int]],
+            rewards: List[List[Callable[[Player], None]]]
+    ):
+        """
+        :param description: description of the quick time event
+        :param successes: descriptions of the quick time event successful completions
+        :param failures: descriptions of the quick time event failures
+        :param options: the options to give the player
+        :param rewards: the functions used to give rewards to the players
+        """
+        assert len(options) == len(rewards)
+        self.description = description
+        self.successes = successes
+        self.failures = failures
+        self.options = options
+        self.rewards = rewards
+        self.LIST.append(self)
+
+    def __get_reward(self, index: int) -> Callable[[Player], None]:
+        reward_functions = self.rewards[index]
+
+        def execute_funcs(player: Player):
+            for func in reward_functions:
+                func(player)
+
+        return execute_funcs
+
+    def resolve(self, chosen_option: int) -> Tuple[Union[Callable[[Player], None], None], str]:
+        """ return if the qte succeeded and the string associated """
+        option = self.options[chosen_option]
+        roll = random.randint(1, 100)
+        if roll <= option[1]:
+            return self.__get_reward(chosen_option), self.successes[chosen_option]
+        return None, self.failures[chosen_option]
+
+    @classmethod
+    def create_from_json(cls, qte_json: Dict[str, str]) -> "QuickTimeEvent":
+        # generate options
+        options: List[Tuple[str, int]] = []
+        split_options: List[str] = qte_json.get("options").split(" | ")
+        for option in split_options:
+            components = option.split(" ")
+            options.append((components[0].replace("_", " "), int(components[1])))
+        # generate rewards
+        rewards: List[List[Callable[[Player], None]]] = []
+        split_rewards: List[str] = qte_json.get("rewards").split(" | ")
+        for reward_str in split_rewards:
+            split_reward_str = reward_str.split(", ")
+            funcs_list: List[Callable[[Player], None]] = []
+            for reward_func_components in split_reward_str:
+                components = reward_func_components.split(" ")
+                if components[0] == "xp":
+                    funcs_list.append(FuncWithParam(_add_xp, int(components[1])))
+                elif components[0] == "mn":
+                    funcs_list.append(FuncWithParam(_add_money, int(components[1])))
+                elif components[0] == "ap":
+                    funcs_list.append(FuncWithParam(_add_artifact_pieces, int(components[1])))
+            rewards.append(funcs_list)
+        # return complete object
+        return QuickTimeEvent(
+            qte_json.get("description"),
+            qte_json.get("successes").split(" | "),
+            qte_json.get("failures").split(" | "),
+            options,
+            rewards
+        )
+
+    def __str__(self):
+        return f"{self.description}\n{'\n'.join(f'{i+1}. {s} ({p}% chance)' for i, (s, p) in enumerate(self.options))}"
+
+
+__qte_jsons = ContentMeta.get("quick time events")
+for qte_json in __qte_jsons:
+    QuickTimeEvent.LIST.append(QuickTimeEvent.create_from_json(qte_json))
+
+
+QTE_CACHE: Dict[int, QuickTimeEvent] = {}  # runtime cache that contains all users + quick time events pairs
 TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))

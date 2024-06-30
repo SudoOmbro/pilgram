@@ -1,9 +1,8 @@
 import json
-import string
 import time
 from datetime import timedelta
 from random import randint, choice
-from typing import Union, Dict, Any, List
+from typing import Union, Dict, Any, List, Callable
 
 
 class IntervalError(Exception):
@@ -131,3 +130,13 @@ class TempIntCache:
 
     def drop(self, key: int):
         del self.cache[key]
+
+
+class FuncWithParam:
+
+    def __init__(self, func: Callable, param: Any):
+        self.func = func
+        self.param = param
+
+    def __call__(self, arg):
+        return self.func(arg, self.param)

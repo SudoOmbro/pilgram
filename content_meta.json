@@ -137,5 +137,18 @@
       "power": 50,
       "args": 1
     }
-  }
+  },
+  "quick time events": [{
+    "description": "You find a locked chest.",
+    "options": "smash_it_open 90 | lockpick_it 50 | kick_it_open 20",
+    "successes": "The chest lays at your feet, destroyed, some it's contents still intact.\n\nYou gain 20 xp & 20 BA | You manage to lockpick the chest, preserving it's contents.\n\nYou gain 100 xp & 100 BA | miraculously the chest opens with a single kick. You feel very good about yourself.\n\nYou gain 1000 xp & 100 BA.",
+    "failures": "You completely destroyed the chest & it's contents. | You fail in your lock picking attempt. The chest remains closed | The kick does nothing. Your foot hurts.",
+    "rewards": "xp 20, mn 20 | xp 100, mn 100 | xp 1000, mn 100"
+  }, {
+    "description": "You stumble upon a strong-looking sleeping monster holding a valuable artifact.",
+    "options": "leave 90 | assassinate_the_monster 60 | try_to_sneakily_steal_the_artifact 10",
+    "successes": "You leave the monster be, better safe than sorry.\n\nYou gain 20 xp. | You manage to kill the monster but the artifact is destroyed in the process.\n\nYou gain 100 xp & 100 BA. | You manage to retrieve the artifact.\n\nYou gain 1 artifact piece.",
+    "failures": "The monster wakes up an chases you off. | The monster wakes up an fights back, forcing you to flee | The monster wakes up and roars, forcing you to flee.",
+    "rewards": "xp 20 | xp 100, mn 100 | xp 1000, ap 1"
+  }]
 }

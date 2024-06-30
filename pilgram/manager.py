@@ -7,7 +7,7 @@ from time import sleep
 from datetime import timedelta
 from typing import List, Dict, Tuple
 
-from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE
+from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE, QuickTimeEvent, QTE_CACHE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
@@ -146,6 +146,12 @@ class QuestManager:
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
+        if random.randint(1, 20) == 1:  # 5% chance of a quick time event
+            qte = random.choice(QuickTimeEvent.LIST)
+            QTE_CACHE[player.player_id] = qte
+            text += f"*QTE*\n\n{qte}"
+        elif player.player_id in QTE_CACHE:
+            del QTE_CACHE[player.player_id]
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):

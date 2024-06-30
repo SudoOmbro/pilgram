@@ -16,46 +16,139 @@
   "guilds": {
     "max_level": 10,
     "players_per_level": 4,
-    "creation_cost": 1000
+    "creation_cost": 1000,
+    "max_tax": 50
   },
   "modify_cost": 1000,
   "money": {
     "name": "Boromian Alloy"
   },
   "quests": {
-    "base_xp_reward": 850,
-    "base_money_reward": 600
+    "base_xp_reward": 950,
+    "base_money_reward": 760
   },
   "minigames": {
     "hands": {
       "min_buy_in": 5,
       "max_buy_in": 50,
       "payout": 1.5,
-      "xp_reward": 1,
+      "xp_reward": 2,
       "cooldown": 120,
       "explanation": "_\"Do not hold the pilgrim's hands for he is blinded by faith\"_\n\n2 player game played with *3 d6 each*.\n\nBoth you & the other player choose a *target number between 3 and 18*, then you roll until someone wins.\n\nIf a player gets either *5 or 10 they lose*. If a player gets their *target number* with either *all 3 or just 2 of their dices* they win.\n\nPays 150% of the pot."
     },
     "fate": {
       "min_buy_in": 50,
-      "max_buy_in": 500,
-      "payout": 3.2,
-      "xp_reward": 1,
-      "cooldown": 120,
-      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\nComing soon..."
+      "max_buy_in": 200,
+      "payout": 2,
+      "xp_reward": 7,
+      "cooldown": 300,
+      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\n2 player dice game. Roll a D13 3 times.\n\nIf a player exceeds 27 they lose.\n\nWins who gets the highest score without exceeding 27."
     },
     "open": {
       "xp_reward": 5,
       "money_reward": 5,
-      "explanation": "_\"Some doors get possessed by fragments of their dead former owners and only open when a word they identified in life with is whispered in the key hole\"_\n\nGuess a random word in the given amount of tries."
+      "explanation": "_\"Some doors get possessed by fragments of their dead former owners and only open when a word they identified in life with is whispered in the key hole\"_\n\nGuess a random word in the given amount of tries.",
+      "renown": 2
     },
     "illusion": {
-      "xp_reward": 5,
-      "money_reward": 5,
-      "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nNavigate a maze by typing 'n'(north), 's'(south), 'e'(east) & 'w'(west), or 'i'(idle) for a tick. Moving in a direction moves you until you hit a wall, the exit or an active trap.\n\nBeware of spike traps that activate & deactivate each tick.\n\nFinish the maze in the given number of turns"
+      "xp_reward": 10,
+      "money_reward": 10,
+      "cooldown": 300,
+      "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nNavigate a maze by typing 'n'(north), 's'(south), 'e'(east) & 'w'(west), or 'i'(idle) for a tick. Moving in a direction moves you until you hit a wall, the exit or an active trap.\n\nYou can optionally define the amount of steps you want to take, for example:\n`n 2` will walk 2 steps to the north.\n`n` will walk north until you hit a wall.\n\nNote that both the previous commands will consume a single turn.\n\nBeware of spike traps that activate & deactivate each tick.\n\nFinish the maze in the given number of turns",
+      "renown": 1
+    },
+    "boss": {
+      "xp_reward": 50,
+      "money_reward": 50,
+      "cooldown": 300,
+      "explanation": "WIP. Do not play",
+      "renown": 4
     }
   },
   "meeting events": {
-    "town": ["aaa", "bbb"],
-    "zones": ["ccc", "ddd"]
-  }
+    "town": [
+      "visit the tavern together, sharing stories of your adventures.",
+      "check out the market stalls together.",
+      "train together.",
+      "play a couple games of the royal game of Ur.",
+      "walk on the town walls together, taking in the view.",
+      "hunt plague rats with flaming bolts.",
+      "visit the smithy together to perform maintenance your equipment",
+      "exchange trinkets you collected during your adventures",
+      "spend some time together, enjoying each-other's company.",
+      "accompany them to the cemetery to mourn your loved ones.",
+      "talk about conspiracy theories for an hour. You are convinced they are all true.",
+      "greet them tiredly, then you immediately go home where you take an invigorating nap.",
+      "spot a Pilgrim watching you two talk. He sees you are bound by the Ouroboros contract. He sees your chains.",
+      "kill some time hunting pigeons together.",
+      "kill some slimy monsters hiding in the town's sewers."
+    ],
+    "zones": [
+      "spend some time around a campfire roasting some freshly hunted small game.",
+      "walk together for a bit, sharing knowledge about the area.",
+      "silently nod to each-other, for there are monsters nearby.",
+      "clear the way ahead together, protecting each-other from danger.",
+      "gather supplies to prepare for the dangers ahead.",
+      "polish your equipment in silence, watching each-others back",
+      "play a couple of games of 'Hands', as it is a traditional game most played by adventurers on a quest.",
+      "help them open a particularly stubborn chest. It turns out it was a mimic, so you kill it together.",
+      "help each-other climb a particularly tall wall.",
+      "throw rocks at some monsters below you. They can't reach you and they make funny noises when hit.",
+      "share a pemmican & hardtack meal since lighting a fire was not an option.",
+      "hide from them until they leave. You are not feeling too sociable right now.",
+      "come across a Pilgrim, undying & blindly following the path his faith lays for him. You both watch him, mesmerized.",
+      "do the secret adventurer salute. They reciprocate.",
+      "trade some supplies.",
+      "hide together from a pack of monsters approaching your position",
+      "help each-other move some debris from a blocked passageway.",
+      "carve your names into a wall, as way to leave a mark on this cruel world."
+    ]
+  },
+  "spells": {
+    "mida": {
+      "name": "Mida's touch",
+      "description": "Create Boromian Alloy from thin air.",
+      "power": 10
+    },
+    "bones": {
+      "name": "Bone recall",
+      "description": "Recall the experiences of the bone's former owner.",
+      "power": 10
+    },
+    "displacement": {
+      "name": "Eldritch displacement",
+      "description": "Briefly travel through another dimension where time and space are distorted, gaining time on your quest.",
+      "power": 20
+    },
+    "glitch": {
+      "name": "Alloy glitch",
+      "description": "The next time you earn money the amount will be multiplied by 1.5 times for every 30 power used.",
+      "power": 30
+    },
+    "hex": {
+      "name": "Ancient Hex",
+      "description": "Hex someone of your choosing, they will have a disadvantage finishing their next quest. Send the name after 'hex'. Double the effect if you use 100 power.",
+      "power": 50,
+      "args": 1
+    },
+    "bless": {
+      "name": "Ancient Blessing",
+      "description": "Bless someone of your choosing, they will have an advantage finishing their next quest. Send the name after 'bless'. Triple the effect if you use 100 power.",
+      "power": 50,
+      "args": 1
+    }
+  },
+  "quick time events": [{
+    "description": "You find a locked chest.",
+    "options": "smash_it_open 100 | lockpick_it 50 | kick_it_open 20",
+    "successes": "The chest lays at your feet, destroyed, some it's contents still intact. | You manage to lockpick the chest, preserving it's contents. | miraculously the chest opens with a single kick. You feel very good about yourself.",
+    "failures": "You completely destroyed the chest & it's contents. | You fail in your lock picking attempt. The chest remains closed | The kick does nothing. Your foot hurts.",
+    "rewards": "xp 20, mn 20 | xp 100, mn 100 | xp 1000, mn 100"
+  }, {
+    "description": "TODOD",
+    "options": "todo1 100 | todo2 50 | todo3 10",
+    "successes": "todo1 | todo2| todo3",
+    "failures": "todo1 | todo2 | todo3",
+    "rewards": "xp 100, mn 100 | mn 200 | ap 1"
+  }]
 }

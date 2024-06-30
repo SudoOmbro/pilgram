@@ -7,7 +7,7 @@ from typing import Tuple, Dict, Union, Callable, Type, List
 from minigames.generics import PilgramMinigame, MINIGAMES
 from minigames.games import AAA
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, Guild, TOWN_ZONE, Zone, SpellError
+from pilgram.classes import Player, Guild, TOWN_ZONE, Zone, SpellError, QTE_CACHE
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
@@ -578,6 +578,30 @@ def __list_spells() -> str:
     return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}\n_{spell.description}_" for key, spell in SPELLS.items())
 
 
+def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        qte = QTE_CACHE.get(player.player_id)
+        if not qte:
+            return Strings.no_qte_active
+        option_chosen = int(option_chosen_str) - 1
+        if option_chosen >= len(qte.options):
+            return Strings.invalid_option
+        func, string = qte.resolve(option_chosen)
+        if func:
+            func(player)
+            player.renown += 5
+            if player.guild:
+                guild = db().get_guild(player.guild.guild_id)
+                guild.tourney_score += 5
+                db().update_guild(guild)
+            db().update_player_data(player)
+        del QTE_CACHE[player.player_id]
+        return string
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def start_minigame(context: UserContext, minigame_name: str) -> str:
     try:
         minigame: Union[Type[PilgramMinigame], None] = MINIGAMES.get(minigame_name, None)
@@ -682,6 +706,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "assemble": {
         "artifact": IFW(None, assemble_artifact, "Assemble an artifact using 10 artifact pieces")
     },
+    "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {
         "to": {
