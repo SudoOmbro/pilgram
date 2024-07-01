@@ -130,7 +130,7 @@ class Strings:
 
     # cults
     choose_cult = "Send the number of the cult you want to join."
-    list_cults = "Here are all the possible cults:\n\n"
+    list_cults = "Here are all the existing cults:\n\n"
 
     # errors
     no_character_yet = "You haven't made a character yet!"
