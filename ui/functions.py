@@ -178,7 +178,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             # make a copy of the original player (to avoid cases in which we set a name that isn't valid in the object
             player_copy = copy(player)
             player_copy.name = context.get("name")
-            player.cult = Cult.LIST[context.get("cult")]
+            player_copy.cult = Cult.LIST[context.get("cult")]
             player_copy.description = user_input
             player_copy.money -= MODIFY_COST
             db().update_player_data(player_copy)
@@ -186,12 +186,14 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             player.name = player_copy.name
             player.description = player_copy.description
             player.money = player_copy.money
+            player.cult = player_copy.cult
             context.end_process()
             return Strings.obj_modified.format(obj="character")
         else:
             player = Player.create_default(
                 context.get("id"), context.get("name"), user_input
             )
+            player.cult = Cult.LIST[context.get("cult")]
             db().add_player(player)
             context.end_process()
             log.info(f"User {context.get('id')} created character {player.name}")
