@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 
 from pilgram.globals import ContentMeta
 
@@ -132,6 +132,19 @@ class Strings:
     choose_cult = "Send the number of the cult you want to join."
     cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist.}"
     list_cults = "Here are all the existing cults:\n\n"
+    modifier_names: Dict[str, str] = {
+        "general_xp_mult": "General XP Multiplier",
+        "general_money_mult": "General BA Multiplier",
+        "quest_xp_mult": "Quest XP Multiplier",
+        "quest_money_mult": "Quest BA Multiplier",
+        "event_xp_mult": "Event XP Multiplier",
+        "event_money_mult": "Event BA Multiplier",
+        "can_meet_players": "Can meet other players",
+        "power_bonus": "Base Power Bonus",
+        "roll_bonus": "Player Roll Bonus",
+        "quest_time_multiplier": "Quest Duration Multiplier",
+        "eldritch_resist": "Immune to Eldritch spells"
+    }
 
     # errors
     no_character_yet = "You haven't made a character yet!"

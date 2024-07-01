@@ -11,8 +11,7 @@ from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFl
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
 from pilgram.utils import read_update_interval, FuncWithParam
-from pilgram.strings import MONEY
-
+from pilgram.strings import MONEY, Strings
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -743,12 +742,26 @@ class Cult(Listable, meta_name="cults"):
         self.roll_bonus: int = modifiers.get("roll_bonus", 0)
         self.quest_time_multiplier: float = modifiers.get("quest_time_multiplier", 1)
         self.eldritch_resist: bool = modifiers.get("eldritch_resist", False)
+        self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
 
     def __eq__(self, other):
         return self.faction_id == other.faction_id
 
     def __str__(self):
-        return f"{self.faction_id} - *{self.name}*\n_{self.description}_"
+        string = f"{self.faction_id} - *{self.name}*\n_{self.description}_\n"
+        if self.modifiers_applied:
+            for modifier in self.modifiers_applied:
+                name = Strings.modifier_names[modifier]
+                value = self.__dict__[modifier]
+                if type(value) is float:
+                    string += f"- *{name}*: {value * 100:.0f}%\n"
+                elif type(value) is bool:
+                    string += f"- *{name}*: {'Yes' if value else 'No'}\n"
+                else:
+                    string += f"- *{name}*: {'+' if value > 0 else ''}{value}\n"
+        else:
+            string += "- *No modifiers*"
+        return string
 
     @classmethod
     def create_from_json(cls, cults_json: Dict[str, Any]) -> "Cult":
