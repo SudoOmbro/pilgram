@@ -164,7 +164,10 @@ def process_get_character_name(context: UserContext, user_input) -> str:
 def process_get_character_cult(context: UserContext, user_input) -> str:
     if not re.match(POSITIVE_INTEGER_REGEX, user_input):
         return Strings.positive_integer_error
-    context.set("cult", int(user_input))
+    cult_id = int(user_input)
+    if cult_id >= len(Cult.LIST):
+        return Strings.cult_does_not_exist.format(start=0, end=len(Cult.LIST)-1)
+    context.set("cult", )
     context.progress_process()
     return context.get_process_prompt(USER_PROCESSES)
 
