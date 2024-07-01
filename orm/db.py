@@ -136,6 +136,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.artifact_pieces = player.artifact_pieces
                 pls.flags = player.flags
                 pls.renown = player.renown
+                pls.cult_id = player.cult.faction_id
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
