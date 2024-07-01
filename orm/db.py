@@ -12,7 +12,7 @@ from peewee import fn, JOIN, IntegrityError
 from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, db, ArtifactModel
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
@@ -103,6 +103,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 artifacts,
                 pls.flags,
                 pls.renown,
+                Cult.LIST[pls.cult_id]
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved

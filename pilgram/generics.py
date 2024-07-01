@@ -1,9 +1,10 @@
 import logging
 from abc import ABC
 from datetime import timedelta, datetime
-from typing import List, Tuple, Union, Any
+from typing import List, Tuple, Union, Any, Dict
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact
+from pilgram.globals import ContentMeta
 
 log = logging.getLogger(__name__)
 

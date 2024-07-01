@@ -46,7 +46,25 @@ class __GenericGlobalSettings(ABC):
             raise e
 
 
-class ContentMeta(__GenericGlobalSettings):
+class __GenericGlobalSettingsLazyLoaded(ABC):
+    """
+    global settings which only loads a file in memory when it is needed. Useful to avoid using up too much memory.
+    """
+    FILENAME: str
+
+    @classmethod
+    def get(cls, path: str, separator: str = ".", default: Any = None) -> Any:
+        try:
+            with open(cls.FILENAME) as file:
+                dictionary = PathDict(json.load(file))
+                return dictionary.path_get(path, separator)
+        except KeyError as e:
+            if default is not None:
+                return default
+            raise e
+
+
+class ContentMeta(__GenericGlobalSettingsLazyLoaded):
     """ Contains all info about the world, like default values for players, world name, etc. """
     FILENAME = "content_meta.json"
 

@@ -70,17 +70,19 @@ def __hex(caster: Player, args: List[str]) -> str:
     target = _db().get_player_from_name(args[0])
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
+    if target.cult.eldritch_resist:
+        raise "The target is immune to spells."
     power_used = caster.get_spell_charge()
     if (power_used < 100) and HexedFlag.is_set(target.flags):
         raise SpellError(f"{args[0]} is already hexed!")
     elif HexedFlag.is_set(target.flags) and CursedFlag.is_set(target.flags):
         raise SpellError(f"{args[0]} is already cursed!")
     if power_used == 100:
-        target.flags = HexedFlag.set(target.flags)
-        target.flags = CursedFlag.set(target.flags)
+        target.set_flag(HexedFlag)
+        target.set_flag(CursedFlag)
         _db().update_player_data(target)
         return f"You cursed {target.name}."
-    target.flags = HexedFlag.set(target.flags)
+    target.set_flag(HexedFlag)
     _db().update_player_data(target)
     return f"You hexed {target.name}."
 
@@ -90,16 +92,18 @@ def __bless(caster: Player, args: List[str]) -> str:
     target = _db().get_player_from_name(args[0])
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
+    if target.cult.eldritch_resist:
+        raise "The target is immune to spells."
     power_used = caster.get_spell_charge()
     if (power_used < 100) and LuckFlag1.is_set(target.flags):
         raise SpellError(f"{args[0]} is already blessed (1)!")
     elif LuckFlag1.is_set(target.flags) and LuckFlag2.is_set(target.flags):
         raise SpellError(f"{args[0]} is already blessed (2)!")
     if power_used == 100:
-        target.flags = LuckFlag1.set(target.flags)
-        target.flags = LuckFlag2.set(target.flags)
+        target.set_flag(LuckFlag1)
+        target.set_flag(LuckFlag2)
         _db().update_player_data(target)
         return f"You blessed (2) {target.name}."
-    target.flags = LuckFlag1.set(target.flags)
+    target.set_flag(LuckFlag1)
     _db().update_player_data(target)
     return f"You blessed (1) {target.name}."

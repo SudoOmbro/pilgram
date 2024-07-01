@@ -2,13 +2,14 @@ import logging
 import math
 import random
 from datetime import datetime, timedelta
-from typing import Tuple, Dict, Any, Callable, Union, List
+from typing import Tuple, Dict, Any, Callable, Union, List, Type
 
 import numpy as np
 
 from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
-    LuckFlag2
+    LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
+from pilgram.listables import Listable
 from pilgram.utils import read_update_interval, FuncWithParam
 from pilgram.strings import MONEY
 
@@ -21,6 +22,8 @@ BASE_QUEST_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.
 DURATION_PER_ZONE_LEVEL: timedelta = read_update_interval(GlobalSettings.get("quest.duration per level"))
 DURATION_PER_QUEST_NUMBER: timedelta = read_update_interval(GlobalSettings.get("quest.duration per number"))
 RANDOM_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.random duration"))
+
+QTE_CACHE: Dict[int, "QuickTimeEvent"] = {}  # runtime cache that contains all users + quick time events pairs
 
 
 class Zone:
@@ -51,6 +54,9 @@ class Zone:
     @classmethod
     def get_empty(cls) -> "Zone":
         return Zone(0, "", 1, "")
+
+
+TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))
 
 
 class Quest:
@@ -110,13 +116,19 @@ class Quest:
         """ return the amount of xp & money the completion of the quest rewards """
         multiplier = (self.zone.level + self.number) + (player.guild.level if player.guild else 0)
         rand = random.randint(1, 50)
-        return (self.BASE_XP_REWARD * multiplier) + rand, (self.BASE_MONEY_REWARD * multiplier) + rand  # XP, Money
+        return (
+            int(((self.BASE_XP_REWARD * multiplier) + rand) * player.cult.quest_xp_mult),
+            int(((self.BASE_MONEY_REWARD * multiplier) + rand) * player.cult.quest_money_mult)
+        )  # XP, Money
 
-    def get_duration(self) -> timedelta:
-        return (BASE_QUEST_DURATION +
+    def get_duration(self, player: "Player") -> timedelta:
+        return (
+            BASE_QUEST_DURATION + (
                 (DURATION_PER_ZONE_LEVEL * self.zone.level) +
                 (DURATION_PER_QUEST_NUMBER * self.number) +
-                (random.randint(0, self.zone.level) * RANDOM_DURATION))
+                (random.randint(0, self.zone.level) * RANDOM_DURATION)
+            ) * player.cult.quest_time_multiplier
+        )
 
     def get_prestige(self) -> int:
         return self.zone.level + self.number
@@ -231,7 +243,8 @@ class Player:
             last_cast: datetime,
             artifacts: List["Artifact"],
             flags: np.uint32,
-            renown: int
+            renown: int,
+            cult: "Cult"
     ):
         """
         :param player_id (int): unique id of the player
@@ -248,6 +261,7 @@ class Player:
         :param last_cast (datetime): last spell cast datetime.
         :param flags (np.uint32): flags of the player, can be used for anything
         :param renown (int): renown of the player, used for ranking
+        :param cult: the player's cult
         """
         self.player_id = player_id
         self.name = name
@@ -264,6 +278,7 @@ class Player:
         self.artifacts = artifacts
         self.flags = flags
         self.renown = renown
+        self.cult = cult
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -275,7 +290,7 @@ class Player:
 
     def get_home_upgrade_required_money(self) -> int:
         lv = self.home_level + 1
-        return (100 * (lv * lv)) + (5000 * lv)
+        return (200 * (lv * lv)) + (600 * lv)
 
     def can_upgrade_gear(self) -> bool:
         return self.money >= self.get_gear_upgrade_required_money()
@@ -300,6 +315,7 @@ class Player:
 
     def add_xp(self, amount: int) -> bool:
         """ adds xp to the player and returns true if the player leveled up """
+        amount *= self.cult.general_xp_mult
         self.xp += amount
         if self.xp >= self.get_required_xp():
             self.level_up()
@@ -308,6 +324,7 @@ class Player:
 
     def add_money(self, amount: int) -> int:
         """ adds money to the player & returns how much was actually added to the player """
+        amount *= self.cult.general_money_mult
         for flag in (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3):
             if flag.is_set(self.flags):
                 amount = int(amount * 1.5)
@@ -320,13 +337,15 @@ class Player:
 
     def roll(self, dice_faces: int) -> int:
         """ roll a dice and apply all advantages / disadvantages """
-        roll = random.randint(1, dice_faces)
+        roll = random.randint(1, dice_faces) + self.cult.roll_bonus
         for modifier, flag in zip((-1, -1, 1, 2), (HexedFlag, CursedFlag, LuckFlag1, LuckFlag2)):
             if flag.is_set(self.flags):
                 roll += modifier
                 self.flags = flag.unset(self.flags)
         if roll < 1:
             return 1
+        if roll > dice_faces:
+            return dice_faces
         return roll
 
     def get_number_of_completed_quests(self) -> int:
@@ -341,7 +360,9 @@ class Player:
         return self.name
 
     def get_max_charge(self) -> int:
-        max_charge = len(self.artifacts) * 10
+        if self.cult.power_bonus == -100:
+            return 0
+        max_charge = (len(self.artifacts) * 10) + self.cult.power_bonus
         if max_charge >= self.MAXIMUM_POWER:
             max_charge = self.MAXIMUM_POWER
         return max_charge
@@ -359,9 +380,9 @@ class Player:
 
     def __str__(self):
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp}/{self.get_required_xp()} xp_\n"
+        string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
-        string += f"_Renown: {self.renown}_"
+        string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
         if self.artifacts:
             string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
@@ -369,6 +390,12 @@ class Player:
         else:
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
         return string
+
+    def set_flag(self, flag: Type[Flag]):
+        self.flags = flag.set(self.flags)
+
+    def unset_flag(self, flag: Type[Flag]):
+        self.flags = flag.unset(self.flags)
 
     def __repr__(self):
         return str(self.__dict__)
@@ -507,7 +534,7 @@ class ZoneEvent:
 
     def get_rewards(self, player: Player) -> Tuple[int, int]:
         """ returns xp & money rewards for the event. Influenced by player home level """
-        return self.__val(player), self.__val(player)
+        return int(self.__val(player) * player.cult.event_xp_mult), int(self.__val(player) * player.cult.event_money_mult)
 
     def __str__(self):
         return self.event_text
@@ -603,20 +630,8 @@ class Artifact:
         return Artifact(0, "", "", None)
 
 
-def _add_money(player: Player, amount: int):
-    player.add_money(amount)
-
-
-def _add_xp(player: Player, amount: int):
-    player.add_xp(amount)
-
-
-def _add_artifact_pieces(player: Player, amount: int):
-    player.add_artifact_pieces(amount)
-
-
-class QuickTimeEvent:
-    LIST: List["QuickTimeEvent"] = []
+class QuickTimeEvent(Listable, meta_name="quick time events"):
+    LIST: List["QuickTimeEvent"]
 
     def __init__(
             self,
@@ -633,13 +648,12 @@ class QuickTimeEvent:
         :param options: the options to give the player
         :param rewards: the functions used to give rewards to the players
         """
-        assert len(options) == len(rewards)
+        assert len(options) == len(rewards) == len(successes) == len(failures)
         self.description = description
         self.successes = successes
         self.failures = failures
         self.options = options
         self.rewards = rewards
-        self.LIST.append(self)
 
     def __get_reward(self, index: int) -> Callable[[Player], None]:
         reward_functions = self.rewards[index]
@@ -658,6 +672,18 @@ class QuickTimeEvent:
             return self.__get_reward(chosen_option), self.successes[chosen_option]
         return None, self.failures[chosen_option]
 
+    @staticmethod
+    def _add_money(player: Player, amount: int):
+        player.add_money(amount)
+
+    @staticmethod
+    def _add_xp(player: Player, amount: int):
+        player.add_xp(amount)
+
+    @staticmethod
+    def _add_artifact_pieces(player: Player, amount: int):
+        player.add_artifact_pieces(amount)
+
     @classmethod
     def create_from_json(cls, qte_json: Dict[str, str]) -> "QuickTimeEvent":
         # generate options
@@ -675,14 +701,14 @@ class QuickTimeEvent:
             for reward_func_components in split_reward_str:
                 components = reward_func_components.split(" ")
                 if components[0] == "xp":
-                    funcs_list.append(FuncWithParam(_add_xp, int(components[1])))
+                    funcs_list.append(FuncWithParam(cls._add_xp, int(components[1])))
                 elif components[0] == "mn":
-                    funcs_list.append(FuncWithParam(_add_money, int(components[1])))
+                    funcs_list.append(FuncWithParam(cls._add_money, int(components[1])))
                 elif components[0] == "ap":
-                    funcs_list.append(FuncWithParam(_add_artifact_pieces, int(components[1])))
+                    funcs_list.append(FuncWithParam(cls._add_artifact_pieces, int(components[1])))
             rewards.append(funcs_list)
         # return complete object
-        return QuickTimeEvent(
+        return cls(
             qte_json.get("description"),
             qte_json.get("successes").split(" | "),
             qte_json.get("failures").split(" | "),
@@ -694,10 +720,41 @@ class QuickTimeEvent:
         return f"{self.description}\n{'\n'.join(f'{i+1}. {s} ({p}% chance)' for i, (s, p) in enumerate(self.options))}"
 
 
-__qte_jsons = ContentMeta.get("quick time events")
-for qte_json in __qte_jsons:
-    QuickTimeEvent.LIST.append(QuickTimeEvent.create_from_json(qte_json))
+class Cult(Listable, meta_name="cults"):
 
+    def __init__(
+            self,
+            faction_id: int,
+            name: str,
+            description: str,
+            modifiers: dict
+    ):
+        self.faction_id = faction_id
+        self.name = name
+        self.description = description
+        self.general_xp_mult: float = modifiers.get("general_xp_mult", 1)
+        self.general_money_mult: float = modifiers.get("general_money_mult", 1)
+        self.quest_xp_mult: float = modifiers.get("quest_xp_mult", 1)
+        self.quest_money_mult: float = modifiers.get("quest_money_mult", 1)
+        self.event_xp_mult: float = modifiers.get("event_xp_mult", 1)
+        self.event_money_mult: float = modifiers.get("event_money_mult", 1)
+        self.can_meet_players: bool = modifiers.get("can_meet_players", True)
+        self.power_bonus: int = modifiers.get("power_bonus", 0)
+        self.roll_bonus: int = modifiers.get("roll_bonus", 0)
+        self.quest_time_multiplier: float = modifiers.get("quest_time_multiplier", 1)
+        self.eldritch_resist: bool = modifiers.get("eldritch_resist", False)
 
-QTE_CACHE: Dict[int, QuickTimeEvent] = {}  # runtime cache that contains all users + quick time events pairs
-TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))
+    def __eq__(self, other):
+        return self.faction_id == other.faction_id
+
+    def __str__(self):
+        return f"{self.faction_id} - *{self.name}*\n_{self.description}_"
+
+    @classmethod
+    def create_from_json(cls, cults_json: Dict[str, Any]) -> "Cult":
+        return cls(
+            cults_json.get("id"),
+            cults_json.get("name"),
+            cults_json.get("description"),
+            cults_json.get("modifiers"),
+        )

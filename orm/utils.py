@@ -2,7 +2,6 @@ import logging
 import time
 from typing import Dict, Any, Tuple
 
-
 __VALUE, __TTL = (0, 1)
 
 log = logging.getLogger(__name__)
@@ -93,4 +92,3 @@ def cache_ttl_single_value(ttl=3600):
             return value
         return wrapper
     return decorator
-

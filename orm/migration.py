@@ -69,3 +69,18 @@ def __migrate_v1_to_v2():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v1.db", "pilgram_v2.db")
+
+
+@__add_to_migration_list("pilgram_v2.db")
+def __migrate_v2_to_v3():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v2 import db as previous_db
+    log.info(f"Migrating v2 to v3...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('playermodel', 'cult_id', IntegerField(default=0))
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v2.db", "pilgram_v3.db")

@@ -7,7 +7,7 @@ from typing import Tuple, Dict, Union, Callable, Type, List
 from minigames.generics import PilgramMinigame, MINIGAMES
 from minigames.games import AAA
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, Guild, TOWN_ZONE, Zone, SpellError, QTE_CACHE
+from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
@@ -50,7 +50,10 @@ def check_current_quest(context: UserContext) -> str:
 
 def check_zone(context: UserContext, zone_id_str: int) -> str:
     try:
-        zone = db().get_zone(int(zone_id_str))
+        zone_id = int(zone_id_str)
+        if zone_id == 0:
+            return str(TOWN_ZONE)
+        zone = db().get_zone(int(zone_id))
         return str(zone)
     except KeyError:
         return Strings.obj_does_not_exist.format(obj="zone")
@@ -158,6 +161,14 @@ def process_get_character_name(context: UserContext, user_input) -> str:
     return context.get_process_prompt(USER_PROCESSES)
 
 
+def process_get_character_cult(context: UserContext, user_input) -> str:
+    if not re.match(POSITIVE_INTEGER_REGEX, user_input):
+        return Strings.positive_integer_error
+    context.set("cult", user_input)
+    context.progress_process()
+    return context.get_process_prompt(USER_PROCESSES)
+
+
 def process_get_character_description(context: UserContext, user_input) -> str:
     if not re.match(DESCRIPTION_REGEX, user_input):
         return Strings.description_validation_error
@@ -167,6 +178,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             # make a copy of the original player (to avoid cases in which we set a name that isn't valid in the object
             player_copy = copy(player)
             player_copy.name = context.get("name")
+            player.cult = Cult.LIST[context.get("cult")]
             player_copy.description = user_input
             player_copy.money -= MODIFY_COST
             db().update_player_data(player_copy)
@@ -186,7 +198,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             return Strings.welcome_to_the_world
     except AlreadyExists:
         context.end_process()
-        return Strings.name_object_already_exists.format(obj="character", name=player.name)
+        return Strings.name_object_already_exists.format(obj="character", name=context.get("name"))
 
 
 def start_guild_creation(context: UserContext) -> str:
@@ -258,7 +270,7 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
             return Strings.guild_creation_success.format(name=guild.name)
     except AlreadyExists:
         context.end_process()
-        return Strings.name_object_already_exists.format(obj="guild", name=guild.name)
+        return Strings.name_object_already_exists.format(obj="guild", name=context.get("name"))
 
 
 def upgrade(context: UserContext, obj: str = "gear") -> str:
@@ -327,6 +339,8 @@ def modify_player(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         # check if the player has enough money
+        if db().is_player_on_a_quest(player):
+            return Strings.cannot_modify_on_quest
         if player.money < MODIFY_COST:
             return Strings.not_enough_money.format(amount=MODIFY_COST-player.money)
         context.start_process("character creation")
@@ -374,7 +388,7 @@ def __start_quest_in_zone(player: Player, zone: Zone) -> str:
     quest = db().get_next_quest(zone, player)
     adventure_container = db().get_player_adventure_container(player)
     adventure_container.quest = quest
-    adventure_container.finish_time = datetime.now() + quest.get_duration()
+    adventure_container.finish_time = datetime.now() + quest.get_duration(player)
     db().update_quest_progress(adventure_container)
     return Strings.quest_embark.format(quest=str(quest))
 
@@ -574,6 +588,10 @@ def __list_minigames() -> str:
     return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys()) + "\n\nWrite '`play [minigame]`' to play a minigame"
 
 
+def __list_cults() -> str:
+    return Strings.list_cults + "\n\n".join(str(x) for x in Cult.LIST)
+
+
 def __list_spells() -> str:
     return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}\n_{spell.description}_" for key, spell in SPELLS.items())
 
@@ -662,7 +680,6 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
-        "town": IFW(None, return_string, f"Shows a description of {ContentMeta.get('world.city.name')}.", default_args={"string": str(TOWN_ZONE)}),
         "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Shows a description of a Zone."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -714,6 +731,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
+    "cults": IFW(None, return_string, "Shows all cults", default_args={"string": __list_cults()}),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
@@ -727,6 +745,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "character creation": (
         (Strings.character_creation_get_name, process_get_character_name),
+        (Strings.choose_cult + "\n" + __list_cults(), process_get_character_cult),
         (Strings.character_creation_get_description, process_get_character_description)
     ),
     "guild creation": (

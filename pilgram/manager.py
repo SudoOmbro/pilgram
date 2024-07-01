@@ -7,7 +7,7 @@ from time import sleep
 from datetime import timedelta
 from typing import List, Dict, Tuple
 
-from pilgram.classes import Quest, Player, AdventureContainer, Zone, TOWN_ZONE, QuickTimeEvent, QTE_CACHE
+from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
@@ -138,15 +138,16 @@ class QuestManager:
     def _process_event(self, ac: AdventureContainer):
         zone = ac.zone()
         event = self.db().get_random_zone_event(zone)
-        xp, money = event.get_rewards(ac.player)
         player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
+        xp, money = event.get_rewards(ac.player)
         player.add_xp(xp)
         money_am = player.add_money(money)  # am = after modifiers
         ac.player = player
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
-        if random.randint(1, 20) == 1:  # 5% chance of a quick time event
+        if random.randint(1, 10) == 1:  # 10% chance of a quick time event
+            log.info(f"Player '{player.name}' encountered a QTE.")
             qte = random.choice(QuickTimeEvent.LIST)
             QTE_CACHE[player.player_id] = qte
             text += f"*QTE*\n\n{qte}"
@@ -205,7 +206,8 @@ class QuestManager:
         zones_players_map: Dict[int, List[Player]] = {}
         updates = self.get_updates()
         for update in updates:
-            add_to_zones_players_map(zones_players_map, update)
+            if update.player.cult.can_meet_players:
+                add_to_zones_players_map(zones_players_map, update)
             self.process_update(update)
             sleep(self.updates_per_second)
         self.handle_players_meeting(zones_players_map)

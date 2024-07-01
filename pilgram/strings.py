@@ -71,6 +71,7 @@ class Strings:
     guild_already_maxed = "Your guild is already at the maximum level."
 
     # modify
+    cannot_modify_on_quest = "You can't modify your character while on a quest."
     obj_attr_modified = f"{{obj}} {{attr}} has been modified correctly. You paid {ContentMeta.get('modify_cost')}"
     obj_modified = f"Your {{obj}} has been modified correctly. You paid {ContentMeta.get('modify_cost')} {MONEY}"
 
@@ -127,6 +128,10 @@ class Strings:
     no_qte_active = "You don't have any currently active quick time event!"
     invalid_option = "The chosen option is invalid!"
 
+    # cults
+    choose_cult = "Send the number of the cult you want to join."
+    list_cults = "Here are all the possible cults:\n\n"
+
     # errors
     no_character_yet = "You haven't made a character yet!"
     named_object_not_exist = "{obj} with name {name} does not exist."
@@ -138,4 +143,4 @@ class Strings:
     obj_number_error = "{obj} must be a positive integer number."
     obj_does_not_exist = "The {obj} does not exist!"
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"
-    positive_integer_error = "You must enter a positive integer (> 0)."
+    positive_integer_error = "You must enter a positive integer (>= 0)."

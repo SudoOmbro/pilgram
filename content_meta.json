@@ -150,5 +150,68 @@
     "successes": "You leave the monster be, better safe than sorry.\n\nYou gain 20 xp. | You manage to kill the monster but the artifact is destroyed in the process.\n\nYou gain 100 xp & 100 BA. | You manage to retrieve the artifact.\n\nYou gain 1 artifact piece.",
     "failures": "The monster wakes up an chases you off. | The monster wakes up an fights back, forcing you to flee | The monster wakes up and roars, forcing you to flee.",
     "rewards": "xp 20 | xp 100, mn 100 | xp 1000, ap 1"
+  }, {
+    "description": "You hear faint crying coming from a room nearby.",
+    "options": "leave 95 | investigate 50",
+    "successes": "You leave, you don't want to get involved.\n\nYou gain 10 xp. | It turns out the crying was a tied up woman. You untie her and she rewards you with some Alloy.\n\nYou gain 100 xp & 50 BA.",
+    "failures": "As soon as you start to leave, the crying stops. You turn around and you see empty eye sockets stalking you. You run. | It turns out the crying was just an hallucination.",
+    "rewards": "xp 10 | xp 100, mn 50"
+  }],
+  "cults": [{
+    "id": 0,
+    "name": "Not in a cult",
+    "description": "Not really a cult. 'Members' don't have any quirks, they are just standard adventurers.",
+    "modifiers": {}
+  }, {
+    "id": 1,
+    "name": "Cult of the Amygdala",
+    "description": "Members are shunned by society, part of their rituals involves eating parts of human brains. The rituals and drugs they take let them access their latent eldritch powers, even without the aid of artifacts.",
+    "modifiers": {
+      "can_meet_players": false,
+      "power_bonus": 10
+    }
+  }, {
+    "id": 2,
+    "name": "Inquisition Remnants",
+    "description": "Remnants of the old Royal Inquisition sect. Even though the God emperor died long ago, the sacred talismans they hold still work, blocking the eldritch influences of old Gods.",
+    "modifiers": {
+      "eldritch_resist": true,
+      "power_bonus": -100
+    }
+  }, {
+    "id": 3,
+    "name": "Order of the Alloy",
+    "description": "Worshippers of all things made of Boromian Alloy. They really love treasure, and they will spend a long time searching for it.",
+    "modifiers": {
+      "event_money_mult": 2,
+      "quest_money_mult": 1.5,
+      "quest_time_multiplier": 2
+    }
+  }, {
+    "id": 4,
+    "name": "Arditi",
+    "description": "Promises are sacred to the members of this cult. They will complete missions at any cost, even if it means losing possible treasure.",
+    "modifiers": {
+      "event_money_mult": 0.2,
+      "quest_money_mult": 0.5,
+      "roll_bonus": 5
+    }
+  }, {
+    "id": 5,
+    "name": "Liquid Alloy",
+    "description": "These cultists worship the free market, studying it obsessively. They always seem to manage to earn a bit more money than others by taking shortcuts & cost saving measures.",
+    "modifiers": {
+      "general_money_mult": 1.2,
+      "general_xp_mult": 0.8
+    }
+  }, {
+    "id": 6,
+    "name": "Esoteric Order of the Serpent",
+    "description": "Worshippers of the dead titan resting in Serpentbarrow. They perform daily animal sacrifices to commune with the Serpent, which grants them forbidden knowledge.",
+    "modifiers": {
+      "general_xp_mult": 1.2,
+      "general_money_mult": 0.8,
+      "quest_time_multiplier": 1.2
+    }
   }]
 }
