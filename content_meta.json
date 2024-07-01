@@ -183,9 +183,9 @@
     "name": "Order of the Alloy",
     "description": "Worshippers of all things made of Boromian Alloy. They really love treasure, and they will spend a long time searching for it.",
     "modifiers": {
-      "event_money_mult": 2,
+      "event_money_mult": 2.0,
       "quest_money_mult": 1.5,
-      "quest_time_multiplier": 2
+      "quest_time_multiplier": 2.0
     }
   }, {
     "id": 4,

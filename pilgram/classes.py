@@ -740,7 +740,7 @@ class Cult(Listable, meta_name="cults"):
         self.can_meet_players: bool = modifiers.get("can_meet_players", True)
         self.power_bonus: int = modifiers.get("power_bonus", 0)
         self.roll_bonus: int = modifiers.get("roll_bonus", 0)
-        self.quest_time_multiplier: float = modifiers.get("quest_time_multiplier", 1)
+        self.quest_time_multiplier: float = modifiers.get("quest_time_multiplier", 1.0)
         self.eldritch_resist: bool = modifiers.get("eldritch_resist", False)
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
 
