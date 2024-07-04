@@ -593,12 +593,12 @@ def __list_minigames() -> str:
     return "Available minigames:\n\n" + "\n".join(f"`{x}`" for x in MINIGAMES.keys()) + "\n\nWrite '`play [minigame]`' to play a minigame"
 
 
-def __list_cults() -> str:
-    return Strings.list_cults + "\n\n".join(str(x) for x in Cult.LIST)
-
-
 def __list_spells() -> str:
     return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}\n_{spell.description}_" for key, spell in SPELLS.items())
+
+
+def list_cults(context: UserContext) -> str:
+    return Strings.list_cults + "\n\n".join(str(x) for x in Cult.LIST)
 
 
 def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
@@ -736,7 +736,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         }
     },
     "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
-    "cults": IFW(None, return_string, "Shows all cults", default_args={"string": __list_cults()}),
+    "cults": IFW(None, list_cults, "Shows all cults"),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
@@ -750,7 +750,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     "character creation": (
         (Strings.character_creation_get_name, process_get_character_name),
-        (Strings.choose_cult + "\n" + __list_cults(), process_get_character_cult),
+        (Strings.choose_cult + "\n" + list_cults(UserContext()), process_get_character_cult),
         (Strings.character_creation_get_description, process_get_character_description)
     ),
     "guild creation": (

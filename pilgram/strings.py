@@ -148,6 +148,9 @@ class Strings:
         "upgrade_cost_multiplier": "Upgrade Cost Multiplier",
         "xp_mult_per_player_in_cult": "XP Multiplier per player in cult",
         "money_mult_per_player_in_cult": "BA Multiplier per player in cult",
+        "randomizer_delay": "Randomize every X hours",
+        "stats_to_randomize": "Affected stats",
+        "power_bonus_per_zone_visited": "Eldritch power per zones visited"
     }
 
     # errors

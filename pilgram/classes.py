@@ -318,7 +318,9 @@ class Player:
     def add_xp(self, amount: int) -> bool:
         """ adds xp to the player and returns true if the player leveled up """
         amount *= self.cult.general_xp_mult
-        self.xp += amount
+        if self.cult.xp_mult_per_player_in_cult != 1.0:
+            amount *= self.cult.xp_mult_per_player_in_cult ** self.cult.number_of_members
+        self.xp += int(amount)
         if self.xp >= self.get_required_xp():
             self.level_up()
             return True
@@ -327,11 +329,13 @@ class Player:
     def add_money(self, amount: int) -> int:
         """ adds money to the player & returns how much was actually added to the player """
         amount *= self.cult.general_money_mult
+        if self.cult.money_mult_per_player_in_cult != 1.0:
+            amount *= self.cult.money_mult_per_player_in_cult ** self.cult.number_of_members
         for flag in (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3):
             if flag.is_set(self.flags):
                 amount = int(amount * 1.5)
                 self.flags = flag.unset(self.flags)
-        self.money += amount
+        self.money += int(amount)
         return amount
 
     def add_artifact_pieces(self, amount: int):
@@ -365,6 +369,8 @@ class Player:
         if self.cult.power_bonus == -100:
             return 0
         max_charge = (len(self.artifacts) * 10) + self.cult.power_bonus
+        if self.cult.power_bonus_per_zone_visited:
+            max_charge += len(self.progress.zone_progress) * self.cult.power_bonus_per_zone_visited
         if max_charge >= self.MAXIMUM_POWER:
             max_charge = self.MAXIMUM_POWER
         return max_charge
@@ -385,10 +391,10 @@ class Player:
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
         string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
-        if self.artifacts:
+        if self.get_max_charge() > 0:
             string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
-            string += f"\n\nArtifacts:\n" + "\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)
+            string += f"\n\nArtifacts:\n" + ("\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)) if len(self.artifacts) > 0 else "\n\nNo artifacts yet"
         else:
             string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
         return string
@@ -724,6 +730,7 @@ class QuickTimeEvent(Listable, meta_name="quick time events"):
 
 
 class Cult(Listable, meta_name="cults"):
+    """ a horrible way to implement modifiers but it works """
 
     def __init__(
             self,
@@ -732,9 +739,11 @@ class Cult(Listable, meta_name="cults"):
             description: str,
             modifiers: dict
     ):
+        # generic vars
         self.faction_id = faction_id
         self.name = name
         self.description = description
+        # stats modifiers
         self.general_xp_mult: float = modifiers.get("general_xp_mult", 1)
         self.general_money_mult: float = modifiers.get("general_money_mult", 1)
         self.quest_xp_mult: float = modifiers.get("quest_xp_mult", 1)
@@ -750,14 +759,28 @@ class Cult(Listable, meta_name="cults"):
         self.upgrade_cost_multiplier: float = modifiers.get("upgrade_cost_multiplier", 1.0)
         self.xp_mult_per_player_in_cult: float = modifiers.get("xp_mult_per_player_in_cult", 1.0)
         self.money_mult_per_player_in_cult: float = modifiers.get("money_mult_per_player_in_cult", 1.0)
+        self.randomizer_delay: int = modifiers.get("randomizer_delay", 0)
+        self.stats_to_randomize: Dict[str, list] = modifiers.get("stats_to_randomize", {})
+        self.power_bonus_per_zone_visited: int = modifiers.get("power_bonus_per_zone_visited", 0)
+        # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
+        if self.stats_to_randomize:
+            self.modifiers_applied.extend(list(self.stats_to_randomize.keys()))
+        self.last_update: datetime = datetime.now() - timedelta(days=2)
         self.number_of_members: int = 0  # has to be set every hour by the timed updates manager
+
+    def can_randomize(self) -> bool:
+        return (self.randomizer_delay != 0) and self.stats_to_randomize and ((datetime.now() - self.last_update) >= timedelta(hours=self.randomizer_delay))
+
+    def randomize(self):
+        for stat_name, choices in self.stats_to_randomize.items():
+            self.__dict__[stat_name] = random.choice(choices)
 
     def __eq__(self, other):
         return self.faction_id == other.faction_id
 
     def __str__(self):
-        string = f"{self.faction_id} - *{self.name}*\n_{self.description}_\n"
+        string = f"{self.faction_id} - *{self.name}* ({self.number_of_members} members)\n_{self.description}_\n"
         if self.modifiers_applied:
             for modifier in self.modifiers_applied:
                 name = Strings.modifier_names[modifier]
@@ -766,7 +789,7 @@ class Cult(Listable, meta_name="cults"):
                     string += f"- *{name}*: {value * 100:.0f}%\n"
                 elif type(value) is bool:
                     string += f"- *{name}*: {'Yes' if value else 'No'}\n"
-                else:
+                elif type(value) is int:
                     string += f"- *{name}*: {'+' if value > 0 else ''}{value}\n"
         else:
             string += "- *No modifiers*"
@@ -780,3 +803,8 @@ class Cult(Listable, meta_name="cults"):
             cults_json.get("description"),
             cults_json.get("modifiers"),
         )
+
+    @classmethod
+    def update_number_of_members(cls, members_number: List[Tuple[int, int]]):
+        for cult_id, number in members_number:
+            cls.LIST[cult_id].number_of_members = number

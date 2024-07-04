@@ -545,8 +545,8 @@ class PilgramORMDatabase(PilgramDatabase):
     # cults ----
 
     @cache_ttl_single_value(ttl=1200)
-    def get_cults_members_number(self):
-        query = (PlayerModel.select(fn.Count(PlayerModel.id).alias('player_count')).
-                 group_by(PlayerModel.cult_id.
-                 order_by(PlayerModel.cult_id.asc())))
-        return [x.player_count for x in query]
+    def get_cults_members_number(self) -> List[Tuple[int, int]]:  # cult id, number of members
+        query = (PlayerModel.select(PlayerModel.cult_id, fn.Count(PlayerModel.id).alias('player_count')).
+                 group_by(PlayerModel.cult_id).
+                 order_by(PlayerModel.cult_id.asc()))
+        return [(x.cult_id, x.player_count) for x in query]

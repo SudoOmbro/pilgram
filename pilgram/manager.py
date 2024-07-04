@@ -4,10 +4,10 @@ import os
 import random
 import time
 from time import sleep
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import List, Dict, Tuple
 
-from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE
+from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
@@ -370,3 +370,15 @@ class TimedUpdatesManager:
     def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase):
         self.notifier = notifier
         self.database = database
+
+    def db(self) -> PilgramDatabase:
+        """ wrapper around the acquire method to make calling it less verbose """
+        return self.database.acquire()
+
+    def run(self):
+        # update members
+        Cult.update_number_of_members(self.db().get_cults_members_number())
+        # update randomized stats
+        for cult in Cult.LIST:
+            if cult.can_randomize():
+                cult.randomize()

@@ -265,7 +265,7 @@ class PilgramDatabase(ABC):
 
     # cults ----
 
-    def get_cults_members_number(self):
+    def get_cults_members_number(self) -> List[Tuple[int, int]]:  # cult id, number of members
         """ get the number of members for each cult """
         raise NotImplementedError
 

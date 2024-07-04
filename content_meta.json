@@ -216,7 +216,7 @@
   }, {
     "id": 7,
     "name": "Heresy remnants",
-    "description": "Remnants of the old heretics that killed the God Empreror. They are trying to reclaim their power by restoring their lost artifacts that were lost during the final battle.",
+    "description": "Remnants of the old heretics that killed the God Empreror. They are trying to reclaim their power by restoring artifacts that were lost during the final battle.",
     "modifiers": {
       "artifact_drop_bonus": 2,
       "upgrade_cost_multiplier": 2.0,
@@ -229,6 +229,30 @@
     "modifiers": {
       "xp_mult_per_player_in_cult": 1.01,
       "money_mult_per_player_in_cult": 0.95
+    }
+  }, {
+    "id": 9,
+    "name": "Children of Chaos",
+    "description": "Worshippers of the primordial chaos from whence the universe was birthed.",
+    "modifiers": {
+      "randomizer_delay": 24,
+      "stats_to_randomize": {
+        "can_meet_players": [true, false],
+        "power_bonus":  [-30, -20, -10, 0, 10, 20, 30],
+        "artifact_drop_bonus": [-1, 0, 1],
+        "general_xp_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+        "general_money_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+        "roll_bonus": [-2, -1, 0, 1, 2],
+        "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2]
+      }
+    }
+  }, {
+    "id": 10,
+    "name": "Followers of the Pilgrims",
+    "description": "Followers of the ever wandering Pilgrims, they gain deep insights and forbidden knowledge from following the mysterious mute figures walking Borom.",
+    "modifiers": {
+      "power_bonus_per_zone_visited": 2,
+      "quest_time_multiplier": 1.2
     }
   }]
 }
