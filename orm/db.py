@@ -541,3 +541,12 @@ class PilgramORMDatabase(PilgramDatabase):
             arse.save()
         except ArtifactModel.DoesNotExist:
             raise KeyError(f"Could not find artifact with id {artifact.artifact_id}")
+
+    # cults ----
+
+    @cache_ttl_single_value(ttl=1200)
+    def get_cults_members_number(self):
+        query = (PlayerModel.select(fn.Count(PlayerModel.id).alias('player_count')).
+                 group_by(PlayerModel.cult_id.
+                 order_by(PlayerModel.cult_id.asc())))
+        return [x.player_count for x in query]

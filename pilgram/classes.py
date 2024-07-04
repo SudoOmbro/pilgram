@@ -281,15 +281,18 @@ class Player:
 
     def get_required_xp(self) -> int:
         lv = self.level
-        return (100 * (lv * lv)) + (1000 * lv)
+        value = (100 * (lv * lv)) + (1000 * lv)
+        return int(value * self.cult.upgrade_cost_multiplier)
 
     def get_gear_upgrade_required_money(self) -> int:
         lv = self.gear_level
-        return (50 * (lv * lv)) + (1000 * lv)
+        value = (50 * (lv * lv)) + (1000 * lv)
+        return int(value * self.cult.upgrade_cost_multiplier)
 
     def get_home_upgrade_required_money(self) -> int:
         lv = self.home_level + 1
-        return (200 * (lv * lv)) + (600 * lv)
+        value = (200 * (lv * lv)) + (600 * lv)
+        return int(value * self.cult.upgrade_cost_multiplier)
 
     def can_upgrade_gear(self) -> bool:
         return self.money >= self.get_gear_upgrade_required_money()
@@ -423,7 +426,8 @@ class Player:
             datetime.now(),
             [],
             np.uint32(0),
-            0
+            0,
+            Cult.LIST[0]
         )
 
 
@@ -742,7 +746,12 @@ class Cult(Listable, meta_name="cults"):
         self.roll_bonus: int = modifiers.get("roll_bonus", 0)
         self.quest_time_multiplier: float = modifiers.get("quest_time_multiplier", 1.0)
         self.eldritch_resist: bool = modifiers.get("eldritch_resist", False)
+        self.artifact_drop_bonus: int = modifiers.get("artifact_drop_bonus", 0)
+        self.upgrade_cost_multiplier: float = modifiers.get("upgrade_cost_multiplier", 1.0)
+        self.xp_mult_per_player_in_cult: float = modifiers.get("xp_mult_per_player_in_cult", 1.0)
+        self.money_mult_per_player_in_cult: float = modifiers.get("money_mult_per_player_in_cult", 1.0)
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
+        self.number_of_members: int = 0  # has to be set every hour by the timed updates manager
 
     def __eq__(self, other):
         return self.faction_id == other.faction_id

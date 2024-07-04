@@ -143,7 +143,11 @@ class Strings:
         "power_bonus": "Base Power Bonus",
         "roll_bonus": "Player Roll Bonus",
         "quest_time_multiplier": "Quest Duration Multiplier",
-        "eldritch_resist": "Immune to Eldritch spells"
+        "eldritch_resist": "Immune to Eldritch spells",
+        "artifact_drop_bonus": "Artifact Drop Bonus",
+        "upgrade_cost_multiplier": "Upgrade Cost Multiplier",
+        "xp_mult_per_player_in_cult": "XP Multiplier per player in cult",
+        "money_mult_per_player_in_cult": "BA Multiplier per player in cult",
     }
 
     # errors

@@ -120,7 +120,7 @@ class QuestManager:
             money_am = player.add_money(money)  # am = after modifiers
             player.renown += renown
             piece: bool = False
-            if random.randint(1, 10) < 3:  # 20% chance to gain a piece of an artifact
+            if random.randint(1, 10) < (3 + player.cult.artifact_drop_bonus):  # 30% base chance to gain a piece of an artifact
                 player.artifact_pieces += 1
                 piece = True
             self.notifier.notify(
@@ -362,3 +362,11 @@ class TourneyManager:
         self.tourney_edition += 1
         log.info(f"New tourney started, edition {self.tourney_edition}, start: {self.tourney_start} (now)")
         self.save()
+
+
+class TimedUpdatesManager:
+    """ helper class to encapsulate all the small updates needed for the game to function """
+
+    def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase):
+        self.notifier = notifier
+        self.database = database

@@ -1,10 +1,9 @@
 import logging
 from abc import ABC
 from datetime import timedelta, datetime
-from typing import List, Tuple, Union, Any, Dict
+from typing import List, Tuple, Union, Any
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact
-from pilgram.globals import ContentMeta
 
 log = logging.getLogger(__name__)
 
@@ -262,6 +261,12 @@ class PilgramDatabase(ABC):
 
     def update_artifact(self, artifacts: Artifact, owner: Union[Player, None]):
         """ save the given artifact to the database (used when assigning an owner basically) """
+        raise NotImplementedError
+
+    # cults ----
+
+    def get_cults_members_number(self):
+        """ get the number of members for each cult """
         raise NotImplementedError
 
 

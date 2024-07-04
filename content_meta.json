@@ -198,7 +198,7 @@
     }
   }, {
     "id": 5,
-    "name": "Liquid Alloy",
+    "name": "Fingers of Atlas",
     "description": "These cultists worship the free market, studying it obsessively. They always seem to manage to earn a bit more money than others by taking shortcuts & cost saving measures.",
     "modifiers": {
       "general_money_mult": 1.2,
@@ -212,6 +212,23 @@
       "general_xp_mult": 1.2,
       "general_money_mult": 0.8,
       "quest_time_multiplier": 1.2
+    }
+  }, {
+    "id": 7,
+    "name": "Heresy remnants",
+    "description": "Remnants of the old heretics that killed the God Empreror. They are trying to reclaim their power by restoring their lost artifacts that were lost during the final battle.",
+    "modifiers": {
+      "artifact_drop_bonus": 2,
+      "upgrade_cost_multiplier": 2.0,
+      "quest_time_multiplier": 1.2
+    }
+  }, {
+    "id": 8,
+    "name": "The Convergence",
+    "description": "We are one. We are many.",
+    "modifiers": {
+      "xp_mult_per_player_in_cult": 1.01,
+      "money_mult_per_player_in_cult": 0.95
     }
   }]
 }
