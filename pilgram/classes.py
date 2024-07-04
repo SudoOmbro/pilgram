@@ -222,6 +222,64 @@ class Spell:
             return e.message
 
 
+class Damage:
+    """ used to express damage & resistance values """
+
+    def __init__(
+        self,
+        slash: int,
+        pierce: int,
+        blunt: int,
+        occult: int,
+        fire: int,
+        acid: int,
+        freeze: int,
+        electric: int
+    ):
+        self.slash = slash
+        self.pierce = pierce
+        self.blunt = blunt
+        self.occult = occult
+        self.fire = fire
+        self.acid = acid
+        self.freeze = freeze
+        self.electric = electric
+
+    def __add__(self, other):
+        return Damage(
+            self.slash + other.slash,
+            self.pierce + other.pierce,
+            self.blunt + other.blunt,
+            self.occult + other.occult,
+            self.fire + other.fire,
+            self.acid + other.acid,
+            self.freeze + other.freeze,
+            self.electric + other.electric
+        )
+
+    def __mul__(self, other):
+        return Damage(
+            self.slash * other.slash,
+            self.pierce * other.pierce,
+            self.blunt * other.blunt,
+            self.occult * other.occult,
+            self.fire * other.fire,
+            self.acid * other.acid,
+            self.freeze * other.freeze,
+            self.electric * other.electric
+        )
+
+    @classmethod
+    def get_empty(cls) -> "Damage":
+        return Damage(0, 0, 0, 0, 0, 0, 0, 0)
+
+    @classmethod
+    def generate_from_seed(cls, seed: int) -> "Damage":
+        damage = cls.get_empty()
+        # TODO generate
+        return damage
+
+
 class Player:
     """ contains all information about a player """
     MAXIMUM_POWER: int = 100
@@ -404,6 +462,13 @@ class Player:
 
     def unset_flag(self, flag: Type[Flag]):
         self.flags = flag.unset(self.flags)
+
+    # combat stats
+
+    def get_base_hp(self) -> int:
+        return (self.level + self.gear_level) * 10   # TODO add equipment modifiers
+
+    # utility
 
     def __repr__(self):
         return str(self.__dict__)

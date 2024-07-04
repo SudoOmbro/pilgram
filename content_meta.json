@@ -184,7 +184,7 @@
     "description": "Worshippers of all things made of Boromian Alloy. They really love treasure, and they will spend a long time searching for it.",
     "modifiers": {
       "event_money_mult": 2.0,
-      "quest_money_mult": 1.5,
+      "quest_money_mult": 2.0,
       "quest_time_multiplier": 2.0
     }
   }, {
@@ -193,7 +193,7 @@
     "description": "Promises are sacred to the members of this cult. They will complete missions at any cost, even if it means losing possible treasure.",
     "modifiers": {
       "event_money_mult": 0.2,
-      "quest_money_mult": 0.5,
+      "quest_money_mult": 0.2,
       "roll_bonus": 5
     }
   }, {
@@ -201,26 +201,27 @@
     "name": "Fingers of Atlas",
     "description": "These cultists worship the free market, studying it obsessively. They always seem to manage to earn a bit more money than others by taking shortcuts & cost saving measures.",
     "modifiers": {
-      "general_money_mult": 1.2,
-      "general_xp_mult": 0.8
+      "general_money_mult": 1.25,
+      "general_xp_mult": 0.75,
+      "quest_time_multiplier": 0.8
     }
   }, {
     "id": 6,
     "name": "Esoteric Order of the Serpent",
     "description": "Worshippers of the dead titan resting in Serpentbarrow. They perform daily animal sacrifices to commune with the Serpent, which grants them forbidden knowledge.",
     "modifiers": {
-      "general_xp_mult": 1.2,
-      "general_money_mult": 0.8,
-      "quest_time_multiplier": 1.2
+      "general_xp_mult": 1.25,
+      "general_money_mult": 0.75,
+      "quest_time_multiplier": 1.25
     }
   }, {
     "id": 7,
     "name": "Heresy remnants",
     "description": "Remnants of the old heretics that killed the God Empreror. They are trying to reclaim their power by restoring artifacts that were lost during the final battle.",
     "modifiers": {
-      "artifact_drop_bonus": 2,
+      "artifact_drop_bonus": 4,
       "upgrade_cost_multiplier": 2.0,
-      "quest_time_multiplier": 1.2
+      "quest_time_multiplier": 1.6
     }
   }, {
     "id": 8,
@@ -228,7 +229,7 @@
     "description": "We are one. We are many.",
     "modifiers": {
       "xp_mult_per_player_in_cult": 1.01,
-      "money_mult_per_player_in_cult": 0.95
+      "money_mult_per_player_in_cult": 0.99
     }
   }, {
     "id": 9,
