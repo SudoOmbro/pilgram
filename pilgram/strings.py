@@ -43,6 +43,7 @@ class Strings:
     quest_embark = "You have embarked on the quest:\n\n{quest}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
     quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
+    quest_roll = "(You rolled {roll}, Value to beat: {target})"
 
     # rank
     rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
@@ -127,6 +128,7 @@ class Strings:
     # quick time events
     no_qte_active = "You don't have any currently active quick time event!"
     invalid_option = "The chosen option is invalid!"
+    qte_failed = "You failed the QTE!"
 
     # cults
     choose_cult = "Send the number of the cult you want to join."

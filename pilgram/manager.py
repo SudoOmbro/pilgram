@@ -99,7 +99,8 @@ class QuestManager:
         player: Player = self.db().get_player_data(ac.player.player_id)  # get the most up to date object
         ac.player = player
         tax: float = 0
-        if quest.finish_quest(player):
+        quest_finished, roll, value_to_beat = quest.finish_quest(player)
+        if quest_finished:
             xp, money = quest.get_rewards(player)
             renown = quest.get_prestige() * 200
             if player.guild:
@@ -125,10 +126,10 @@ class QuestManager:
                 piece = True
             self.notifier.notify(
                 player,
-                quest.success_text + Strings.quest_success.format(name=quest.name) + _gain(xp, money_am, renown, tax=tax) + (Strings.piece_found if piece else "")
+                quest.success_text + Strings.quest_success.format(name=quest.name) + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}" + _gain(xp, money_am, renown, tax=tax) + (Strings.piece_found if piece else "")
             )
         else:
-            self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name))
+            self.notifier.notify(player, quest.failure_text + Strings.quest_fail.format(name=quest.name) + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}")
         self.highest_quests.update(ac.zone().zone_id, ac.quest.number + 1)  # zone() will return a zone and not None since player must be in a quest to reach this part of the code
         ac.quest = None
         self.db().update_quest_progress(ac)
@@ -153,6 +154,7 @@ class QuestManager:
             text += f"*QTE*\n\n{qte}"
         elif player.player_id in QTE_CACHE:
             del QTE_CACHE[player.player_id]
+            text = Strings.qte_failed + "\n\n" + text
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):

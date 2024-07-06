@@ -89,15 +89,15 @@ class Quest:
         self.success_text = success_text
         self.failure_text = failure_text
 
-    def finish_quest(self, player: "Player") -> bool:
+    def finish_quest(self, player: "Player") -> Tuple[bool, int, int]:  # win/lose, roll, roll to beat
         """ return true if the player has successfully finished the quest """
         roll = player.roll(20)
         if roll == 1:
             log.info(f"{player.name} rolled a critical failure on quest {self.name}")
-            return False  # you can still get a critical failure
+            return False, 1, 10  # you can still get a critical failure
         if roll == 20:
             log.info(f"{player.name} rolled a critical success on quest {self.name}")
-            return True  # you can also get a critical success
+            return True, 20, 10  # you can also get a critical success
         sqrt_multiplier = (1.2 * self.zone.level) - ((player.level + player.gear_level) / 2)
         if sqrt_multiplier < 1:
             sqrt_multiplier = 1
@@ -109,7 +109,7 @@ class Quest:
         if value_to_beat > 19:
             value_to_beat = 19
         log.info(f"{self.name}: to beat: {value_to_beat}, {player.name} rolled: {roll}")
-        return roll >= value_to_beat
+        return roll >= value_to_beat, roll, value_to_beat
 
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
@@ -386,19 +386,6 @@ class Player:
             return max_charge
         return charge
 
-    def __str__(self):
-        guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
-        string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
-        string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
-        if self.get_max_charge() > 0:
-            string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
-            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
-            string += f"\n\nArtifacts:\n" + ("\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)) if len(self.artifacts) > 0 else "\n\nNo artifacts yet"
-        else:
-            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
-        return string
-
     def set_flag(self, flag: Type[Flag]):
         self.flags = flag.set(self.flags)
 
@@ -408,9 +395,26 @@ class Player:
     # combat stats
 
     def get_base_hp(self) -> int:
-        return (self.level + self.gear_level) * 10   # TODO add equipment modifiers
+        return (self.level + self.gear_level) * 10
+
+    def get_hp(self) -> int:
+        return self.get_base_hp()
 
     # utility
+
+    def __str__(self):
+        guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
+        string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
+        string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
+        string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
+        if self.get_max_charge() > 0:
+            string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
+            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
+            string += f"\n\nArtifacts:\n" + ("\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)) if len(
+                self.artifacts) > 0 else "\n\nNo artifacts yet"
+        else:
+            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
+        return string
 
     def __repr__(self):
         return str(self.__dict__)

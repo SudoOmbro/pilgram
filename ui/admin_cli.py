@@ -234,6 +234,14 @@ def force_update(context: UserContext, player_name: str) -> str:
     return f"Force update for player {player_name}: success"
 
 
+def force_quest_complete(context: UserContext, player_name: str) -> str:
+    player = db().get_player_from_name(player_name)
+    ac = db().get_player_adventure_container(player)
+    ac.finish_time = datetime.now() - timedelta(hours=1)
+    db().update_quest_progress(ac, last_update=datetime.now() - timedelta(hours=1))
+    return f"Force quest complete for player {player_name}: success"
+
+
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "add": {
         "player": {
@@ -291,7 +299,10 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "power": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], give_player_eldritch_power, "recharge players eldritch power")
     },
     "force": {
-        "update": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_update, "Force update for the given player")
+        "update": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_update, "Force update for the given player"),
+        "quest": {
+            "complete": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player")
+        }
     }
 }
 
