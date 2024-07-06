@@ -3,7 +3,7 @@ from abc import ABC
 from datetime import timedelta, datetime
 from typing import List, Tuple, Union, Any
 
-from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact
+from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact, Tourney
 
 log = logging.getLogger(__name__)
 
@@ -267,6 +267,16 @@ class PilgramDatabase(ABC):
 
     def get_cults_members_number(self) -> List[Tuple[int, int]]:  # cult id, number of members
         """ get the number of members for each cult """
+        raise NotImplementedError
+
+    # tourney
+
+    def get_tourney(self) -> Tourney:
+        """ get the biweekly guild tourney object """
+        raise NotImplementedError
+
+    def update_tourney(self, tourney: Tourney):
+        """ update the tourney object """
         raise NotImplementedError
 
 

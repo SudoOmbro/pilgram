@@ -511,6 +511,13 @@ def rank_tourney(context: UserContext) -> str:
     guilds = db().get_top_n_guilds_by_score(10)
     for guild, position in zip(guilds, range(len(guilds))):
         result += f"{position + 1}. {guild.name} | {guild.tourney_score}\n"
+    days_left = db().get_tourney().get_days_left()
+    if days_left > 1:
+        result += "\n" + Strings.tourney_ends_in_x_days.format(x=days_left)
+    elif days_left == 1:
+        result += "\n" + Strings.tourney_ends_tomorrow
+    else:
+        result += "\n" + Strings.tourney_ends_today
     return result
 
 
@@ -657,7 +664,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
     if minigame.has_ended:
         context.end_process()
         player: Player = minigame.player
-        xp, money = minigame.get_rewards()
+        xp, money = minigame.get_rewards_apply_bonuses()
         if minigame.won:
             player.add_xp(xp),
             player.add_money(money)

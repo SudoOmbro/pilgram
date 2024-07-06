@@ -147,7 +147,7 @@ class QuestManager:
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
-        if random.randint(1, 10) == 1:  # 10% chance of a quick time event
+        if random.randint(1, 10) <= (1 + player.cult.qte_frequency_bonus):  # 10% base chance of a quick time event
             log.info(f"Player '{player.name}' encountered a QTE.")
             qte = random.choice(QuickTimeEvent.LIST)
             QTE_CACHE[player.player_id] = qte
@@ -310,40 +310,27 @@ class GeneratorManager:
 
 
 class TourneyManager:
-    DURATION = 1209600  # 2 weeks in seconds
 
     def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase, notification_delay: int):
         self.notifier = notifier
         self.database = database
         self.notification_delay = notification_delay
-        tourney_json = {}
-        if os.path.isfile("tourney.json"):
-            tourney_json = read_json_file("tourney.json")
-        self.tourney_edition = tourney_json.get("edition", 1)
-        self.tourney_start = tourney_json.get("start", time.time())
-        if not tourney_json:
-            self.save()
-
-    def save(self):
-        save_json_to_file("tourney.json", {"edition": self.tourney_edition, "start": self.tourney_start})
 
     def db(self) -> PilgramDatabase:
         """ wrapper around the acquire method to make calling it less verbose """
         return self.database.acquire()
 
-    def has_tourney_ended(self) -> bool:
-        return time.time() >= self.tourney_start + self.DURATION
-
     def run(self):
-        if not self.has_tourney_ended():
+        tourney = self.db().get_tourney()
+        if not tourney.has_tourney_ended():
             return
-        log.info(f"Tourney {self.tourney_edition} has ended")
+        log.info(f"Tourney {tourney.tourney_edition} has ended")
         top_guilds = self.db().get_top_n_guilds_by_score(3)
         # give artifact piece to 1st guild owner
         first_guild = top_guilds[0]
         winner = self.db().get_player_data(first_guild.founder.player_id)
         winner.artifact_pieces += 1
-        self.notifier.notify(winner, f"Your guild won the *biweekly Guild Tourney n.{self.tourney_edition}*!\nyou are awarded an artifact piece!")
+        self.notifier.notify(winner, f"Your guild won the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nyou are awarded an artifact piece!")
         sleep(self.notification_delay)
         # award money to top 3 guilds members
         for guild, reward, position in zip(top_guilds, (10000, 5000, 1000), ("first", "second", "third")):
@@ -355,15 +342,15 @@ class TourneyManager:
                 self.db().update_player_data(player)
                 self.notifier.notify(
                     player,
-                    f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{self.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!"
+                    f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!"
                 )
                 sleep(self.notification_delay)
         # reset all scores & start a new tourney
         self.db().reset_all_guild_scores()
-        self.tourney_start = time.time()
-        self.tourney_edition += 1
-        log.info(f"New tourney started, edition {self.tourney_edition}, start: {self.tourney_start} (now)")
-        self.save()
+        tourney.tourney_start = time.time()
+        tourney.tourney_edition += 1
+        log.info(f"New tourney started, edition {tourney.tourney_edition}, start: {tourney.tourney_start} (now)")
+        self.db().update_tourney(tourney)
 
 
 class TimedUpdatesManager:

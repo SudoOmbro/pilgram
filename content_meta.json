@@ -244,7 +244,8 @@
         "general_xp_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
         "general_money_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
         "roll_bonus": [-2, -1, 0, 1, 2],
-        "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2]
+        "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2],
+        "qte_frequency_bonus": [-2, -1, 0, 1, 2]
       }
     }
   }, {
@@ -254,6 +255,17 @@
     "modifiers": {
       "power_bonus_per_zone_visited": 2,
       "quest_time_multiplier": 1.2
+    }
+  }, {
+    "id": 11,
+    "name": "Order of the Red Nose",
+    "description": "The gods give their silliest battles to their funniest clowns.",
+    "modifiers": {
+      "qte_frequency_bonus": 3,
+      "quest_time_multiplier": 0.65,
+      "roll_bonus": -2,
+      "minigame_xp_mult": 2.0,
+      "minigame_money_mult": 2.0
     }
   }]
 }

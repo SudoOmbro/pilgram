@@ -12,7 +12,7 @@ from peewee import fn, JOIN, IntegrityError
 from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, db, ArtifactModel
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, Tourney
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
@@ -550,3 +550,12 @@ class PilgramORMDatabase(PilgramDatabase):
                  group_by(PlayerModel.cult_id).
                  order_by(PlayerModel.cult_id.asc()))
         return [(x.cult_id, x.player_count) for x in query]
+
+    # tourney
+
+    @cache_ttl_single_value(ttl=86000)
+    def get_tourney(self) -> Tourney:
+        return Tourney.load_from_file("tourney.json")
+
+    def update_tourney(self, tourney: Tourney):
+        tourney.save()

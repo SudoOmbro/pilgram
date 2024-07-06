@@ -1,6 +1,8 @@
 import logging
 import math
+import os
 import random
+import time
 from datetime import datetime, timedelta
 from typing import Tuple, Dict, Any, Callable, Union, List, Type
 
@@ -10,7 +12,7 @@ from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFl
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
-from pilgram.utils import read_update_interval, FuncWithParam
+from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file
 from pilgram.strings import MONEY, Strings
 
 log = logging.getLogger(__name__)
@@ -773,6 +775,9 @@ class Cult(Listable, meta_name="cults"):
         self.randomizer_delay: int = modifiers.get("randomizer_delay", 0)
         self.stats_to_randomize: Dict[str, list] = modifiers.get("stats_to_randomize", {})
         self.power_bonus_per_zone_visited: int = modifiers.get("power_bonus_per_zone_visited", 0)
+        self.qte_frequency_bonus = modifiers.get("qte_frequency_bonus", 0)
+        self.minigame_xp_mult = modifiers.get("minigame_xp_mult", 1)
+        self.minigame_money_mult = modifiers.get("minigame_money_mult", 1)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:
@@ -819,3 +824,39 @@ class Cult(Listable, meta_name="cults"):
     def update_number_of_members(cls, members_number: List[Tuple[int, int]]):
         for cult_id, number in members_number:
             cls.LIST[cult_id].number_of_members = number
+
+
+class Tourney:
+
+    def __init__(self, edition: int, tourney_start: float, duration: int):
+        """
+        :param edition: the tourney edition
+        :param tourney_start: the tourney start time
+        :param duration: the tourney duration (in seconds)
+        """
+        self.tourney_edition = edition,
+        self.tourney_start = tourney_start
+        self.duration = duration
+
+    def has_tourney_ended(self) -> bool:
+        return time.time() >= self.tourney_start + self.duration
+
+    def get_days_left(self) -> int:
+        return int((time.time() - self.tourney_start) / 86400)
+
+    def save(self):
+        save_json_to_file("tourney.json", {"edition": self.tourney_edition, "start": self.tourney_start})
+
+    @classmethod
+    def load_from_file(cls, filename) -> "Tourney":
+        tourney_json = {}
+        if os.path.isfile(filename):
+            tourney_json = read_json_file(filename)
+        tourney = cls(
+            tourney_json.get("edition", 1),
+            tourney_json.get("start", time.time()),
+            tourney_json.get("duration", 1209600)
+        )
+        if not tourney_json:
+            tourney.save()
+        return tourney

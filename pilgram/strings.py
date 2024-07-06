@@ -152,8 +152,16 @@ class Strings:
         "money_mult_per_player_in_cult": "BA Multiplier per player in cult",
         "randomizer_delay": "Randomize every X hours",
         "stats_to_randomize": "Affected stats",
-        "power_bonus_per_zone_visited": "Eldritch power per zones visited"
+        "power_bonus_per_zone_visited": "Eldritch power per zones visited",
+        "qte_frequency_bonus": "QTE frequency bonus",
+        "minigame_xp_mult": "Minigame XP Multiplier",
+        "minigame_money_mult": "Minigame BA Multiplier",
     }
+
+    # tourney
+    tourney_ends_in_x_days = "The tourney ends in {x} days"
+    tourney_ends_tomorrow = "The tourney ends tomorrow"
+    tourney_ends_today = "The tourney ends today"
 
     # errors
     no_character_yet = "You haven't made a character yet!"
