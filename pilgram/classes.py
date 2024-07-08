@@ -846,7 +846,9 @@ class Tourney:
         return time.time() >= self.tourney_start + self.duration
 
     def get_days_left(self) -> int:
-        return int((time.time() - self.tourney_start) / 86400)
+        current_datetime = datetime.now()
+        tourney_start_datetime = datetime.fromtimestamp(self.tourney_start)
+        return (tourney_start_datetime - current_datetime).days
 
     def save(self):
         save_json_to_file("tourney.json", {"edition": self.tourney_edition, "start": self.tourney_start})
