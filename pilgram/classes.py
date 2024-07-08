@@ -280,6 +280,8 @@ class Player:
         self.flags = flags
         self.renown = renown
         self.cult = cult
+        self.satchel = []  # TODO consumable items satchel, only store ids on the DB as these are static (cannot be modified)
+        self.equipped_items = []  # TODO only store ids of equipped items on the DB, store item data in separate table
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -337,7 +339,8 @@ class Player:
             if flag.is_set(self.flags):
                 amount = int(amount * 1.5)
                 self.flags = flag.unset(self.flags)
-        self.money += int(amount)
+        amount = int(amount)
+        self.money += amount
         return amount
 
     def add_artifact_pieces(self, amount: int):
@@ -550,6 +553,7 @@ class ZoneEvent:
         self.bonus = zone.zone_id if zone else 0
 
     def __val(self, player: Player):
+        """ get base event reward value """
         if player.level >= (self.zone_level - 3):
             return ((self.base_value + self.zone_level + player.home_level) * random.randint(1, 10)) + self.bonus
         return ((self.base_value + player.home_level) * random.randint(1, 10)) + self.bonus
@@ -860,3 +864,7 @@ class Tourney:
         if not tourney_json:
             tourney.save()
         return tourney
+
+
+class Enemy:
+    pass  # TODO

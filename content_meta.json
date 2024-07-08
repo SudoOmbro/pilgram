@@ -267,5 +267,15 @@
       "minigame_xp_mult": 2.0,
       "minigame_money_mult": 2.0
     }
+  }],
+  "equipment types": [{
+    "id": 1,
+    "weapon": true,
+    "name": "Longsword",
+    "slot": "primary",
+    "damage": {
+      "slash": 5,
+      "pierce": 2
+    }
   }]
 }

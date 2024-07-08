@@ -139,9 +139,9 @@ class EquipmentType(Listable, meta_name="equipment types"):
         return cls(
             equipment_type_json.get("weapon", False),
             equipment_type_json["id"],
-            Damage.load_from_json(equipment_type_json["resistances"]),
+            Damage.load_from_json(equipment_type_json["damage"]),
             equipment_type_json["name"],
-            _get_slot(equipment_type_json["slots"])
+            _get_slot(equipment_type_json["slot"])
         )
 
 
@@ -155,3 +155,13 @@ class Equipment:
         self.weapon_type: EquipmentType = EquipmentType.LIST[equipment_type_id]
         self.damage = damage + self.weapon_type.damage
         self.modifiers = modifiers
+
+
+class ConsumableItem(Listable, meta_name="consumables"):
+
+    def __init__(self):
+        pass  # TODO
+
+    @classmethod
+    def create_from_json(cls, consumables_json: Dict[str, Any]) -> "ConsumableItem":
+        return ConsumableItem()

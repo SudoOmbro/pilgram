@@ -1,5 +1,12 @@
 # Pilgram
-a texting based idle MMO-RPG powered by AI
+a texting based idle MMO-RPG powered by AI.
+
+Embark on quests, join guilds, play minigames, cast spells... All by texting!
+
+## License
+
+Everything in this repository is under the MIT license, except for `content_meta.json`, 
+which is copyrighted and should be replaced with your own version if you want to fork this repository / host your own version of Pilgram.
 
 ## Installation
 **Note**: requires `Python >= 3.12.0`
