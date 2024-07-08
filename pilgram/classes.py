@@ -12,6 +12,7 @@ from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFl
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
+from pilgram.combat import Modifier
 from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file
 from pilgram.strings import MONEY, Strings
 
@@ -851,7 +852,14 @@ class Tourney:
         return (tourney_start_datetime - current_datetime).days
 
     def save(self):
-        save_json_to_file("tourney.json", {"edition": self.tourney_edition, "start": self.tourney_start})
+        save_json_to_file(
+            "tourney.json",
+            {
+                "edition": self.tourney_edition,
+                "start": self.tourney_start,
+                "duration": self.duration
+            }
+        )
 
     @classmethod
     def load_from_file(cls, filename) -> "Tourney":
@@ -868,5 +876,19 @@ class Tourney:
         return tourney
 
 
+class EnemyMeta:
+    """ holds zone, name, description & win/loss text related to an enemy. """
+
+    def __init__(self, zone: Zone, name: str, description: str, win_text: str, loss_text: str):
+        self.zone = zone
+        self.name = name
+        self.description = description
+        self.win_text = win_text
+        self.loss_text = loss_text
+
+
 class Enemy:
-    pass  # TODO
+
+    def __init__(self, meta: EnemyMeta, modifiers: List[Modifier]):
+        self.meta = meta
+

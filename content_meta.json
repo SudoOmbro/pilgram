@@ -270,7 +270,6 @@
   }],
   "equipment types": [{
     "id": 1,
-    "weapon": true,
     "name": "Longsword",
     "slot": "primary",
     "damage": {
