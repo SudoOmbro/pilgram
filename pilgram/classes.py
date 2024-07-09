@@ -844,12 +844,12 @@ class Tourney:
         self.duration = duration
 
     def has_tourney_ended(self) -> bool:
-        return time.time() >= self.tourney_start + self.duration
+        return time.time() >= (self.tourney_start + self.duration)
 
     def get_days_left(self) -> int:
         current_datetime = datetime.now()
-        tourney_start_datetime = datetime.fromtimestamp(self.tourney_start)
-        return (tourney_start_datetime - current_datetime).days
+        tourney_end_date = datetime.fromtimestamp(self.tourney_start + self.duration)
+        return (tourney_end_date - current_datetime).days
 
     def save(self):
         save_json_to_file(
