@@ -158,6 +158,14 @@ class Strings:
         "minigame_money_mult": "Minigame BA Multiplier",
     }
 
+    # items
+    effect_names: Dict[str, str] = {
+        "hp_restored": "HP restored",
+        "hp_percent_restored": "HP % restored",
+        "revive": "Revives you",
+        "buffs": "Damage buffs (2x)"
+    }
+
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"
     tourney_ends_tomorrow = "The tourney ends tomorrow"

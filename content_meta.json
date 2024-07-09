@@ -276,5 +276,14 @@
       "slash": 5,
       "pierce": 2
     }
+  }],
+  "consumables": [{
+    "id": 1,
+    "name": "Rotten strawberry",
+    "description": "The mold gives it a fuzzy texture.",
+    "value": 1,
+    "effects": {
+      "hp_restored": 1
+    }
   }]
 }

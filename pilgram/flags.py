@@ -59,3 +59,28 @@ class LuckFlag1(Flag):
 
 class LuckFlag2(Flag):
     pass
+
+
+class StrengthBuff(Flag):
+    """ buff all normal damage (slash, pierce & blunt) """
+    pass
+
+
+class OccultBuff(Flag):
+    pass
+
+
+class FireBuff(Flag):
+    pass
+
+
+class IceBuff(Flag):
+    pass
+
+
+class AcidBuff(Flag):
+    pass
+
+
+class ElectricBuff(Flag):
+    pass
