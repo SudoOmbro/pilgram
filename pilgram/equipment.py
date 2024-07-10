@@ -63,13 +63,15 @@ class EquipmentType(Listable, meta_name="equipment types"):
 
 class Equipment:
 
-    def __init__(self, equipment_type_id: int, damage: Damage, modifiers: List[Modifier]):
+    def __init__(self, equipment_id: int, equipment_type_id: int, damage: Damage, modifiers: List[Modifier]):
+        self.equipment_id = equipment_id
         self.weapon_type: EquipmentType = EquipmentType.LIST[equipment_type_id]
         self.damage = damage + self.weapon_type.damage
         self.modifiers = modifiers
 
 
 class ConsumableItem(Listable, meta_name="consumables"):
+    """ consumables that can be used by the player or are used automatically in combat. """
 
     def __init__(
             self,
@@ -109,7 +111,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
 
     @classmethod
     def get_buff_flag(cls, buff_strings: List[str]) -> int:
-        result = 0
+        result = Flag.get_empty()
         buff_map: Dict[str, Type[Flag]] = {
             "strength": StrengthBuff,
             "occult": OccultBuff,
@@ -120,12 +122,12 @@ class ConsumableItem(Listable, meta_name="consumables"):
         }
         for string in buff_strings:
             if string in buff_map:
-                result |= buff_map[string]
+                result = buff_map[string].set(result)
         return result
 
     @classmethod
     def create_from_json(cls, consumables_json: Dict[str, Any]) -> "ConsumableItem":
-        return ConsumableItem(
+        return cls(
             consumables_json["id"],
             consumables_json["name"],
             consumables_json["description"],

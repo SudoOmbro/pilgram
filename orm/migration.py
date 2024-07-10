@@ -3,7 +3,7 @@ import os
 from datetime import datetime
 from typing import Dict, Callable
 
-from peewee import IntegerField, DateTimeField, AutoField, CharField, ForeignKeyField
+from peewee import IntegerField, DateTimeField, AutoField, CharField, ForeignKeyField, FloatField
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -84,3 +84,41 @@ def __migrate_v2_to_v3():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v2.db", "pilgram_v3.db")
+
+
+@__add_to_migration_list("pilgram_v3.db")
+def __migrate_v3_to_v4():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v3 import db as previous_db, BaseModel, PlayerModel, ZoneModel
+
+    class EquipmentModel(BaseModel):
+        id = AutoField(primary_key=True)
+        name = CharField(null=False, max_length=50)
+        equipment_type = IntegerField(null=False)
+        owner = ForeignKeyField(PlayerModel, backref="equipment", index=True)
+        damage_seed = FloatField(null=False)
+        modifiers = CharField(null=False, default="")
+
+    class EnemyTypeModel(BaseModel):
+        id = AutoField(primary_key=True)
+        name = CharField(null=False, unique=True)
+        description = CharField(null=False)
+        zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
+
+    log.info(f"Migrating v3 to v4...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('playermodel', 'hp', IntegerField(null=False, default=10)),
+        migrator.add_column('playermodel', 'satchel', CharField(null=False, default="")),
+        migrator.add_column('playermodel', 'equipped_items', CharField(null=False, default="")),
+        # can't add constraints to SQLite Databases :(
+        # migrator.add_constraint('playermodel', 'name', max_length=40),
+        # migrator.add_constraint('playermodel', 'description', max_length=320),
+        # migrator.add_constraint('guildmodel', 'name', max_length=40),
+        # migrator.add_constraint('guildmodel', 'description', max_length=320)
+    )
+    previous_db.create_tables([EquipmentModel, EnemyTypeModel])
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v3.db", "pilgram_v4.db")

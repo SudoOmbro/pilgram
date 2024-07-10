@@ -13,10 +13,14 @@ from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, db, ArtifactModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, Tourney
+from pilgram.equipment import ConsumableItem, Equipment
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 
 log = logging.getLogger(__name__)
+
+
+NP_ED = np.dtype([('uint8', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy equipment data'
 
 
 def decode_progress(data: Union[str, None]) -> Dict[int, int]:
@@ -42,12 +46,50 @@ def encode_progress(data: Dict[int, int]) -> bytes:
     """ encodes the data dictionary contained in the progress object to a bytestring that can be saved on the db """
     dict_size = len(data)
     packed_array = np.empty(dict_size << 1, np.uint16)
-    i: int = 0
-    for zone_id, progress in data.items():
+    for i, (zone_id, progress) in enumerate(data.items()):
         j = i << 1
         packed_array[j] = zone_id
         packed_array[j + 1] = progress
-        i += 1
+    return packed_array.tobytes()
+
+
+def decode_satchel(data: str) -> List[ConsumableItem]:
+    result: List[ConsumableItem] = []
+    if not data:
+        return result
+    encoded_data = bytes(data, "UTF-8")
+    unpacked_array = np.frombuffer(encoded_data, dtype=np.uint8)
+    for consumable_id in unpacked_array:
+        result.append(ConsumableItem.get(consumable_id.item()))
+    return result
+
+
+def encode_satchel(satchel: List[ConsumableItem]) -> bytes:
+    packed_array = np.empty(len(satchel), np.uint8)
+    for i, consumable in enumerate(satchel):
+        packed_array[i] = consumable.consumable_id
+    return packed_array.tobytes()
+
+
+def decode_equipped_items_ids(data: Union[str]) -> Dict[int, int]:
+    encoded_data = bytes(data, "UTF-8")
+    if len(encoded_data) == 5:
+        # special case for single element array
+        unpacked_array = np.frombuffer(encoded_data, dtype=NP_ED).reshape(2)
+        return {unpacked_array[0].item(): unpacked_array[1].item()}
+    equipment_dictionary: Dict[int, int] = {}
+    unpacked_array = np.frombuffer(encoded_data, dtype=NP_ED).reshape((int(len(data) / 5), 2))
+    for slot, item_id in unpacked_array:
+        equipment_dictionary[slot.item()] = item_id.item()
+    return equipment_dictionary
+
+
+def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> bytes:
+    packed_array = np.empty(int(len(equipped_items) / 5), NP_ED)
+    for i, (slot, equipment) in enumerate(equipped_items.items()):
+        j = i * 5
+        packed_array[j] = slot
+        packed_array[j + 1] = equipment.equipment_id
     return packed_array.tobytes()
 
 
@@ -85,8 +127,9 @@ class PilgramORMDatabase(PilgramDatabase):
         try:
             pls = PlayerModel.get(PlayerModel.id == player_id)
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
-            progress = Progress.get_from_encoded_data(pls.progress, decode_progress)
             artifacts = self.get_player_artifacts(player_id)
+            equipped_items_ids = decode_equipped_items_ids(pls.equipped_items)
+            equipped_items = {}  # TODO get from database
             player = Player(
                 pls.id,
                 pls.name,
@@ -95,7 +138,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.level,
                 pls.xp,
                 pls.money,
-                progress,
+                Progress.get_from_encoded_data(pls.progress, decode_progress),
                 pls.gear_level,
                 pls.home_level,
                 pls.artifact_pieces,
@@ -103,7 +146,10 @@ class PilgramORMDatabase(PilgramDatabase):
                 artifacts,
                 pls.flags,
                 pls.renown,
-                Cult.LIST[pls.cult_id]
+                Cult.get(pls.cult_id),
+                decode_satchel(pls.satchel),
+                equipped_items,
+                pls.hp
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -137,6 +183,9 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.flags = player.flags
                 pls.renown = player.renown
                 pls.cult_id = player.cult.faction_id
+                pls.satchel = encode_satchel(player.satchel)
+                pls.equipped_items = encode_equipped_items(player.equipped_items)
+                pls.hp = player.hp
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

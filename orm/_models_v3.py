@@ -2,10 +2,10 @@ import logging
 from datetime import datetime
 
 from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
-    AutoField, FloatField
+    AutoField
 
 
-DB_FILENAME: str = "pilgram_v4.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = f"pilgram_v3.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -37,30 +37,27 @@ class QuestModel(BaseModel):
 
 class PlayerModel(BaseModel):
     id = IntegerField(primary_key=True, unique=True)
-    name = CharField(null=False, unique=True, index=True, max_length=40)
-    description = CharField(null=False, max_length=320)
+    name = CharField(null=False, unique=True, index=True)
+    description = CharField(null=False)
     guild = DeferredForeignKey('GuildModel', backref="members", null=True, default=None)
     money = IntegerField(default=10)
     level = IntegerField(default=1)
     xp = IntegerField(default=0)
     gear_level = IntegerField(default=0)
-    progress = CharField(null=True, default=None)  # progress is stored as a char string.
+    progress = CharField(null=True, default=None)  # progress is stored as a char string in the player table.
     home_level = IntegerField(default=0)
     last_spell_cast = DateTimeField(default=datetime.now)
     artifact_pieces = IntegerField(default=0)
     flags = IntegerField(default=0)
     renown = IntegerField(default=0)
     cult_id = IntegerField(default=0)
-    hp = IntegerField(null=False, default=10)
-    satchel = CharField(null=False, default="")  # consumable items are stored as a char string (a byte per item)
-    equipped_items = CharField(null=False, default="")  # equipped items are stored as char string, 32 + 8 bits per item (only store the id of the item & where the item is equipped)
 
 
 class GuildModel(BaseModel):
     id = AutoField(primary_key=True)
-    name = CharField(null=False, unique=True, index=True, max_length=40)
+    name = CharField(null=False, unique=True, index=True)
     level = IntegerField(default=1)
-    description = CharField(null=False, max_length=320)
+    description = CharField(null=False)
     founder = ForeignKeyField(PlayerModel, backref='owned_guild')
     creation_date = DateTimeField(default=datetime.now)
     prestige = IntegerField(default=0)
@@ -87,22 +84,6 @@ class ArtifactModel(BaseModel):
     name = CharField(null=False, unique=True)
     description = CharField(null=False)
     owner = ForeignKeyField(PlayerModel, backref="artifacts", index=True, null=True)
-
-
-class EquipmentModel(BaseModel):
-    id = AutoField(primary_key=True)
-    name = CharField(null=False, max_length=50)
-    equipment_type = IntegerField(null=False)
-    owner = ForeignKeyField(PlayerModel, backref="equipment", index=True)
-    damage_seed = FloatField(null=False)  # used to generate the damage value at load time
-    modifiers = CharField(null=False, default="")  # modifiers are stored as a 16bit int for the modifier id + a 32bit in for the strength of the modifier
-
-
-class EnemyTypeModel(BaseModel):
-    id = AutoField(primary_key=True)
-    name = CharField(null=False, unique=True)
-    description = CharField(null=False)
-    zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
 
 
 def db_connect():

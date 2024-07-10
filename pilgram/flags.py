@@ -32,6 +32,10 @@ class Flag(ABC):
     def get(cls) -> np.uint32:
         return cls.__FLAG
 
+    @classmethod
+    def get_empty(cls) -> np.uint32:
+        return np.uint32(0)
+
 
 class HexedFlag(Flag):
     pass

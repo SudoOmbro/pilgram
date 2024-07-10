@@ -156,6 +156,8 @@ class Strings:
         "qte_frequency_bonus": "QTE frequency bonus",
         "minigame_xp_mult": "Minigame XP Multiplier",
         "minigame_money_mult": "Minigame BA Multiplier",
+        "hp_mult": "HP multiplier",
+        "hp_bonus": "HP bonus",
     }
 
     # items

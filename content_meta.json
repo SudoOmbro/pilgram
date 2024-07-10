@@ -269,7 +269,7 @@
     }
   }],
   "equipment types": [{
-    "id": 1,
+    "id": 0,
     "name": "Longsword",
     "slot": "primary",
     "damage": {
@@ -278,7 +278,7 @@
     }
   }],
   "consumables": [{
-    "id": 1,
+    "id": 0,
     "name": "Rotten strawberry",
     "description": "The mold gives it a fuzzy texture.",
     "value": 1,

@@ -110,7 +110,7 @@ class Damage:
 
     @classmethod
     def load_from_json(cls, damage_json: Dict[str, int]) -> "Damage":
-        return Damage(
+        return cls(
             damage_json.get("slash", 0),
             damage_json.get("pierce", 0),
             damage_json.get("blunt", 0),
@@ -127,6 +127,13 @@ class Damage:
 
 
 class CombatActor(ABC):
+
+    def __init__(self, hp: int):
+        self.hp = hp
+
+    def get_max_hp(self) -> int:
+        """ returns the maximum hp of the combat actor (players & enemies) """
+        raise NotImplementedError
 
     def get_modifiers(self, action_filter: Union[int, None]) -> List["Modifier"]:
         """ generic method that should return an (optionally filtered) list of modifiers """

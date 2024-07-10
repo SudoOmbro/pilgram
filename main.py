@@ -71,6 +71,8 @@ def run_tourney_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running tourney manager")
     tourney_manager = TourneyManager(notifier, database, 1)
     interval = INTERVAL * 4
+    if is_killed(INTERVAL / 8):
+        return
     while True:
         try:
             log.info("tourney manager update")
@@ -84,6 +86,8 @@ def run_tourney_manager(database: PilgramDatabase, notifier: PilgramNotifier):
 def run_updates_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running updates manager")
     tourney_manager = TimedUpdatesManager(notifier, database)
+    if is_killed(INTERVAL / 6):
+        return
     while True:
         try:
             log.info("updates manager update")
@@ -107,7 +111,7 @@ def run_admin_cli():
         except EOFError:
             # silence all EOF errors
             if is_killed(5):
-                # sleep for 5 seconds to avoid being always active
+                # sleep for 5 seconds to avoid flooding the thread with exceptions
                 return
         except Exception as e:
             log.error(f"error in admin CLI thread: {e}")

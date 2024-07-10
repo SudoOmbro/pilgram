@@ -1,7 +1,8 @@
 import unittest
 from datetime import timedelta
 
-from orm.db import decode_progress, encode_progress, PilgramORMDatabase
+from orm.db import decode_progress, encode_progress, PilgramORMDatabase, decode_satchel, encode_satchel
+from pilgram.equipment import ConsumableItem
 
 
 class TestORMDB(unittest.TestCase):
@@ -34,6 +35,22 @@ class TestORMDB(unittest.TestCase):
         progress_dict = {1: 2, 3: 4}
         encoded_string = encode_progress(progress_dict)
         self.assertEqual(encoded_string, b"\x01\x00\x02\x00\x03\x00\x04\x00")
+
+    def test_decode_satchel(self):
+        satchel = decode_satchel(b"\x00".decode())
+        self.assertEqual(satchel[0].consumable_id, 0)
+        satchel = decode_satchel(b"\x00\x01".decode())
+        self.assertEqual(satchel[0].consumable_id, 0)
+        self.assertEqual(satchel[1].consumable_id, 1)
+        satchel = decode_satchel(b"\x00\x01\x01".decode())
+        self.assertEqual(satchel[0].consumable_id, 0)
+        self.assertEqual(satchel[1].consumable_id, 1)
+        self.assertEqual(satchel[2].consumable_id, 1)
+
+    def test_encode_satchel(self):
+        satchel = [ConsumableItem.get(0), ConsumableItem.get(1), ConsumableItem.get(0)]
+        encoded_string = encode_satchel(satchel)
+        self.assertEqual(encoded_string, b"\x00\x01\x00")
 
     def test_get_updates(self):
         db = PilgramORMDatabase.instance()

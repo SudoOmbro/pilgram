@@ -140,15 +140,158 @@
   },
   "quick time events": [{
     "description": "You find a locked chest.",
-    "options": "smash_it_open 100 | lockpick_it 50 | kick_it_open 20",
-    "successes": "The chest lays at your feet, destroyed, some it's contents still intact. | You manage to lockpick the chest, preserving it's contents. | miraculously the chest opens with a single kick. You feel very good about yourself.",
+    "options": "smash_it_open 90 | lockpick_it 50 | kick_it_open 20",
+    "successes": "The chest lays at your feet, destroyed, some it's contents still intact.\n\nYou gain 20 xp & 20 BA | You manage to lockpick the chest, preserving it's contents.\n\nYou gain 100 xp & 100 BA | miraculously the chest opens with a single kick. You feel very good about yourself.\n\nYou gain 1000 xp & 100 BA.",
     "failures": "You completely destroyed the chest & it's contents. | You fail in your lock picking attempt. The chest remains closed | The kick does nothing. Your foot hurts.",
     "rewards": "xp 20, mn 20 | xp 100, mn 100 | xp 1000, mn 100"
   }, {
-    "description": "TODOD",
-    "options": "todo1 100 | todo2 50 | todo3 10",
-    "successes": "todo1 | todo2| todo3",
-    "failures": "todo1 | todo2 | todo3",
-    "rewards": "xp 100, mn 100 | mn 200 | ap 1"
+    "description": "You stumble upon a strong-looking sleeping monster holding a valuable artifact.",
+    "options": "leave 90 | assassinate_the_monster 60 | try_to_sneakily_steal_the_artifact 10",
+    "successes": "You leave the monster be, better safe than sorry.\n\nYou gain 20 xp. | You manage to kill the monster but the artifact is destroyed in the process.\n\nYou gain 100 xp & 100 BA. | You manage to retrieve the artifact.\n\nYou gain 1 artifact piece.",
+    "failures": "The monster wakes up an chases you off. | The monster wakes up an fights back, forcing you to flee | The monster wakes up and roars, forcing you to flee.",
+    "rewards": "xp 20 | xp 100, mn 100 | xp 1000, ap 1"
+  }, {
+    "description": "You hear faint crying coming from a room nearby.",
+    "options": "leave 95 | investigate 50",
+    "successes": "You leave, you don't want to get involved.\n\nYou gain 10 xp. | It turns out the crying was a tied up woman. You untie her and she rewards you with some Alloy.\n\nYou gain 100 xp & 50 BA.",
+    "failures": "As soon as you start to leave, the crying stops. You turn around and you see empty eye sockets stalking you. You run. | It turns out the crying was just an hallucination.",
+    "rewards": "xp 10 | xp 100, mn 50"
+  }],
+  "cults": [{
+    "id": 0,
+    "name": "Not in a cult",
+    "description": "Not really a cult. 'Members' don't have any quirks, they are just standard adventurers.",
+    "modifiers": {}
+  }, {
+    "id": 1,
+    "name": "Cult of the Amygdala",
+    "description": "Members are shunned by society, part of their rituals involves eating parts of human brains. The rituals and drugs they take let them access their latent eldritch powers, even without the aid of artifacts.",
+    "modifiers": {
+      "can_meet_players": false,
+      "power_bonus": 10
+    }
+  }, {
+    "id": 2,
+    "name": "Inquisition Remnants",
+    "description": "Remnants of the old Royal Inquisition sect. Even though the God emperor died long ago, the sacred talismans they hold still work, blocking the eldritch influences of old Gods.",
+    "modifiers": {
+      "eldritch_resist": true,
+      "power_bonus": -100
+    }
+  }, {
+    "id": 3,
+    "name": "Order of the Alloy",
+    "description": "Worshippers of all things made of Boromian Alloy. They really love treasure, and they will spend a long time searching for it.",
+    "modifiers": {
+      "event_money_mult": 2.0,
+      "quest_money_mult": 2.0,
+      "quest_time_multiplier": 2.0
+    }
+  }, {
+    "id": 4,
+    "name": "Arditi",
+    "description": "Promises are sacred to the members of this cult. They will complete missions at any cost, even if it means losing possible treasure.",
+    "modifiers": {
+      "event_money_mult": 0.2,
+      "quest_money_mult": 0.2,
+      "roll_bonus": 5
+    }
+  }, {
+    "id": 5,
+    "name": "Fingers of Atlas",
+    "description": "These cultists worship the free market, studying it obsessively. They always seem to manage to earn a bit more money than others by taking shortcuts & cost saving measures.",
+    "modifiers": {
+      "general_money_mult": 1.25,
+      "general_xp_mult": 0.75,
+      "quest_time_multiplier": 0.8
+    }
+  }, {
+    "id": 6,
+    "name": "Esoteric Order of the Serpent",
+    "description": "Worshippers of the dead titan resting in Serpentbarrow. They perform daily animal sacrifices to commune with the Serpent, which grants them forbidden knowledge.",
+    "modifiers": {
+      "general_xp_mult": 1.25,
+      "general_money_mult": 0.75,
+      "quest_time_multiplier": 1.25
+    }
+  }, {
+    "id": 7,
+    "name": "Heresy remnants",
+    "description": "Remnants of the old heretics that killed the God Empreror. They are trying to reclaim their power by restoring artifacts that were lost during the final battle.",
+    "modifiers": {
+      "artifact_drop_bonus": 4,
+      "upgrade_cost_multiplier": 2.0,
+      "quest_time_multiplier": 1.6
+    }
+  }, {
+    "id": 8,
+    "name": "The Convergence",
+    "description": "We are one. We are many.",
+    "modifiers": {
+      "xp_mult_per_player_in_cult": 1.01,
+      "money_mult_per_player_in_cult": 0.99
+    }
+  }, {
+    "id": 9,
+    "name": "Children of Chaos",
+    "description": "Worshippers of the primordial chaos from whence the universe was birthed.",
+    "modifiers": {
+      "randomizer_delay": 24,
+      "stats_to_randomize": {
+        "can_meet_players": [true, false],
+        "power_bonus":  [-30, -20, -10, 0, 10, 20, 30],
+        "artifact_drop_bonus": [-1, 0, 1],
+        "general_xp_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+        "general_money_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
+        "roll_bonus": [-2, -1, 0, 1, 2],
+        "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2],
+        "qte_frequency_bonus": [-2, -1, 0, 1, 2]
+      }
+    }
+  }, {
+    "id": 10,
+    "name": "Followers of the Pilgrims",
+    "description": "Followers of the ever wandering Pilgrims, they gain deep insights and forbidden knowledge from following the mysterious mute figures walking Borom.",
+    "modifiers": {
+      "power_bonus_per_zone_visited": 2,
+      "quest_time_multiplier": 1.2
+    }
+  }, {
+    "id": 11,
+    "name": "Order of the Red Nose",
+    "description": "The gods give their silliest battles to their funniest clowns.",
+    "modifiers": {
+      "qte_frequency_bonus": 3,
+      "quest_time_multiplier": 0.65,
+      "roll_bonus": -2,
+      "minigame_xp_mult": 2.0,
+      "minigame_money_mult": 2.0
+    }
+  }],
+  "equipment types": [{
+    "id": 0,
+    "name": "Longsword",
+    "slot": "primary",
+    "damage": {
+      "slash": 5,
+      "pierce": 2
+    }
+  }],
+  "consumables": [{
+    "id": 0,
+    "name": "Rotten strawberry",
+    "description": "The mold gives it a fuzzy texture.",
+    "value": 1,
+    "effects": {
+      "hp_restored": 1
+    }
+  }, {
+    "id": 1,
+    "name": "Rotten strawberry 2",
+    "description": "The mold gives it a fuzzy texture.",
+    "value": 1,
+    "effects": {
+      "hp_restored": 1
+    }
   }]
 }

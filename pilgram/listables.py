@@ -19,3 +19,7 @@ class Listable(ABC):
     @classmethod
     def create_from_json(cls, listable_json: Dict) -> "Listable":
         raise NotImplementedError
+
+    @classmethod
+    def get(cls, listable_id: int) -> "Listable":
+        return cls.LIST[listable_id]

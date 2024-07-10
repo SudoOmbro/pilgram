@@ -8,11 +8,12 @@ from typing import Tuple, Dict, Any, Callable, Union, List, Type
 
 import numpy as np
 
+from pilgram.equipment import ConsumableItem, Equipment
 from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
-from pilgram.combat import Modifier
+from pilgram.combat import CombatActor, Modifier
 from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file
 from pilgram.strings import MONEY, Strings
 
@@ -225,7 +226,7 @@ class Spell:
             return e.message
 
 
-class Player:
+class Player(CombatActor):
     """ contains all information about a player """
     MAXIMUM_POWER: int = 100
 
@@ -246,7 +247,10 @@ class Player:
             artifacts: List["Artifact"],
             flags: np.uint32,
             renown: int,
-            cult: "Cult"
+            cult: "Cult",
+            satchel: List[ConsumableItem],
+            equipped_items: Dict[int, Equipment],
+            hp: int
     ):
         """
         :param player_id (int): unique id of the player
@@ -281,8 +285,9 @@ class Player:
         self.flags = flags
         self.renown = renown
         self.cult = cult
-        self.satchel = []  # TODO consumable items satchel, only store ids on the DB as these are static (cannot be modified)
-        self.equipped_items = []  # TODO only store ids of equipped items on the DB, store item data in separate table
+        self.satchel = satchel
+        self.equipped_items = equipped_items
+        super().__init__(hp)
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -400,11 +405,11 @@ class Player:
 
     # combat stats
 
-    def get_base_hp(self) -> int:
+    def get_base_max_hp(self) -> int:
         return (self.level + self.gear_level) * 10
 
-    def get_hp(self) -> int:
-        return self.get_base_hp()
+    def get_max_hp(self) -> int:
+        return self.get_base_max_hp()
 
     # utility
 
@@ -783,6 +788,8 @@ class Cult(Listable, meta_name="cults"):
         self.qte_frequency_bonus = modifiers.get("qte_frequency_bonus", 0)
         self.minigame_xp_mult = modifiers.get("minigame_xp_mult", 1)
         self.minigame_money_mult = modifiers.get("minigame_money_mult", 1)
+        self.hp_mult = modifiers.get("hp_mult", 1)
+        self.hp_bonus = modifiers.get("hp_bonus", 0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:
@@ -887,8 +894,13 @@ class EnemyMeta:
         self.loss_text = loss_text
 
 
-class Enemy:
+class Enemy(CombatActor):
+    """ the actual enemy object """
 
     def __init__(self, meta: EnemyMeta, modifiers: List[Modifier]):
         self.meta = meta
+        self.modifiers = modifiers
+        super().__init__(self.get_max_hp())
 
+    def get_max_hp(self) -> int:
+        pass
