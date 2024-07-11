@@ -3,14 +3,15 @@ from abc import ABC
 from copy import copy
 
 from time import time
-from typing import Union, List, Dict, Type
+from typing import Union, List, Dict, Type, Any
 
 
-class ModifierAction:
+class ModifierType:
     PRE_ATTACK = 0
     PRE_DEFEND = 1
     POST_ATTACK = 2
     POST_DEFEND = 3
+    HP_MODIFIER = 4
 
 
 class Damage:
@@ -36,14 +37,28 @@ class Damage:
         self.freeze = freeze
         self.electric = electric
 
-    def modify(self, supplier: "CombatActor", action_filter: int) -> "Damage":
+    def modify(self, supplier: "CombatActor", type_filter: int) -> "Damage":
         result = self
-        for modifier in supplier.get_modifiers(action_filter):
+        for modifier in supplier.get_modifiers(type_filter):
             result = modifier.apply(result, supplier)
         return result
 
     def get_total_damage(self) -> int:
-        return self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+        """ return the total damage dealt by the attack. Damage can't be 0, it must be at least 1 """
+        dmg = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+        return dmg if dmg > 0 else 1
+
+    def scale(self, scaling_factor: int) -> "Damage":
+        return Damage(
+            self.slash * scaling_factor,
+            self.pierce * scaling_factor,
+            self.blunt * scaling_factor,
+            self.occult * scaling_factor,
+            self.fire * scaling_factor,
+            self.acid * scaling_factor,
+            self.freeze * scaling_factor,
+            self.electric * scaling_factor
+        )
 
     def __add__(self, other):
         return Damage(
@@ -131,39 +146,54 @@ class CombatActor(ABC):
     def __init__(self, hp: int):
         self.hp = hp
 
-    def get_max_hp(self) -> int:
+    def get_base_max_hp(self) -> int:
         """ returns the maximum hp of the combat actor (players & enemies) """
         raise NotImplementedError
 
-    def get_modifiers(self, action_filter: Union[int, None]) -> List["Modifier"]:
-        """ generic method that should return an (optionally filtered) list of modifiers """
-        raise NotImplementedError
-
-    def get_attack_damage(self) -> Damage:
+    def get_base_attack_damage(self) -> Damage:
         """ generic method that should return the damage done by the entity """
         raise NotImplementedError
 
-    def get_attack_defence(self) -> Damage:
+    def get_base_attack_resistance(self) -> Damage:
         """ generic method that should return the damage resistance of the entity """
         raise NotImplementedError
 
+    def get_modifiers(self, type_filter: Union[int, None]) -> List["Modifier"]:
+        """ generic method that should return an (optionally filtered) list of modifiers """
+        raise NotImplementedError
+
+    def get_max_hp(self) -> int:
+        max_hp = self.get_base_max_hp()
+        for modifier in self.get_modifiers(ModifierType.HP_MODIFIER):
+            max_hp = modifier.apply(max_hp, self)
+        return int(max_hp)
+
     def attack(self, target: "CombatActor") -> Damage:
-        damage = self.get_attack_damage().modify(self, ModifierAction.PRE_ATTACK)
-        defence = target.get_attack_defence().modify(self, ModifierAction.PRE_DEFEND)
+        damage = self.get_base_attack_damage().modify(self, ModifierType.PRE_ATTACK)
+        defence = target.get_base_attack_resistance().modify(self, ModifierType.PRE_DEFEND)
         damage_done = damage - defence
-        damage_done = damage_done.modify(target, ModifierAction.POST_DEFEND)
-        return damage_done.modify(self, ModifierAction.POST_ATTACK)
+        damage_done = damage_done.modify(target, ModifierType.POST_DEFEND)
+        return damage_done.modify(self, ModifierType.POST_ATTACK)
 
 
 class Modifier(ABC):
     DATABASE: Dict[int, Type["Modifier"]] = {}
+    ID: int
 
-    def __init__(self, strength: int, action: ModifierAction):
+    TYPE: int  # This should be set manually for each defined modifier
+
+    def __init__(self, strength: int):
         self.strength = strength
-        self.action = action
 
     def __init_subclass__(cls, **kwargs):
-        Modifier.DATABASE[len(list(Modifier.DATABASE.keys()))] = cls
+        modifier_id = len(list(Modifier.DATABASE.keys()))
+        cls.ID = modifier_id
+        Modifier.DATABASE[modifier_id] = cls
 
-    def apply(self, damage: Damage, actor: CombatActor):
+    def apply(self, value: Any, actor: CombatActor) -> Any:
+        """ apply the modifier to the value & actor, optionally return a value """
         raise NotImplementedError
+
+    @staticmethod
+    def get(modifier_id: int, strength: int) -> "Modifier":
+        return Modifier.DATABASE[modifier_id](strength)

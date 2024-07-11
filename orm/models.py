@@ -93,16 +93,18 @@ class EquipmentModel(BaseModel):
     id = AutoField(primary_key=True)
     name = CharField(null=False, max_length=50)
     equipment_type = IntegerField(null=False)
-    owner = ForeignKeyField(PlayerModel, backref="equipment", index=True)
+    owner = ForeignKeyField(PlayerModel, backref="items", index=True)
     damage_seed = FloatField(null=False)  # used to generate the damage value at load time
     modifiers = CharField(null=False, default="")  # modifiers are stored as a 16bit int for the modifier id + a 32bit in for the strength of the modifier
 
 
 class EnemyTypeModel(BaseModel):
     id = AutoField(primary_key=True)
+    zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
     name = CharField(null=False, unique=True)
     description = CharField(null=False)
-    zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
+    win_text = CharField(null=False)
+    lose_text = CharField(null=False)
 
 
 def db_connect():

@@ -140,3 +140,7 @@ class FuncWithParam:
 
     def __call__(self, arg):
         return self.func(arg, self.param)
+
+
+def print_bonus(value: int) -> str:
+    return f"{'+' if value > 0 else ''}{value}"

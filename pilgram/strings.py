@@ -69,7 +69,6 @@ class Strings:
     not_enough_money = f"You don't have enough {MONEY}. You need {{amount}} more."
     upgrade_successful = "The upgrade to your {obj} was successful, " + you_paid
     upgrade_cancelled = "The upgrade was cancelled."
-    guild_already_maxed = "Your guild is already at the maximum level."
 
     # modify
     cannot_modify_on_quest = "You can't modify your character while on a quest."
@@ -135,29 +134,31 @@ class Strings:
     cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist.}"
     list_cults = "Here are all the existing cults:\n\n"
     modifier_names: Dict[str, str] = {
-        "general_xp_mult": "General XP Multiplier",
-        "general_money_mult": "General BA Multiplier",
-        "quest_xp_mult": "Quest XP Multiplier",
-        "quest_money_mult": "Quest BA Multiplier",
-        "event_xp_mult": "Event XP Multiplier",
-        "event_money_mult": "Event BA Multiplier",
-        "can_meet_players": "Can meet other players",
-        "power_bonus": "Base Power Bonus",
+        "general_xp_mult": "General XP",
+        "general_money_mult": "General BA",
+        "quest_xp_mult": "Quest XP",
+        "quest_money_mult": "Quest BA",
+        "event_xp_mult": "Event XP",
+        "event_money_mult": "Event BA",
+        "can_meet_players": "Can meet others",
+        "power_bonus": "Base Power",
         "roll_bonus": "Player Roll Bonus",
-        "quest_time_multiplier": "Quest Duration Multiplier",
-        "eldritch_resist": "Immune to Eldritch spells",
+        "quest_time_multiplier": "Quest Duration",
+        "eldritch_resist": "Spell immunity",
         "artifact_drop_bonus": "Artifact Drop Bonus",
-        "upgrade_cost_multiplier": "Upgrade Cost Multiplier",
-        "xp_mult_per_player_in_cult": "XP Multiplier per player in cult",
-        "money_mult_per_player_in_cult": "BA Multiplier per player in cult",
-        "randomizer_delay": "Randomize every X hours",
+        "upgrade_cost_multiplier": "Upgrade Cost",
+        "xp_mult_per_player_in_cult": "XP x player in cult",
+        "money_mult_per_player_in_cult": "BA x player in cult",
+        "randomizer_delay": "Randomize following every {hr} hours",
         "stats_to_randomize": "Affected stats",
-        "power_bonus_per_zone_visited": "Eldritch power per zones visited",
+        "power_bonus_per_zone_visited": "Eldritch power x zones visited",
         "qte_frequency_bonus": "QTE frequency bonus",
-        "minigame_xp_mult": "Minigame XP Multiplier",
-        "minigame_money_mult": "Minigame BA Multiplier",
-        "hp_mult": "HP multiplier",
+        "minigame_xp_mult": "Minigame XP",
+        "minigame_money_mult": "Minigame BA",
+        "hp_mult": "HP",
         "hp_bonus": "HP bonus",
+        "damage": "Damage x level",
+        "resistance": "Resist x level",
     }
 
     # items
@@ -185,3 +186,4 @@ class Strings:
     obj_does_not_exist = "The {obj} does not exist!"
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"
     positive_integer_error = "You must enter a positive integer (>= 0)."
+    obj_reached_max_level = "Your {obj} is already at max level."

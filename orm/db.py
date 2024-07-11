@@ -11,8 +11,10 @@ from peewee import fn, JOIN, IntegrityError
 
 from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel, db, ArtifactModel
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, Tourney
+    QuestProgressModel, db, ArtifactModel, EquipmentModel, EnemyTypeModel
+from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
+    Tourney, EnemyMeta
+from pilgram.combat import Modifier
 from pilgram.equipment import ConsumableItem, Equipment
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
@@ -21,6 +23,7 @@ log = logging.getLogger(__name__)
 
 
 NP_ED = np.dtype([('uint8', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy equipment data'
+NP_MD = np.dtype([('uint16', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy modifiers data'
 
 
 def decode_progress(data: Union[str, None]) -> Dict[int, int]:
@@ -85,11 +88,33 @@ def decode_equipped_items_ids(data: Union[str]) -> Dict[int, int]:
 
 
 def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> bytes:
-    packed_array = np.empty(int(len(equipped_items) / 5), NP_ED)
+    packed_array = np.empty(int(len(equipped_items)), NP_ED)
     for i, (slot, equipment) in enumerate(equipped_items.items()):
         j = i * 5
         packed_array[j] = slot
         packed_array[j + 1] = equipment.equipment_id
+    return packed_array.tobytes()
+
+
+def decode_modifiers(data: Union[str, None]) -> List[Modifier]:
+    encoded_data = bytes(data, "UTF-8")
+    if len(encoded_data) == 5:
+        # special case for single element array
+        unpacked_array = np.frombuffer(encoded_data, dtype=NP_MD).reshape(2)
+        return [Modifier.get(unpacked_array[0].item(), unpacked_array[1].item())]
+    modifiers_list: List[Modifier] = []
+    unpacked_array = np.frombuffer(encoded_data, dtype=NP_MD).reshape(int(len(data) / 6), 2)
+    for modifier_id, strength in unpacked_array:
+        modifiers_list.append(Modifier.get(modifier_id, strength))
+    return modifiers_list
+
+
+def encode_modifiers(modifiers: List[Modifier]) -> bytes:
+    packed_array = np.empty(int(len(modifiers)), NP_MD)
+    for i, modifier in enumerate(modifiers):
+        j = i * 6
+        packed_array[j] = modifier.ID
+        packed_array[j + 2] = modifier.strength
     return packed_array.tobytes()
 
 
@@ -600,7 +625,7 @@ class PilgramORMDatabase(PilgramDatabase):
                  order_by(PlayerModel.cult_id.asc()))
         return [(x.cult_id, x.player_count) for x in query]
 
-    # tourney
+    # tourney ----
 
     @cache_ttl_single_value(ttl=86000)
     def get_tourney(self) -> Tourney:
@@ -608,3 +633,90 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_tourney(self, tourney: Tourney):
         tourney.save()
+
+    # enemy meta ----
+
+    def __build_enemy_meta(self, ems) -> EnemyMeta:
+        return EnemyMeta(
+            ems.id,
+            self.get_zone(ems.zone_id),
+            ems.name,
+            ems.description,
+            ems.win_text,
+            ems.lose_text
+        )
+
+    def get_enemy_meta(self, enemy_meta_id: int) -> EnemyMeta:
+        try:
+            ems = EnemyTypeModel.get(EnemyTypeModel.id == enemy_meta_id)
+            return self.__build_enemy_meta(ems)
+        except EquipmentModel.DoesNotExist:
+            raise KeyError(f"Enemey meta with id {enemy_meta_id} does not exist")
+
+    @cache_sized_ttl_quick(size_limit=20, ttl=300)
+    def get_random_enemy_meta(self, zone: Zone) -> EnemyMeta:
+        ems = EnemyTypeModel.select(
+            EnemyTypeModel.id,
+            EnemyTypeModel.zone_id,
+            EnemyTypeModel.name,
+            EnemyTypeModel.description,
+            EnemyTypeModel.win_text,
+            EnemyTypeModel.lose_text
+        ).where(
+            EnemyTypeModel.zone_id == zone.zone_id
+        ).order_by(fn.Random()).limit(1).namedtuples()
+        for em in ems:
+            return self.__build_enemy_meta(em)
+
+    def update_enemy_meta(self, enemy_meta: EnemyMeta):
+        try:
+            ems = EnemyTypeModel.get(EnemyTypeModel.id == enemy_meta.meta_id)
+            ems.name = enemy_meta.name
+            ems.description = enemy_meta.description
+            ems.win_text = enemy_meta.win_text
+            ems.lose_text = enemy_meta.lose_text
+            ems.save()
+        except EquipmentModel.DoesNotExist:
+            raise KeyError(f"Enemey meta with id {enemy_meta.meta_id} does not exist")
+
+    def add_enemy_meta(self, enemy_meta: EnemyMeta):
+        with db.atomic():
+            EnemyTypeModel.create(
+                zone_id=enemy_meta.zone.zone_id,
+                name=enemy_meta.name,
+                description=enemy_meta.description,
+                win_text=enemy_meta.win_text,
+                lose_text=enemy_meta.lose_text
+            )
+
+    # items ----
+
+    def __build_item(self, its) -> Equipment:
+        pass  # TODO
+
+    def get_item(self, item_id: int) -> Equipment:
+        try:
+            its = EquipmentModel.get(EquipmentModel.id == item_id)
+            return self.__build_item(its)
+        except EquipmentModel.DoesNotExist:
+            raise KeyError(f"Could not find item with id {item_id}")
+
+    def get_player_items(self, player_id: int) -> List[Equipment]:
+        try:
+            its = PlayerModel.get(PlayerModel.id == player_id).pls.items
+            return [self.__build_item(x) for x in its]
+        except PlayerModel.DoesNotExist:
+            raise KeyError(f"Could not find player with id {player_id}")
+        except EquipmentModel.DoesNotExist:
+            return []
+
+    def update_item(self, item: Equipment, owner: Player):
+        try:
+            its = EquipmentModel.get(EquipmentModel.id == item.equipment_id)
+            its.owner = owner.player_id
+            its.save()
+        except EquipmentModel.DoesNotExist:
+            raise KeyError(f"Could not find item with id {item.equipment_id}")
+
+    def add_item(self, item: Equipment, owner: Player):
+        pass  # TODO

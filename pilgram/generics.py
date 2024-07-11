@@ -3,7 +3,8 @@ from abc import ABC
 from datetime import timedelta, datetime
 from typing import List, Tuple, Union, Any
 
-from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact, Tourney
+from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact, Tourney, EnemyMeta
+from pilgram.equipment import Equipment
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ class PilgramDatabase(ABC):
         """ generic method to get self, used to make the pilgram package implementation agnostic """
         raise NotImplementedError
 
-    # players ----
+    # players ----------------------------------
 
     def get_player_data(self, player_id) -> Player:
         """
@@ -58,7 +59,7 @@ class PilgramDatabase(ABC):
         """ get top 20 guild names + prestige based on rank """
         raise NotImplementedError
 
-    # guilds ---
+    # guilds ----------------------------------
 
     def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:
         """
@@ -127,7 +128,7 @@ class PilgramDatabase(ABC):
         """ reset the tourney scores of all guilds """
         raise NotImplementedError
 
-    # zones ----
+    # zones ----------------------------------
 
     def get_zone(self, zone_id: int) -> Zone:
         """ get a specific zone given its id, used basically everywhere """
@@ -145,7 +146,7 @@ class PilgramDatabase(ABC):
         """ used by the generator or manually by the admin via CLI on the server to add a new zone """
         raise NotImplementedError
 
-    # Zone events ----
+    # Zone events ----------------------------------
 
     def get_zone_event(self, event_id: int) -> ZoneEvent:
         """ get a specific zone event given its id """
@@ -167,7 +168,7 @@ class PilgramDatabase(ABC):
         """ update a zone event, generally used by the generator or manually by the admin """
         raise NotImplementedError
 
-    # quests ----
+    # quests ----------------------------------
 
     def get_next_quest(self, zone: Zone, player: Player) -> Quest:
         """ returns the next quest the player has to do in the specified zone. """
@@ -197,7 +198,7 @@ class PilgramDatabase(ABC):
         """ returns a list of quest amounts per zone, position in the list is determined by zone id """
         raise NotImplementedError
 
-    # in progress quests management ----
+    # in progress quests management ----------------------------------
 
     def get_player_adventure_container(self, player: Player) -> AdventureContainer:
         """ returns a player's adventure container. """
@@ -263,13 +264,13 @@ class PilgramDatabase(ABC):
         """ save the given artifact to the database (used when assigning an owner basically) """
         raise NotImplementedError
 
-    # cults ----
+    # cults ----------------------------------
 
     def get_cults_members_number(self) -> List[Tuple[int, int]]:  # cult id, number of members
         """ get the number of members for each cult """
         raise NotImplementedError
 
-    # tourney
+    # tourney ----------------------------------
 
     def get_tourney(self) -> Tourney:
         """ get the biweekly guild tourney object """
@@ -277,6 +278,46 @@ class PilgramDatabase(ABC):
 
     def update_tourney(self, tourney: Tourney):
         """ update the tourney object """
+        raise NotImplementedError
+
+    # enemy meta ----------------------------------
+
+    def get_enemy_meta(self, enemy_meta_id: int) -> EnemyMeta:
+        """ get a specific enemy meta (for updating most likely) """
+        raise NotImplementedError
+
+    def get_random_enemy_meta(self, zone: Zone) -> EnemyMeta:
+        """ get a random enemy meta from the specified zone """
+        raise NotImplementedError
+
+    def update_enemy_meta(self, enemy_meta: EnemyMeta):
+        """ update the enemy meta on the database (mainly used by admin CLI) """
+        raise NotImplementedError
+
+    def add_enemy_meta(self, enemy_meta: EnemyMeta):
+        """ add a new AI-generated (or human made) enemy meta to the database """
+        raise NotImplementedError
+
+    # items ----------------------------------
+
+    def get_item(self, item_id: int) -> Equipment:
+        """ return a specific item given its id """
+        raise NotImplementedError
+
+    def get_player_items(self, player_id: int) -> List[Equipment]:
+        """ get all items owned by the specified player """
+        raise NotImplementedError
+
+    def update_item(self, item: Equipment, owner: Player):
+        """ update an item on the database """
+        raise NotImplementedError
+
+    def add_item(self, item: Equipment, owner: Player):
+        """ add a new item on the database """
+        raise NotImplementedError
+
+    def delete_item(self, item: Equipment):
+        """ delete a specific item on the database """
         raise NotImplementedError
 
 
@@ -289,6 +330,9 @@ class PilgramGenerator(ABC):
         raise NotImplementedError
 
     def generate_artifacts(self) -> List[Artifact]:
+        raise NotImplementedError
+
+    def generate_enemy_metas(self, zone: Zone) -> List[EnemyMeta]:
         raise NotImplementedError
 
 

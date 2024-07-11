@@ -13,8 +13,8 @@ from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFl
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
-from pilgram.combat import CombatActor, Modifier
-from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file
+from pilgram.combat import CombatActor, Modifier, Damage
+from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file, print_bonus
 from pilgram.strings import MONEY, Strings
 
 log = logging.getLogger(__name__)
@@ -229,6 +229,7 @@ class Spell:
 class Player(CombatActor):
     """ contains all information about a player """
     MAXIMUM_POWER: int = 100
+    MAX_HOME_LEVEL = 10
 
     def __init__(
             self,
@@ -305,10 +306,10 @@ class Player(CombatActor):
         return int(value * self.cult.upgrade_cost_multiplier)
 
     def can_upgrade_gear(self) -> bool:
-        return self.money >= self.get_gear_upgrade_required_money()
+        return True
 
     def can_upgrade_home(self) -> bool:
-        return self.money >= self.get_home_upgrade_required_money()
+        return self.MAX_HOME_LEVEL > self.home_level
 
     def upgrade_gear(self):
         self.money -= self.get_gear_upgrade_required_money()
@@ -403,13 +404,31 @@ class Player(CombatActor):
     def unset_flag(self, flag: Type[Flag]):
         self.flags = flag.unset(self.flags)
 
+    def get_inventory_size(self) -> int:
+        return self.home_level * 4
+
     # combat stats
 
     def get_base_max_hp(self) -> int:
-        return (self.level + self.gear_level) * 10
+        return (((self.level + self.gear_level) * 10) * self.cult.hp_mult) + self.cult.hp_bonus
 
-    def get_max_hp(self) -> int:
-        return self.get_base_max_hp()
+    def get_base_attack_damage(self) -> Damage:
+        base_damage = self.cult.damage.scale(self.level)
+        for _, item in self.equipped_items.items():
+            base_damage += item.damage
+        return base_damage
+
+    def get_base_attack_resistance(self) -> Damage:
+        base_resistance = self.cult.damage.scale(self.level)
+        for _, item in self.equipped_items.items():
+            base_resistance += item.resist
+        return base_resistance
+
+    def get_modifiers(self, type_filter: Union[int, None]) -> List["Modifier"]:
+        result = []
+        for _, item in self.equipped_items.items():
+            result.extend(item.get_modifiers(type_filter))
+        return result
 
     # utility
 
@@ -455,7 +474,10 @@ class Player(CombatActor):
             [],
             np.uint32(0),
             0,
-            Cult.LIST[0]
+            Cult.LIST[0],
+            [],
+            {},
+            10
         )
 
 
@@ -501,7 +523,7 @@ class Guild:
         return current_members < self.level * self.PLAYERS_PER_LEVEL
 
     def can_upgrade(self) -> bool:
-        return (self.level < self.MAX_LEVEL) and (self.founder.money >= self.get_upgrade_required_money())
+        return self.MAX_LEVEL > self.level
 
     def get_upgrade_required_money(self) -> int:
         lv = self.level
@@ -790,10 +812,16 @@ class Cult(Listable, meta_name="cults"):
         self.minigame_money_mult = modifiers.get("minigame_money_mult", 1)
         self.hp_mult = modifiers.get("hp_mult", 1)
         self.hp_bonus = modifiers.get("hp_bonus", 0)
+        self.damage = Damage.load_from_json(modifiers.get("damage", {}))
+        self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:
             self.modifiers_applied.extend(list(self.stats_to_randomize.keys()))
+        self.damage_modifiers_applied = {
+            "damage": list(modifiers.get("damage", {}).keys()),
+            "resistance": list(modifiers.get("resistance", {}).keys())
+        }
         self.last_update: datetime = datetime.now() - timedelta(days=2)
         self.number_of_members: int = 0  # has to be set every hour by the timed updates manager
 
@@ -813,12 +841,17 @@ class Cult(Listable, meta_name="cults"):
             for modifier in self.modifiers_applied:
                 name = Strings.modifier_names[modifier]
                 value = self.__dict__[modifier]
+                if modifier == "randomizer_delay":
+                    string += f"- *{name.format(hr=value)}*:\n"
+                    continue
                 if type(value) is float:
                     string += f"- *{name}*: {value * 100:.0f}%\n"
                 elif type(value) is bool:
                     string += f"- *{name}*: {'Yes' if value else 'No'}\n"
                 elif type(value) is int:
-                    string += f"- *{name}*: {'+' if value > 0 else ''}{value}\n"
+                    string += f"- *{name}*: {print_bonus(value)}\n"
+                elif type(value) is Damage:
+                    string += f"- *{name}*:\n{'\n'.join([f"  > {x.capitalize()}: {print_bonus(value.__dict__[x])}" for x in self.damage_modifiers_applied[modifier]])}\n"
         else:
             string += "- *No modifiers*"
         return string
@@ -886,12 +919,17 @@ class Tourney:
 class EnemyMeta:
     """ holds zone, name, description & win/loss text related to an enemy. """
 
-    def __init__(self, zone: Zone, name: str, description: str, win_text: str, loss_text: str):
+    def __init__(self, meta_id: int, zone: Zone, name: str, description: str, win_text: str, lose_text: str):
+        self.meta_id = meta_id
         self.zone = zone
         self.name = name
         self.description = description
         self.win_text = win_text
-        self.loss_text = loss_text
+        self.lose_text = lose_text
+
+    @classmethod
+    def get_empty(cls, zone: Zone) -> "EnemyMeta":
+        return cls(0, zone, "enemy", "description", "win_text", "lose_text")
 
 
 class Enemy(CombatActor):
@@ -902,5 +940,5 @@ class Enemy(CombatActor):
         self.modifiers = modifiers
         super().__init__(self.get_max_hp())
 
-    def get_max_hp(self) -> int:
-        pass
+    def get_base_max_hp(self) -> int:
+        return 8 * self.meta.zone.level

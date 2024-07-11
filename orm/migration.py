@@ -101,9 +101,11 @@ def __migrate_v3_to_v4():
 
     class EnemyTypeModel(BaseModel):
         id = AutoField(primary_key=True)
+        zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
         name = CharField(null=False, unique=True)
         description = CharField(null=False)
-        zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
+        win_text = CharField(null=False)
+        lose_text = CharField(null=False)
 
     log.info(f"Migrating v3 to v4...")
     previous_db.connect()

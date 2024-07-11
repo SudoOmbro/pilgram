@@ -281,6 +281,12 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
 def upgrade(context: UserContext, obj: str = "gear") -> str:
     try:
         player = db().get_player_data(context.get("id"))
+        can_upgrade: bool = {
+            "gear": player.can_upgrade_gear,
+            "home": player.can_upgrade_home
+        }.get(obj)()
+        if not can_upgrade:
+            return Strings.obj_reached_max_level.format(obj=obj)
         price: int = {
             "gear": player.get_gear_upgrade_required_money,
             "home": player.get_home_upgrade_required_money,
@@ -307,8 +313,8 @@ def upgrade_guild(context: UserContext) -> str:
         guild = db().get_owned_guild(player)
         if not guild:
             return Strings.no_guild_yet
-        if guild.level == ContentMeta.get("guilds.max_level"):
-            return Strings.guild_already_maxed
+        if guild.can_upgrade():
+            return Strings.obj_reached_max_level.format(obj="guild")
         price = guild.get_upgrade_required_money()
         if player.money < price:
             return Strings.not_enough_money.format(amount=price-player.money)

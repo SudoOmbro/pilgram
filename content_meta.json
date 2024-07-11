@@ -168,7 +168,13 @@
     "description": "Members are shunned by society, part of their rituals involves eating parts of human brains. The rituals and drugs they take let them access their latent eldritch powers, even without the aid of artifacts.",
     "modifiers": {
       "can_meet_players": false,
-      "power_bonus": 10
+      "power_bonus": 10,
+      "damage": {
+        "occult": 5
+      },
+      "resistance": {
+        "occult": -1
+      }
     }
   }, {
     "id": 2,
@@ -176,7 +182,13 @@
     "description": "Remnants of the old Royal Inquisition sect. Even though the God emperor died long ago, the sacred talismans they hold still work, blocking the eldritch influences of old Gods.",
     "modifiers": {
       "eldritch_resist": true,
-      "power_bonus": -100
+      "power_bonus": -100,
+      "damage":{
+        "occult": -1
+      },
+      "resistance": {
+        "occult": 5
+      }
     }
   }, {
     "id": 3,
@@ -194,7 +206,12 @@
     "modifiers": {
       "event_money_mult": 0.2,
       "quest_money_mult": 0.2,
-      "roll_bonus": 5
+      "roll_bonus": 5,
+      "hp_mult": 1.2,
+      "resistance": {
+        "slash": 1,
+        "pierce": 1
+      }
     }
   }, {
     "id": 5,
@@ -212,7 +229,11 @@
     "modifiers": {
       "general_xp_mult": 1.25,
       "general_money_mult": 0.75,
-      "quest_time_multiplier": 1.25
+      "quest_time_multiplier": 1.25,
+      "damage": {
+        "pierce": 2,
+        "occult": 2
+      }
     }
   }, {
     "id": 7,
@@ -221,7 +242,13 @@
     "modifiers": {
       "artifact_drop_bonus": 4,
       "upgrade_cost_multiplier": 2.0,
-      "quest_time_multiplier": 1.6
+      "quest_time_multiplier": 1.6,
+      "damage": {
+        "occult": 3
+      },
+      "resistance": {
+        "fire": -1
+      }
     }
   }, {
     "id": 8,
@@ -236,6 +263,9 @@
     "name": "Children of Chaos",
     "description": "Worshippers of the primordial chaos from whence the universe was birthed.",
     "modifiers": {
+      "damage": {
+        "fire": 3
+      },
       "randomizer_delay": 24,
       "stats_to_randomize": {
         "can_meet_players": [true, false],
@@ -245,7 +275,8 @@
         "general_money_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
         "roll_bonus": [-2, -1, 0, 1, 2],
         "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2],
-        "qte_frequency_bonus": [-2, -1, 0, 1, 2]
+        "qte_frequency_bonus": [-2, -1, 0, 1, 2],
+        "hp_bonus": [-6, -3, 0, 3, 6]
       }
     }
   }, {
@@ -254,7 +285,13 @@
     "description": "Followers of the ever wandering Pilgrims, they gain deep insights and forbidden knowledge from following the mysterious mute figures walking Borom.",
     "modifiers": {
       "power_bonus_per_zone_visited": 2,
-      "quest_time_multiplier": 1.2
+      "general_xp_mult": 1.2,
+      "quest_time_multiplier": 1.4,
+      "resistance": {
+        "fire": 1,
+        "freeze": 1,
+        "acid": 1
+      }
     }
   }, {
     "id": 11,
@@ -265,7 +302,11 @@
       "quest_time_multiplier": 0.65,
       "roll_bonus": -2,
       "minigame_xp_mult": 2.0,
-      "minigame_money_mult": 2.0
+      "minigame_money_mult": 2.0,
+      "resistance": {
+        "blunt": 1,
+        "electric": 1
+      }
     }
   }],
   "equipment types": [{

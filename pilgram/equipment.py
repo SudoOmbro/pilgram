@@ -63,11 +63,26 @@ class EquipmentType(Listable, meta_name="equipment types"):
 
 class Equipment:
 
-    def __init__(self, equipment_id: int, equipment_type_id: int, damage: Damage, modifiers: List[Modifier]):
+    def __init__(
+            self,
+            equipment_id: int,
+            equipment_type_id: int,
+            damage: Damage,
+            resist: Damage,
+            modifiers: List[Modifier]
+    ):
         self.equipment_id = equipment_id
         self.weapon_type: EquipmentType = EquipmentType.LIST[equipment_type_id]
         self.damage = damage + self.weapon_type.damage
+        self.resist = resist + self.weapon_type.resist
         self.modifiers = modifiers
+
+    def get_modifiers(self, type_filter: int) -> List[Modifier]:
+        result = []
+        for modifier in self.modifiers:
+            if modifier.TYPE == type_filter:
+                result.append(modifier)
+        return result
 
 
 class ConsumableItem(Listable, meta_name="consumables"):
