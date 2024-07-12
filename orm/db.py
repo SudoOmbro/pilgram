@@ -7,7 +7,7 @@ import numpy as np
 
 from typing import Dict, Union, List, Tuple, Any
 
-from peewee import fn, JOIN, IntegrityError
+from peewee import fn, JOIN
 
 from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
@@ -233,7 +233,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 QuestProgressModel.create(
                     player_id=player.player_id
                 )
-        except IntegrityError:
+        except Exception as e:  # catching the specific exception wasn't working so here we are
+            log.error(e)
             raise AlreadyExists(f"Player with name {player.name} already exists")
 
     @cache_ttl_single_value(ttl=600)
@@ -323,7 +324,8 @@ class PilgramORMDatabase(PilgramDatabase):
                     creation_date=guild.creation_date,
                     tax=guild.tax
                 )
-        except IntegrityError:
+        except Exception as e:
+            log.error(e)
             raise AlreadyExists(f"Guild with name {guild.name} already exists")
 
     @cache_ttl_single_value(ttl=14400)

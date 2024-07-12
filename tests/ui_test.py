@@ -21,10 +21,12 @@ class TestUi(unittest.TestCase):
         print(interpreter.context_aware_execute(UserContext({"username": "ombro"}), "help"))
 
     def test_character_creation(self):
-        context = UserContext({"id": 1234})
+        context = UserContext({"id": 12345})
         result = interpreter.context_aware_execute(context, "create character")
         print(result)
         result = interpreter.context_aware_execute(context, "Ombro")
+        print(result)
+        result = interpreter.context_aware_execute(context, "0")
         print(result)
         result = interpreter.context_aware_execute(context, "Really cool guy")
         print(result)
