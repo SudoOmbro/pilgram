@@ -159,7 +159,7 @@ class CombatActor(ABC):
         """ generic method that should return the damage resistance of the entity """
         raise NotImplementedError
 
-    def get_modifiers(self, *args: int) -> List["Modifier"]:
+    def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
         """ generic method that should return an (optionally filtered) list of modifiers. (args are the filters) """
         raise NotImplementedError
 
@@ -167,17 +167,30 @@ class CombatActor(ABC):
         self.hp = int(self.get_max_hp() * self.hp_percent)
 
     def get_max_hp(self) -> int:
+        """ get max hp of the entity applying all modifiers """
         max_hp = self.get_base_max_hp()
         for modifier in self.get_modifiers(ModifierType.HP_MODIFIER):
             max_hp = modifier.apply(max_hp, self)
         return int(max_hp)
 
     def attack(self, target: "CombatActor") -> Damage:
+        """ get the damage an attack would do """
         damage = self.get_base_attack_damage().modify(self, ModifierType.PRE_ATTACK)
         defence = target.get_base_attack_resistance().modify(self, ModifierType.PRE_DEFEND)
         damage_done = damage - defence
         damage_done = damage_done.modify(target, ModifierType.POST_DEFEND)
         return damage_done.modify(self, ModifierType.POST_ATTACK)
+
+    def receive_damage(self, damage: Damage) -> bool:
+        """ damage the actor with damage. Return True if the actor was killed, otherwise return False """
+        damage_received = damage.get_total_damage()
+        self.hp -= damage_received
+        if self.hp <= 0:
+            self.hp = 0
+            self.hp_percent = 0
+            return True
+        self.hp_percent = self.hp / self.get_max_hp()
+        return False
 
 
 class Modifier(ABC):
@@ -186,17 +199,29 @@ class Modifier(ABC):
 
     TYPE: int  # This should be set manually for each defined modifier
 
-    def __init__(self, strength: int):
+    def __init__(self, strength: int, duration: int = -1):
+        """
+        :param strength: the strength of the modifier, used to make modifiers scale with level
+        :param duration: the duration in turns of the modifier, only used for temporary modifiers during combat
+        """
         self.strength = strength
+        self.duration = duration
 
     def __init_subclass__(cls, **kwargs):
         modifier_id = len(list(Modifier.DATABASE.keys()))
         cls.ID = modifier_id
         Modifier.DATABASE[modifier_id] = cls
 
-    def apply(self, value: Any, actor: CombatActor) -> Any:
+    def function(self, value: Any, actor: CombatActor) -> Any:
         """ apply the modifier to the value & actor, optionally return a value """
         raise NotImplementedError
+
+    def apply(self, value: Any, actor: CombatActor) -> Any:
+        if self.duration > 0:
+            self.duration -= 1
+        elif self.duration == 0:  # if the modifier expired then do nothing
+            return None
+        return self.function(value, actor)
 
     @staticmethod
     def get(modifier_id: int, strength: int) -> "Modifier":

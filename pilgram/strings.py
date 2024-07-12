@@ -168,6 +168,7 @@ class Strings:
         "revive": "Revives you",
         "buffs": "Damage buffs (2x)"
     }
+    satchel_position_out_of_range = "The given satchel position is not valid, you have {num} items in your satchel."
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

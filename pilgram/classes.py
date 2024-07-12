@@ -424,11 +424,29 @@ class Player(CombatActor):
             base_resistance += item.resist
         return base_resistance
 
-    def get_modifiers(self, type_filter: Union[int, None]) -> List["Modifier"]:
+    def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
         result = []
         for _, item in self.equipped_items.items():
-            result.extend(item.get_modifiers(type_filter))
+            result.extend(item.get_modifiers(type_filters))
         return result
+
+    def __clamp_hp(self, max_hp: int):
+        if self.hp > max_hp:
+            self.hp = max_hp
+
+    def use_consumable(self, position_in_satchel: int) -> str:
+        if position_in_satchel > len(self.satchel):
+            return Strings.satchel_position_out_of_range.format(num=len(self.satchel))
+        if position_in_satchel > 0:
+            position_in_satchel -= 1
+        item = self.satchel.pop(position_in_satchel)
+        max_hp = self.get_max_hp()
+        self.hp = int(self.hp_percent * max_hp)
+        self.hp += item.hp_restored
+        self.__clamp_hp(max_hp)
+        self.hp += int(max_hp * item.hp_percent_restored)
+        self.__clamp_hp(max_hp)
+        self.flags = item.buff_flag.set(self.flags)
 
     # utility
 

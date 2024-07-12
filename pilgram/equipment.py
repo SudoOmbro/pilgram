@@ -1,4 +1,6 @@
-from typing import Union, List, Dict, Any, Type
+from typing import Union, List, Dict, Any, Type, Tuple
+
+import numpy as np
 
 from pilgram.flags import StrengthBuff, OccultBuff, Flag, FireBuff, IceBuff, AcidBuff, ElectricBuff
 from pilgram.listables import Listable
@@ -77,10 +79,12 @@ class Equipment:
         self.resist = resist + self.weapon_type.resist
         self.modifiers = modifiers
 
-    def get_modifiers(self, type_filter: int) -> List[Modifier]:
+    def get_modifiers(self, type_filters: Union[Tuple[int, ...], None]) -> List[Modifier]:
+        if not type_filters:
+            return self.modifiers
         result = []
         for modifier in self.modifiers:
-            if modifier.TYPE == type_filter:
+            if modifier.TYPE in type_filters:
                 result.append(modifier)
         return result
 
@@ -104,7 +108,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
         self.hp_restored = effects.get("hp_restored", 0)
         self.hp_percent_restored = effects.get("hp_percent_restored", 0.0)
         self.revive = effects.get("revive", False)
-        self.buff_flag = self.get_buff_flag(buffs)
+        self.buff_flag: Flag = self.get_buff_flag(buffs)
         # internal vars used to build the description
         self.buffs = buffs
         self.effects = list(effects.keys())
@@ -125,7 +129,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
         return string
 
     @classmethod
-    def get_buff_flag(cls, buff_strings: List[str]) -> int:
+    def get_buff_flag(cls, buff_strings: List[str]) -> Flag:
         result = Flag.get_empty()
         buff_map: Dict[str, Type[Flag]] = {
             "strength": StrengthBuff,
