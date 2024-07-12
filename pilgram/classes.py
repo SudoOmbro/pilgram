@@ -904,7 +904,7 @@ class Tourney:
         :param tourney_start: the tourney start time
         :param duration: the tourney duration (in seconds)
         """
-        self.tourney_edition = edition,
+        self.tourney_edition = edition
         self.tourney_start = tourney_start
         self.duration = duration
 

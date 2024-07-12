@@ -322,6 +322,7 @@ class TourneyManager:
 
     def run(self):
         tourney = self.db().get_tourney()
+        print(tourney.__dict__)
         if not tourney.has_tourney_ended():
             return
         log.info(f"Tourney {tourney.tourney_edition} has ended")
