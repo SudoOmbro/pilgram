@@ -192,47 +192,45 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_player_data(self, player: Player):
         try:
-            with db.atomic():
-                pls = PlayerModel.get(PlayerModel.id == player.player_id)
-                pls.name = player.name
-                pls.description = player.description
-                pls.guild = player.guild.guild_id if player.guild else None
-                pls.level = player.level
-                pls.xp = player.xp
-                pls.money = player.money
-                pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
-                pls.home_level = player.home_level
-                pls.gear_level = player.gear_level
-                pls.last_spell_cast = player.last_cast
-                pls.artifact_pieces = player.artifact_pieces
-                pls.flags = player.flags
-                pls.renown = player.renown
-                pls.cult_id = player.cult.faction_id
-                pls.satchel = encode_satchel(player.satchel)
-                pls.equipped_items = encode_equipped_items(player.equipped_items)
-                pls.hp_percent = player.hp_percent
-                pls.save()
+            pls = PlayerModel.get(PlayerModel.id == player.player_id)
+            pls.name = player.name
+            pls.description = player.description
+            pls.guild = player.guild.guild_id if player.guild else None
+            pls.level = player.level
+            pls.xp = player.xp
+            pls.money = player.money
+            pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
+            pls.home_level = player.home_level
+            pls.gear_level = player.gear_level
+            pls.last_spell_cast = player.last_cast
+            pls.artifact_pieces = player.artifact_pieces
+            pls.flags = player.flags
+            pls.renown = player.renown
+            pls.cult_id = player.cult.faction_id
+            pls.satchel = encode_satchel(player.satchel)
+            pls.equipped_items = encode_equipped_items(player.equipped_items)
+            pls.hp_percent = player.hp_percent
+            pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
 
     def add_player(self, player: Player):
         try:
-            with db.atomic():
-                PlayerModel.create(
-                    id=player.player_id,
-                    name=player.name,
-                    description=player.description,
-                    guild=player.guild.guild_id if player.guild else None,
-                    level=player.level,
-                    xp=player.xp,
-                    money=player.money,
-                    progress=encode_progress(player.progress.zone_progress) if player.progress else None,
-                    gear_level=player.gear_level
-                )
-                # also create quest progress model related to the player
-                QuestProgressModel.create(
-                    player_id=player.player_id
-                )
+            PlayerModel.create(
+                id=player.player_id,
+                name=player.name,
+                description=player.description,
+                guild=player.guild.guild_id if player.guild else None,
+                level=player.level,
+                xp=player.xp,
+                money=player.money,
+                progress=encode_progress(player.progress.zone_progress) if player.progress else None,
+                gear_level=player.gear_level
+            )
+            # also create quest progress model related to the player
+            QuestProgressModel.create(
+                player_id=player.player_id
+            )
         except Exception as e:  # catching the specific exception wasn't working so here we are
             log.error(e)
             raise AlreadyExists(f"Player with name {player.name} already exists")
@@ -316,14 +314,13 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def add_guild(self, guild: Guild):
         try:
-            with db.atomic():
-                GuildModel.create(
-                    name=guild.name,
-                    description=guild.description,
-                    founder_id=guild.founder.player_id,
-                    creation_date=guild.creation_date,
-                    tax=guild.tax
-                )
+            GuildModel.create(
+                name=guild.name,
+                description=guild.description,
+                founder_id=guild.founder.player_id,
+                creation_date=guild.creation_date,
+                tax=guild.tax
+            )
         except Exception as e:
             log.error(e)
             raise AlreadyExists(f"Guild with name {guild.name} already exists")
@@ -383,12 +380,11 @@ class PilgramORMDatabase(PilgramDatabase):
         zs.save()
 
     def add_zone(self, zone: Zone):
-        with db.atomic():
-            ZoneModel.create(
-                name=zone.zone_name,
-                level=zone.level,
-                description=zone.zone_description
-            )
+        ZoneModel.create(
+            name=zone.zone_name,
+            level=zone.level,
+            description=zone.zone_description
+        )
 
     # zone events ----
 
@@ -432,16 +428,14 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find zone event with id {event.event_id}")
 
     def add_zone_event(self, event: ZoneEvent):
-        with db.atomic():
-            ZoneEventModel.create(
-                zone_id=event.zone.zone_id,
-                event_text=event.event_text
-            )
+        ZoneEventModel.create(
+            zone_id=event.zone.zone_id,
+            event_text=event.event_text
+        )
 
     def add_zone_events(self, events: List[ZoneEvent]):
         data_to_insert = [{"zone_id": e.zone.zone_id if e.zone else 0, "event_text": e.event_text} for e in events]
-        with db.atomic():
-            ZoneEventModel.insert_many(data_to_insert).execute()
+        ZoneEventModel.insert_many(data_to_insert).execute()
 
     # quests ----
 
@@ -487,15 +481,14 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find quest with id {quest.quest_id}")
 
     def add_quest(self, quest: Quest):
-        with db.atomic():
-            QuestModel.create(
-                name=quest.name,
-                zone_id=quest.zone.zone_id,
-                number=quest.number,
-                description=quest.description,
-                success_text=quest.success_text,
-                failure_text=quest.failure_text,
-            )
+        QuestModel.create(
+            name=quest.name,
+            zone_id=quest.zone.zone_id,
+            number=quest.number,
+            description=quest.description,
+            success_text=quest.success_text,
+            failure_text=quest.failure_text,
+        )
 
     def add_quests(self, quests: List[Quest]):
         data_to_insert: List[Dict[str, Any]] = [
@@ -508,8 +501,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 "failure_text": q.failure_text
             } for q in quests
         ]
-        with db.atomic():
-            QuestModel.insert_many(data_to_insert).execute()
+        QuestModel.insert_many(data_to_insert).execute()
 
     @cache_ttl_single_value(ttl=30)
     def get_quests_counts(self) -> List[int]:
@@ -593,8 +585,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError("No artifacts in database")
 
     def add_artifact(self, artifact: Artifact):
-        with db.atomic():
-            ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
+        ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
 
     def add_artifacts(self, artifacts: List[Artifact]):
         data_to_insert: List[Dict[str, Any]] = [
@@ -604,8 +595,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 "owner": None
             } for a in artifacts
         ]
-        with db.atomic():
-            ArtifactModel.insert_many(data_to_insert).execute()
+        ArtifactModel.insert_many(data_to_insert).execute()
 
     def update_artifact(self, artifact: Artifact, owner: Union[Player, None]):
         try:
@@ -682,14 +672,13 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Enemey meta with id {enemy_meta.meta_id} does not exist")
 
     def add_enemy_meta(self, enemy_meta: EnemyMeta):
-        with db.atomic():
-            EnemyTypeModel.create(
-                zone_id=enemy_meta.zone.zone_id,
-                name=enemy_meta.name,
-                description=enemy_meta.description,
-                win_text=enemy_meta.win_text,
-                lose_text=enemy_meta.lose_text
-            )
+        EnemyTypeModel.create(
+            zone_id=enemy_meta.zone.zone_id,
+            name=enemy_meta.name,
+            description=enemy_meta.description,
+            win_text=enemy_meta.win_text,
+            lose_text=enemy_meta.lose_text
+        )
 
     # items ----
 
