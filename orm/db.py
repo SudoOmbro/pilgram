@@ -11,7 +11,7 @@ from peewee import fn, JOIN
 
 from orm.migration import migrate_older_dbs
 from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel, db, ArtifactModel, EquipmentModel, EnemyTypeModel
+    QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
     Tourney, EnemyMeta
 from pilgram.combat_classes import Modifier
