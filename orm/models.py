@@ -51,7 +51,7 @@ class PlayerModel(BaseModel):
     flags = IntegerField(default=0)
     renown = IntegerField(default=0)
     cult_id = IntegerField(default=0)
-    hp = IntegerField(null=False, default=10)
+    hp_percent = FloatField(null=False, default=1.0)
     satchel = CharField(null=False, default="")  # consumable items are stored as a char string (a byte per item)
     equipped_items = CharField(null=False, default="")  # equipped items are stored as char string, 32 + 8 bits per item (only store the id of the item & where the item is equipped)
 

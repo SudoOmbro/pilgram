@@ -111,7 +111,7 @@ def __migrate_v3_to_v4():
     previous_db.connect()
     migrator = SqliteMigrator(previous_db)
     migrate(
-        migrator.add_column('playermodel', 'hp', IntegerField(null=False, default=10)),
+        migrator.add_column('playermodel', 'hp_percent', FloatField(null=False, default=1.0)),
         migrator.add_column('playermodel', 'satchel', CharField(null=False, default="")),
         migrator.add_column('playermodel', 'equipped_items', CharField(null=False, default="")),
         # can't add constraints to SQLite Databases :(

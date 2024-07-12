@@ -251,7 +251,7 @@ class Player(CombatActor):
             cult: "Cult",
             satchel: List[ConsumableItem],
             equipped_items: Dict[int, Equipment],
-            hp: int
+            hp_percent: float
     ):
         """
         :param player_id (int): unique id of the player
@@ -288,7 +288,7 @@ class Player(CombatActor):
         self.cult = cult
         self.satchel = satchel
         self.equipped_items = equipped_items
-        super().__init__(hp)
+        super().__init__(hp_percent)
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -405,7 +405,7 @@ class Player(CombatActor):
         self.flags = flag.unset(self.flags)
 
     def get_inventory_size(self) -> int:
-        return self.home_level * 4
+        return 10 + self.home_level * 4
 
     # combat stats
 
@@ -433,8 +433,10 @@ class Player(CombatActor):
     # utility
 
     def __str__(self):
+        max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
+        string += f"HP: {int(max_hp * self.hp_percent)} /{max_hp}\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
         string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
         if self.get_max_charge() > 0:

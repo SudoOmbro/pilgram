@@ -143,8 +143,9 @@ class Damage:
 
 class CombatActor(ABC):
 
-    def __init__(self, hp: int):
-        self.hp = hp
+    def __init__(self, hp_percent: float):
+        self.hp_percent = hp_percent  # used out of fights
+        self.hp: int = 0  # only used during fights
 
     def get_base_max_hp(self) -> int:
         """ returns the maximum hp of the combat actor (players & enemies) """
@@ -158,9 +159,12 @@ class CombatActor(ABC):
         """ generic method that should return the damage resistance of the entity """
         raise NotImplementedError
 
-    def get_modifiers(self, type_filter: Union[int, None]) -> List["Modifier"]:
-        """ generic method that should return an (optionally filtered) list of modifiers """
+    def get_modifiers(self, *args: int) -> List["Modifier"]:
+        """ generic method that should return an (optionally filtered) list of modifiers. (args are the filters) """
         raise NotImplementedError
+
+    def start_fight(self):
+        self.hp = int(self.get_max_hp() * self.hp_percent)
 
     def get_max_hp(self) -> int:
         max_hp = self.get_base_max_hp()
