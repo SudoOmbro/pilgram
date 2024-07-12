@@ -8,7 +8,13 @@ from playhouse.sqliteq import SqliteQueueDatabase
 
 DB_FILENAME: str = "pilgram_v4.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
-db = SqliteQueueDatabase(DB_FILENAME)
+db = SqliteQueueDatabase(
+    DB_FILENAME,
+    use_gevent=False,
+    autostart=True,
+    queue_max_size=64,
+    results_timeout=10.0
+)
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -110,7 +116,7 @@ class EnemyTypeModel(BaseModel):
 
 def db_connect():
     log.info("Connecting to database")
-    db.connect()
+    db.connect(reuse_if_open=True)
 
 
 def db_disconnect():
@@ -128,6 +134,8 @@ def create_tables():
         GuildModel,
         ZoneEventModel,
         QuestProgressModel,
-        ArtifactModel
+        ArtifactModel,
+        EquipmentModel,
+        EnemyTypeModel
     ], safe=True)
     db_disconnect()

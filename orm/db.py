@@ -1,7 +1,7 @@
 import logging
-import os
 import random
 from datetime import timedelta, datetime
+from time import sleep
 
 import numpy as np
 
@@ -10,7 +10,7 @@ from typing import Dict, Union, List, Tuple, Any
 from peewee import fn, JOIN
 
 from orm.migration import migrate_older_dbs
-from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_tables, ZoneEventModel, QuestModel, \
+from orm.models import db, PlayerModel, GuildModel, ZoneModel, create_tables, ZoneEventModel, QuestModel, \
     QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
     Tourney, EnemyMeta
@@ -132,8 +132,11 @@ class PilgramORMDatabase(PilgramDatabase):
             cls._instance = cls.__new__(cls)
             while migrate_older_dbs():  # automatically migrate any DB to the newest version
                 log.info("migration done.")
-            if not os.path.isfile(DB_FILENAME):
+                sleep(0.05)
+            if not db.get_tables():
+                log.info("Db file does not exist. Creating one.")
                 create_tables()
+                sleep(0.05)
                 log.info("tables created")
             cls._instance.is_connected = False
         return cls._instance
