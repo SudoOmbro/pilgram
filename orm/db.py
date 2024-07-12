@@ -14,7 +14,7 @@ from orm.models import PlayerModel, GuildModel, ZoneModel, DB_FILENAME, create_t
     QuestProgressModel, db, ArtifactModel, EquipmentModel, EnemyTypeModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
     Tourney, EnemyMeta
-from pilgram.combat import Modifier
+from pilgram.combat_classes import Modifier
 from pilgram.equipment import ConsumableItem, Equipment
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value

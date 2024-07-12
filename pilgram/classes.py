@@ -13,7 +13,7 @@ from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFl
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
-from pilgram.combat import CombatActor, Modifier, Damage
+from pilgram.combat_classes import CombatActor, Modifier, Damage
 from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file, print_bonus
 from pilgram.strings import MONEY, Strings
 
@@ -446,7 +446,12 @@ class Player(CombatActor):
         self.__clamp_hp(max_hp)
         self.hp += int(max_hp * item.hp_percent_restored)
         self.__clamp_hp(max_hp)
+        if self.hp != max_hp:
+            self.hp_percent = self.hp / max_hp
+        else:
+            self.hp_percent = 1.0
         self.flags = item.buff_flag.set(self.flags)
+        return Strings.used_item.format(verb=item.verb, item=item.name)
 
     # utility
 
@@ -497,7 +502,7 @@ class Player(CombatActor):
             Cult.LIST[0],
             [],
             {},
-            10
+            1.0
         )
 
 

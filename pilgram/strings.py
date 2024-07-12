@@ -169,6 +169,7 @@ class Strings:
         "buffs": "Damage buffs (2x)"
     }
     satchel_position_out_of_range = "The given satchel position is not valid, you have {num} items in your satchel."
+    used_item = "You {verb} the {item}"
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

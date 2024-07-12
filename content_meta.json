@@ -341,6 +341,7 @@
     "id": 0,
     "name": "Rotten strawberry",
     "description": "The mold gives it a fuzzy texture.",
+    "verb": "consumed",
     "value": 1,
     "effects": {
       "hp_restored": 1

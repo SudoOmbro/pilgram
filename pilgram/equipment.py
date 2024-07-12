@@ -4,7 +4,7 @@ import numpy as np
 
 from pilgram.flags import StrengthBuff, OccultBuff, Flag, FireBuff, IceBuff, AcidBuff, ElectricBuff
 from pilgram.listables import Listable
-from pilgram.combat import Modifier, Damage
+from pilgram.combat_classes import Modifier, Damage
 from pilgram.strings import Strings
 
 
@@ -97,6 +97,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
             consumable_id: int,
             name: str,
             description: str,
+            verb: str,
             value: int,  # buy price, sell price is halved
             effects: Dict[str, Any]
     ):
@@ -104,6 +105,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
         self.consumable_id = consumable_id
         self.name = name
         self.description = description
+        self.verb = verb
         self.value = value
         self.hp_restored = effects.get("hp_restored", 0)
         self.hp_percent_restored = effects.get("hp_percent_restored", 0.0)
@@ -150,6 +152,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
             consumables_json["id"],
             consumables_json["name"],
             consumables_json["description"],
+            consumables_json["verb"],
             consumables_json["value"],
             consumables_json.get("effects", {})
         )
