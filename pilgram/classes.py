@@ -436,7 +436,7 @@ class Player(CombatActor):
         max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
-        string += f"HP: {int(max_hp * self.hp_percent)} /{max_hp}\n"
+        string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
         string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
         if self.get_max_charge() > 0:
