@@ -177,7 +177,9 @@ class PilgramORMDatabase(PilgramDatabase):
                 Cult.get(pls.cult_id),
                 decode_satchel(pls.satchel),
                 equipped_items,
-                pls.hp_percent
+                pls.hp_percent,
+                pls.stance,
+                pls.completed_quests
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -213,6 +215,8 @@ class PilgramORMDatabase(PilgramDatabase):
             pls.satchel = encode_satchel(player.satchel)
             pls.equipped_items = encode_equipped_items(player.equipped_items)
             pls.hp_percent = player.hp_percent
+            pls.stance = player.stance
+            pls.completed_quests = player.completed_quests
             pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

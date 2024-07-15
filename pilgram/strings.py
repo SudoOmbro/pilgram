@@ -176,6 +176,15 @@ class Strings:
     tourney_ends_tomorrow = "The tourney ends tomorrow"
     tourney_ends_today = "The tourney ends today"
 
+    # combat
+    invalid_stance = "Invalid stance, here are the available stances (you can write just the first letter):\n"
+    stances = {
+        "b": ("Balanced", "A good balance between aggression & defence."),
+        "r": ("Reckless", "All-in on attacking."),
+        "s": ("Safe", "Be defensive, try to keep your hp high")
+    }
+    stance_switch = "Stance switched to "
+
     # errors
     no_character_yet = "You haven't made a character yet!"
     named_object_not_exist = "{obj} with name {name} does not exist."

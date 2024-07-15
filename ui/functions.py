@@ -694,6 +694,19 @@ def explain_minigame(context: UserContext, user_input: str) -> str:
     return minigame.EXPLANATION
 
 
+def switch_stance(context: UserContext, stance: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        stance_byte = stance[0].lower()
+        if not (stance_byte in Strings.stances):
+            return Strings.invalid_stance + "\n".join([f"*{stance}*: _{descr}_" for stance, descr in list(Strings.stances.values())])
+        player.stance = stance_byte
+        db().update_player_data(player)
+        return Strings.stance_switch + Strings.stances[stance_byte][0]
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
@@ -741,6 +754,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "assemble": {
         "artifact": IFW(None, assemble_artifact, "Assemble an artifact using 10 artifact pieces")
     },
+    "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
     "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {

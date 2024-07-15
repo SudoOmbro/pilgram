@@ -3,10 +3,13 @@ import unittest
 from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent
 
 
-def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 10000) -> float:
+def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 100) -> float:
     failures = 0
     for _ in range(tests):
-        failures += int(not quest.finish_quest(player))
+        result, roll, roll_to_beat = quest.finish_quest(player)
+        if not result:
+            print(f"Fail! (rolled {roll}, {roll_to_beat} to beat)")
+        failures += int(not result)
     return failures / tests
 
 
@@ -19,13 +22,13 @@ class TestClasses(unittest.TestCase):
     def test_finish_quest(self):
         # setup player
         player = Player.create_default(0, "test", "")
-        player.level = 4
-        player.gear_level = 3
+        player.level = 11
+        player.gear_level = 9
         # setup quest
-        zone = Zone(0, "test", 45, "test")
-        quest = Quest(0, zone, 0, "test", "", "", "")
+        zone = Zone(0, "test", 5, "test")
+        quest = Quest(0, zone, 4, "test", "", "", "")
         # do tests
-        for num in range(10):
+        for num in range(100):
             quest.number = num
             fail_rate = _get_quest_fail_rate(quest, player)
             _print_quest_fail_rate(fail_rate, quest, player)

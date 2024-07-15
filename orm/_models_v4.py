@@ -2,18 +2,13 @@ import logging
 from datetime import datetime
 
 from peewee import Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
-    AutoField, FloatField, FixedCharField
-from playhouse.sqliteq import SqliteQueueDatabase
+    AutoField, FloatField, SqliteDatabase
 
 
-DB_FILENAME: str = "pilgram_v5.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v4.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
-db = SqliteQueueDatabase(
-    DB_FILENAME,
-    use_gevent=False,
-    autostart=True,
-    queue_max_size=64,
-    results_timeout=10.0
+db = SqliteDatabase(
+    DB_FILENAME
 )
 
 log = logging.getLogger(__name__)
@@ -61,8 +56,6 @@ class PlayerModel(BaseModel):
     hp_percent = FloatField(null=False, default=1.0)
     satchel = CharField(null=False, default="")  # consumable items are stored as a char string (a byte per item)
     equipped_items = CharField(null=False, default="")  # equipped items are stored as char string, 32 + 8 bits per item (only store the id of the item & where the item is equipped)
-    stance = FixedCharField(max_length=1, default="b")  # stance saved as a char
-    completed_quests = IntegerField(default=0)
 
 
 class GuildModel(BaseModel):
@@ -101,7 +94,6 @@ class ArtifactModel(BaseModel):
 class EquipmentModel(BaseModel):
     id = AutoField(primary_key=True)
     name = CharField(null=False, max_length=50)
-    level = IntegerField(default=1)
     equipment_type = IntegerField(null=False)
     owner = ForeignKeyField(PlayerModel, backref="items", index=True)
     damage_seed = FloatField(null=False)  # used to generate the damage value at load time

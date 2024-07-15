@@ -119,6 +119,7 @@ class QuestManager:
                     money -= amount
             player.add_xp(xp)
             money_am = player.add_money(money)  # am = after modifiers
+            player.completed_quests += 1
             player.renown += renown
             piece: bool = False
             if random.randint(1, 10) < (3 + player.cult.artifact_drop_bonus):  # 30% base chance to gain a piece of an artifact

@@ -93,15 +93,7 @@ class Quest:
         self.success_text = success_text
         self.failure_text = failure_text
 
-    def finish_quest(self, player: "Player") -> Tuple[bool, int, int]:  # win/lose, roll, roll to beat
-        """ return true if the player has successfully finished the quest """
-        roll = player.roll(20)
-        if roll == 1:
-            log.info(f"{player.name} rolled a critical failure on quest {self.name}")
-            return False, 1, 10  # you can still get a critical failure
-        if roll == 20:
-            log.info(f"{player.name} rolled a critical success on quest {self.name}")
-            return True, 20, 10  # you can also get a critical success
+    def get_value_to_beat(self, player: "Player") -> int:
         sqrt_multiplier = (1.2 * self.zone.level) - ((player.level + player.gear_level) / 2)
         if sqrt_multiplier < 1:
             sqrt_multiplier = 1
@@ -112,6 +104,22 @@ class Quest:
         value_to_beat = int((sqrt_multiplier * math.sqrt(num_multiplier * self.number)) + offset)
         if value_to_beat > 19:
             value_to_beat = 19
+        return value_to_beat
+
+    def finish_quest(self, player: "Player") -> Tuple[bool, int, int]:  # win/lose, roll, roll to beat
+        """ return true if the player has successfully finished the quest """
+        value_to_beat = self.get_value_to_beat(player)
+        roll = player.roll(20)
+        if roll == 1:
+            log.info(f"{player.name} rolled a critical failure on quest {self.name}")
+            return False, 1, value_to_beat  # you can still get a critical failure
+        if roll == 20:
+            log.info(f"{player.name} rolled a critical success on quest {self.name}")
+            return True, 20, value_to_beat  # you can also get a critical success
+        if (roll - value_to_beat) == -1:
+            # if the player missed the roll by 1 have an 80% chance of gracing them
+            if random.randint(1, 10) > 2:
+                roll += 1
         log.info(f"{self.name}: to beat: {value_to_beat}, {player.name} rolled: {roll}")
         return roll >= value_to_beat, roll, value_to_beat
 
@@ -251,7 +259,9 @@ class Player(CombatActor):
             cult: "Cult",
             satchel: List[ConsumableItem],
             equipped_items: Dict[int, Equipment],
-            hp_percent: float
+            hp_percent: float,
+            stance: str,
+            completed_quests: int
     ):
         """
         :param player_id (int): unique id of the player
@@ -269,6 +279,11 @@ class Player(CombatActor):
         :param flags (np.uint32): flags of the player, can be used for anything
         :param renown (int): renown of the player, used for ranking
         :param cult: the player's cult
+        :param satchel: the player's satchel which holds consumable items
+        :param equipped_items: the player's equipped items
+        :param hp_percent: the player's hp percentage
+        :param stance: the player's stance
+        :param completed_quests: the player's completed quests
         """
         self.player_id = player_id
         self.name = name
@@ -289,6 +304,8 @@ class Player(CombatActor):
         self.satchel = satchel
         self.equipped_items = equipped_items
         super().__init__(hp_percent)
+        self.stance = stance
+        self.completed_quests = completed_quests
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -360,13 +377,16 @@ class Player(CombatActor):
             if flag.is_set(self.flags):
                 roll += modifier
                 self.flags = flag.unset(self.flags)
+        if random.randint(1, 10) > 5:
+            # skew the roll to avoid players failing too much
+            roll += random.randint(1, 5)
         if roll < 1:
             return 1
         if roll > dice_faces:
             return dice_faces
         return roll
 
-    def get_number_of_completed_quests(self) -> int:
+    def get_number_of_tried_quests(self) -> int:
         result: int = 0
         for zone, progress in self.progress.zone_progress.items():
             result += progress
@@ -461,14 +481,14 @@ class Player(CombatActor):
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
         string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
-        string += f"Cult: {self.cult.name}\n_Renown: {self.renown}_"
+        string += f"Stance: {Strings.stances[self.stance][0]}\nCult: {self.cult.name}\n_Renown: {self.renown}_"
         if self.get_max_charge() > 0:
             string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
-            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
+            string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()}\nArtifact pieces: {self.artifact_pieces}_"
             string += f"\n\nArtifacts:\n" + ("\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)) if len(
-                self.artifacts) > 0 else "\n\nNo artifacts yet"
+                self.artifacts) > 0 else "\n\nNo artifacts yet."
         else:
-            string += f"\n\n_{self.description}\n\nQuests completed: {self.get_number_of_completed_quests()}\nArtifact pieces: {self.artifact_pieces}_"
+            string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"
         return string
 
     def __repr__(self):
@@ -502,7 +522,9 @@ class Player(CombatActor):
             Cult.LIST[0],
             [],
             {},
-            1.0
+            1.0,
+            "b",
+            0
         )
 
 

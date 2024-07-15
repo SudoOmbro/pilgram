@@ -1,9 +1,10 @@
 import logging
 import os
 from datetime import datetime
+from time import sleep
 from typing import Dict, Callable
 
-from peewee import IntegerField, DateTimeField, AutoField, CharField, ForeignKeyField, FloatField
+from peewee import IntegerField, DateTimeField, AutoField, CharField, ForeignKeyField, FloatField, FixedCharField
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -124,3 +125,21 @@ def __migrate_v3_to_v4():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v3.db", "pilgram_v4.db")
+
+
+@__add_to_migration_list("pilgram_v4.db")
+def __migrate_v4_to_v5():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v4 import db as previous_db
+    log.info(f"Migrating v4 to v5...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('playermodel', 'stance', FixedCharField(max_length=1, default="b")),
+        migrator.add_column('playermodel', 'completed_quests', IntegerField(default=0)),
+        migrator.add_column('equipmentmodel', 'level', IntegerField(default=0))
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v4.db", "pilgram_v5.db")
+    sleep(0.01)
