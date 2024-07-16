@@ -38,7 +38,7 @@ QUEST_DESCRIPTION_REGEX: str = r"^\**[Oo]bjective\**:\**\s(.*)$"
 QUEST_SUCCESS_REGEX: str = r"^\**[Ss]uccess\**:\**\s(.*)$"
 QUEST_FAILURE_REGEX: str = r"^\**[Ff]ailure\**:\**\s(.*)$"
 
-ENEMY_NAME_REGEX: str = r"^\-?\d*\.?\**#*\s?[Nn]ame\s?[\d]*:\s(.*)$"
+ENEMY_NAME_REGEX: str = r"^\-?\d*\.?\**#*\s?[Nn]ame\s?[\d]*:\**\s(.*)$"
 ENEMY_DESCRIPTION_REGEX: str = r"^\**[Dd]escription\**:\**\s(.*)$"
 ENEMY_WIN_REGEX: str = r"^\**[Ww]in( [Tt]ext)?\**:\**\s(.*)$"
 ENEMY_LOSS_REGEX: str = r"^\**[Ll]os[se]( [Tt]ext)?\**:\**\s(.*)$"
