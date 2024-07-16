@@ -286,6 +286,10 @@ class PilgramDatabase(ABC):
         """ get a specific enemy meta (for updating most likely) """
         raise NotImplementedError
 
+    def get_all_zone_enemies(self, zone: Zone) -> List[EnemyMeta]:
+        """ get all enemies from given a zone """
+        raise NotImplementedError
+
     def get_random_enemy_meta(self, zone: Zone) -> EnemyMeta:
         """ get a random enemy meta from the specified zone """
         raise NotImplementedError

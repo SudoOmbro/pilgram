@@ -30,8 +30,12 @@ def db() -> PilgramDatabase:
 
 
 def check_board(context: UserContext) -> str:
-    zones = db().get_all_zones()
-    return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones) + "\n\n" + Strings.embark_underleveled
+    try:
+        player = db().get_player_data(context.get("id"))
+        zones = db().get_all_zones()
+        return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones) + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}"
+    except KeyError:
+        return Strings.no_character_yet
 
 
 def check_current_quest(context: UserContext) -> str:
@@ -57,6 +61,15 @@ def check_zone(context: UserContext, zone_id_str: int) -> str:
         return str(zone)
     except KeyError:
         return Strings.obj_does_not_exist.format(obj="zone")
+
+
+def check_enemy(context: UserContext, zone_id_str: int) -> str:
+    try:
+        enemy_id = int(zone_id_str)
+        enemy = db().get_enemy_meta(enemy_id)
+        return str(enemy)
+    except KeyError:
+        return Strings.obj_does_not_exist.format(obj="enemy")
 
 
 def return_string(context: UserContext, string: str = "") -> str:
@@ -707,11 +720,26 @@ def switch_stance(context: UserContext, stance: str) -> str:
         return Strings.no_character_yet
 
 
+def bestiary(context: UserContext, zone_id_str: str):
+    try:
+        zone_id = int(zone_id_str)
+        if zone_id == 0:
+            return Strings.no_monsters_in_town
+        zone = db().get_zone(int(zone_id))
+        enemies = db().get_all_zone_enemies(zone)
+        if len(enemies) == 0:
+            return Strings.no_enemies_yet.format(zone=zone.zone_name)
+        return Strings.bestiary_string.format(zone=zone.zone_name) + "\n\n" + "\n".join([f"{x.meta_id} - {x.name}" for x in enemies])
+    except KeyError:
+        return Strings.obj_does_not_exist.format(obj="zone")
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
         "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Shows a description of a Zone."),
+        "enemy": IFW([RWE("Enemy id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_enemy, "Shows a description of a Zone."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
         "self": IFW(None, check_self, "Shows your own stats."),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
@@ -771,7 +799,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "1": IFW(None, return_string, "Explains the mechanics of the game (page 1)", default_args={"string": read_text_file("mechanics.txt").split("\n\n----\n\n")[0]}),
             "2": IFW(None, return_string, "Explains the mechanics of the game (page 2)", default_args={"string": read_text_file("mechanics.txt").split("\n\n----\n\n")[1]})
         }
-    }
+    },
+    "bestiary": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], bestiary, "shows all enemies that can be found in the given zone.")
 }
 
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {

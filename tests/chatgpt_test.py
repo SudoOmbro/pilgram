@@ -2,7 +2,7 @@ import json, unittest
 
 from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
     EVENTS_PROMPT, ChatGPTGenerator, EVENTS_PER_BATCH, ARTIFACTS_PER_BATCH, get_artifacts_system_prompt, \
-    ARTIFACTS_PROMPT
+    ARTIFACTS_PROMPT, get_enemies_system_prompt, ENEMIES_PROMPT, MONSTERS_PER_BATCH
 from AI.utils import filter_string_list_remove_empty, remove_leading_numbers, filter_strings_list_remove_too_short
 from pilgram.classes import Zone
 
@@ -54,6 +54,11 @@ class TestChatGPT(unittest.TestCase):
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
 
+    def test_generate_enemies(self):
+        messages = get_enemies_system_prompt(self.ZONE) + build_messages("user", ENEMIES_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        print(generated_text)
+
     def test_build_quests_from_generated_text(self):
         text = _read_file("mock_quests_response.txt")
         quests = self.generator._get_quests_from_generated_text(text, self.ZONE, 5)
@@ -74,6 +79,15 @@ class TestChatGPT(unittest.TestCase):
         self.assertEqual(len(artifacts), ARTIFACTS_PER_BATCH)
         for artifact in artifacts:
             print(artifact)
+
+    def test_build_enemy_metas_from_generated_text(self):
+        text = _read_file("mock_enemies_response.txt")
+        enemy_metas = self.generator._get_enemies_from_generated_text(text, self.ZONE)
+        self.assertEqual(len(enemy_metas), MONSTERS_PER_BATCH)
+        for enemy_meta in enemy_metas:
+            print(enemy_meta)
+            print(enemy_meta.win_text)
+            print(enemy_meta.lose_text)
 
     def test_filter_string_list_remove_empty_strings(self):
         string_list = ["aaa", "bbb", "", "\n", "ccc"]

@@ -7,7 +7,7 @@ import requests
 
 from AI.utils import filter_string_list_remove_empty, get_string_list_from_tuple_list, remove_leading_numbers, \
     filter_strings_list_remove_too_short
-from pilgram.classes import Zone, Quest, ZoneEvent, Artifact
+from pilgram.classes import Zone, Quest, ZoneEvent, Artifact, EnemyMeta
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
 
@@ -18,22 +18,30 @@ log = logging.getLogger(__name__)
 QUESTS_PER_BATCH: int = 5
 EVENTS_PER_BATCH: int = 25
 ARTIFACTS_PER_BATCH: int = 25
+MONSTERS_PER_BATCH: int = 10
 
 WORLD_PROMPT = f"You write about a dark fantasy world named {ContentMeta.get('world.name')}"
 STYLE_PROMPT = "Refer to the protagonist as \"You\"."
 QUEST_FORMATTING_PROMPT = "Leave 2 lines between each quest"
 EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
 ARTIFACTS_FORMATTING_PROMPT = "Separate name and description with ':' putting the name before and the description after. Do not write 'Name' & 'Description'."
+ENEMIES_FORMATTING_PROMPT = "Do not number the entries, put 'Name' before the name of the enemy."
 
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
 ARTIFACTS_PROMPT = f"Write name and description of {ARTIFACTS_PER_BATCH} unique & rare artifacts found in the world"
+ENEMIES_PROMPT = f"Write name, description, win text and loss text for {MONSTERS_PER_BATCH} enemies that would be found in the current zone"
 
 QUEST_NAME_REGEX: str = r"^\d*\.?\**#*\s?[Qq]uest\s?[\d]*:\s(.*)$"
 QUEST_DESCRIPTION_REGEX: str = r"^\**[Oo]bjective\**:\**\s(.*)$"
 QUEST_SUCCESS_REGEX: str = r"^\**[Ss]uccess\**:\**\s(.*)$"
 QUEST_FAILURE_REGEX: str = r"^\**[Ff]ailure\**:\**\s(.*)$"
+
+ENEMY_NAME_REGEX: str = r"^\-?\d*\.?\**#*\s?[Nn]ame\s?[\d]*:\s(.*)$"
+ENEMY_DESCRIPTION_REGEX: str = r"^\**[Dd]escription\**:\**\s(.*)$"
+ENEMY_WIN_REGEX: str = r"^\**[Ww]in( [Tt]ext)?\**:\**\s(.*)$"
+ENEMY_LOSS_REGEX: str = r"^\**[Ll]os[se]( [Tt]ext)?\**:\**\s(.*)$"
 
 EVENT_REGEX: str = r"^([\d]+\.\s)?(.*)$"
 ARTIFACT_REGEX: str = r"^([\d]+\.\s)?\**(.*)[:\-]{1}\s(.*)$"
@@ -62,12 +70,22 @@ def get_events_system_prompt(zone: Zone) -> List[dict]:
     )
 
 
-def get_artifacts_system_prompt():
+def get_artifacts_system_prompt() -> List[dict]:
     return build_messages(
         "system",
         WORLD_PROMPT,
         ARTIFACTS_PROMPT,
         ARTIFACTS_FORMATTING_PROMPT
+    )
+
+
+def get_enemies_system_prompt(zone: Zone) -> List[dict]:
+    return build_messages(
+        "system",
+        WORLD_PROMPT,
+        STYLE_PROMPT,
+        ZONE_PROMPT.format(name=zone.zone_name, descr=zone.zone_description),
+        ENEMIES_FORMATTING_PROMPT
     )
 
 
@@ -211,6 +229,30 @@ class ChatGPTGenerator(PilgramGenerator):
             result.append(new_artifact)
         return result
 
+    def _get_enemies_from_generated_text(self, input_text: str, zone: Zone) -> List[EnemyMeta]:
+        result = []
+        names = self.__get_regex_match(ENEMY_NAME_REGEX, input_text, "enemy name")
+        descriptions = self.__get_regex_match(ENEMY_DESCRIPTION_REGEX, input_text, "description")
+        win_texts_raw = self.__get_regex_match(ENEMY_WIN_REGEX, input_text, "wins")
+        loss_texts_raw = self.__get_regex_match(ENEMY_LOSS_REGEX, input_text, "losses")
+        if not (len(names) == len(win_texts_raw) == len(loss_texts_raw) == len(descriptions)):
+            raise GPTMisbehaveError(f"AI generated enemies in an unrecognized format:\n\n{input_text}")
+        win_texts = [x[-1] if type(x) is tuple else x for x in win_texts_raw]
+        loss_texts = [x[-1] if type(x) is tuple else x for x in loss_texts_raw]
+        if len(names) != MONSTERS_PER_BATCH:
+            raise GPTMisbehaveError(f"AI did not generate {MONSTERS_PER_BATCH} enemies. AI output:\n\n{input_text}")
+        for name, description, win_text, loss_text in zip(names, descriptions, win_texts, loss_texts):
+            enemy_meta = EnemyMeta(
+                0,
+                zone,
+                name.replace("*", "").replace("\"", ""),
+                description,
+                win_text,
+                loss_text
+            )
+            result.append(enemy_meta)
+        return result
+
     def generate_quests(self, zone: Zone, quest_numbers: List[int]) -> List[Quest]:
         messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
@@ -226,3 +268,8 @@ class ChatGPTGenerator(PilgramGenerator):
         messages = get_artifacts_system_prompt() + build_messages("user", ARTIFACTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         return self._get_artifacts_from_generated_text(generated_text)
+
+    def generate_enemy_metas(self, zone: Zone) -> List[EnemyMeta]:
+        messages = get_enemies_system_prompt(zone) + build_messages("user", ENEMIES_PROMPT)
+        generated_text = self.api_wrapper.create_completion(messages)
+        return self._get_enemies_from_generated_text(generated_text, zone)

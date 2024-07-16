@@ -974,6 +974,9 @@ class EnemyMeta:
         self.win_text = win_text
         self.lose_text = lose_text
 
+    def __str__(self):
+        return f"{self.meta_id} - *{self.name}*\nFound in: {self.zone.zone_name}\n\n_{self.description}_"
+
     @classmethod
     def get_empty(cls, zone: Zone) -> "EnemyMeta":
         return cls(0, zone, "enemy", "description", "win_text", "lose_text")

@@ -4,7 +4,7 @@ from typing import Dict, Union, Tuple, Callable
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Zone, Quest, ZoneEvent, Artifact
+from pilgram.classes import Zone, Quest, ZoneEvent, Artifact, EnemyMeta
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
     GlobalSettings
@@ -73,7 +73,8 @@ def start_add_obj_process(context: UserContext, obj_type: str = "zone") -> str:
             "zone": Zone.get_empty(),
             "quest": Quest.get_empty(),
             "event": ZoneEvent.get_empty(),
-            "artifact": Artifact.get_empty()
+            "artifact": Artifact.get_empty(),
+            "enemy": EnemyMeta.get_empty(Zone.get_empty())
         }.get(obj_type)
         context.set("type", obj_type)
         context.set("obj", target_object)
@@ -203,6 +204,20 @@ def process_event_add_zone(context: UserContext, user_input: str) -> str:
         return str(e)
 
 
+def process_enemy_add_zone(context: UserContext, user_input: str) -> str:
+    if (user_input == "") and (context.get("Ptype") == "edit"):
+        return f"{context.get('type')} zone_id not edited.\n" + _progress(context)
+    enemy: EnemyMeta = context.get("obj")
+    try:
+        zone_id = int(user_input)
+        zone = db().get_zone(zone_id)
+        enemy.zone = zone
+        print(enemy.__dict__)
+        return _progress(context)
+    except Exception as e:
+        return str(e)
+
+
 def force_generate_zone_events(context: UserContext, zone_id_str: str) -> str:
     generator = ChatGPTGenerator(ChatGPTAPI(
         GlobalSettings.get("ChatGPT token"),
@@ -214,6 +229,27 @@ def force_generate_zone_events(context: UserContext, zone_id_str: str) -> str:
         events = generator.generate_zone_events(zone)
         db().add_zone_events(events)
         return f"Zone events for zone '{zone.zone_name}' generated successfully"
+    except KeyError:
+        return Strings.obj_does_not_exist.format(obj="zone")
+    except Exception as e:
+        return str(e)
+
+
+def force_generate_enemy_metas(context: UserContext, zone_id_str: str) -> str:
+    generator = ChatGPTGenerator(ChatGPTAPI(
+        GlobalSettings.get("ChatGPT token"),
+        "gpt-3.5-turbo"
+    ))
+    try:
+        zone_id = int(zone_id_str)
+        zone = db().get_zone(zone_id)
+        enemy_metas = generator.generate_enemy_metas(zone)
+        for enemy_meta in enemy_metas:
+            try:
+                db().add_enemy_meta(enemy_meta)
+            except Exception as e:
+                print(e)
+        return f"Enemy metas for zone '{zone.zone_name}' generated successfully"
     except KeyError:
         return Strings.obj_does_not_exist.format(obj="zone")
     except Exception as e:
@@ -258,7 +294,8 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"}),
         "quest": IFW(None, start_add_obj_process, "Create a new quest", {"obj_type": "quest"}),
         "event": IFW(None, start_add_obj_process, "Create a new event", {"obj_type": "event"}),
-        "artifact": IFW(None, start_add_obj_process, "Create a new artifact", {"obj_type": "artifact"})
+        "artifact": IFW(None, start_add_obj_process, "Create a new artifact", {"obj_type": "artifact"}),
+        "enemy": IFW(None, start_add_obj_process, "Create a new enemy", {"obj_type": "enemy"}),
     },
     "set": {
         "player": {
@@ -293,7 +330,8 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "artifact": IFW([RWE("Artifact id", PIR, "Invalid integer id")], start_edit_obj_process, "Edit an artifact", {"obj_type": "artifact"}),
     },
     "generate": {
-        "events": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_zone_events, "Generate new zone events")
+        "events": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_zone_events, "Generate new zone events"),
+        "enemies": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_enemy_metas, "Generate new enemies")
     },
     "recharge": {
         "power": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], give_player_eldritch_power, "recharge players eldritch power")
@@ -323,12 +361,20 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     ),
     "add event": (
         ("Write event description", ProcessGetObjStrAttr("event_text")),
-        ("Write Quest zone id", process_quest_add_zone),
+        ("Write Quest zone id", process_event_add_zone),
         ("Confirm?", process_obj_add_confirm)
     ),
     "add artifact": (
         ("Write artifact name", ProcessGetObjStrAttr("name")),
         ("Write artifact description", ProcessGetObjStrAttr("description")),
+        ("Confirm?", process_obj_add_confirm)
+    ),
+    "add enemy": (
+        ("Write enemy name", ProcessGetObjStrAttr("name")),
+        ("Write enemy zone", process_enemy_add_zone),
+        ("Write enemy description", ProcessGetObjStrAttr("description")),
+        ("Write enemy win text", ProcessGetObjStrAttr("win_text")),
+        ("Write enemy loss text", ProcessGetObjStrAttr("lose_text")),
         ("Confirm?", process_obj_add_confirm)
     ),
     "edit zone": (
@@ -348,14 +394,22 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
     ),
     "edit event": (
         ("Write event description", ProcessGetObjStrAttr("event_text")),
-        ("Write Quest zone id", process_quest_add_zone),
+        ("Write Quest zone id", process_event_add_zone),
         ("Confirm?", process_obj_edit_confirm)
     ),
     "edit artifact": (
         ("Write artifact name", ProcessGetObjStrAttr("name")),
         ("Write artifact description", ProcessGetObjStrAttr("description")),
         ("Confirm?", process_obj_edit_confirm)
-    )
+    ),
+    "edit enemy": (
+        ("Write enemy name", ProcessGetObjStrAttr("name")),
+        ("Write enemy zone", process_enemy_add_zone),
+        ("Write enemy description", ProcessGetObjStrAttr("description")),
+        ("Write enemy win text", ProcessGetObjStrAttr("win_text")),
+        ("Write enemy loss text", ProcessGetObjStrAttr("lose_text")),
+        ("Confirm?", process_obj_edit_confirm)
+    ),
 }
 
 ADMIN_INTERPRETER = CLIInterpreter(ADMIN_COMMANDS, ADMIN_PROCESSES)

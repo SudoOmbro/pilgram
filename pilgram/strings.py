@@ -176,6 +176,11 @@ class Strings:
     tourney_ends_tomorrow = "The tourney ends tomorrow"
     tourney_ends_today = "The tourney ends today"
 
+    # bestiary
+    bestiary_string = "Here's what you can find in {zone}:"
+    no_enemies_yet = "Nothing is known about {zone} yet..."
+    no_monsters_in_town = f"There ar eno monsters in {TOWN}."
+
     # combat
     invalid_stance = "Invalid stance, here are the available stances (you can write just the first letter):\n"
     stances = {

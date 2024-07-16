@@ -266,11 +266,19 @@ class GeneratorManager:
                     log.error(f"Encountered an error while generating quests for zone {zone.zone_id}: {e}")
                 sleep(timeout_between_ai_calls)
                 if quest_numbers[zone.zone_id - 1] < MAX_QUESTS_FOR_EVENTS:
+                    # only generate zone events & enemies if there are less than MAX_QUESTS_FOR_EVENTS
                     log.info(f"generating zone events for zone {zone.zone_id}")
-                    # only generate zone events if there are less than MAX_QUESTS_FOR_EVENTS
                     zone_events = self.generator.generate_zone_events(zone)
                     self.db().add_zone_events(zone_events)
-                    log.info(f"Zone event generation done for zone {zone.zone_id}")
+                    log.info(f"Zone events generation done for zone {zone.zone_id}")
+                    log.info(f"Generating enemy metas for zone {zone.zone_id}")
+                    enemy_metas = self.generator.generate_enemy_metas(zone)
+                    for enemy_meta in enemy_metas:
+                        try:
+                            self.db().add_enemy_meta(enemy_meta)
+                        except Exception as e:
+                            log.error(e)
+                    log.info(f"Enemy metas event generation done for zone {zone.zone_id}")
             except Exception as e:
                 log.error(f"Encountered an error while generating events for zone {zone.zone_id}: {e}")
             finally:

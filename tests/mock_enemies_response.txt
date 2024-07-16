@@ -1,0 +1,49 @@
+Name: Gloom Fiend
+Description: A creature shrouded in dark fog with glowing red eyes, it attacks with sharp claws and a chilling touch.
+Win: You banish the Gloom Fiend back to the shadows, its haunting presence fading away.
+Loss: The Gloom Fiend's icy grip freezes your heart, leaving you lost in the shadows forever.
+
+Name: Wailing Specter
+Description: A ghostly figure with tattered robes, it emits eerie wails that chill your bones and drain your strength.
+Win: You uncover the Specter's tragic past, releasing its spirit from torment and ending its haunting cries.
+Loss: The haunting wails of the Specter consume your mind, leaving you a ghostly shell of your former self.
+
+Name: Carrion Crawler
+Description: A decaying creature covered in putrid slime, its long tentacles lash out with lethal toxins.
+Win: You avoid the Crawler's vile attacks, striking it down before it can corrupt your flesh.
+Loss: The Crawler's venom courses through your veins, turning your body into a breeding ground for decay.
+
+Name: Bloodthorn Creeper
+Description: A twisted plant with razor-sharp thorns and a thirst for blood, it ensnares its victims with deadly precision.
+Win Text: You sever the Creeper's roots, freeing yourself from its grasp and watching it wither away.
+Loss: The Creeper's thorns pierce your flesh, draining your life essence and adding you to its twisted garden.
+
+Name: Bonegnasher Ghoul
+Description: A skeletal monstrosity with jagged fangs, it feasts on the bones of its prey to strengthen its own cursed form.
+Win: You shatter the Ghoul's bones, reducing it to a pile of broken remains and ending its reign of terror.
+Loss Text: The Ghoul's gnashing teeth tear through your defenses, adding your bones to its macabre collection.
+
+Name: Shadow Mourner
+Description: A cloaked figure that weaves shadows into deadly tendrils, it seeks to drag its victims into the depths of darkness.
+Win: You dispel the Mourner's illusions, revealing the light within its cloak and dispersing its shadowy form.
+Loss text: The tendrils of shadow envelop you, pulling you into the abyss where your screams go unheard.
+
+Name: Plaguebearer Rat
+Description: A disease-ridden rodent with glowing eyes, it spreads pestilence wherever it scurries, weakening its foes.
+Win text: You cleanse the area of the Plaguebearer's filth, purging the sickness and restoring health to the land.
+Loss: The Rat's bite infects your blood, leaving you to suffer a slow and agonizing descent into madness.
+
+Name: Dusk Harbinger
+Description: A winged fiend that heralds the coming of night, it casts dark spells to obscure vision and sow chaos.
+Win: You banish the Harbinger's shadows, bringing forth the dawn and dispersing its malevolent influence.
+Loss: The Harbinger's darkness blinds your sight, leaving you vulnerable to its unseen strikes from the skies.
+
+Name: Rotting Lurker
+Description: A grotesque creature that lurks in the depths of decay, its foul stench sickens those who dare to approach.
+Win: You cleanse the Rotting Lurker's lair, purifying the air and driving it back into the depths of putrescence.
+Loss: The Lurker's noxious fumes overwhelm your senses, leaving you to suffocate in its vile embrace.
+
+Name: Soul Devourer
+Description: A specter that feeds on the souls of the living, its touch drains vitality and leaves a chilling emptiness.
+Win: You restore the stolen souls to their rightful hosts, breaking the Devourer's hold and freeing them from torment.
+Loss: The Devourer consumes your essence, leaving you a hollow husk devoid of life and condemned to wander in eternal darkness.

@@ -645,11 +645,12 @@ class PilgramORMDatabase(PilgramDatabase):
             ems.lose_text
         )
 
+    @cache_sized_ttl_quick(size_limit=100, ttl=300)
     def get_enemy_meta(self, enemy_meta_id: int) -> EnemyMeta:
         try:
             ems = EnemyTypeModel.get(EnemyTypeModel.id == enemy_meta_id)
             return self.__build_enemy_meta(ems)
-        except EquipmentModel.DoesNotExist:
+        except EnemyTypeModel.DoesNotExist:
             raise KeyError(f"Enemey meta with id {enemy_meta_id} does not exist")
 
     @cache_sized_ttl_quick(size_limit=20, ttl=300)
@@ -667,6 +668,24 @@ class PilgramORMDatabase(PilgramDatabase):
         for em in ems:
             return self.__build_enemy_meta(em)
 
+    @cache_sized_ttl_quick(size_limit=20, ttl=300)
+    def get_all_zone_enemies(self, zone: Zone) -> List[EnemyMeta]:
+        ems = EnemyTypeModel.select(
+            EnemyTypeModel.id,
+            EnemyTypeModel.zone_id,
+            EnemyTypeModel.name,
+            EnemyTypeModel.description,
+            EnemyTypeModel.win_text,
+            EnemyTypeModel.lose_text
+        ).where(
+            EnemyTypeModel.zone_id == zone.zone_id
+        ).namedtuples()
+        result: List[EnemyMeta] = []
+        for em in ems:
+            result.append(self.__build_enemy_meta(em))
+        return result
+
+
     def update_enemy_meta(self, enemy_meta: EnemyMeta):
         try:
             ems = EnemyTypeModel.get(EnemyTypeModel.id == enemy_meta.meta_id)
@@ -675,7 +694,7 @@ class PilgramORMDatabase(PilgramDatabase):
             ems.win_text = enemy_meta.win_text
             ems.lose_text = enemy_meta.lose_text
             ems.save()
-        except EquipmentModel.DoesNotExist:
+        except EnemyTypeModel.DoesNotExist:
             raise KeyError(f"Enemey meta with id {enemy_meta.meta_id} does not exist")
 
     def add_enemy_meta(self, enemy_meta: EnemyMeta):
