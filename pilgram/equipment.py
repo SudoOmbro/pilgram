@@ -1,10 +1,11 @@
+import time
+from random import randint, Random, choice
 from typing import Union, List, Dict, Any, Type, Tuple
-
-import numpy as np
 
 from pilgram.flags import StrengthBuff, OccultBuff, Flag, FireBuff, IceBuff, AcidBuff, ElectricBuff
 from pilgram.listables import Listable
 from pilgram.combat_classes import Modifier, Damage
+from pilgram.modifiers import get_modifiers_by_rarity
 from pilgram.strings import Strings
 
 
@@ -38,7 +39,17 @@ def _get_slot(value: Union[str, int]) -> int:
 class EquipmentType(Listable, meta_name="equipment types"):
     """ Defines the type of the equipment, either weapons or armor """
 
-    def __init__(self, equipment_type_id: int, damage: Damage, resist: Damage, name: str, slot: int):
+    def __init__(
+            self,
+            equipment_type_id: int,
+            damage: Damage,
+            resist: Damage,
+            name: str,
+            description: str,
+            is_weapon: bool,
+            weight: int,
+            slot: int
+    ):
         """
         :param equipment_type_id: The id of the equipment type
         :param damage: Damage dealt
@@ -50,6 +61,9 @@ class EquipmentType(Listable, meta_name="equipment types"):
         self.damage = damage
         self.resist = resist
         self.name = name
+        self.description = description
+        self.is_weapon = is_weapon
+        self.weight = weight
         self.slot = slot
 
     @classmethod
@@ -59,6 +73,9 @@ class EquipmentType(Listable, meta_name="equipment types"):
             Damage.load_from_json(equipment_type_json.get("damage", {})),
             Damage.load_from_json(equipment_type_json.get("resist", {})),
             equipment_type_json["name"],
+            equipment_type_json["description"],
+            equipment_type_json["weapon"],
+            equipment_type_json["weight"],
             _get_slot(equipment_type_json["slot"])
         )
 
@@ -68,15 +85,19 @@ class Equipment:
     def __init__(
             self,
             equipment_id: int,
-            equipment_type_id: int,
+            level: int,
+            equipment_type: EquipmentType,
+            name: str,
             damage: Damage,
             resist: Damage,
             modifiers: List[Modifier]
     ):
         self.equipment_id = equipment_id
-        self.weapon_type: EquipmentType = EquipmentType.LIST[equipment_type_id]
-        self.damage = damage + self.weapon_type.damage
-        self.resist = resist + self.weapon_type.resist
+        self.level = level
+        self.name = name
+        self.equipment_type = equipment_type
+        self.damage = damage + self.equipment_type.damage
+        self.resist = resist + self.equipment_type.resist
         self.modifiers = modifiers
 
     def get_modifiers(self, type_filters: Union[Tuple[int, ...], None]) -> List[Modifier]:
@@ -87,6 +108,73 @@ class Equipment:
             if modifier.TYPE in type_filters:
                 result.append(modifier)
         return result
+
+    def __str__(self):
+        string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type.description}_"
+        if self.damage:
+            string += f"\n\n*Damage*:\n{str(self.damage)}"
+        if self.resist:
+            string += f"\n\n*Resist*:\n{str(self.resist)}"
+        if not self.modifiers:
+            return string
+        return string + f"\n\n*Modifiers*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
+
+    @staticmethod
+    def generate_name(
+            equipment_type: EquipmentType,
+            modifiers: List[str],
+            rarity: int
+    ) -> str:
+        pool = Strings.weapon_modifiers if equipment_type.is_weapon else Strings.armor_modifiers
+        name = equipment_type.name
+        added_of = False
+        for modifier in modifiers:
+            adjective = choice(pool[modifier])
+            if adjective.startswith("-"):
+                if added_of:
+                    name += f" & {adjective[1:]}"
+                else:
+                    name += " of " + adjective[1:]
+                    added_of = True
+            else:
+                name = adjective + " " + name
+        return name + (" " + ("⭐" * rarity) if rarity > 0 else "")
+
+    @staticmethod
+    def get_modifiers_and_damage(level: int, seed: float) -> Tuple[str, str, Damage]:
+        rng = Random(seed)
+        main_modifiers = ["slash", "pierce", "blunt", "occult"]
+        main_modifier = main_modifiers.pop(rng.randint(0, 3))
+        secondary_modifiers = ["fire", "acid", "freeze", "electric"]
+        secondary_modifier = secondary_modifiers.pop(rng.randint(0, 3))
+        damage = Damage.generate_from_seed(seed, level, main_modifiers + secondary_modifiers)
+        return main_modifier, secondary_modifier, damage
+
+    @classmethod
+    def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> "Equipment":
+        seed = time.time()
+        mod1, mod2, damage_mod = cls.get_modifiers_and_damage(level, seed)
+        damage = Damage.get_empty()
+        resistance = Damage.get_empty()
+        if equipment_type.is_weapon:
+            damage += damage_mod
+        else:
+            resistance += damage_mod
+        modifiers: List[Modifier] = []
+        if rarity > 0:
+            for i in range(rarity):
+                modifier_type = choice(get_modifiers_by_rarity(randint(0, rarity)))
+                modifier = modifier_type.generate(level)
+                modifiers.append(modifier)
+        return cls(
+            0,
+            level,
+            equipment_type,
+            cls.generate_name(equipment_type, [mod1, mod2], rarity),
+            damage,
+            resistance,
+            modifiers
+        )
 
 
 class ConsumableItem(Listable, meta_name="consumables"):

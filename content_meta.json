@@ -332,9 +332,23 @@
     "id": 0,
     "name": "Longsword",
     "slot": "primary",
+    "description": "Old reliable",
+    "weapon": true,
+    "weight": 5,
     "damage": {
       "slash": 5,
       "pierce": 2
+    }
+  }, {
+    "id": 1,
+    "name": "Spear",
+    "slot": "primary",
+    "description": "Poke 'em from far away",
+    "weapon": true,
+    "weight": 4,
+    "damage": {
+      "slash": 2,
+      "pierce": 5
     }
   }],
   "consumables": [{

@@ -444,7 +444,7 @@ class Player(CombatActor):
             base_resistance += item.resist
         return base_resistance
 
-    def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_permanent_modifiers(self, *type_filters: int) -> List["Modifier"]:
         result = []
         for _, item in self.equipped_items.items():
             result.extend(item.get_modifiers(type_filters))

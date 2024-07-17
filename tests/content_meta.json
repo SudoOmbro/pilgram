@@ -332,6 +332,9 @@
     "id": 0,
     "name": "Longsword",
     "slot": "primary",
+    "description": "Old reliable",
+    "weapon": true,
+    "weight": 5,
     "damage": {
       "slash": 5,
       "pierce": 2
@@ -340,24 +343,6 @@
   "consumables": [{
     "id": 0,
     "name": "Rotten strawberry",
-    "description": "The mold gives it a fuzzy texture.",
-    "verb": "consumed",
-    "value": 1,
-    "effects": {
-      "hp_restored": 1
-    }
-  }, {
-    "id": 1,
-    "name": "Rotten strawberry 1",
-    "description": "The mold gives it a fuzzy texture.",
-    "verb": "consumed",
-    "value": 1,
-    "effects": {
-      "hp_restored": 1
-    }
-  }, {
-    "id": 2,
-    "name": "Rotten strawberry 2",
     "description": "The mold gives it a fuzzy texture.",
     "verb": "consumed",
     "value": 1,

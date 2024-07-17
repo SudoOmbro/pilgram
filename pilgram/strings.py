@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 
 from pilgram.globals import ContentMeta
 
@@ -170,6 +170,32 @@ class Strings:
     }
     satchel_position_out_of_range = "The given satchel position is not valid, you have {num} items in your satchel."
     used_item = "You {verb} the {item}"
+    rarities = (
+        "Common",
+        "Odd",
+        "Strange",
+        "Eldritch"
+    )
+    weapon_modifiers: Dict[str, Tuple[str, ...]] = {
+        "slash": ("Sharp", "-Slashing"),
+        "pierce": ("Piercing", "-Thrusting"),
+        "blunt": ("Heavy", "-Crushing", "Devastating"),
+        "occult": ("Occult", "Eldritch"),
+        "fire": ("Flaming", "-flame"),
+        "acid": ("-Acid", "Melting", "Corroded"),
+        "freeze": ("-Ice", "Freezing"),
+        "electric": ("Lightning", "-Thunder")
+    }
+    armor_modifiers: Dict[str, Tuple[str, ...]] = {
+        "slash": ("Sharp-", "-Slashing"),
+        "pierce": ("Piercing-", "-Thrusting"),
+        "blunt": ("Heavy-", "-Crushing", "Devastating-"),
+        "occult": ("Occult-", "Eldritch-"),
+        "fire": ("Flaming-", "-flame"),
+        "acid": ("-Acid", "Melting-", "Corroded-"),
+        "freeze": ("-Ice", "Freezing-"),
+        "electric": ("Lightning-", "-Thunder")
+    }
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

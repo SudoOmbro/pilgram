@@ -3,19 +3,14 @@ from abc import ABC
 from copy import copy
 
 from time import time
-from typing import Union, List, Dict, Type, Any
+from typing import Union, List, Dict
 
-
-class ModifierType:
-    PRE_ATTACK = 0
-    PRE_DEFEND = 1
-    POST_ATTACK = 2
-    POST_DEFEND = 3
-    HP_MODIFIER = 4
+from pilgram.modifiers import ModifierType, Modifier, ModifierContext
 
 
 class Damage:
     """ used to express damage & resistance values """
+    MIN_DAMAGE: int = 1
 
     def __init__(
         self,
@@ -37,28 +32,40 @@ class Damage:
         self.freeze = freeze
         self.electric = electric
 
-    def modify(self, supplier: "CombatActor", type_filter: int) -> "Damage":
+    def modify(self, supplier: "CombatActor", other: "CombatActor", type_filter: int) -> "Damage":
         result = self
         for modifier in supplier.get_modifiers(type_filter):
-            result = modifier.apply(result, supplier)
+            new_result = modifier.apply(ModifierContext({"damage": self, "supplier": supplier, "other": other}))
+            if new_result:
+                result = new_result
         return result
 
     def get_total_damage(self) -> int:
         """ return the total damage dealt by the attack. Damage can't be 0, it must be at least 1 """
         dmg = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
-        return dmg if dmg > 0 else 1
+        return dmg if dmg > 0 else self.MIN_DAMAGE
 
-    def scale(self, scaling_factor: int) -> "Damage":
+    def scale(self, scaling_factor: float) -> "Damage":
         return Damage(
-            self.slash * scaling_factor,
-            self.pierce * scaling_factor,
-            self.blunt * scaling_factor,
-            self.occult * scaling_factor,
-            self.fire * scaling_factor,
-            self.acid * scaling_factor,
-            self.freeze * scaling_factor,
-            self.electric * scaling_factor
+            int(self.slash * scaling_factor),
+            int(self.pierce * scaling_factor),
+            int(self.blunt * scaling_factor),
+            int(self.occult * scaling_factor),
+            int(self.fire * scaling_factor),
+            int(self.acid * scaling_factor),
+            int(self.freeze * scaling_factor),
+            int(self.electric * scaling_factor)
         )
+
+    def scale_single_value(self, key: str, scaling_factor: float) -> "Damage":
+        new_damage = copy(self)
+        new_damage.__dict__[key] = int(new_damage.__dict__[key] * scaling_factor)
+        return new_damage
+
+    def add_single_value(self, key: str, value: int) -> "Damage":
+        new_damage = copy(self)
+        new_damage.__dict__[key] = new_damage.__dict__[key] + value
+        return new_damage
 
     def __add__(self, other):
         return Damage(
@@ -105,12 +112,19 @@ class Damage:
             electric if electric > 0 else 0
         )
 
+    def __bool__(self):
+        dmg = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+        return dmg != 0
+
+    def __str__(self):
+        return "\n".join([f"{key}: {value}" for key, value in self.__dict__.items() if value > 0])
+
     @classmethod
     def get_empty(cls) -> "Damage":
         return Damage(0, 0, 0, 0, 0, 0, 0, 0)
 
     @classmethod
-    def generate_from_seed(cls, seed: int, iterations: int, exclude_params: Union[List[str], None] = None) -> "Damage":
+    def generate_from_seed(cls, seed: float, iterations: int, exclude_params: Union[List[str], None] = None) -> "Damage":
         damage = cls.get_empty()
         rng = random.Random(seed)
         params = copy(damage.__dict__)
@@ -138,7 +152,7 @@ class Damage:
 
     @classmethod
     def generate(cls, iterations: int, exclude_params: Union[List[str], None] = None) -> "Damage":
-        return cls.generate_from_seed(int(time()), iterations, exclude_params)
+        return cls.generate_from_seed(time(), iterations, exclude_params)
 
 
 class CombatActor(ABC):
@@ -146,6 +160,7 @@ class CombatActor(ABC):
     def __init__(self, hp_percent: float):
         self.hp_percent = hp_percent  # used out of fights
         self.hp: int = 0  # only used during fights
+        self.timed_modifiers: List[Modifier] = []  # list of timed modifiers inflicted on the CombatActor
 
     def get_base_max_hp(self) -> int:
         """ returns the maximum hp of the combat actor (players & enemies) """
@@ -159,9 +174,26 @@ class CombatActor(ABC):
         """ generic method that should return the damage resistance of the entity """
         raise NotImplementedError
 
-    def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_permanent_modifiers(self, *type_filters: int) -> List["Modifier"]:
         """ generic method that should return an (optionally filtered) list of modifiers. (args are the filters) """
         raise NotImplementedError
+
+    def roll(self, dice_faces: int):
+        """ generic method used to roll dices for entities """
+        raise NotImplementedError
+
+    def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
+        """ returns the list of modifiers + timed modifiers """
+        modifiers: List[Modifier] = self.get_permanent_modifiers(*type_filters)
+        if not type_filters:
+            modifiers.extend(self.timed_modifiers)
+            modifiers.sort(key=lambda x: x.OP_ORDERING)
+            return modifiers
+        for modifier in self.timed_modifiers:
+            if modifier.TYPE in type_filters:
+                modifiers.append(modifier)
+        modifiers.sort(key=lambda x: x.OP_ORDERING)
+        return modifiers
 
     def start_fight(self):
         self.hp = int(self.get_max_hp() * self.hp_percent)
@@ -169,60 +201,30 @@ class CombatActor(ABC):
     def get_max_hp(self) -> int:
         """ get max hp of the entity applying all modifiers """
         max_hp = self.get_base_max_hp()
-        for modifier in self.get_modifiers(ModifierType.HP_MODIFIER):
-            max_hp = modifier.apply(max_hp, self)
+        for modifier in self.get_permanent_modifiers(ModifierType.COMBAT_START):
+            max_hp = modifier.apply(ModifierContext({"entity": self}))
         return int(max_hp)
 
     def attack(self, target: "CombatActor") -> Damage:
         """ get the damage an attack would do """
-        damage = self.get_base_attack_damage().modify(self, ModifierType.PRE_ATTACK)
-        defence = target.get_base_attack_resistance().modify(self, ModifierType.PRE_DEFEND)
-        damage_done = damage - defence
-        damage_done = damage_done.modify(target, ModifierType.POST_DEFEND)
-        return damage_done.modify(self, ModifierType.POST_ATTACK)
+        damage = self.get_base_attack_damage().modify(self, target, ModifierType.ATTACK)
+        defense = target.get_base_attack_resistance().modify(target, self, ModifierType.DEFEND)
+        return damage - defense
 
-    def receive_damage(self, damage: Damage) -> bool:
-        """ damage the actor with damage. Return True if the actor was killed, otherwise return False """
-        damage_received = damage.get_total_damage()
-        self.hp -= damage_received
+    def modify_hp(self, amount: int) -> bool:
+        """ Modify actor hp. Return True if the actor was killed, otherwise return False """
+        self.hp += amount
         if self.hp <= 0:
             self.hp = 0
-            self.hp_percent = 0
+            self.hp_percent = 0.0
             return True
         self.hp_percent = self.hp / self.get_max_hp()
         return False
 
+    def receive_damage(self, damage: Damage) -> bool:
+        """ damage the actor with damage. Return True if the actor was killed, otherwise return False """
+        damage_received = -damage.get_total_damage()
+        return self.modify_hp(damage_received)
 
-class Modifier(ABC):
-    DATABASE: Dict[int, Type["Modifier"]] = {}
-    ID: int
-
-    TYPE: int  # This should be set manually for each defined modifier
-
-    def __init__(self, strength: int, duration: int = -1):
-        """
-        :param strength: the strength of the modifier, used to make modifiers scale with level
-        :param duration: the duration in turns of the modifier, only used for temporary modifiers during combat
-        """
-        self.strength = strength
-        self.duration = duration
-
-    def __init_subclass__(cls, **kwargs):
-        modifier_id = len(list(Modifier.DATABASE.keys()))
-        cls.ID = modifier_id
-        Modifier.DATABASE[modifier_id] = cls
-
-    def function(self, value: Any, actor: CombatActor) -> Any:
-        """ apply the modifier to the value & actor, optionally return a value """
-        raise NotImplementedError
-
-    def apply(self, value: Any, actor: CombatActor) -> Any:
-        if self.duration > 0:
-            self.duration -= 1
-        elif self.duration == 0:  # if the modifier expired then do nothing
-            return None
-        return self.function(value, actor)
-
-    @staticmethod
-    def get(modifier_id: int, strength: int) -> "Modifier":
-        return Modifier.DATABASE[modifier_id](strength)
+    def is_dead(self) -> bool:
+        return self.hp <= 0

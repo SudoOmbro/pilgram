@@ -1,6 +1,9 @@
 import unittest
+from random import randint
 
 from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent
+from pilgram.equipment import Equipment, EquipmentType
+from pilgram.modifiers import print_all_modifiers
 
 
 def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 100) -> float:
@@ -65,3 +68,12 @@ class TestClasses(unittest.TestCase):
         print(qte1.rewards)
         print(qte1.successes)
         print(qte1.failures)
+
+    def test_print_modifiers(self):
+        print_all_modifiers()
+
+    def test_generate_equipment(self):
+        for i in range(10):
+            print("\n-----------------------\n")
+            equipment = Equipment.generate(5 + (10 * i), EquipmentType.get(0), randint(0, 3))
+            print(str(equipment))
