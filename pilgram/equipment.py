@@ -96,8 +96,8 @@ class Equipment:
         self.level = level
         self.name = name
         self.equipment_type = equipment_type
-        self.damage = damage + self.equipment_type.damage
-        self.resist = resist + self.equipment_type.resist
+        self.damage = damage + self.equipment_type.damage.scale(level)
+        self.resist = resist + self.equipment_type.resist.scale(level)
         self.modifiers = modifiers
 
     def get_modifiers(self, type_filters: Union[Tuple[int, ...], None]) -> List[Modifier]:
@@ -141,19 +141,21 @@ class Equipment:
         return name + (" " + ("⭐" * rarity) if rarity > 0 else "")
 
     @staticmethod
-    def get_modifiers_and_damage(level: int, seed: float) -> Tuple[str, str, Damage]:
+    def get_modifiers_and_damage(level: int, seed: float) -> Tuple[List[str], Damage]:
         rng = Random(seed)
-        main_modifiers = ["slash", "pierce", "blunt", "occult"]
-        main_modifier = main_modifiers.pop(rng.randint(0, 3))
-        secondary_modifiers = ["fire", "acid", "freeze", "electric"]
-        secondary_modifier = secondary_modifiers.pop(rng.randint(0, 3))
-        damage = Damage.generate_from_seed(seed, level, main_modifiers + secondary_modifiers)
-        return main_modifier, secondary_modifier, damage
+        number_of_modifiers: int = rng.randint(1, 3)
+        modifiers_to_exclude = ["slash", "pierce", "blunt", "occult", "fire", "acid", "freeze", "electric"]
+        chosen_modifiers: List[str] = []
+        for _ in range(number_of_modifiers):
+            modifier_string = modifiers_to_exclude.pop(rng.randint(0, len(modifiers_to_exclude) - 1))
+            chosen_modifiers.append(modifier_string)
+        damage = Damage.generate_from_seed(seed, level, modifiers_to_exclude)
+        return chosen_modifiers, damage
 
     @classmethod
     def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> "Equipment":
         seed = time.time()
-        mod1, mod2, damage_mod = cls.get_modifiers_and_damage(level, seed)
+        mod_strings, damage_mod = cls.get_modifiers_and_damage(level, seed)
         damage = Damage.get_empty()
         resistance = Damage.get_empty()
         if equipment_type.is_weapon:
@@ -170,7 +172,7 @@ class Equipment:
             0,
             level,
             equipment_type,
-            cls.generate_name(equipment_type, [mod1, mod2], rarity),
+            cls.generate_name(equipment_type, mod_strings, rarity),
             damage,
             resistance,
             modifiers

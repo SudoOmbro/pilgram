@@ -336,7 +336,17 @@
     "weapon": true,
     "weight": 5,
     "damage": {
-      "slash": 5,
+      "slash": 2,
+      "pierce": 1
+    }
+  }, {
+    "id": 1,
+    "name": "Spear",
+    "slot": "primary",
+    "description": "Poke 'em full of holes",
+    "weapon": true,
+    "weight": 3,
+    "damage": {
       "pierce": 2
     }
   }],

@@ -75,5 +75,5 @@ class TestClasses(unittest.TestCase):
     def test_generate_equipment(self):
         for i in range(10):
             print("\n-----------------------\n")
-            equipment = Equipment.generate(5 + (10 * i), EquipmentType.get(0), randint(0, 3))
+            equipment = Equipment.generate(5 + (10 * i), EquipmentType.get_random(), randint(0, 3))
             print(str(equipment))

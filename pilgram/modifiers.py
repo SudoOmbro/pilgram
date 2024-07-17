@@ -108,11 +108,11 @@ class Modifier(ABC):
 
 
 class GenericDamageMult(Modifier):
-    MAX_STRENGTH = 200
-    MIN_STRENGTH = 100
+    MAX_STRENGTH = 100
+    MIN_STRENGTH = 0
     SCALING = 1
 
-    DESCRIPTION = "Scales DIRECTION DAMAGE damage by {str}%"
+    DESCRIPTION = "Increases DAMAGE WHAT by {str}%"
     DAMAGE_TYPE: str
 
     def __init_subclass__(cls, dmg_type: str = None, mod_type: int = None, **kwargs):
@@ -121,14 +121,14 @@ class GenericDamageMult(Modifier):
         super().__init_subclass__(rarity=Rarity.COMMON)
         cls.DAMAGE_TYPE = dmg_type
         cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
-        cls.DESCRIPTION = cls.DESCRIPTION.replace("DIRECTION", "Outgoing" if mod_type == ModifierType.ATTACK else "Incoming")
+        cls.DESCRIPTION = cls.DESCRIPTION.replace("WHAT", "damage" if mod_type == ModifierType.ATTACK else "resistance")
         cls.NAME = f"{dmg_type.capitalize()} {'Affinity' if mod_type == ModifierType.ATTACK else 'Resistant'}"
         cls.TYPE = mod_type
 
     def function(self, context: ModifierContext) -> Any:
         # scales in the same way for attack & defence
         damage: cc.Damage = context.get("damage")
-        return damage.scale_single_value(self.DAMAGE_TYPE, self.strength / 100)
+        return damage.scale_single_value(self.DAMAGE_TYPE, (100 + self.strength) / 100)
 
 
 class SlashAttackMult(GenericDamageMult, dmg_type="slash", mod_type=ModifierType.ATTACK): pass
