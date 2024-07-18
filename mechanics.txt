@@ -56,8 +56,6 @@ Quest duration follows the formula:
 
 On quest success you have a 20% chance of finding a piece of an artifact (explained later).
 
-use the command `explain mechanics 2` to continue
-
 ----
 
 ♦️♦️*Guilds*♦️♦️

@@ -168,8 +168,12 @@ class PilgramORMDatabase(PilgramDatabase):
             pls = PlayerModel.get(PlayerModel.id == player_id)
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             artifacts = self.get_player_artifacts(player_id)
+            items = self.get_player_items(player_id)
             equipped_items_ids = decode_equipped_items_ids(pls.equipped_items)
-            equipped_items = {}  # TODO get from database
+            equipped_items = {}
+            for item in items:
+                if item.equipment_id in equipped_items_ids:
+                    equipped_items[item.equipment_type.slot] = item
             player = Player(
                 pls.id,
                 pls.name,
@@ -777,7 +781,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def get_player_items(self, player_id: int) -> List[Equipment]:
         try:
-            its = PlayerModel.get(PlayerModel.id == player_id).pls.items
+            its = PlayerModel.get(PlayerModel.id == player_id).items
             return [self.__build_item(x) for x in its]
         except PlayerModel.DoesNotExist:
             raise KeyError(f"Could not find player with id {player_id}")

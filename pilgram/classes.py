@@ -473,6 +473,9 @@ class Player(CombatActor):
         self.flags = item.buff_flag.set(self.flags)
         return Strings.used_item.format(verb=item.verb, item=item.name)
 
+    def equip_item(self, item: Equipment):
+        self.equipped_items[item.equipment_type.slot] = item
+
     # utility
 
     def __str__(self):

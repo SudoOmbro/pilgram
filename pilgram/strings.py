@@ -204,6 +204,10 @@ class Strings:
         "Primary weapon",
         "Secondary weapon"
     ]
+    no_items_yet = "You don't have any items yet"
+    invalid_item = "Invalid item."
+    item_sold = f"You sold '{{item}}' for {{money}} {MONEY}."
+    item_equipped = "You equipped '{item}' in the {slot} slot."
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"
@@ -237,3 +241,4 @@ class Strings:
     yes_no_error = "You must send only either 'y' (yes) or 'n' (no)!"
     positive_integer_error = "You must enter a positive integer (>= 0)."
     obj_reached_max_level = "Your {obj} is already at max level."
+    invalid_page = "The specified manual page does not exist. Only pages 1 to {pl} exist."

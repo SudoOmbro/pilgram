@@ -2,12 +2,14 @@ import logging
 import re
 from copy import copy
 from datetime import datetime, timedelta
+from functools import cache
 from typing import Tuple, Dict, Union, Callable, Type, List
 
 from minigames.generics import PilgramMinigame, MINIGAMES
 from minigames.games import AAA
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult
+from pilgram.equipment import Equipment
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
@@ -707,6 +709,20 @@ def explain_minigame(context: UserContext, user_input: str) -> str:
     return minigame.EXPLANATION
 
 
+@cache
+def __get_mechanics(page_id: int):
+    pages = read_text_file("mechanics.txt").split("\n\n----\n\n")
+    if (page_id == 0) or (page_id > len(pages)):
+        return Strings.invalid_page.format(pl=len(pages))
+    text = pages[page_id - 1] + (f"\n\nUse commands `man {page_id + 1}` to continue reading" if page_id != len(pages) else "")
+    return text
+
+
+def manual(context: UserContext, page_str: str) -> str:
+    page_id = int(page_str)
+    return __get_mechanics(page_id)
+
+
 def switch_stance(context: UserContext, stance: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -734,6 +750,71 @@ def bestiary(context: UserContext, zone_id_str: str):
         return Strings.obj_does_not_exist.format(obj="zone")
 
 
+def inventory(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        items = db().get_player_items(player.player_id)
+        if not items:
+            return Strings.no_items_yet
+        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i} - *{x.name}*' for i, x in enumerate(items)])}"
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def __item_id_is_valid(item_id: int, items: List[Equipment]) -> bool:
+    return (item_id > 0) and (item_id <= len(items))
+
+
+def check_item(context: UserContext, item_pos_str: str) -> str:
+    try:
+        item_pos = int(item_pos_str)
+        player = db().get_player_data(context.get("id"))
+        items = db().get_player_items(player.player_id)
+        if not items:
+            return Strings.no_items_yet
+        if not __item_id_is_valid(item_pos, items):
+            return Strings.invalid_item
+        return str(items[item_pos - 1])
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def equip_item(context: UserContext, item_pos_str: str) -> str:
+    try:
+        item_pos = int(item_pos_str)
+        player = db().get_player_data(context.get("id"))
+        items = db().get_player_items(player.player_id)
+        if not items:
+            return Strings.no_items_yet
+        if not __item_id_is_valid(item_pos, items):
+            return Strings.invalid_item
+        item = items[item_pos - 1]
+        player.equip_item(item)
+        db().update_player_data(player)
+        return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def sell_item(context: UserContext, item_pos_str: str) -> str:
+    try:
+        item_pos = int(item_pos_str)
+        player = db().get_player_data(context.get("id"))
+        items = db().get_player_items(player.player_id)
+        if not items:
+            return Strings.no_items_yet
+        if not __item_id_is_valid(item_pos, items):
+            return Strings.invalid_item
+        item = items.pop(item_pos - 1)
+        money = item.get_value()
+        player.add_money(money)
+        db().update_player_data(player)
+        db().delete_item(item)
+        return Strings.item_sold(item=item.name, money=money)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "board": IFW(None, check_board, "Shows the quest board."),
@@ -749,7 +830,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
         },
         "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
-        "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild")
+        "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild"),
+        "item": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], check_item, "Shows the specified item stats"),
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
@@ -782,6 +864,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "assemble": {
         "artifact": IFW(None, assemble_artifact, "Assemble an artifact using 10 artifact pieces")
     },
+    "inventory": IFW(None, inventory, "Shows all your items"),
+    "equip": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], equip_item, "Equip an item from your inventory"),
+    "sell": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], sell_item, "Shows the specified manual page."),
     "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
     "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
@@ -795,11 +880,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
-        "mechanics": {
-            "1": IFW(None, return_string, "Explains the mechanics of the game (page 1)", default_args={"string": read_text_file("mechanics.txt").split("\n\n----\n\n")[0]}),
-            "2": IFW(None, return_string, "Explains the mechanics of the game (page 2)", default_args={"string": read_text_file("mechanics.txt").split("\n\n----\n\n")[1]})
-        }
     },
+    "man": IFW([RWE("page", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Page"))], manual, "Shows the specified manual page."),
     "bestiary": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], bestiary, "shows all enemies that can be found in the given zone.")
 }
 
