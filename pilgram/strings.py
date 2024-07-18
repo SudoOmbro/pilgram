@@ -197,12 +197,12 @@ class Strings:
         "electric": ("-Thunder", "Grounded", "Rubber-lined")
     }
     slots: List[str] = [
-        "Head gear",
-        "Chest armor",
-        "Legs armor",
-        "Arms armor",
-        "Primary weapon",
-        "Secondary weapon"
+        "Head",
+        "Chest",
+        "Legs",
+        "Arms",
+        "Primary",
+        "Secondary"
     ]
     no_items_yet = "You don't have any items yet"
     invalid_item = "Invalid item."

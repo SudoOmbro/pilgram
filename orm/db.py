@@ -25,7 +25,6 @@ log = logging.getLogger(__name__)
 
 _LOCK = threading.Lock()
 
-NP_ED = np.dtype([('slot', np.uint8), ('id', np.uint32)])  # stands for 'numpy equipment data'
 NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # stands for 'numpy modifiers data'
 
 
@@ -77,19 +76,18 @@ def encode_satchel(satchel: List[ConsumableItem]) -> bytes:
     return packed_array.tobytes()
 
 
-def decode_equipped_items_ids(data: Union[str]) -> Dict[int, int]:
+def decode_equipped_items_ids(data: Union[str]) -> List[int]:
     encoded_data = bytes(data, "UTF-8")
-    equipment_dictionary: Dict[int, int] = {}
-    for item in np.frombuffer(encoded_data, dtype=NP_ED):
-        equipment_dictionary[item["slot"].item()] = item["id"].item()
-    return equipment_dictionary
+    equipment_list: List[int] = []
+    for item in np.frombuffer(encoded_data, dtype=np.uint32):
+        equipment_list.append(item.item())
+    return equipment_list
 
 
 def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> bytes:
-    packed_array = np.empty(int(len(equipped_items)), NP_ED)
-    for i, (slot, equipment) in enumerate(equipped_items.items()):
-        packed_array[i]["slot"] = slot
-        packed_array[i]["id"] = equipment.equipment_id
+    packed_array = np.empty(len(list(equipped_items.keys())), np.uint32)
+    for i, equipment in enumerate(equipped_items.values()):
+        packed_array[i] = equipment.equipment_id
     return packed_array.tobytes()
 
 
@@ -157,7 +155,7 @@ class PilgramORMDatabase(PilgramDatabase):
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             artifacts = self.get_player_artifacts(player_id)
             items = self.get_player_items(player_id)
-            equipped_items_ids = decode_equipped_items_ids(pls.equipped_items)
+            equipped_items_ids: List[int] = decode_equipped_items_ids(pls.equipped_items)
             equipped_items = {}
             for item in items:
                 if item.equipment_id in equipped_items_ids:
@@ -748,7 +746,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def __build_item(self, its: EquipmentModel) -> Equipment:
         equipment_type = EquipmentType.get(its.equipment_type)
-        _, damage, resist = Equipment.get_modifiers_and_damage(its.damage_seed, its.level, equipment_type.is_weapon)
+        _, damage, resist = Equipment.get_modifiers_and_damage(its.level, its.damage_seed, equipment_type.is_weapon)
         return Equipment(
             its.id,
             its.level,

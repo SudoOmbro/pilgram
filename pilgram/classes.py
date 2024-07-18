@@ -444,7 +444,7 @@ class Player(CombatActor):
             base_resistance += item.resist
         return base_resistance
 
-    def get_permanent_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_entity_modifiers(self, *type_filters: int) -> List["Modifier"]:
         result = []
         for _, item in self.equipped_items.items():
             result.extend(item.get_modifiers(type_filters))
@@ -492,6 +492,8 @@ class Player(CombatActor):
                 self.artifacts) > 0 else "\n\nNo artifacts yet."
         else:
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"
+        if self.equipped_items:
+            string += f"\n\nEquipped items:\n{'\n'.join(f"{Strings.slots[slot]} - *{item.name}*" for slot, item in self.equipped_items.items())}"
         return string
 
     def __repr__(self):

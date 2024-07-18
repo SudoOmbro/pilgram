@@ -756,7 +756,7 @@ def inventory(context: UserContext) -> str:
         items = db().get_player_items(player.player_id)
         if not items:
             return Strings.no_items_yet
-        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i} - *{x.name}*' for i, x in enumerate(items)])}"
+        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i+1} - *{x.name}*' for i, x in enumerate(items)])}"
     except KeyError:
         return Strings.no_character_yet
 
