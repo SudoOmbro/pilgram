@@ -16,7 +16,7 @@ from orm.models import db, PlayerModel, GuildModel, ZoneModel, create_tables, Zo
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
     Tourney, EnemyMeta
 from pilgram.combat_classes import Modifier
-from pilgram.equipment import ConsumableItem, Equipment
+from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 from pilgram.modifiers import get_modifier
@@ -267,7 +267,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # guilds ----
 
-    def build_guild_object(self, gs, calling_player_id: Union[int, None]):
+    def build_guild_object(self, gs: GuildModel, calling_player_id: Union[int, None]):
         """
             build the guild object, also check if the player requesting the guild is the founder of said guild
             to avoid an infinite recursion loop.
@@ -419,7 +419,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # zone events ----
 
-    def build_zone_event_object(self, zes) -> ZoneEvent:
+    def build_zone_event_object(self, zes: ZoneEventModel) -> ZoneEvent:
         return ZoneEvent(
             zes.id,
             self.get_zone(zes.zone_id) if zes.zone_id != 0 else None,
@@ -476,7 +476,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # quests ----
 
-    def build_quest_object(self, qs, zone: Union[Zone, None] = None) -> Quest:
+    def build_quest_object(self, qs: QuestModel, zone: Union[Zone, None] = None) -> Quest:
         if not zone:
             zone = self.get_zone(qs.zone_id)
         return Quest(
@@ -557,7 +557,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # in progress quest management ----
 
-    def build_adventure_container(self, qps, owner: Union[Player, None] = None) -> AdventureContainer:
+    def build_adventure_container(self, qps: QuestProgressModel, owner: Union[Player, None] = None) -> AdventureContainer:
         player = self.get_player_data(int(qps.player_id)) if owner is None else owner
         quest = self.get_quest(qps.quest_id) if qps.quest_id else None
         return AdventureContainer(player, quest, qps.end_time)
@@ -678,7 +678,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # enemy meta ----
 
-    def __build_enemy_meta(self, ems) -> EnemyMeta:
+    def __build_enemy_meta(self, ems: EnemyTypeModel) -> EnemyMeta:
         return EnemyMeta(
             ems.id,
             self.get_zone(ems.zone_id),
@@ -754,8 +754,19 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # items ----
 
-    def __build_item(self, its) -> Equipment:
-        pass  # TODO
+    def __build_item(self, its: EquipmentModel) -> Equipment:
+        equipment_type = EquipmentType.get(its.equipment_type)
+        _, damage, resist = Equipment.get_modifiers_and_damage(its.damage_seed, its.level, equipment_type.is_weapon)
+        return Equipment(
+            its.id,
+            its.level,
+            equipment_type,
+            its.name,
+            its.damage_seed,
+            damage,
+            resist,
+            decode_modifiers(its.modifiers)
+        )
 
     def get_item(self, item_id: int) -> Equipment:
         try:
@@ -786,4 +797,12 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @_thread_safe()
     def add_item(self, item: Equipment, owner: Player):
-        pass  # TODO
+        with db.atomic():
+            EquipmentModel.create(
+                name=item.name,
+                owner=owner.player_id,
+                level=item.level,
+                equipment_type=item.equipment_type,
+                damage_seed=item.seed,
+                modifiers=encode_modifiers(item.modifiers)
+            )

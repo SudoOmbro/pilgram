@@ -85,7 +85,6 @@ class Modifier(ABC):
     def __init_subclass__(cls, rarity: Union[int, None] = None):
         if rarity is not None:
             modifier_id = len(_LIST)
-            print(f"Loaded modifier '{cls.__name__}' with id {modifier_id}")
             cls.ID = modifier_id
             cls.RARITY = rarity
             _LIST.append(cls)
@@ -364,3 +363,6 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.timed_modifiers.append(self.FreeRevive(1, duration=self.strength))
+
+
+print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
