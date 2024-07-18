@@ -1,5 +1,6 @@
 import logging
 import random
+import threading
 from datetime import timedelta, datetime
 from time import sleep
 
@@ -18,9 +19,11 @@ from pilgram.combat_classes import Modifier
 from pilgram.equipment import ConsumableItem, Equipment
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
+from pilgram.modifiers import get_modifier
 
 log = logging.getLogger(__name__)
 
+_LOCK = threading.Lock()
 
 NP_ED = np.dtype([('uint8', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy equipment data'
 NP_MD = np.dtype([('uint16', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy modifiers data'
@@ -101,11 +104,11 @@ def decode_modifiers(data: Union[str, None]) -> List[Modifier]:
     if len(encoded_data) == 5:
         # special case for single element array
         unpacked_array = np.frombuffer(encoded_data, dtype=NP_MD).reshape(2)
-        return [Modifier.get(unpacked_array[0].item(), unpacked_array[1].item())]
+        return [get_modifier(unpacked_array[0].item(), unpacked_array[1].item())]
     modifiers_list: List[Modifier] = []
     unpacked_array = np.frombuffer(encoded_data, dtype=NP_MD).reshape(int(len(data) / 6), 2)
     for modifier_id, strength in unpacked_array:
-        modifiers_list.append(Modifier.get(modifier_id, strength))
+        modifiers_list.append(get_modifier(modifier_id, strength))
     return modifiers_list
 
 
@@ -116,6 +119,15 @@ def encode_modifiers(modifiers: List[Modifier]) -> bytes:
         packed_array[j] = modifier.ID
         packed_array[j + 2] = modifier.strength
     return packed_array.tobytes()
+
+
+def _thread_safe():
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            with _LOCK:
+                return func(*args, **kwargs)
+        return wrapper
+    return decorator
 
 
 class PilgramORMDatabase(PilgramDatabase):
@@ -136,7 +148,7 @@ class PilgramORMDatabase(PilgramDatabase):
             if not db.get_tables():
                 log.info("Db file does not exist. Creating one.")
                 create_tables()
-                sleep(0.05)
+                sleep(0.1)
                 log.info("tables created")
             cls._instance.is_connected = False
         return cls._instance
@@ -195,49 +207,53 @@ class PilgramORMDatabase(PilgramDatabase):
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with name {name} not found')
 
+    @_thread_safe()
     def update_player_data(self, player: Player):
         try:
-            pls = PlayerModel.get(PlayerModel.id == player.player_id)
-            pls.name = player.name
-            pls.description = player.description
-            pls.guild = player.guild.guild_id if player.guild else None
-            pls.level = player.level
-            pls.xp = player.xp
-            pls.money = player.money
-            pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
-            pls.home_level = player.home_level
-            pls.gear_level = player.gear_level
-            pls.last_spell_cast = player.last_cast
-            pls.artifact_pieces = player.artifact_pieces
-            pls.flags = player.flags
-            pls.renown = player.renown
-            pls.cult_id = player.cult.faction_id
-            pls.satchel = encode_satchel(player.satchel)
-            pls.equipped_items = encode_equipped_items(player.equipped_items)
-            pls.hp_percent = player.hp_percent
-            pls.stance = player.stance
-            pls.completed_quests = player.completed_quests
-            pls.save()
+            with db.atomic():
+                pls = PlayerModel.get(PlayerModel.id == player.player_id)
+                pls.name = player.name
+                pls.description = player.description
+                pls.guild = player.guild.guild_id if player.guild else None
+                pls.level = player.level
+                pls.xp = player.xp
+                pls.money = player.money
+                pls.progress = encode_progress(player.progress.zone_progress) if player.progress else None
+                pls.home_level = player.home_level
+                pls.gear_level = player.gear_level
+                pls.last_spell_cast = player.last_cast
+                pls.artifact_pieces = player.artifact_pieces
+                pls.flags = player.flags
+                pls.renown = player.renown
+                pls.cult_id = player.cult.faction_id
+                pls.satchel = encode_satchel(player.satchel)
+                pls.equipped_items = encode_equipped_items(player.equipped_items)
+                pls.hp_percent = player.hp_percent
+                pls.stance = player.stance
+                pls.completed_quests = player.completed_quests
+                pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
 
+    @_thread_safe()
     def add_player(self, player: Player):
         try:
-            PlayerModel.create(
-                id=player.player_id,
-                name=player.name,
-                description=player.description,
-                guild=player.guild.guild_id if player.guild else None,
-                level=player.level,
-                xp=player.xp,
-                money=player.money,
-                progress=encode_progress(player.progress.zone_progress) if player.progress else None,
-                gear_level=player.gear_level
-            )
-            # also create quest progress model related to the player
-            QuestProgressModel.create(
-                player_id=player.player_id
-            )
+            with db.atomic():
+                PlayerModel.create(
+                    id=player.player_id,
+                    name=player.name,
+                    description=player.description,
+                    guild=player.guild.guild_id if player.guild else None,
+                    level=player.level,
+                    xp=player.xp,
+                    money=player.money,
+                    progress=encode_progress(player.progress.zone_progress) if player.progress else None,
+                    gear_level=player.gear_level
+                )
+                # also create quest progress model related to the player
+                QuestProgressModel.create(
+                    player_id=player.player_id
+                )
         except Exception as e:  # catching the specific exception wasn't working so here we are
             log.error(e)
             raise AlreadyExists(f"Player with name {player.name} already exists")
@@ -307,27 +323,31 @@ class PilgramORMDatabase(PilgramDatabase):
     def get_guild_members_number(self, guild: Guild) -> int:
         return GuildModel.get(guild.guild_id == GuildModel.id).members.count()
 
+    @_thread_safe()
     def update_guild(self, guild: Guild):
         gs = GuildModel.get(GuildModel.id == guild.guild_id)
         if not gs:
             raise KeyError(f'Guild with id {guild.guild_id} not found')
-        gs.name = guild.name
-        gs.description = guild.description
-        gs.level = guild.level
-        gs.prestige = guild.prestige
-        gs.tourney_score = guild.tourney_score
-        gs.tax = guild.tax
-        gs.save()
+        with db.atomic():
+            gs.name = guild.name
+            gs.description = guild.description
+            gs.level = guild.level
+            gs.prestige = guild.prestige
+            gs.tourney_score = guild.tourney_score
+            gs.tax = guild.tax
+            gs.save()
 
+    @_thread_safe()
     def add_guild(self, guild: Guild):
         try:
-            GuildModel.create(
-                name=guild.name,
-                description=guild.description,
-                founder_id=guild.founder.player_id,
-                creation_date=guild.creation_date,
-                tax=guild.tax
-            )
+            with db.atomic():
+                GuildModel.create(
+                    name=guild.name,
+                    description=guild.description,
+                    founder_id=guild.founder.player_id,
+                    creation_date=guild.creation_date,
+                    tax=guild.tax
+                )
         except Exception as e:
             log.error(e)
             raise AlreadyExists(f"Guild with name {guild.name} already exists")
@@ -377,21 +397,25 @@ class PilgramORMDatabase(PilgramDatabase):
             return []
         return [self.build_zone_object(x) for x in zs]
 
+    @_thread_safe()
     def update_zone(self, zone: Zone):  # this will basically never be called, but it's good to have
         zs = ZoneModel.get(ZoneModel.id == zone.zone_id)
         if not zs:
             raise KeyError(f"Could not find zone with id {zone.zone_id}")
-        zs.name = zone.zone_name
-        zs.level = zone.level
-        zs.description = zone.zone_description
-        zs.save()
+        with db.atomic():
+            zs.name = zone.zone_name
+            zs.level = zone.level
+            zs.description = zone.zone_description
+            zs.save()
 
+    @_thread_safe()
     def add_zone(self, zone: Zone):
-        ZoneModel.create(
-            name=zone.zone_name,
-            level=zone.level,
-            description=zone.zone_description
-        )
+        with db.atomic():
+            ZoneModel.create(
+                name=zone.zone_name,
+                level=zone.level,
+                description=zone.zone_description
+            )
 
     # zone events ----
 
@@ -426,23 +450,29 @@ class PilgramORMDatabase(PilgramDatabase):
         except ZoneEventModel.DoesNotExist:
             raise KeyError(f"Could not find any zone events within zone {zone.zone_id}")
 
+    @_thread_safe()
     def update_zone_event(self, event: ZoneEvent):
         try:
-            zes = ZoneEventModel.get(ZoneEventModel.id == event.event_id)
-            zes.event_text = event.event_text
-            zes.save()
+            with db.atomic():
+                zes = ZoneEventModel.get(ZoneEventModel.id == event.event_id)
+                zes.event_text = event.event_text
+                zes.save()
         except ZoneEventModel.DoesNotExist:
             raise KeyError(f"Could not find zone event with id {event.event_id}")
 
+    @_thread_safe()
     def add_zone_event(self, event: ZoneEvent):
-        ZoneEventModel.create(
-            zone_id=event.zone.zone_id,
-            event_text=event.event_text
-        )
+        with db.atomic():
+            ZoneEventModel.create(
+                zone_id=event.zone.zone_id,
+                event_text=event.event_text
+            )
 
+    @_thread_safe()
     def add_zone_events(self, events: List[ZoneEvent]):
         data_to_insert = [{"zone_id": e.zone.zone_id if e.zone else 0, "event_text": e.event_text} for e in events]
-        ZoneEventModel.insert_many(data_to_insert).execute()
+        with db.atomic():
+            ZoneEventModel.insert_many(data_to_insert).execute()
 
     # quests ----
 
@@ -475,28 +505,33 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest number {quest_number} in zone {zone.zone_id}")
 
+    @_thread_safe()
     def update_quest(self, quest: Quest):
         try:
-            qs = QuestModel.get(QuestModel.id == quest.quest_id)
-            qs.number = quest.number
-            qs.name = quest.name
-            qs.description = quest.description
-            qs.failure_text = quest.failure_text
-            qs.success_text = quest.success_text
-            qs.save()
+            with db.atomic():
+                qs = QuestModel.get(QuestModel.id == quest.quest_id)
+                qs.number = quest.number
+                qs.name = quest.name
+                qs.description = quest.description
+                qs.failure_text = quest.failure_text
+                qs.success_text = quest.success_text
+                qs.save()
         except QuestModel.DoesNotExist:
             raise KeyError(f"Could not find quest with id {quest.quest_id}")
 
+    @_thread_safe()
     def add_quest(self, quest: Quest):
-        QuestModel.create(
-            name=quest.name,
-            zone_id=quest.zone.zone_id,
-            number=quest.number,
-            description=quest.description,
-            success_text=quest.success_text,
-            failure_text=quest.failure_text,
-        )
+        with db.atomic():
+            QuestModel.create(
+                name=quest.name,
+                zone_id=quest.zone.zone_id,
+                number=quest.number,
+                description=quest.description,
+                success_text=quest.success_text,
+                failure_text=quest.failure_text,
+            )
 
+    @_thread_safe()
     def add_quests(self, quests: List[Quest]):
         data_to_insert: List[Dict[str, Any]] = [
             {
@@ -508,7 +543,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 "failure_text": q.failure_text
             } for q in quests
         ]
-        QuestModel.insert_many(data_to_insert).execute()
+        with db.atomic():
+            QuestModel.insert_many(data_to_insert).execute()
 
     @cache_ttl_single_value(ttl=30)
     def get_quests_counts(self) -> List[int]:
@@ -547,12 +583,13 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def update_quest_progress(self, adventure_container: AdventureContainer, last_update: Union[datetime, None] = None):
         try:
-            qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
-            qps.quest_id = adventure_container.quest_id()
-            # stagger updates using randomness
-            qps.last_update = datetime.now() + timedelta(minutes=random.randint(0, 40)) if last_update is None else last_update
-            qps.end_time = adventure_container.finish_time
-            qps.save()
+            with db.atomic():
+                qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
+                qps.quest_id = adventure_container.quest_id()
+                # stagger updates using randomness
+                qps.last_update = datetime.now() + timedelta(minutes=random.randint(0, 40)) if last_update is None else last_update
+                qps.end_time = adventure_container.finish_time
+                qps.save()
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {adventure_container.player_id()}")
 
@@ -591,9 +628,12 @@ class PilgramORMDatabase(PilgramDatabase):
         except ArtifactModel.DoesNotExist:
             raise KeyError("No artifacts in database")
 
+    @_thread_safe()
     def add_artifact(self, artifact: Artifact):
-        ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
+        with db.atomic():
+            ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
 
+    @_thread_safe()
     def add_artifacts(self, artifacts: List[Artifact]):
         data_to_insert: List[Dict[str, Any]] = [
             {
@@ -602,16 +642,19 @@ class PilgramORMDatabase(PilgramDatabase):
                 "owner": None
             } for a in artifacts
         ]
-        ArtifactModel.insert_many(data_to_insert).execute()
+        with db.atomic():
+            ArtifactModel.insert_many(data_to_insert).execute()
 
+    @_thread_safe()
     def update_artifact(self, artifact: Artifact, owner: Union[Player, None]):
         try:
-            arse = ArtifactModel.get(ArtifactModel.id == artifact.artifact_id)
-            arse.name = artifact.name
-            arse.description = artifact.description
-            if owner is not None:
-                arse.owner = owner.player_id
-            arse.save()
+            with db.atomic():
+                arse = ArtifactModel.get(ArtifactModel.id == artifact.artifact_id)
+                arse.name = artifact.name
+                arse.description = artifact.description
+                if owner is not None:
+                    arse.owner = owner.player_id
+                arse.save()
         except ArtifactModel.DoesNotExist:
             raise KeyError(f"Could not find artifact with id {artifact.artifact_id}")
 
@@ -685,26 +728,29 @@ class PilgramORMDatabase(PilgramDatabase):
             result.append(self.__build_enemy_meta(em))
         return result
 
-
+    @_thread_safe()
     def update_enemy_meta(self, enemy_meta: EnemyMeta):
         try:
-            ems = EnemyTypeModel.get(EnemyTypeModel.id == enemy_meta.meta_id)
-            ems.name = enemy_meta.name
-            ems.description = enemy_meta.description
-            ems.win_text = enemy_meta.win_text
-            ems.lose_text = enemy_meta.lose_text
-            ems.save()
+            with db.atomic():
+                ems = EnemyTypeModel.get(EnemyTypeModel.id == enemy_meta.meta_id)
+                ems.name = enemy_meta.name
+                ems.description = enemy_meta.description
+                ems.win_text = enemy_meta.win_text
+                ems.lose_text = enemy_meta.lose_text
+                ems.save()
         except EnemyTypeModel.DoesNotExist:
             raise KeyError(f"Enemey meta with id {enemy_meta.meta_id} does not exist")
 
+    @_thread_safe()
     def add_enemy_meta(self, enemy_meta: EnemyMeta):
-        EnemyTypeModel.create(
-            zone_id=enemy_meta.zone.zone_id,
-            name=enemy_meta.name,
-            description=enemy_meta.description,
-            win_text=enemy_meta.win_text,
-            lose_text=enemy_meta.lose_text
-        )
+        with db.atomic():
+            EnemyTypeModel.create(
+                zone_id=enemy_meta.zone.zone_id,
+                name=enemy_meta.name,
+                description=enemy_meta.description,
+                win_text=enemy_meta.win_text,
+                lose_text=enemy_meta.lose_text
+            )
 
     # items ----
 
@@ -727,13 +773,17 @@ class PilgramORMDatabase(PilgramDatabase):
         except EquipmentModel.DoesNotExist:
             return []
 
+    @_thread_safe()
     def update_item(self, item: Equipment, owner: Player):
         try:
-            its = EquipmentModel.get(EquipmentModel.id == item.equipment_id)
-            its.owner = owner.player_id
-            its.save()
+            with db.atomic():
+                its = EquipmentModel.get(EquipmentModel.id == item.equipment_id)
+                its.owner = owner.player_id
+                its.name = item.name
+                its.save()
         except EquipmentModel.DoesNotExist:
             raise KeyError(f"Could not find item with id {item.equipment_id}")
 
+    @_thread_safe()
     def add_item(self, item: Equipment, owner: Player):
         pass  # TODO

@@ -137,9 +137,8 @@ def __migrate_v4_to_v5():
     migrate(
         migrator.add_column('playermodel', 'stance', FixedCharField(max_length=1, default="b")),
         migrator.add_column('playermodel', 'completed_quests', IntegerField(default=0)),
-        migrator.add_column('equipmentmodel', 'level', IntegerField(default=0))
+        migrator.add_column('equipmentmodel', 'level', IntegerField(default=1))
     )
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v4.db", "pilgram_v5.db")
-    sleep(0.01)

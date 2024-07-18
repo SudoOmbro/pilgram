@@ -1,20 +1,13 @@
 import logging
 from datetime import datetime
 
-from peewee import Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
+from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
     AutoField, FloatField, FixedCharField
-from playhouse.sqliteq import SqliteQueueDatabase
 
 
 DB_FILENAME: str = "pilgram_v5.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
-db = SqliteQueueDatabase(
-    DB_FILENAME,
-    use_gevent=False,
-    autostart=True,
-    queue_max_size=64,
-    results_timeout=10.0
-)
+db = SqliteDatabase(DB_FILENAME)
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)

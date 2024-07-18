@@ -332,23 +332,134 @@
     "id": 0,
     "name": "Longsword",
     "slot": "primary",
-    "description": "Old reliable",
     "weapon": true,
-    "weight": 5,
+    "delay": 3,
     "damage": {
-      "slash": 2,
+      "slash": 3,
       "pierce": 1
-    }
+    },
+    "value": 5
   }, {
     "id": 1,
     "name": "Spear",
     "slot": "primary",
-    "description": "Poke 'em full of holes",
     "weapon": true,
-    "weight": 3,
+    "delay": 3,
     "damage": {
+      "pierce": 3
+    },
+    "value": 4
+  }, {
+    "id": 2,
+    "name": "Dagger",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 0,
+    "damage": {
+      "pierce": 1
+    },
+    "value": 1
+  }, {
+    "id": 3,
+    "name": "Round Shield",
+    "slot": "secondary",
+    "weapon": false,
+    "delay": 2,
+    "damage": {
+      "blunt": 1
+    },
+    "resist": {
+      "slash": 1
+    },
+    "value": 2
+  }, {
+    "id": 4,
+    "name": "Tower Shield",
+    "slot": "secondary",
+    "weapon": false,
+    "delay": 6,
+    "damage": {
+      "blunt": 1
+    },
+    "resist": {
+      "slash": 4
+    },
+    "value": 5
+  }, {
+    "id": 5,
+    "name": "FLint lock pistol",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 8,
+    "damage": {
+      "pierce": 5,
+      "blunt": 3
+    },
+    "value": 6
+  }, {
+    "id": 6,
+    "name": "Halberd",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "slash": 2,
       "pierce": 2
-    }
+    },
+    "value": 4
+  }, {
+    "id": 7,
+    "name": "Gladius",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 2,
+      "pierce": 1
+    },
+    "value": 3
+  }, {
+    "id": 8,
+    "name": "Brimmed hat",
+    "slot": "head",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "blunt": 1
+    },
+    "value": 1
+  }, {
+    "id": 9,
+    "name": "Poncho",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "slash": 1,
+      "blunt": 1
+    },
+    "value": 1
+  }, {
+    "id": 10,
+    "name": "Boots",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 1,
+      "slash": 1
+    },
+    "value": 1
+  }, {
+    "id": 11,
+    "name": "Gloves",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "slash": 1
+    },
+    "value": 1
   }],
   "consumables": [{
     "id": 0,

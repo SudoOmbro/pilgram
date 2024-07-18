@@ -180,22 +180,30 @@ class Strings:
         "slash": ("Sharp", "-Slashing"),
         "pierce": ("Piercing", "-Thrusting"),
         "blunt": ("Heavy", "-Crushing", "Devastating"),
-        "occult": ("Occult", "Eldritch"),
-        "fire": ("Flaming", "-flame"),
+        "occult": ("Occult", "Eldritch", "Hexed", "Runic"),
+        "fire": ("Flaming", "-flame", "Draconic"),
         "acid": ("-Acid", "Melting", "Corroded"),
         "freeze": ("-Ice", "Freezing"),
         "electric": ("Lightning", "-Thunder")
     }
     armor_modifiers: Dict[str, Tuple[str, ...]] = {
-        "slash": ("Sharp-", "-Slashing"),
-        "pierce": ("Piercing-", "-Thrusting"),
-        "blunt": ("Heavy-", "-Crushing", "Devastating-"),
-        "occult": ("Occult-", "Eldritch-"),
-        "fire": ("Flaming-", "-flame"),
-        "acid": ("-Acid", "Melting-", "Corroded-"),
-        "freeze": ("-Ice", "Freezing-"),
-        "electric": ("Lightning-", "-Thunder")
+        "slash": ("Plated", "-the Bulwark"),
+        "pierce": ("Reinforced", "-the Cataphract"),
+        "blunt": ("Heavy", "Stable", "Well-built"),
+        "occult": ("Occult", "Eldritch", "Hexed", "Runic"),
+        "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
+        "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant"),
+        "freeze": ("Insulated", "Warm", "-the North", "Fur-lined"),
+        "electric": ("-Thunder", "Grounded", "Rubber-lined")
     }
+    slots: List[str] = [
+        "Head gear",
+        "Chest armor",
+        "Legs armor",
+        "Arms armor",
+        "Primary weapon",
+        "Secondary weapon"
+    ]
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

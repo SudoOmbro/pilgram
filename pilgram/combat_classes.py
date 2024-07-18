@@ -57,6 +57,18 @@ class Damage:
             int(self.electric * scaling_factor)
         )
 
+    def apply_bonus(self, bonus: int) -> "Damage":
+        return Damage(
+            (self.slash + bonus) if self.slash else 0,
+            (self.pierce + bonus) if self.pierce else 0,
+            (self.blunt + bonus) if self.blunt else 0,
+            (self.occult + bonus) if self.occult else 0,
+            (self.fire + bonus) if self.fire else 0,
+            (self.acid + bonus) if self.acid else 0,
+            (self.freeze + bonus) if self.freeze else 0,
+            (self.electric + bonus) if self.electric else 0
+        )
+
     def scale_single_value(self, key: str, scaling_factor: float) -> "Damage":
         new_damage = copy(self)
         new_damage.__dict__[key] = int(new_damage.__dict__[key] * scaling_factor)
@@ -174,7 +186,7 @@ class CombatActor(ABC):
         """ generic method that should return the damage resistance of the entity """
         raise NotImplementedError
 
-    def get_permanent_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_entity_modifiers(self, *type_filters: int) -> List["Modifier"]:
         """ generic method that should return an (optionally filtered) list of modifiers. (args are the filters) """
         raise NotImplementedError
 
@@ -184,7 +196,7 @@ class CombatActor(ABC):
 
     def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
         """ returns the list of modifiers + timed modifiers """
-        modifiers: List[Modifier] = self.get_permanent_modifiers(*type_filters)
+        modifiers: List[Modifier] = self.get_entity_modifiers(*type_filters)
         if not type_filters:
             modifiers.extend(self.timed_modifiers)
             modifiers.sort(key=lambda x: x.OP_ORDERING)
@@ -201,7 +213,7 @@ class CombatActor(ABC):
     def get_max_hp(self) -> int:
         """ get max hp of the entity applying all modifiers """
         max_hp = self.get_base_max_hp()
-        for modifier in self.get_permanent_modifiers(ModifierType.COMBAT_START):
+        for modifier in self.get_entity_modifiers(ModifierType.COMBAT_START):
             max_hp = modifier.apply(ModifierContext({"entity": self}))
         return int(max_hp)
 
@@ -225,6 +237,14 @@ class CombatActor(ABC):
         """ damage the actor with damage. Return True if the actor was killed, otherwise return False """
         damage_received = -damage.get_total_damage()
         return self.modify_hp(damage_received)
+
+    def get_delay(self) -> int:
+        """ returns the delay of the actor, which is a factor that determines who goes first in the combat turn """
+        raise NotImplementedError
+
+    def get_initiative(self) -> int:
+        """ returns the initiative of the actor, which determines who goes first in the combat turn """
+        return self.get_delay() - self.roll(20)
 
     def is_dead(self) -> bool:
         return self.hp <= 0

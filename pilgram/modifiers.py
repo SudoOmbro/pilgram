@@ -47,6 +47,10 @@ def get_modifiers_by_rarity(rarity: int) -> List[Type["Modifier"]]:
     return _RARITY_INDEX.get(rarity, [])
 
 
+def get_all_modifiers() -> List[Type["Modifier"]]:
+    return _LIST
+
+
 def print_all_modifiers():
     for modifier in _LIST:
         print(str(modifier(modifier.MIN_STRENGTH)))
@@ -104,13 +108,16 @@ class Modifier(ABC):
 
     @classmethod
     def generate(cls, level: int) -> "Modifier":
-        return cls(cls.MIN_STRENGTH + int((level / cls.SCALING)))
+        strength = cls.MIN_STRENGTH + int(level / cls.SCALING)
+        if (cls.MAX_STRENGTH != 0) and (strength > cls.MAX_STRENGTH):
+            strength = cls.MAX_STRENGTH
+        return cls(strength)
 
 
 class GenericDamageMult(Modifier):
     MAX_STRENGTH = 100
     MIN_STRENGTH = 0
-    SCALING = 1
+    SCALING = 2
 
     DESCRIPTION = "Increases DAMAGE WHAT by {str}%"
     DAMAGE_TYPE: str
@@ -131,6 +138,30 @@ class GenericDamageMult(Modifier):
         return damage.scale_single_value(self.DAMAGE_TYPE, (100 + self.strength) / 100)
 
 
+class GenericDamageBonus(Modifier):
+    MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
+    SCALING = 2
+
+    DESCRIPTION = "DAMAGE WHAT +{str}"
+    DAMAGE_TYPE: str
+
+    def __init_subclass__(cls, dmg_type: str = None, mod_type: int = None, **kwargs):
+        if dmg_type is None:
+            raise ValueError("dmg_type cannot be None")
+        super().__init_subclass__(rarity=Rarity.COMMON)
+        cls.DAMAGE_TYPE = dmg_type
+        cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
+        cls.DESCRIPTION = cls.DESCRIPTION.replace("WHAT", "damage" if mod_type == ModifierType.ATTACK else "resistance")
+        cls.NAME = f"{dmg_type.capitalize()} {'Optimized' if mod_type == ModifierType.ATTACK else 'shielded'}"
+        cls.TYPE = mod_type
+
+    def function(self, context: ModifierContext) -> Any:
+        # scales in the same way for attack & defence
+        damage: cc.Damage = context.get("damage")
+        return damage.add_single_value(self.DAMAGE_TYPE, self.strength)
+
+
 class SlashAttackMult(GenericDamageMult, dmg_type="slash", mod_type=ModifierType.ATTACK): pass
 class PierceAttackMult(GenericDamageMult, dmg_type="pierce", mod_type=ModifierType.ATTACK): pass
 class BluntAttackAttackMult(GenericDamageMult, dmg_type="blunt", mod_type=ModifierType.ATTACK): pass
@@ -147,6 +178,40 @@ class FireDefendMult(GenericDamageMult, dmg_type="fire", mod_type=ModifierType.D
 class AcidDefendMult(GenericDamageMult, dmg_type="acid", mod_type=ModifierType.DEFEND): pass
 class FreezeDefendMult(GenericDamageMult, dmg_type="freeze", mod_type=ModifierType.DEFEND): pass
 class ElectricDefendMult(GenericDamageMult, dmg_type="electric", mod_type=ModifierType.DEFEND): pass
+
+class SlashAttackBonus(GenericDamageBonus, dmg_type="slash", mod_type=ModifierType.ATTACK): pass
+class PierceAttackBonus(GenericDamageBonus, dmg_type="pierce", mod_type=ModifierType.ATTACK): pass
+class BluntAttackAttackBonus(GenericDamageBonus, dmg_type="blunt", mod_type=ModifierType.ATTACK): pass
+class OccultAttackBonus(GenericDamageBonus, dmg_type="occult", mod_type=ModifierType.ATTACK): pass
+class FireAttackBonus(GenericDamageBonus, dmg_type="fire", mod_type=ModifierType.ATTACK): pass
+class AcidAttackBonus(GenericDamageBonus, dmg_type="acid", mod_type=ModifierType.ATTACK): pass
+class FreezeAttackBonus(GenericDamageBonus, dmg_type="freeze", mod_type=ModifierType.ATTACK): pass
+class ElectricAttackBonus(GenericDamageBonus, dmg_type="electric", mod_type=ModifierType.ATTACK): pass
+class SlashDefendBonus(GenericDamageBonus, dmg_type="slash", mod_type=ModifierType.DEFEND): pass
+class PierceDefendBonus(GenericDamageBonus, dmg_type="pierce", mod_type=ModifierType.DEFEND): pass
+class BluntDefendAttackBonus(GenericDamageBonus, dmg_type="blunt", mod_type=ModifierType.DEFEND): pass
+class OccultDefendBonus(GenericDamageBonus, dmg_type="occult", mod_type=ModifierType.DEFEND): pass
+class FireDefendBonus(GenericDamageBonus, dmg_type="fire", mod_type=ModifierType.DEFEND): pass
+class AcidDefendBonus(GenericDamageBonus, dmg_type="acid", mod_type=ModifierType.DEFEND): pass
+class FreezeDefendBonus(GenericDamageBonus, dmg_type="freeze", mod_type=ModifierType.DEFEND): pass
+class ElectricDefendBonus(GenericDamageBonus, dmg_type="electric", mod_type=ModifierType.DEFEND): pass
+
+
+class FirstHitBonus(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.ATTACK
+
+    MAX_STRENGTH = -1
+    SCALING = 0.5
+
+    NAME = "Sneak attack"
+    DESCRIPTION = "Deal {str} bonus damage of each type if the target is at full health"
+
+    def function(self, context: ModifierContext) -> Any:
+        target: cc.CombatActor = context.get("other")
+        damage = context.get("damage")
+        if target.hp_percent >= 1.0:
+            return damage.apply_bonus(self.strength)
+        return damage
 
 
 class KillAtPercentHealth(Modifier, rarity=Rarity.UNCOMMON):
@@ -238,7 +303,6 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
         target.timed_modifiers.append(self.PoisonProc(self.strength, self.strength))
 
 
-
 class EldritchShield(Modifier, rarity=Rarity.RARE):
     TYPE = ModifierType.COMBAT_START
 
@@ -249,10 +313,14 @@ class EldritchShield(Modifier, rarity=Rarity.RARE):
     DESCRIPTION = "Any hits will only do 1 damage for the first {str} attacks received."
 
     class TankHits(Modifier):
-        TYPE = ModifierType.DEFEND
+        TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            return cc.Damage.get_empty()
+            damage = context.get("damage")
+            if damage.get_total_damage() > 1:
+                return cc.Damage.get_empty()
+            else:
+                self.duration += 1
 
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")

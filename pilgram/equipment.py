@@ -3,10 +3,14 @@ from random import randint, Random, choice
 from typing import Union, List, Dict, Any, Type, Tuple
 
 from pilgram.flags import StrengthBuff, OccultBuff, Flag, FireBuff, IceBuff, AcidBuff, ElectricBuff
+from pilgram.globals import ContentMeta
 from pilgram.listables import Listable
 from pilgram.combat_classes import Modifier, Damage
 from pilgram.modifiers import get_modifiers_by_rarity
 from pilgram.strings import Strings
+
+
+MONEY = ContentMeta.get("money.name")
 
 
 class Slots:
@@ -45,16 +49,20 @@ class EquipmentType(Listable, meta_name="equipment types"):
             damage: Damage,
             resist: Damage,
             name: str,
-            description: str,
+            description: Union[str, None],
             is_weapon: bool,
-            weight: int,
-            slot: int
+            delay: int,
+            slot: int,
+            value: int
     ):
         """
         :param equipment_type_id: The id of the equipment type
         :param damage: Damage dealt
         :param resist: Damage negated
         :param name: The base name of the equipment
+        :param description: The description of the equipment
+        :param is_weapon: Determines whether equipment is a weapon
+        :param delay: Influences how slow the player is with this equipment on
         :param slot: The slot where the equipment should go
         """
         self.equipment_type_id = equipment_type_id
@@ -63,8 +71,9 @@ class EquipmentType(Listable, meta_name="equipment types"):
         self.name = name
         self.description = description
         self.is_weapon = is_weapon
-        self.weight = weight
+        self.delay = delay
         self.slot = slot
+        self.value = value
 
     @classmethod
     def create_from_json(cls, equipment_type_json: Dict[str, Any]) -> "EquipmentType":
@@ -73,10 +82,11 @@ class EquipmentType(Listable, meta_name="equipment types"):
             Damage.load_from_json(equipment_type_json.get("damage", {})),
             Damage.load_from_json(equipment_type_json.get("resist", {})),
             equipment_type_json["name"],
-            equipment_type_json["description"],
+            equipment_type_json.get("description", None),
             equipment_type_json["weapon"],
-            equipment_type_json["weight"],
-            _get_slot(equipment_type_json["slot"])
+            equipment_type_json["delay"],
+            _get_slot(equipment_type_json["slot"]),
+            equipment_type_json["value"]
         )
 
 
@@ -109,8 +119,13 @@ class Equipment:
                 result.append(modifier)
         return result
 
+    def get_value(self) -> int:
+        return (self.equipment_type.value + self.level) * (len(self.modifiers) + 1)
+
     def __str__(self):
-        string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type.description}_"
+        string = f"*{self.name}* | lv. {self.level}\n- {Strings.slots[self.equipment_type.slot]} -\nDelay: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}"
+        if self.equipment_type.description:
+            string += f"\n_{self.equipment_type.description}_"
         if self.damage:
             string += f"\n\n*Damage*:\n{str(self.damage)}"
         if self.resist:
@@ -165,7 +180,10 @@ class Equipment:
         modifiers: List[Modifier] = []
         if rarity > 0:
             for i in range(rarity):
-                modifier_type = choice(get_modifiers_by_rarity(randint(0, rarity)))
+                category = randint(-4, rarity)
+                if category < 0:
+                    category = 0
+                modifier_type = choice(get_modifiers_by_rarity(category))
                 modifier = modifier_type.generate(level)
                 modifiers.append(modifier)
         return cls(
