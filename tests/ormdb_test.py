@@ -1,8 +1,10 @@
 import unittest
 from datetime import timedelta
 
-from orm.db import decode_progress, encode_progress, PilgramORMDatabase, decode_satchel, encode_satchel
+from orm.db import decode_progress, encode_progress, PilgramORMDatabase, decode_satchel, encode_satchel, \
+    decode_modifiers, encode_modifiers
 from pilgram.equipment import ConsumableItem
+from pilgram.modifiers import Modifier, get_modifier
 
 
 class TestORMDB(unittest.TestCase):
@@ -51,6 +53,18 @@ class TestORMDB(unittest.TestCase):
         satchel = [ConsumableItem.get(0), ConsumableItem.get(1), ConsumableItem.get(0)]
         encoded_string = encode_satchel(satchel)
         self.assertEqual(encoded_string, b"\x00\x01\x00")
+
+    def test_decode_modifiers(self):
+        self.assertEqual([], decode_modifiers(b"".decode()))
+        modifiers = decode_modifiers(b"\x01\x00\x01\x00\x00\x00".decode())
+        self.assertEqual(modifiers[0], get_modifier(1, 1))
+        modifiers = decode_modifiers(b"\x01\x00\x01\x00\x00\x00\x02\x00\x01\x00\x00\x00".decode())
+        self.assertEqual(modifiers[0], get_modifier(1, 1))
+        self.assertEqual(modifiers[1], get_modifier(2, 1))
+
+    def test_encode_modifiers(self):
+        self.assertEqual(encode_modifiers([]), b"")
+        self.assertEqual(encode_modifiers([get_modifier(1, 1)]), b"\x01\x00\x01\x00\x00\x00")
 
     def test_get_updates(self):
         db = PilgramORMDatabase.instance()

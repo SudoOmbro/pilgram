@@ -1,10 +1,12 @@
 import re
 from datetime import datetime, timedelta
+from random import randint
 from typing import Dict, Union, Tuple, Callable
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Zone, Quest, ZoneEvent, Artifact, EnemyMeta
+from pilgram.equipment import Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
     GlobalSettings
@@ -278,6 +280,13 @@ def force_quest_complete(context: UserContext, player_name: str) -> str:
     return f"Force quest complete for player {player_name}: success"
 
 
+def give_random_item_to_player(context: UserContext, player_name: str) -> str:
+    player = db().get_player_from_name(player_name)
+    item = Equipment.generate(player.level, EquipmentType.get_random(), randint(0, 3))
+    db().add_item(item, player)
+    return f"Added '{item.name}' to player '{player_name}'."
+
+
 ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "add": {
         "player": {
@@ -286,6 +295,7 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "gear": __generate_int_op_command("gear_level", "player", "add"),
             "home": __generate_int_op_command("home_level", "player", "add"),
             "pieces": __generate_int_op_command("artifact_pieces", "player", "add"),
+            "item": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], give_random_item_to_player, "Add a random item to the player's inventory")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),

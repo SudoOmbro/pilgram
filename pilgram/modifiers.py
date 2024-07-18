@@ -105,6 +105,11 @@ class Modifier(ABC):
     def __str__(self):
         return f"*{self.NAME}* - {Strings.rarities[self.RARITY]}\n_{self.DESCRIPTION.format(str=self.strength)}_"
 
+    def __eq__(self, other):
+        if isinstance(other, Modifier):
+            return (self.ID == other.ID) and (self.strength == other.strength)
+        return False
+
     @classmethod
     def generate(cls, level: int) -> "Modifier":
         strength = cls.MIN_STRENGTH + int(level / cls.SCALING)

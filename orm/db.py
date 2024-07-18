@@ -25,8 +25,8 @@ log = logging.getLogger(__name__)
 
 _LOCK = threading.Lock()
 
-NP_ED = np.dtype([('uint8', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy equipment data'
-NP_MD = np.dtype([('uint16', np.uint8), ('uint32', np.uint32)])  # stands for 'numpy modifiers data'
+NP_ED = np.dtype([('slot', np.uint8), ('id', np.uint32)])  # stands for 'numpy equipment data'
+NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # stands for 'numpy modifiers data'
 
 
 def decode_progress(data: Union[str, None]) -> Dict[int, int]:
@@ -79,45 +79,33 @@ def encode_satchel(satchel: List[ConsumableItem]) -> bytes:
 
 def decode_equipped_items_ids(data: Union[str]) -> Dict[int, int]:
     encoded_data = bytes(data, "UTF-8")
-    if len(encoded_data) == 5:
-        # special case for single element array
-        unpacked_array = np.frombuffer(encoded_data, dtype=NP_ED).reshape(2)
-        return {unpacked_array[0].item(): unpacked_array[1].item()}
     equipment_dictionary: Dict[int, int] = {}
-    unpacked_array = np.frombuffer(encoded_data, dtype=NP_ED).reshape((int(len(data) / 5), 2))
-    for slot, item_id in unpacked_array:
-        equipment_dictionary[slot.item()] = item_id.item()
+    for item in np.frombuffer(encoded_data, dtype=NP_ED):
+        equipment_dictionary[item["slot"].item()] = item["id"].item()
     return equipment_dictionary
 
 
 def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> bytes:
     packed_array = np.empty(int(len(equipped_items)), NP_ED)
     for i, (slot, equipment) in enumerate(equipped_items.items()):
-        j = i * 5
-        packed_array[j] = slot
-        packed_array[j + 1] = equipment.equipment_id
+        packed_array[i]["slot"] = slot
+        packed_array[i]["id"] = equipment.equipment_id
     return packed_array.tobytes()
 
 
 def decode_modifiers(data: Union[str, None]) -> List[Modifier]:
     encoded_data = bytes(data, "UTF-8")
-    if len(encoded_data) == 5:
-        # special case for single element array
-        unpacked_array = np.frombuffer(encoded_data, dtype=NP_MD).reshape(2)
-        return [get_modifier(unpacked_array[0].item(), unpacked_array[1].item())]
     modifiers_list: List[Modifier] = []
-    unpacked_array = np.frombuffer(encoded_data, dtype=NP_MD).reshape(int(len(data) / 6), 2)
-    for modifier_id, strength in unpacked_array:
-        modifiers_list.append(get_modifier(modifier_id, strength))
+    for item in np.frombuffer(encoded_data, dtype=NP_MD):
+        modifiers_list.append(get_modifier(item["id"].item(), item["strength"].item()))
     return modifiers_list
 
 
 def encode_modifiers(modifiers: List[Modifier]) -> bytes:
     packed_array = np.empty(int(len(modifiers)), NP_MD)
     for i, modifier in enumerate(modifiers):
-        j = i * 6
-        packed_array[j] = modifier.ID
-        packed_array[j + 2] = modifier.strength
+        packed_array[i]["id"] = modifier.ID
+        packed_array[i]["strength"] = modifier.strength
     return packed_array.tobytes()
 
 
@@ -806,7 +794,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 name=item.name,
                 owner=owner.player_id,
                 level=item.level,
-                equipment_type=item.equipment_type,
+                equipment_type=item.equipment_type.equipment_type_id,
                 damage_seed=item.seed,
                 modifiers=encode_modifiers(item.modifiers)
             )
