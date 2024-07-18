@@ -1,29 +1,32 @@
 import unittest
 from datetime import timedelta
+from random import randint
+from typing import List
 
 from orm.db import decode_progress, encode_progress, PilgramORMDatabase, decode_satchel, encode_satchel, \
-    decode_modifiers, encode_modifiers
-from pilgram.equipment import ConsumableItem
-from pilgram.modifiers import Modifier, get_modifier
+    decode_modifiers, encode_modifiers, ENCODING
+from pilgram.classes import Player
+from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
+from pilgram.modifiers import get_modifier
 
 
 class TestORMDB(unittest.TestCase):
 
     def test_decode_progress(self):
         self.assertEqual(decode_progress(None), {})
-        progress_dict = decode_progress(b"\x01\x00\x02\x00".decode())
+        progress_dict = decode_progress(b"\x01\x00\x02\x00".decode(ENCODING))
         items = list(progress_dict.items())
         self.assertEqual(len(items), 1)
         self.assertEqual(items[0][0], 1)
         self.assertEqual(items[0][1], 2)
-        progress_dict = decode_progress(b"\x01\x00\x02\x00\x03\x00\x04\x00".decode())
+        progress_dict = decode_progress(b"\x01\x00\x02\x00\x03\x00\x04\x00".decode(ENCODING))
         items = list(progress_dict.items())
         self.assertEqual(len(items), 2)
         self.assertEqual(items[0][0], 1)
         self.assertEqual(items[0][1], 2)
         self.assertEqual(items[1][0], 3)
         self.assertEqual(items[1][1], 4)
-        progress_dict = decode_progress(b"\x00\x00\x03\x00\x01\x00\x01\x00\x02\x00\x01\x00".decode())
+        progress_dict = decode_progress(b"\x00\x00\x03\x00\x01\x00\x01\x00\x02\x00\x01\x00".decode(ENCODING))
         items = list(progress_dict.items())
         self.assertEqual(len(items), 3)
         self.assertEqual(items[0][0], 0)
@@ -32,6 +35,11 @@ class TestORMDB(unittest.TestCase):
         self.assertEqual(items[1][1], 1)
         self.assertEqual(items[2][0], 2)
         self.assertEqual(items[2][1], 1)
+        progress_dict = decode_progress(b"\x01\x00\x80\x00".decode(ENCODING))
+        items = list(progress_dict.items())
+        self.assertEqual(len(items), 1)
+        self.assertEqual(items[0][0], 1)
+        self.assertEqual(items[0][1], 128)
 
     def test_encode_progress(self):
         progress_dict = {1: 2, 3: 4}
@@ -69,3 +77,21 @@ class TestORMDB(unittest.TestCase):
     def test_get_updates(self):
         db = PilgramORMDatabase.instance()
         db.get_all_pending_updates(timedelta(minutes=1))
+
+    def test_save_items_to_db(self):
+        # delete db in tests folder before running this test!
+        db = PilgramORMDatabase.instance()
+        player = db.get_player_from_name("Ombro")
+        if not player:
+            player = Player.create_default(1234, "Ombro", "AAAAAAAA")
+            db.add_player(player)
+        generated_items: List[Equipment] = []
+        for i in range(100):
+            item = Equipment.generate(i, EquipmentType.get_random(), randint(0, 3))
+            db.add_item(item, player)
+            generated_items.append(item)
+        items: List[Equipment] = db.get_player_items(player.player_id)
+        for item, gen_item in zip(items, generated_items):
+            for item_modifier, gen_item_modifier in zip(item.modifiers, gen_item.modifiers):
+                self.assertEqual(item_modifier.TYPE, gen_item_modifier.TYPE)
+                self.assertEqual(item_modifier.strength, gen_item_modifier.strength)

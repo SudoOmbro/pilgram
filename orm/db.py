@@ -25,6 +25,8 @@ log = logging.getLogger(__name__)
 
 _LOCK = threading.Lock()
 
+ENCODING = "cp437"  # we use this encoding since we are working with raw bytes & peewee doesn't seem to like raw bytes
+
 NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # stands for 'numpy modifiers data'
 
 
@@ -36,7 +38,7 @@ def decode_progress(data: Union[str, None]) -> Dict[int, int]:
     if not data:
         return {}
     progress_dictionary: Dict[int, int] = {}
-    encoded_data = bytes(data, "UTF-8")
+    encoded_data = bytes(data, ENCODING)
     if len(encoded_data) == 4:
         # special case for progress with a single element, numpy returned the wrong array shape
         unpacked_array = np.frombuffer(encoded_data, dtype=np.uint16).reshape(2)
@@ -47,7 +49,7 @@ def decode_progress(data: Union[str, None]) -> Dict[int, int]:
     return progress_dictionary
 
 
-def encode_progress(data: Dict[int, int]) -> bytes:
+def encode_progress(data: Dict[int, int]) -> str:
     """ encodes the data dictionary contained in the progress object to a bytestring that can be saved on the db """
     dict_size = len(data)
     packed_array = np.empty(dict_size << 1, np.uint16)
@@ -55,29 +57,29 @@ def encode_progress(data: Dict[int, int]) -> bytes:
         j = i << 1
         packed_array[j] = zone_id
         packed_array[j + 1] = progress
-    return packed_array.tobytes()
+    return packed_array.tobytes().decode(encoding=ENCODING)
 
 
 def decode_satchel(data: str) -> List[ConsumableItem]:
     result: List[ConsumableItem] = []
     if not data:
         return result
-    encoded_data = bytes(data, "UTF-8")
+    encoded_data = bytes(data, ENCODING)
     unpacked_array = np.frombuffer(encoded_data, dtype=np.uint8)
     for consumable_id in unpacked_array:
         result.append(ConsumableItem.get(consumable_id.item()))
     return result
 
 
-def encode_satchel(satchel: List[ConsumableItem]) -> bytes:
+def encode_satchel(satchel: List[ConsumableItem]) -> str:
     packed_array = np.empty(len(satchel), np.uint8)
     for i, consumable in enumerate(satchel):
         packed_array[i] = consumable.consumable_id
-    return packed_array.tobytes()
+    return packed_array.tobytes().decode(encoding=ENCODING)
 
 
 def decode_equipped_items_ids(data: Union[str]) -> List[int]:
-    encoded_data = bytes(data, "UTF-8")
+    encoded_data = bytes(data, ENCODING)
     equipment_list: List[int] = []
     for item in np.frombuffer(encoded_data, dtype=np.uint32):
         equipment_list.append(item.item())
@@ -92,19 +94,19 @@ def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> bytes:
 
 
 def decode_modifiers(data: Union[str, None]) -> List[Modifier]:
-    encoded_data = bytes(data, "UTF-8")
+    encoded_data = bytes(data, ENCODING)
     modifiers_list: List[Modifier] = []
     for item in np.frombuffer(encoded_data, dtype=NP_MD):
         modifiers_list.append(get_modifier(item["id"].item(), item["strength"].item()))
     return modifiers_list
 
 
-def encode_modifiers(modifiers: List[Modifier]) -> bytes:
+def encode_modifiers(modifiers: List[Modifier]) -> str:
     packed_array = np.empty(int(len(modifiers)), NP_MD)
     for i, modifier in enumerate(modifiers):
         packed_array[i]["id"] = modifier.ID
         packed_array[i]["strength"] = modifier.strength
-    return packed_array.tobytes()
+    return packed_array.tobytes().decode(encoding=ENCODING)
 
 
 def _thread_safe():

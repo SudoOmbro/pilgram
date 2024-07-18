@@ -112,7 +112,7 @@ class Modifier(ABC):
 
     @classmethod
     def generate(cls, level: int) -> "Modifier":
-        strength = cls.MIN_STRENGTH + int(level / cls.SCALING)
+        strength: int = cls.MIN_STRENGTH + int(level / cls.SCALING)
         if (cls.MAX_STRENGTH != 0) and (strength > cls.MAX_STRENGTH):
             strength = cls.MAX_STRENGTH
         return cls(strength)
@@ -120,7 +120,7 @@ class Modifier(ABC):
 
 class GenericDamageMult(Modifier):
     MAX_STRENGTH = 100
-    MIN_STRENGTH = 0
+    MIN_STRENGTH = 1
     SCALING = 2
 
     DESCRIPTION = "Increases DAMAGE WHAT by {str}%"
@@ -204,7 +204,7 @@ class ElectricDefendBonus(GenericDamageBonus, dmg_type="electric", mod_type=Modi
 class FirstHitBonus(Modifier, rarity=Rarity.UNCOMMON):
     TYPE = ModifierType.ATTACK
 
-    MAX_STRENGTH = -1
+    MAX_STRENGTH = 0
     SCALING = 0.5
 
     NAME = "Sneak attack"
@@ -310,8 +310,8 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
 class EldritchShield(Modifier, rarity=Rarity.RARE):
     TYPE = ModifierType.COMBAT_START
 
-    MAX_STRENGTH = 5
-    SCALING = 20
+    MAX_STRENGTH = 3
+    SCALING = 30
 
     NAME = "Eldritch Shield"
     DESCRIPTION = "Any hits will only do 1 damage for the first {str} attacks received."
