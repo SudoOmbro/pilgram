@@ -261,7 +261,8 @@ class Player(CombatActor):
             equipped_items: Dict[int, Equipment],
             hp_percent: float,
             stance: str,
-            completed_quests: int
+            completed_quests: int,
+            last_guild_switch: datetime
     ):
         """
         :param player_id (int): unique id of the player
@@ -284,6 +285,7 @@ class Player(CombatActor):
         :param hp_percent: the player's hp percentage
         :param stance: the player's stance
         :param completed_quests: the player's completed quests
+        :param last_guild_switch: The time in which the player last changed guild
         """
         self.player_id = player_id
         self.name = name
@@ -306,6 +308,7 @@ class Player(CombatActor):
         super().__init__(hp_percent)
         self.stance = stance
         self.completed_quests = completed_quests
+        self.last_guild_switch = last_guild_switch
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -529,7 +532,8 @@ class Player(CombatActor):
             {},
             1.0,
             "b",
-            0
+            0,
+            datetime.now() - timedelta(days=1),
         )
 
 
@@ -866,6 +870,7 @@ class Cult(Listable, meta_name="cults"):
         self.hp_bonus = modifiers.get("hp_bonus", 0)
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
         self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
+        self.discovery_bonus = modifiers.get("discovery_bonus", 0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:

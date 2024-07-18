@@ -1,40 +1,40 @@
-**Name:** Grave Wraith
-**Description:** A twisted specter that haunts the depths of The Weeping Hollow, its moans echoing through the darkness as it searches for lost souls to claim as its own.
-**Win Text:** With a final exorcising blow, you banish the Grave Wraith back into the shadows, the air growing still as the spirit dissipates into nothingness.
-**Loss Text:** The Grave Wraith's icy grip tightens around you, draining the very essence of your being until you are nothing but a husk, doomed to wander the hollow for eternity.
-**Name:** Rotting Ghoul
-**Description:** A vile creature reanimated by dark forces, its flesh decaying and dripping with foul-smelling ooze. The Rotting Ghoul hungered for living flesh, its hollow eyes fixed
-**Win Text:** The Rotting Ghoul collapses to the ground, its putrid form crumbling into a heap of bones and decay as you emerge victorious.
-**Loss Text:** As the Rotting Ghoul's rancid claws tear into your flesh, you feel your own body beginning to rot and decay, joining the ranks of the undead.
-**Name:** Banshee Wailer
-**Description:** A mournful spirit cursed to forever lament its tragic end, the Banshee Wailer's piercing cries strike fear into the hearts of all who hear it.
-**Win Text:** With a resolute stance, you silence the Banshee Wailer's haunting cries, granting peace to the tormented spirit.
-**Loss Text:** The Banshee Wailer's wails reach a deafening crescendo, shattering your resolve as you fall to your knees, overwhelmed by sorrow and despair.
-**Name:** Nightshade Stalker
-**Description:** A shadowy figure that prowls the darkness, its form flickering and shifting like smoke. The Nightshade Stalker preys on unsuspecting travelers, striking with deadly pr
-**Win Text:** You outmaneuver the Nightshade Stalker, delivering the final blow that disperses its shadowy form into nothingness.
-**Loss Text:** The Nightshade Stalker's tendrils of darkness envelop you, dragging you into the depths of shadow where your screams go unheard.
-**Name:** Cursed Revenant
-**Description:** A vengeful spirit driven by bitterness and hatred, the Cursed Revenant seeks retribution against the living for the wrongs done to it in life.
-**Win Text:** You break the Cursed Revenant's curse, its spectral form dissipating as a sense of closure settles over the hollow.
-**Loss Text:** The Cursed Revenant's ethereal vengeance overwhelms you, sentencing you to suffer the same injustices it endured in life for all eternity.
-**Name:** Gloom Wight
-**Description:** A twisted amalgamation of darkness and malevolence, the Gloom Wight's eyes gleam with an unnatural hunger as it skulks through the shadows.
-**Win Text:** The Gloom Wight's wicked presence vanishes as you dispel the darkness that fueled its twisted existence, bringing light to the hollow once more.
-**Loss Text:** The Gloom Wight's dark tendrils wrap around you, draining the joy and hope from your soul until you are consumed by despair.
-**Name:** Mourning Widow
-**Description:** A spectral figure clad in tattered mourning robes, the Mourning Widow's sorrowful gaze betrays a deep pain that drives it to seek solace in the souls of others.
-**Win Text:** With compassion in your heart, you ease the Mourning Widow's grief, offering it a moment of peace before it fades into the aether.
-**Loss Text:** The Mourning Widow's grief overwhelms you, plunging you into an abyss of sorrow where the light of hope grows dim and fades.
-**Name:** Blight Crawler
-**Description:** A grotesque abomination born from the corruption of the hollow's stagnant waters, the Blight Crawler's bloated form oozes with toxic filth and disease.
-**Win Text:** You purify the Blight Crawler's corrupted essence, restoring balance to the waters of the hollow as the creature withers and dies.
-**Loss Text:** The Blight Crawler's noxious bile seeps into your veins, poisoning your body from within as the foul corruption claims you as its own.
-**Name:** Sorrow Shade
-**Description:** A tormented spirit consumed by grief and regret, the Sorrow Shade's presence exudes an aura of melancholy that weighs heavily on all who encounter it.
-**Win Text:** With empathetic understanding, you help the Sorrow Shade find peace, releasing it from the shackles of its sorrow as it fades into the ethereal realm.
-**Loss Text:** The Sorrow Shade's despair seeps into your soul, dragging you into the depths of its grief until you are lost in an endless sea of sorrows.
-**Name:** Vengeful Specter
-**Description:** A wrathful spirit fueled by a thirst for vengeance, the Vengeful Specter's eyes burn with an otherworldly fire as it stalks its prey with relentless fury.
-**Win Text:** You confront the Vengeful Specter with courage and resolve, laying its vengeful spirit to rest with a final, decisive blow.
-**Loss Text:** The Vengeful Specter's fury engulfs you, its spectral rage tearing at your very essence until you are nothing but a whisper in the winds of its vengeful wrath.
+- Name: Bloodfiend Marauder
+  Description: A hulking figure shrouded in tattered cloaks, its eyes glow with a malevolent crimson light. It wields a jagged blade tainted by the blood of its victims.
+  Win text: The Bloodfiend Marauder collapses to the ground, its glowing eyes fading to darkness as you stand victorious.
+  Loss text: The Bloodfiend Marauder's blade cuts through the air, finding its mark in your chest. Darkness overtakes you as your vision fades.
+- Name: Wasteland Wendigo
+  Description: A gaunt, skeletal creature with flesh pulled tight over its bones. Its elongated limbs end in razor-sharp claws, and its hungering gaze fixes on you with m
+  Win text: The Wasteland Wendigo lets out a shrill, anguished cry as its form crumbles to dust, leaving only a bitter wind in its wake.
+  Loss text: The Wasteland Wendigo's claws rake across your skin, draining the warmth from your body as you succumb to its insatiable hunger.
+- Name: Shadow Stalker
+  Description: A cloaked figure that flickers in and out of existence, leaving behind a trail of darkness and whispers. Its hands are like claws, ready to strike from the
+  Win text: The Shadow Stalker dissipates into wisps of shadow, defeated by your unwavering resolve.
+  Loss text: The Shadow Stalker's dark tendrils envelop you, pulling you into an abyss of eternal darkness from which there is no escape.
+- Name: Thorned Revenant
+  Description: A spectral figure wrapped in thorny vines that writhe and twist with a life of their own. Its empty eyes fixate on you with a haunting intensity.
+  Win text: The Thorned Revenant lets out a mournful wail as its spectral form dissipates, the thorns crumbling to dust at your feet.
+  Loss text: The Thorned Revenant's vines coil around you, piercing your flesh with their barbed thorns, binding you to its eternal suffering.
+- Name: Dustwraith Harbinger
+  Description: An ethereal being cloaked in swirling dust and shadow, its form barely visible amid the ever-shifting sands. Its gaze pierces through you with a cold, calc
+  Win text: The Dustwraith Harbinger fades into the swirling dust, its presence vanishing like a mirage in the wind.
+  Loss text: The Dustwraith Harbinger's shadowy tendrils reach out, pulling you into a vortex of swirling dust and darkness, erasing your existence.
+- Name: Nightshade Banshee
+  Description: A wraith-like figure wreathed in ghostly mist, its unearthly wail pierces the stillness of the night. Its eyes gleam with an otherworldly sorrow.
+  Win text: The Nightshade Banshee's spectral form dissipates into the night air, its haunting cries silenced at last.
+  Loss text: The Nightshade Banshee's mournful wail pierces your very soul, filling you with a profound sense of despair as you fade into the darkness.
+- Name: Gloomspire Necromancer
+  Description: A figure robed in tattered garments, its hands crackling with dark energy as it summons forth the undead from the cursed earth. Its eyes glow with an unhol
+  Win text: The Gloomspire Necromancer's dark magic falters, the undead minions collapsing as their master falls to your relentless assault.
+  Loss text: The Gloomspire Necromancer's dark spells overwhelm you, binding your soul to the cursed earth as you become one of its unwilling minions.
+- Name: Vilespawn Harpy
+  Description: A grotesque creature with the body of a woman and the wings of a vile beast, its talons sharp and dripping with poison. Its shrill cries echo through the d
+  Win text: The Vilespawn Harpy's screeches fall silent as its twisted form crumples to the ground, its poison no match for your resilience.
+  Loss text: The Vilespawn Harpy's talons tear through your flesh, injecting its venom into your veins as darkness clouds your vision.
+- Name: Duskwalker Shade
+  Description: A shadowy figure that moves with unnatural grace, its form obscured by darkness. Its eyes gleam with a malevolent intelligence as it stalks its prey.
+  Win text: The Duskwalker Shade fades into the shadows, defeated by your unwavering light in the darkness.
+  Loss text: The Duskwalker Shade's shadowy tendrils wrap around you, pulling you into an abyss of eternal night where no light can penetrate.
+- Name: Soulflayer Wraith
+  Description: A spectral being draped in tattered rags, its hands shimmering with an ethereal energy that drains the very life force from its victims. Its eyes burn with
+  Win text: The Soulflayer Wraith's spectral form dissipates, its hunger for souls left unfulfilled as you stand triumphant.
+  Loss text: The Soulflayer Wraith's ethereal touch saps the life from your body, leaving you drained and lifeless as your soul is consumed by its insatiable hunger.

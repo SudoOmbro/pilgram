@@ -159,6 +159,7 @@ class Strings:
         "hp_bonus": "HP bonus",
         "damage": "Damage x level",
         "resistance": "Resist x level",
+        "discovery_bonus": "Item discovery bonus"
     }
 
     # items
@@ -177,7 +178,7 @@ class Strings:
         "Eldritch"
     )
     weapon_modifiers: Dict[str, Tuple[str, ...]] = {
-        "slash": ("Sharp", "-Slashing"),
+        "slash": ("Sharp", "-Slashing", "Barbed"),
         "pierce": ("Piercing", "-Thrusting"),
         "blunt": ("Heavy", "-Crushing", "Devastating"),
         "occult": ("Occult", "Eldritch", "Hexed", "Runic"),
@@ -187,10 +188,10 @@ class Strings:
         "electric": ("Lightning", "-Thunder")
     }
     armor_modifiers: Dict[str, Tuple[str, ...]] = {
-        "slash": ("Plated", "-the Bulwark"),
-        "pierce": ("Reinforced", "-the Cataphract"),
-        "blunt": ("Heavy", "Stable", "Well-built"),
-        "occult": ("Occult", "Eldritch", "Hexed", "Runic"),
+        "slash": ("Plated", "-the Bulwark", "Meshed"),
+        "pierce": ("Reinforced", "-the Cataphract", "Thick"),
+        "blunt": ("Heavy", "Stable", "Well-built", "Sturdy"),
+        "occult": ("Occult", "Eldritch", "Warded", "Runic"),
         "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
         "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant"),
         "freeze": ("Insulated", "Warm", "-the North", "Fur-lined"),
@@ -206,8 +207,9 @@ class Strings:
     ]
     no_items_yet = "You don't have any items yet"
     invalid_item = "Invalid item."
-    item_sold = f"You sold '{{item}}' for {{money}} {MONEY}."
+    item_sold = f"You sold '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
+    cannot_sell_equipped_item = "You can't sell an equipped item!"
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

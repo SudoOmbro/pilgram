@@ -1,11 +1,11 @@
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
     AutoField, FloatField, FixedCharField
 
 
-DB_FILENAME: str = "pilgram_v6.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v5.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -23,9 +23,6 @@ class ZoneModel(BaseModel):
     name = CharField()
     level = IntegerField()
     description = CharField()
-    damage_json = CharField(null=False, default="{}")
-    resist_json = CharField(null=False, default="{}")
-    extra_data_json = CharField(null=False, default="{}")
 
 
 class QuestModel(BaseModel):
@@ -59,7 +56,6 @@ class PlayerModel(BaseModel):
     equipped_items = CharField(null=False, default="")  # equipped items are stored as char string, 32 + 8 bits per item (only store the id of the item & where the item is equipped)
     stance = FixedCharField(max_length=1, default="b")  # stance saved as a char
     completed_quests = IntegerField(default=0)
-    last_guild_switch = DateTimeField(default=datetime.now() - timedelta(days=1))
 
 
 class GuildModel(BaseModel):

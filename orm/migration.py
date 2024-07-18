@@ -1,6 +1,6 @@
 import logging
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import sleep
 from typing import Dict, Callable
 
@@ -142,3 +142,21 @@ def __migrate_v4_to_v5():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v4.db", "pilgram_v5.db")
+
+
+@__add_to_migration_list("pilgram_v5.db")
+def __migrate_v5_to_v6():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v5 import db as previous_db
+    log.info(f"Migrating v5 to v6...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('zonemodel', 'damage_json', CharField(null=False, default="{}")),
+        migrator.add_column('zonemodel', 'resist_json', CharField(null=False, default="{}")),
+        migrator.add_column('zonemodel', 'extra_data_json', CharField(null=False, default="{}")),
+        migrator.add_column('playermodel', 'last_guild_switch', DateTimeField(default=datetime.now() - timedelta(days=1)))
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v5.db", "pilgram_v6.db")

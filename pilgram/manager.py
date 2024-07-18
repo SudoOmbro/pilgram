@@ -8,10 +8,11 @@ from datetime import timedelta, datetime
 from typing import List, Dict, Tuple
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult
+from pilgram.equipment import Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
-from pilgram.utils import generate_random_eldritch_name, read_json_file, save_json_to_file
+from pilgram.utils import generate_random_eldritch_name
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -156,6 +157,14 @@ class QuestManager:
         elif player.player_id in QTE_CACHE:
             del QTE_CACHE[player.player_id]
             text = Strings.qte_failed + "\n\n" + text
+        elif random.randint(1, 10) <= (1 + player.cult.discovery_bonus):  # 10% base change of finding an item
+            items = self.db().get_player_items(player.player_id)
+            if len(items) < player.get_inventory_size():
+                item = Equipment.generate(player.level, EquipmentType.get_random(), random.randint(0, 3))
+                log.info(f"Player '{player.name}' found item: '{item.name}'.")
+                items.append(item)
+                self.db().add_item(item, player)
+                text += f"You found an item:\n*{item.name}*"
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):
@@ -280,7 +289,7 @@ class GeneratorManager:
                             log.error(e)
                     log.info(f"Enemy metas event generation done for zone {zone.zone_id}")
             except Exception as e:
-                log.error(f"Encountered an error while generating events for zone {zone.zone_id}: {e}")
+                log.error(f"Encountered an error while generating events & enemies for zone {zone.zone_id}: {e}")
             finally:
                 sleep(timeout_between_ai_calls)
         if len(zones) > 0:
@@ -347,6 +356,9 @@ class TourneyManager:
             members = self.db().get_guild_members_data(guild)
             for player_id, _, _ in members:
                 player = self.db().get_player_data(player_id)
+                # players that joined the guild less than a day ago will not get tourney rewards
+                if (datetime.now() - player.last_guild_switch) < timedelta(days=1):
+                    continue
                 reward_am = player.add_money(reward)  # am = after modifiers
                 self.db().update_player_data(player)
                 self.notifier.notify(

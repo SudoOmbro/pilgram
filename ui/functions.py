@@ -403,6 +403,7 @@ def join_guild(context: UserContext, guild_name: str) -> str:
         if not guild.can_add_member(members):
             return Strings.guild_is_full
         player.guild = guild
+        player.last_guild_switch = datetime.now()
         db().update_player_data(player)
         context.set_event("guild joined", {"player": player, "guild": guild})
         return Strings.guild_join_success.format(guild=guild_name)
@@ -805,24 +806,27 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
             return Strings.no_items_yet
         if not __item_id_is_valid(item_pos, items):
             return Strings.invalid_item
-        item = items.pop(item_pos - 1)
+        item = items[item_pos - 1]
+        if item in player.equipped_items.values():
+            return Strings.cannot_sell_equipped_item
         money = item.get_value()
         player.add_money(money)
+        items.pop(item_pos - 1)
         db().update_player_data(player)
         db().delete_item(item)
-        return Strings.item_sold(item=item.name, money=money)
+        return Strings.item_sold.format(item=item.name, money=money)
     except KeyError:
         return Strings.no_character_yet
 
 
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
+        "self": IFW(None, check_self, "Shows your own stats."),
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
         "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Shows a description of a Zone."),
         "enemy": IFW([RWE("Enemy id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_enemy, "Shows a description of a Zone."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows the guild with the given name."),
-        "self": IFW(None, check_self, "Shows your own stats."),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
         "artifact": IFW([RWE("Artifact number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Artifact number"))], check_artifact, "Shows a description of an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),

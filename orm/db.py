@@ -181,7 +181,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 equipped_items,
                 pls.hp_percent,
                 pls.stance,
-                pls.completed_quests
+                pls.completed_quests,
+                pls.last_guild_switch
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -221,6 +222,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.hp_percent = player.hp_percent
                 pls.stance = player.stance
                 pls.completed_quests = player.completed_quests
+                pls.last_guild_switch = player.last_guild_switch
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
@@ -765,6 +767,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except EquipmentModel.DoesNotExist:
             raise KeyError(f"Could not find item with id {item_id}")
 
+    @cache_sized_ttl_quick(size_limit=100, ttl=300)
     def get_player_items(self, player_id: int) -> List[Equipment]:
         try:
             its = PlayerModel.get(PlayerModel.id == player_id).items
@@ -796,3 +799,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 damage_seed=item.seed,
                 modifiers=encode_modifiers(item.modifiers)
             )
+
+    @_thread_safe()
+    def delete_item(self, item: Equipment):
+        with db.atomic():
+            EquipmentModel.get(EquipmentModel.id == item.equipment_id).delete_instance()

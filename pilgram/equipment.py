@@ -136,6 +136,11 @@ class Equipment:
             return string
         return string + f"\n\n*Modifiers*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
 
+    def __eq__(self, other):
+        if isinstance(other, Equipment):
+            return self.equipment_id == other.equipment_id
+        return False
+
     @staticmethod
     def generate_name(
             equipment_type: EquipmentType,
