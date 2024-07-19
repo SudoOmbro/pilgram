@@ -951,7 +951,7 @@ class Cult(Listable, meta_name="cults"):
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
         self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
         self.discovery_bonus: int = modifiers.get("discovery_bonus", 0)
-        self.lick_wounds: bool = modifiers.get("discovery_bonus", False)
+        self.lick_wounds: bool = modifiers.get("lick_wounds", False)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:

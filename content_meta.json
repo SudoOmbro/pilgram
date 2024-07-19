@@ -380,18 +380,12 @@
     "description": "Worshippers of Rubedo, these cultists kill for pleasure & gain unnatural strength from drinking the blood of their victims.",
     "modifiers": {
       "can_meet_players": false,
-      "quest_time_multiplier": 2.0,
+      "quest_time_multiplier": 2.5,
       "lick_wounds": true,
       "hp_mult": 1.5,
       "damage": {
-        "slash": 1,
         "pierce": 1,
-        "blunt": 1,
-        "occult": 1,
-        "fire": 1,
-        "acid": 1,
-        "freeze": 1,
-        "electric": 1
+        "occult": 1
       }
     }
   }],
