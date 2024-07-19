@@ -533,7 +533,7 @@
       "slash": 5,
       "pierce": 2
     },
-    "value": 10
+    "value": 15
   }, {
     "id": 13,
     "name": "Horned helmet",
@@ -555,6 +555,71 @@
       "blunt": 3
     },
     "value": 3
+  }, {
+    "id": 15,
+    "name": "Morning star",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "blunt": 3,
+      "pierce": 1
+    },
+    "value": 5
+  }, {
+    "id": 16,
+    "name": "Scythe",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 6,
+    "damage": {
+      "slash": 6
+    },
+    "value": 7
+  }, {
+    "id": 17,
+    "name": "Hand cannon",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 16,
+    "damage": {
+      "blunt": 7,
+      "pierce": 7
+    },
+    "value": 20
+  }, {
+    "id": 18,
+    "name": "Zweihander",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "slash": 10,
+      "pierce": 2
+    },
+    "value": 20
+  }, {
+    "id": 19,
+    "name": "Spiked Club",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 6,
+    "damage": {
+      "blunt": 1,
+      "pierce": 1
+    },
+    "value": 1
+  }, {
+    "id": 20,
+    "name": "Chainmail",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 6,
+    "resist": {
+      "slash": 3,
+      "pierce": 1
+    },
+    "value": 10
   }],
   "consumables": [{
     "id": 0,
