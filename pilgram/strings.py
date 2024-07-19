@@ -179,13 +179,13 @@ class Strings:
     )
     weapon_modifiers: Dict[str, Tuple[str, ...]] = {
         "slash": ("Sharp", "-Slashing", "Barbed"),
-        "pierce": ("Piercing", "-Thrusting"),
+        "pierce": ("Piercing", "-Thrusting", "Pointed"),
         "blunt": ("Heavy", "-Crushing", "Devastating"),
-        "occult": ("Occult", "Eldritch", "Hexed", "Runic"),
-        "fire": ("Flaming", "-flame", "Draconic"),
-        "acid": ("-Acid", "Melting", "Corroded"),
-        "freeze": ("-Ice", "Freezing"),
-        "electric": ("Lightning", "-Thunder")
+        "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones"),
+        "fire": ("Flaming", "-Flame", "Draconic", "-Fire"),
+        "acid": ("-Acid", "Melting", "Corroding", "Oozing"),
+        "freeze": ("-Ice", "Freezing", "Chilling"),
+        "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel")
     }
     armor_modifiers: Dict[str, Tuple[str, ...]] = {
         "slash": ("Plated", "-the Bulwark", "Meshed"),
@@ -194,7 +194,7 @@ class Strings:
         "occult": ("Occult", "Eldritch", "Warded", "Runic"),
         "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
         "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant"),
-        "freeze": ("Insulated", "Warm", "-the North", "Fur-lined"),
+        "freeze": ("Insulated", "Warm", "-the Crags", "Fur-lined"),
         "electric": ("-Thunder", "Grounded", "Rubber-lined")
     }
     slots: List[str] = [
