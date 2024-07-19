@@ -138,7 +138,7 @@ class FuncWithParam:
         self.func = func
         self.param = param
 
-    def __call__(self, arg):
+    def __call__(self, arg) -> Any:
         return self.func(arg, self.param)
 
 

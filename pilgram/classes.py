@@ -8,7 +8,7 @@ from typing import Tuple, Dict, Any, Callable, Union, List, Type
 
 import numpy as np
 
-from pilgram.equipment import ConsumableItem, Equipment
+from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
@@ -453,6 +453,9 @@ class Player(CombatActor):
     def get_inventory_size(self) -> int:
         return 10 + self.home_level * 4
 
+    def get_max_number_of_artifacts(self) -> int:
+        return self.home_level * 2
+
     # combat stats
 
     def get_base_max_hp(self) -> int:
@@ -817,34 +820,60 @@ class QuickTimeEvent(Listable, meta_name="quick time events"):
     def _add_artifact_pieces(player: Player, amount: int):
         player.add_artifact_pieces(amount)
 
+    @staticmethod
+    def _add_item(player: Player, rarity_str: str):
+        if not rarity_str:
+            rarity = random.randint(0, 3)
+        else:
+            rarity = {
+                f"({Strings.rarities[0]})": 0,
+                f"({Strings.rarities[1]})": 1,
+                f"({Strings.rarities[2]})": 2,
+                f"({Strings.rarities[3]})": 3
+            }.get(rarity_str, 0)
+        return Equipment.generate(player.level, EquipmentType.get_random(), rarity)
+
+    @classmethod
+    def __get_rewards_from_string(cls, reward_string: str) -> List[FuncWithParam]:
+        split_reward_str = reward_string.split(", ")
+        funcs_list: List[FuncWithParam] = []
+        for reward_func_components in split_reward_str:
+            components = reward_func_components.split(" ")
+            if components[0] == "xp":
+                funcs_list.append(FuncWithParam(cls._add_xp, int(components[1])))
+            elif components[0] == "mn":
+                funcs_list.append(FuncWithParam(cls._add_money, int(components[1])))
+            elif components[0] == "ap":
+                funcs_list.append(FuncWithParam(cls._add_artifact_pieces, int(components[1])))
+            elif components[0] == "item":
+                funcs_list.append(FuncWithParam(cls._add_item, components[1]))
+        return funcs_list
+
     @classmethod
     def create_from_json(cls, qte_json: Dict[str, str]) -> "QuickTimeEvent":
-        # generate options
+        # get object
+        choices = qte_json.get("choices")
+        # init empty lists
         options: List[Tuple[str, int]] = []
-        split_options: List[str] = qte_json.get("options").split(" | ")
-        for option in split_options:
-            components = option.split(" ")
-            options.append((components[0].replace("_", " "), int(components[1])))
-        # generate rewards
+        successes: List[str] = []
+        failures: List[str] = []
         rewards: List[List[Callable[[Player], None]]] = []
-        split_rewards: List[str] = qte_json.get("rewards").split(" | ")
-        for reward_str in split_rewards:
-            split_reward_str = reward_str.split(", ")
-            funcs_list: List[Callable[[Player], None]] = []
-            for reward_func_components in split_reward_str:
-                components = reward_func_components.split(" ")
-                if components[0] == "xp":
-                    funcs_list.append(FuncWithParam(cls._add_xp, int(components[1])))
-                elif components[0] == "mn":
-                    funcs_list.append(FuncWithParam(cls._add_money, int(components[1])))
-                elif components[0] == "ap":
-                    funcs_list.append(FuncWithParam(cls._add_artifact_pieces, int(components[1])))
-            rewards.append(funcs_list)
-        # return complete object
+        for choice in choices:
+            # get params
+            option = choice.get("option")
+            chance = choice.get("chance")
+            rewards_str = choice.get("rewards")
+            success = choice.get("success") + "\n\nYou gain " + rewards_str.replace("xp", "XP:").replace("mn", "MN:").replace("ap", "Artifact pieces:").replace("item", "an item")
+            failure = choice.get("failure")
+            # add params to struct
+            options.append((option, chance))
+            successes.append(success)
+            failures.append(failure)
+            rewards.append(cls.__get_rewards_from_string(rewards_str))
         return cls(
             qte_json.get("description"),
-            qte_json.get("successes").split(" | "),
-            qte_json.get("failures").split(" | "),
+            successes,
+            failures,
             options,
             rewards
         )

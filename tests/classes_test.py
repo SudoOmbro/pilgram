@@ -55,19 +55,9 @@ class TestClasses(unittest.TestCase):
         print(rewards_normal)
         self.assertTrue(rewards_normal[0] > rewards_under_leveled[0])
 
-    def test_quick_time_events(self):
-        qte = QuickTimeEvent(
-            "TEST D",
-            ["s1", "s2"],
-            ["f1", "f2"],
-            [("test1", 100), ("test2", 50)],
-            [[lambda player: player.add_money(100), lambda player: player.add_xp(50)], [lambda player: player.add_xp(500)]]
-        )
-        qte1 = QuickTimeEvent.LIST[0]
-        print(qte1.options)
-        print(qte1.rewards)
-        print(qte1.successes)
-        print(qte1.failures)
+    def test_print_quick_time_events(self):
+        for qte in QuickTimeEvent.LIST:
+            print(qte)
 
     def test_print_modifiers(self):
         print_all_modifiers()

@@ -140,22 +140,82 @@
   },
   "quick time events": [{
     "description": "You find a locked chest.",
-    "options": "smash_it_open 90 | lockpick_it 50 | kick_it_open 20",
-    "successes": "The chest lays at your feet, destroyed, some it's contents still intact.\n\nYou gain 20 xp & 20 BA | You manage to lockpick the chest, preserving it's contents.\n\nYou gain 100 xp & 100 BA | miraculously the chest opens with a single kick. You feel very good about yourself.\n\nYou gain 1000 xp & 100 BA.",
-    "failures": "You completely destroyed the chest & it's contents. | You fail in your lock picking attempt. The chest remains closed | The kick does nothing. Your foot hurts.",
-    "rewards": "xp 20, mn 20 | xp 100, mn 100 | xp 1000, mn 100"
-  }, {
-    "description": "You stumble upon a strong-looking sleeping monster holding a valuable artifact.",
-    "options": "leave 90 | assassinate_the_monster 60 | try_to_sneakily_steal_the_artifact 10",
-    "successes": "You leave the monster be, better safe than sorry.\n\nYou gain 20 xp. | You manage to kill the monster but the artifact is destroyed in the process.\n\nYou gain 100 xp & 100 BA. | You manage to retrieve the artifact.\n\nYou gain 1 artifact piece.",
-    "failures": "The monster wakes up an chases you off. | The monster wakes up an fights back, forcing you to flee | The monster wakes up and roars, forcing you to flee.",
-    "rewards": "xp 20 | xp 100, mn 100 | xp 1000, ap 1"
+    "choices": [{
+      "option": "Smash it open",
+      "chance": 90,
+      "success": "The chest lays at your feet, destroyed, some it's contents still intact.",
+      "failure": "You completely destroyed the chest & it's contents.",
+      "rewards": "xp 20, mn 20"
+    }, {
+      "option": "Lockpick it",
+      "chance": 50,
+      "success": "You manage to lockpick the chest, preserving it's contents.",
+      "failure": "You fail in your lock picking attempt. The chest remains closed.",
+      "rewards": "xp 100, mn 100"
+    }, {
+      "option": "Kick it open",
+      "chance": 10,
+      "success": "miraculously the chest opens with a single kick. You feel very good about yourself.",
+      "failure": "The kick does nothing. Your foot hurts.",
+      "rewards": "xp 1000, mn 100"
+    }]
   }, {
     "description": "You hear faint crying coming from a room nearby.",
-    "options": "leave 95 | investigate 50",
-    "successes": "You leave, you don't want to get involved.\n\nYou gain 10 xp. | It turns out the crying was a tied up woman. You untie her and she rewards you with some Alloy.\n\nYou gain 100 xp & 50 BA.",
-    "failures": "As soon as you start to leave, the crying stops. You turn around and you see empty eye sockets stalking you. You run. | It turns out the crying was just an hallucination.",
-    "rewards": "xp 10 | xp 100, mn 50"
+    "choices": [{
+      "option": "Smash it open",
+      "chance": 95,
+      "success": "You leave, you don't want to get involved.",
+      "failure": "As soon as you start to leave, the crying stops. You turn around and you see empty eye sockets stalking you. You run.",
+      "rewards": "xp 10"
+    }, {
+      "option": "Lockpick it",
+      "chance": 50,
+      "success": "It turns out the crying was a tied up woman. You untie her and she rewards you with some Alloy.",
+      "failure": "It turns out the crying was just an hallucination.",
+      "rewards": "xp 100, mn 50"
+    }]
+  }, {
+    "description": "You spot a piece of an artifact at the bottom of a well.",
+    "choices": [{
+      "option": "Throw a rock at it",
+      "chance": 90,
+      "success": "The rock hits the piece, shattering it in the process. You don't know why you did that but you are satisfied with your shot.",
+      "failure": "You miss your shot. You leave, defeated.",
+      "rewards": "xp 20"
+    }, {
+      "option": "Descend with the help of a rope",
+      "chance": 50,
+      "success": "You manage to get to the bottom without falling.",
+      "failure": "As soon as you pull on the rope to test it it snaps. You leave, exhaling a sigh of sadness.",
+      "rewards": "xp 100, ap 1"
+    }]
+  }, {
+    "description": "You stumble upon a man wearing a yellow robe. He does not have facial features.",
+    "choices": [{
+      "option": "RUN",
+      "chance": 50,
+      "success": "You manage to slip away, undetected.",
+      "failure": "You feel His presence growing in your mind. Madness overwhelms you.",
+      "rewards": "xp 666"
+    }, {
+      "option": "RUN",
+      "chance": 50,
+      "success": "You manage to hide from him inside a nearby horse carcass.",
+      "failure": "You feel His presence growing in your chest. The growing heat of Chaos overwhelms you.",
+      "rewards": "xp 666"
+    }, {
+      "option": "RUN",
+      "chance": 50,
+      "success": "You start running, He ignores you.",
+      "failure": "You feel his presence growing limbs. The pain overwhelms you.",
+      "rewards": "xp 666"
+    }, {
+      "option": "KILL",
+      "chance": 1,
+      "success": "Against all your instincts you lunge at Him, landing a \"fatal\" blow. He vanishes, leaving behind some treasure.",
+      "failure": "You are paralyzed by terror.",
+      "rewards": "xp 10000, item (Eldritch)"
+    }]
   }],
   "cults": [{
     "id": 0,
@@ -504,6 +564,52 @@
     "value": 1,
     "effects": {
       "hp_restored": 1
+    }
+  }, {
+    "id": 1,
+    "name": "Rags",
+    "description": "A bundle of clean-ish rags to stop the bleeding with.",
+    "verb": "applied",
+    "value": 10,
+    "effects": {
+      "hp_restored": 10
+    }
+  }, {
+    "id": 2,
+    "name": "Bandage",
+    "description": "A sterilized bandage meant to be applied to wounds.",
+    "verb": "applied",
+    "value": 100,
+    "effects": {
+      "hp_restored": 40
+    }
+  }, {
+    "id": 3,
+    "name": "First Aid Kit",
+    "description": "A sterilized set of surgical tools & bandages to treat any serious injury.",
+    "verb": "applied",
+    "value": 400,
+    "effects": {
+      "hp_restored": 80
+    }
+  }, {
+    "id": 4,
+    "name": "Strange concoction",
+    "description": "A foul smelling concoction that glows orange.",
+    "verb": "drank",
+    "value": 1000,
+    "effects": {
+      "revive": true,
+      "hp_percent_restored": 10
+    }
+  }, {
+    "id": 5,
+    "name": "Mutated meat",
+    "description": "Pulsating meat that was harvested from something (or someone) mutated by eldritch forces.",
+    "verb": "consumed",
+    "value": 1000,
+    "effects": {
+      "hp_percent_restored": 50
     }
   }]
 }
