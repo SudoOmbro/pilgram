@@ -87,11 +87,11 @@ def decode_equipped_items_ids(data: Union[str]) -> List[int]:
     return equipment_list
 
 
-def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> bytes:
+def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> str:
     packed_array = np.empty(len(list(equipped_items.keys())), np.uint32)
     for i, equipment in enumerate(equipped_items.values()):
         packed_array[i] = equipment.equipment_id
-    return packed_array.tobytes()
+    return packed_array.tobytes().decode(encoding=ENCODING)
 
 
 def decode_modifiers(data: Union[str, None]) -> List[Modifier]:
