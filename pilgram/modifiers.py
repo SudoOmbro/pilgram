@@ -329,6 +329,7 @@ class EldritchShield(Modifier, rarity=Rarity.RARE):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.timed_modifiers.append(self.TankHits(0, duration=self.strength))
+        return 0
 
 
 class Vampiric(Modifier, rarity=Rarity.LEGENDARY):
@@ -368,6 +369,22 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.timed_modifiers.append(self.FreeRevive(1, duration=self.strength))
+        return 0
+
+
+class BloodThirst(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.COMBAT_START
+
+    MAX_STRENGTH = 20
+    SCALING = 5
+
+    NAME = "Blood Thirst"
+    DESCRIPTION = "Gain {str} HP at the start of combat."
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        entity.modify_hp(self.strength)
+        return 0
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
