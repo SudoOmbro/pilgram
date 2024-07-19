@@ -181,7 +181,7 @@ class Strings:
         "slash": ("Sharp", "-Slashing", "Barbed"),
         "pierce": ("Piercing", "-Thrusting", "Pointed"),
         "blunt": ("Heavy", "-Crushing", "Devastating"),
-        "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones"),
+        "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones", "Heretical"),
         "fire": ("Flaming", "-Flame", "Draconic", "-Fire"),
         "acid": ("-Acid", "Melting", "Corroding", "Oozing"),
         "freeze": ("-Ice", "Freezing", "Chilling"),
@@ -229,6 +229,9 @@ class Strings:
         "s": ("Safe", "Be defensive, try to keep your hp high")
     }
     stance_switch = "Stance switched to "
+
+    # artifacts
+    max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."
 
     # errors
     no_character_yet = "You haven't made a character yet!"

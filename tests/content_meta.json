@@ -27,6 +27,9 @@
     "base_xp_reward": 950,
     "base_money_reward": 760
   },
+  "artifacts": {
+    "required_pieces": 8
+  },
   "minigames": {
     "hands": {
       "min_buy_in": 5,
@@ -193,7 +196,7 @@
     "description": "You stumble upon a man wearing a yellow robe. He does not have facial features.",
     "choices": [{
       "option": "RUN",
-      "chance": 51,
+      "chance": 50,
       "success": "You manage to slip away, undetected.",
       "failure": "You feel His presence growing in your mind. Madness overwhelms you.",
       "rewards": "xp 666"
@@ -205,7 +208,7 @@
       "rewards": "xp 666"
     }, {
       "option": "RUN",
-      "chance": 49,
+      "chance": 50,
       "success": "You start running, He ignores you.",
       "failure": "You feel his presence growing limbs. The pain overwhelms you.",
       "rewards": "xp 666"
@@ -533,7 +536,7 @@
       "slash": 5,
       "pierce": 2
     },
-    "value": 10
+    "value": 15
   }, {
     "id": 13,
     "name": "Horned helmet",
@@ -555,6 +558,71 @@
       "blunt": 3
     },
     "value": 3
+  }, {
+    "id": 15,
+    "name": "Morning star",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "blunt": 3,
+      "pierce": 1
+    },
+    "value": 5
+  }, {
+    "id": 16,
+    "name": "Scythe",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 6,
+    "damage": {
+      "slash": 6
+    },
+    "value": 7
+  }, {
+    "id": 17,
+    "name": "Hand cannon",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 16,
+    "damage": {
+      "blunt": 7,
+      "pierce": 7
+    },
+    "value": 20
+  }, {
+    "id": 18,
+    "name": "Zweihander",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "slash": 10,
+      "pierce": 2
+    },
+    "value": 20
+  }, {
+    "id": 19,
+    "name": "Spiked Club",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 6,
+    "damage": {
+      "blunt": 1,
+      "pierce": 1
+    },
+    "value": 1
+  }, {
+    "id": 20,
+    "name": "Chainmail",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 6,
+    "resist": {
+      "slash": 3,
+      "pierce": 1
+    },
+    "value": 10
   }],
   "consumables": [{
     "id": 0,

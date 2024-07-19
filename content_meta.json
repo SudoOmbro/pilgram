@@ -27,6 +27,9 @@
     "base_xp_reward": 950,
     "base_money_reward": 760
   },
+  "artifacts": {
+    "required_pieces": 8
+  },
   "minigames": {
     "hands": {
       "min_buy_in": 5,
@@ -620,6 +623,48 @@
       "pierce": 1
     },
     "value": 10
+  }, {
+    "id": 21,
+    "name": "Lorica segmentata",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 7,
+    "resist": {
+      "slash": 4,
+      "pierce": 1
+    },
+    "value": 12
+  }, {
+    "id": 22,
+    "name": "Fetish",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "occult": 2
+    },
+    "value": 10
+  }, {
+    "id": 23,
+    "name": "Sorcery staff",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 8,
+    "resist": {
+      "blunt": 1,
+      "occult": 4
+    },
+    "value": 15
+  }, {
+    "id": 24,
+    "name": "Robe",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 6,
+    "resist": {
+      "occult": 2
+    },
+    "value": 4
   }],
   "consumables": [{
     "id": 0,

@@ -405,7 +405,7 @@ class Blessed(Modifier, rarity=Rarity.UNCOMMON):
 
     def function(self, context: ModifierContext) -> Any:
         value = context.get("value")
-        return value + int(value * (1 + self.get_fstrength()))
+        return int(value * (1 + self.get_fstrength()))
 
 
 class Bashing(Modifier, rarity=Rarity.LEGENDARY):
@@ -424,6 +424,7 @@ class Bashing(Modifier, rarity=Rarity.LEGENDARY):
             secondary = attacker.equipped_items.get(equipment.Slots.SECONDARY)
             if not secondary.equipment_type.is_weapon:
                 return damage.scale(1 + (self.get_fstrength()))
+        return damage
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end

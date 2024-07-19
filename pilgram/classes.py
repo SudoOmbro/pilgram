@@ -511,13 +511,13 @@ class Player(CombatActor):
         max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
-        string += f"Base HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
+        string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
         string += f"Stance: {Strings.stances[self.stance][0]}\nCult: {self.cult.name}\n_Renown: {self.renown}_"
-        if self.get_max_charge() > 0:
+        if (self.get_max_charge() > 0) or (len(self.artifacts) > 0):
             string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()}\nArtifact pieces: {self.artifact_pieces}_"
-            string += f"\n\nArtifacts:\n" + ("\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)) if len(
+            string += f"\n\nArtifacts ({len(self.artifacts)}/{self.get_max_number_of_artifacts()}):\n" + ("\n".join(f"{a.artifact_id}. *{a.name}*" for a in self.artifacts)) if len(
                 self.artifacts) > 0 else "\n\nNo artifacts yet."
         else:
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"

@@ -25,6 +25,7 @@ log.setLevel(logging.INFO)
 BBB = AAA
 MODIFY_COST = ContentMeta.get("modify_cost")
 MAX_TAX = ContentMeta.get("guilds.max_tax")
+REQUIRED_PIECES = ContentMeta.get("artifacts.required_pieces")
 
 
 def db() -> PilgramDatabase:
@@ -603,11 +604,13 @@ def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, 
 def assemble_artifact(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if player.artifact_pieces < 10:
-            return Strings.not_enough_pieces.format(amount=10 - player.artifact_pieces)
+        if len(player.artifacts) >= player.get_max_number_of_artifacts():
+            return Strings.max_number_of_artifacts_reached.format(num=len(player.artifacts))
+        if player.artifact_pieces < REQUIRED_PIECES:
+            return Strings.not_enough_pieces.format(amount=REQUIRED_PIECES - player.artifact_pieces)
         try:
             artifact = db().get_unclaimed_artifact()
-            player.artifact_pieces -= 10
+            player.artifact_pieces -= REQUIRED_PIECES
             player.artifacts.append(artifact)
             db().update_artifact(artifact, player)
             db().update_player_data(player)
@@ -866,7 +869,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "guild": IFW(None, send_message_to_owned_guild, "Send message to every member of your owned guild.")
     },
     "assemble": {
-        "artifact": IFW(None, assemble_artifact, "Assemble an artifact using 10 artifact pieces")
+        "artifact": IFW(None, assemble_artifact, f"Assemble an artifact using {REQUIRED_PIECES} artifact pieces")
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
     "equip": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], equip_item, "Equip an item from your inventory"),
