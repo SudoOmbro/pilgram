@@ -13,7 +13,7 @@ from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFl
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
-from pilgram.combat_classes import CombatActor, Modifier, Damage
+from pilgram.combat_classes import CombatActor, Modifier, Damage, CombatActions
 from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file, print_bonus
 from pilgram.strings import MONEY, Strings
 
@@ -333,6 +333,12 @@ class Player(CombatActor):
         self.completed_quests = completed_quests
         self.last_guild_switch = last_guild_switch
 
+    def get_name(self) -> str:
+        return self.name
+
+    def get_level(self) -> int:
+        return self.level
+
     def get_required_xp(self) -> int:
         lv = self.level
         value = (100 * (lv * lv)) + (1000 * lv)
@@ -483,7 +489,7 @@ class Player(CombatActor):
         if self.hp > max_hp:
             self.hp = max_hp
 
-    def use_consumable(self, position_in_satchel: int) -> str:
+    def use_consumable(self, position_in_satchel: int, add_you: bool = True) -> str:
         if position_in_satchel > len(self.satchel):
             return Strings.satchel_position_out_of_range.format(num=len(self.satchel))
         if position_in_satchel > 0:
@@ -500,10 +506,32 @@ class Player(CombatActor):
         else:
             self.hp_percent = 1.0
         self.flags = item.buff_flag.set(self.flags)
-        return Strings.used_item.format(verb=item.verb, item=item.name)
+        text = Strings.used_item.format(verb=item.verb, item=item.name)
+        if add_you:
+            return "You " + text
+        return text
+
+    def use_random_consumable(self, add_you: bool = True) -> str:
+        pos = random.randint(0, len(self.satchel) - 1)
+        return self.use_consumable(pos, add_you=add_you)
 
     def equip_item(self, item: Equipment):
         self.equipped_items[item.equipment_type.slot] = item
+
+    def get_stance(self):
+        return self.stance
+
+    STANCE_POOL = {
+        "b": (CombatActions.attack, CombatActions.attack, CombatActions.dodge, CombatActions.dodge, CombatActions.parry, CombatActions.use_consumable),
+        "s": (CombatActions.attack, CombatActions.dodge, CombatActions.dodge, CombatActions.parry, CombatActions.use_consumable),
+        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.parry, CombatActions.dodge)
+    }
+
+    def choose_action(self, opponent: "CombatActor") -> int:
+        selected_pool = self.STANCE_POOL.get(self.stance, (CombatActions.attack, CombatActions.dodge))
+        if self.cult.lick_wounds:
+            selected_pool += (CombatActions.lick_wounds, )
+        return random.choice(selected_pool)
 
     # utility
 
@@ -922,7 +950,8 @@ class Cult(Listable, meta_name="cults"):
         self.hp_bonus = modifiers.get("hp_bonus", 0)
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
         self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
-        self.discovery_bonus = modifiers.get("discovery_bonus", 0)
+        self.discovery_bonus: int = modifiers.get("discovery_bonus", 0)
+        self.lick_wounds: bool = modifiers.get("discovery_bonus", False)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:
@@ -1047,10 +1076,41 @@ class EnemyMeta:
 class Enemy(CombatActor):
     """ the actual enemy object """
 
-    def __init__(self, meta: EnemyMeta, modifiers: List[Modifier]):
+    def __init__(self, meta: EnemyMeta, modifiers: List[Modifier], hp_modifier: int):
         self.meta = meta
         self.modifiers = modifiers
+        self.hp_modifier = hp_modifier + random.randint(-2, 4)
+        self.delay = meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
+        self.stance = self.meta.zone.extra_data.get("stance", "r")
         super().__init__(self.get_max_hp())
 
+    def get_name(self) -> str:
+        return "the " + self.meta.name
+
+    def get_level(self) -> int:
+        return self.meta.zone.level
+
     def get_base_max_hp(self) -> int:
-        return 8 * self.meta.zone.level
+        return (20 + self.hp_modifier) * self.meta.zone.level
+
+    def get_base_attack_damage(self) -> Damage:
+        return self.meta.zone.damage_modifiers
+
+    def get_base_attack_resistance(self) -> Damage:
+        return self.meta.zone.resist_modifiers
+
+    def get_entity_modifiers(self, *type_filters: int) -> List["Modifier"]:
+        result = []
+        for modifier in self.modifiers:
+            if modifier.TYPE in type_filters:
+                result.append(modifier)
+        return result
+
+    def get_delay(self) -> int:
+        return self.delay
+
+    def get_stance(self):
+        return self.stance
+
+    def choose_action(self, opponent: "CombatActor") -> int:
+        return random.choice((CombatActions.attack, CombatActions.dodge, CombatActions.lick_wounds))

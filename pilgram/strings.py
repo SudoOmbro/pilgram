@@ -159,7 +159,8 @@ class Strings:
         "hp_bonus": "HP bonus",
         "damage": "Damage x level",
         "resistance": "Resist x level",
-        "discovery_bonus": "Item discovery bonus"
+        "discovery_bonus": "Item discovery bonus",
+        "lick_wounds": "Animal instincts"
     }
 
     # items
@@ -170,7 +171,7 @@ class Strings:
         "buffs": "Damage buffs (2x)"
     }
     satchel_position_out_of_range = "The given satchel position is not valid, you have {num} items in your satchel."
-    used_item = "You {verb} the {item}"
+    used_item = "{verb} the {item}"
     rarities = (
         "Common",
         "Odd",

@@ -381,6 +381,7 @@
     "modifiers": {
       "can_meet_players": false,
       "quest_time_multiplier": 2.0,
+      "lick_wounds": true,
       "hp_mult": 1.5,
       "damage": {
         "slash": 1,

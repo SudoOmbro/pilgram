@@ -108,6 +108,13 @@ class Modifier(ABC):
             return None
         return self.function(context)
 
+    @staticmethod
+    def write_to_log(context: ModifierContext, text: str) -> Any:
+        combat_container: Union[cc.CombatContainer, None] = context.get("context", None)
+        if combat_container is None:
+            return
+        combat_container.write_to_log(text)
+
     def __str__(self):
         return f"*{self.NAME}* - {Strings.rarities[self.RARITY]}\n_{self.DESCRIPTION.format(str=self.strength)}_"
 
@@ -217,9 +224,10 @@ class FirstHitBonus(Modifier, rarity=Rarity.UNCOMMON):
     DESCRIPTION = "Deal {str} bonus damage of each type if the target is at full health"
 
     def function(self, context: ModifierContext) -> Any:
-        target: cc.CombatActor = context.get("other")
+        target: cc.CombatActor = context.get("target")
         damage = context.get("damage")
         if target.hp_percent >= 1.0:
+            self.write_to_log(context, f"Sneak attack! +{self.strength} damage")
             return damage.apply_bonus(self.strength)
         return damage
 
@@ -239,6 +247,7 @@ class KillAtPercentHealth(Modifier, rarity=Rarity.UNCOMMON):
             # doing this will instantly kill the entity since the minimum damage an attack can do is 1
             target.hp = 0
             target.hp_percent = 0.0
+            self.write_to_log(context, f"{target.get_name()} is executed!")
         return context.get("damage")
 
 
@@ -289,7 +298,9 @@ class LuckyHit(Modifier, rarity=Rarity.UNCOMMON):
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
         if attacker.roll(10) > 8:
-            return damage.scale(self.get_fstrength())
+            scale = self.get_fstrength()
+            self.write_to_log(context, f"Lucky Hit!")
+            return damage.scale(scale)
         return damage
 
 
@@ -306,11 +317,11 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
         TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            target: cc.CombatActor = context.get("target")
+            target: cc.CombatActor = context.get("supplier")
             target.modify_hp(-self.strength)
 
     def function(self, context: ModifierContext) -> Any:
-        target: cc.CombatActor = context.get("target")
+        target: cc.CombatActor = context.get("other")
         target.timed_modifiers.append(self.PoisonProc(self.strength, self.strength * 2))
         return context.get("damage")
 
@@ -325,11 +336,15 @@ class EldritchShield(Modifier, rarity=Rarity.RARE):
     DESCRIPTION = "Any hits will only do 1 damage for the first {str} attacks received."
 
     class TankHits(Modifier):
-        TYPE = ModifierType.POST_DEFEND
+        TYPE = ModifierType.DEFEND
 
         def function(self, context: ModifierContext) -> Any:
             damage = context.get("damage")
+            entity = context.get("supplier")
             if damage.get_total_damage() > 1:
+                self.write_to_log(context, f"{entity.get_name()}'s shield nullifies the hit.")
+                if self.duration == 0:
+                    self.write_to_log(context, f"{entity.get_name()}'s shield breaks!")
                 return cc.Damage.get_empty()
             else:
                 self.duration += 1
@@ -337,6 +352,7 @@ class EldritchShield(Modifier, rarity=Rarity.RARE):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.timed_modifiers.append(self.TankHits(0, duration=self.strength))
+        self.write_to_log(context, f"An Eldritch Shield forms around {entity.get_name()}")
         return 0
 
 
@@ -352,7 +368,9 @@ class Vampiric(Modifier, rarity=Rarity.LEGENDARY):
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
-        attacker.modify_hp(int(damage.get_total_damage() * self.get_fstrength()))
+        healing = int(damage.get_total_damage() * self.get_fstrength())
+        attacker.modify_hp(healing)
+        self.write_to_log(context, f"{attacker.get_name()} leeches {healing} HP.")
         return damage
 
 
@@ -369,9 +387,10 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
         TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            target: cc.CombatActor = context.get("target")
-            if target.hp == 0:
-                target.modify_hp(int(target.get_max_hp() / 50))
+            me: cc.CombatActor = context.get("supplier")
+            if me.hp == 0:
+                self.write_to_log(context, f"Thanks to their Unyielding Will {me.get_name()} still stands.")
+                me.modify_hp(int(me.get_max_hp() / 50))
             else:
                 self.duration += 1  # if the bonus was not used then restore duration
 
@@ -392,6 +411,7 @@ class BloodThirst(Modifier, rarity=Rarity.RARE):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.modify_hp(self.strength)
+        self.write_to_log(context, f"{entity.get_name()}'s blood thirst heals them for {entity.hp} HP.")
 
 
 class Blessed(Modifier, rarity=Rarity.UNCOMMON):
