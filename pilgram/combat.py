@@ -10,7 +10,16 @@ class CombatContainer:
         self.participants = participants
         self.helpers = helpers
 
-    def choose_what_to_do(self):
+    def _cleanup_after_combat(self):
+        """ remove all timed modifiers from combat participants """
+        for participant in self.participants:
+            participant.timed_modifiers.clear()
+
+    def start_combat(self):
+        for participant in self.participants:
+            mo
+
+    def choose_what_to_do(self, actor: CombatActor):
         pass
 
     def fight(self) -> str:
@@ -22,4 +31,5 @@ class CombatContainer:
             actors = self.participants
             for actor in actors:
                 pass
+        self._cleanup_after_combat()
         return fight_log

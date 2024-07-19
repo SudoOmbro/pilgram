@@ -3,6 +3,7 @@ from abc import ABC
 
 import pilgram.combat_classes as cc
 import pilgram.classes as classes
+import pilgram.equipment as equipment
 
 from typing import Any, Dict, Type, List, Union
 
@@ -16,6 +17,7 @@ class ModifierType:
     POST_ATTACK = 3
     POST_DEFEND = 4
     REWARDS = 5
+    MODIFY_MAX_HP = 6
 
 
 class Rarity:
@@ -89,6 +91,10 @@ class Modifier(ABC):
             cls.RARITY = rarity
             _LIST.append(cls)
             _RARITY_INDEX[rarity].append(cls)
+
+    def get_fstrength(self) -> float:
+        """ returns the strength divided by 100 """
+        return self.strength / 100
 
     def function(self, context: ModifierContext) -> Any:
         """ apply the modifier to the entities in the context, optionally return a value """
@@ -229,7 +235,7 @@ class KillAtPercentHealth(Modifier, rarity=Rarity.UNCOMMON):
 
     def function(self, context: ModifierContext) -> Any:
         target: cc.CombatActor = context.get("other")
-        if target.hp_percent <= (self.strength / 100):
+        if target.hp_percent <= self.get_fstrength():
             # doing this will instantly kill the entity since the minimum damage an attack can do is 1
             target.hp = 0
             target.hp_percent = 0.0
@@ -248,7 +254,7 @@ class Berserk(Modifier, rarity=Rarity.UNCOMMON):
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
-        if attacker.hp_percent <= (self.strength / 100):
+        if attacker.hp_percent <= self.get_fstrength():
             return damage.scale(2.0)
         return damage
 
@@ -265,7 +271,7 @@ class ChaosBrand(Modifier, rarity=Rarity.UNCOMMON):
 
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
-        scaling_factor = 0.8 + (random.random() * (self.strength / 100))
+        scaling_factor = 0.8 + (random.random() * self.get_fstrength())
         return damage.scale(scaling_factor)
 
 
@@ -283,7 +289,8 @@ class LuckyHit(Modifier, rarity=Rarity.UNCOMMON):
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
         if attacker.roll(10) > 8:
-            return damage.scale(self.strength / 100)
+            return damage.scale(self.get_fstrength())
+        return damage
 
 
 class PoisonTipped(Modifier, rarity=Rarity.RARE):
@@ -293,7 +300,7 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
     SCALING = 10
 
     NAME = "Poison Tipped"
-    DESCRIPTION = "Inflicts the target with poison for {str} turns ({str} damage per turn)"
+    DESCRIPTION = "Inflicts the target with poison for {str} turns (2 x {str} damage per turn)"
 
     class PoisonProc(Modifier):
         TYPE = ModifierType.POST_DEFEND
@@ -304,7 +311,8 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
 
     def function(self, context: ModifierContext) -> Any:
         target: cc.CombatActor = context.get("target")
-        target.timed_modifiers.append(self.PoisonProc(self.strength, self.strength))
+        target.timed_modifiers.append(self.PoisonProc(self.strength, self.strength * 2))
+        return context.get("damage")
 
 
 class EldritchShield(Modifier, rarity=Rarity.RARE):
@@ -343,8 +351,9 @@ class Vampiric(Modifier, rarity=Rarity.LEGENDARY):
 
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
-        attacker: cc.CombatActor = context.get("attacker")
-        attacker.modify_hp(int(damage.get_total_damage() * (self.strength / 100)))
+        attacker: cc.CombatActor = context.get("supplier")
+        attacker.modify_hp(int(damage.get_total_damage() * self.get_fstrength()))
+        return damage
 
 
 class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
@@ -369,7 +378,6 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.timed_modifiers.append(self.FreeRevive(1, duration=self.strength))
-        return 0
 
 
 class BloodThirst(Modifier, rarity=Rarity.RARE):
@@ -384,7 +392,38 @@ class BloodThirst(Modifier, rarity=Rarity.RARE):
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         entity.modify_hp(self.strength)
-        return 0
+
+
+class Blessed(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.MODIFY_MAX_HP
+
+    MAX_STRENGTH = 50
+    SCALING = 2
+
+    NAME = "Blessed"
+    DESCRIPTION = "Increases max HP by {str}%."
+
+    def function(self, context: ModifierContext) -> Any:
+        value = context.get("value")
+        return value + int(value * (1 + self.get_fstrength()))
+
+
+class Bashing(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.ATTACK
+
+    MAX_STRENGTH = 50
+    SCALING = 2
+
+    NAME = "Bashing"
+    DESCRIPTION = "Deal {str}% more damage if you are using a shield"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        attacker: cc.CombatActor = context.get("supplier")
+        if isinstance(attacker, classes.Player):
+            secondary = attacker.equipped_items.get(equipment.Slots.SECONDARY)
+            if not secondary.equipment_type.is_weapon:
+                return damage.scale(1 + (self.get_fstrength()))
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end

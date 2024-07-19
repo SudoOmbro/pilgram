@@ -213,9 +213,8 @@ class CombatActor(ABC):
     def get_max_hp(self) -> int:
         """ get max hp of the entity applying all modifiers """
         max_hp = self.get_base_max_hp()
-        for modifier in self.get_entity_modifiers(ModifierType.COMBAT_START):
-            val = modifier.apply(ModifierContext({"entity": self}))
-            max_hp += val if val else 0
+        for modifier in self.get_entity_modifiers(ModifierType.MODIFY_MAX_HP):
+            max_hp = modifier.apply(ModifierContext({"entity": self, "value": max_hp}))
         return int(max_hp)
 
     def attack(self, target: "CombatActor") -> Damage:

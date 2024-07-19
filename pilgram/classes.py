@@ -508,7 +508,7 @@ class Player(CombatActor):
     # utility
 
     def __str__(self):
-        max_hp = self.get_base_max_hp()
+        max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
         string += f"Base HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
