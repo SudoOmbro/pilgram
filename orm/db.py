@@ -1,3 +1,4 @@
+import json
 import logging
 import random
 import threading
@@ -15,7 +16,7 @@ from orm.models import db, PlayerModel, GuildModel, ZoneModel, create_tables, Zo
     QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
     Tourney, EnemyMeta
-from pilgram.combat_classes import Modifier
+from pilgram.combat_classes import Modifier, Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
@@ -107,6 +108,14 @@ def encode_modifiers(modifiers: List[Modifier]) -> str:
         packed_array[i]["id"] = modifier.ID
         packed_array[i]["strength"] = modifier.strength
     return packed_array.tobytes().decode(encoding=ENCODING)
+
+
+def _load_json(json_string: str) -> dict:
+    try:
+        return json.loads(json_string)
+    except json.JSONDecodeError as e:
+        log.error(e)
+        return {}
 
 
 def _thread_safe():
@@ -367,12 +376,15 @@ class PilgramORMDatabase(PilgramDatabase):
     # zones ----
 
     @staticmethod
-    def build_zone_object(zs):
+    def build_zone_object(zs: ZoneModel):
         return Zone(
             zs.id,
             zs.name,
             zs.level,
-            zs.description
+            zs.description,
+            Damage.load_from_json(_load_json(zs.damage_json)),
+            Damage.load_from_json(_load_json(zs.resist_json)),
+            _load_json(zs.extra_data_json)
         )
 
     @cache_ttl_quick(ttl=604800)  # cache lasts a week since I don't ever plan to change zones, but you never know
@@ -400,6 +412,9 @@ class PilgramORMDatabase(PilgramDatabase):
             zs.name = zone.zone_name
             zs.level = zone.level
             zs.description = zone.zone_description
+            zs.damage_json = json.dumps(zone.damage_modifiers.__dict__)
+            zs.resist_jsonn = json.dumps(zone.resist_modifiers.__dict__)
+            zs.extra_data_json = json.dumps(zone.extra_data)
             zs.save()
 
     @_thread_safe()
@@ -408,7 +423,10 @@ class PilgramORMDatabase(PilgramDatabase):
             ZoneModel.create(
                 name=zone.zone_name,
                 level=zone.level,
-                description=zone.zone_description
+                description=zone.zone_description,
+                damage_json=json.dumps(zone.damage_modifiers.__dict__),
+                resist_jsonn=json.dumps(zone.resist_modifiers.__dict__),
+                extra_data_json=json.dumps(zone.extra_data)
             )
 
     # zone events ----

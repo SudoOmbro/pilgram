@@ -149,22 +149,23 @@ class QuestManager:
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
-        if ac.is_on_a_quest() and (random.randint(1, 10) <= (1 + player.cult.qte_frequency_bonus)):  # 10% base chance of a quick time event if player is on a quest
-            log.info(f"Player '{player.name}' encountered a QTE.")
-            qte = random.choice(QuickTimeEvent.LIST)
-            QTE_CACHE[player.player_id] = qte
-            text += f"*QTE*\n\n{qte}"
-        elif player.player_id in QTE_CACHE:
-            del QTE_CACHE[player.player_id]
-            text = Strings.qte_failed + "\n\n" + text
-        elif random.randint(1, 10) <= (1 + player.cult.discovery_bonus):  # 10% base change of finding an item
-            items = self.db().get_player_items(player.player_id)
-            if len(items) < player.get_inventory_size():
-                item = Equipment.generate(player.level, EquipmentType.get_random(), random.randint(0, 3))
-                log.info(f"Player '{player.name}' found item: '{item.name}'.")
-                items.append(item)
-                self.db().add_item(item, player)
-                text += f"You found an item:\n*{item.name}*"
+        if ac.is_on_a_quest():
+            if player.player_id in QTE_CACHE:
+                del QTE_CACHE[player.player_id]
+                text = Strings.qte_failed + "\n\n" + text
+            elif random.randint(1, 10) <= (1 + player.cult.qte_frequency_bonus):  # 10% base chance of a quick time event if player is on a quest
+                # log.info(f"Player '{player.name}' encountered a QTE.")
+                qte = random.choice(QuickTimeEvent.LIST)
+                QTE_CACHE[player.player_id] = qte
+                text += f"*QTE*\n\n{qte}"
+            elif random.randint(1, 10) <= (1 + player.cult.discovery_bonus):  # 10% base change of finding an item
+                items = self.db().get_player_items(player.player_id)
+                if len(items) < player.get_inventory_size():
+                    item = Equipment.generate(player.level, EquipmentType.get_random(), random.randint(0, 3))
+                    # log.info(f"Player '{player.name}' found item: '{item.name}'.")
+                    items.append(item)
+                    self.db().add_item(item, player)
+                    text += f"You found an item:\n*{item.name}*"
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer):

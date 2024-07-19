@@ -32,18 +32,33 @@ QTE_CACHE: Dict[int, "QuickTimeEvent"] = {}  # runtime cache that contains all u
 class Zone:
     """ contains info about a zone. Zone 0 should be the town to reuse the zone event system """
 
-    def __init__(self, zone_id: int, zone_name: str, level: int, zone_description: str):
+    def __init__(
+            self,
+            zone_id: int,
+            zone_name: str,
+            level: int,
+            zone_description: str,
+            damage_modifiers: Damage,
+            resist_modifiers: Damage,
+            extra_data: dict
+    ):
         """
         :param zone_id: zone id
         :param zone_name: zone name
         :param level: zone level, control the minimum level a player is required to be to accept quests in the zone
         :param zone_description: zone description
+        :param damage_modifiers: damage modifiers for enemies in the zone
+        :param resist_modifiers: resist modifiers for enemies in the zone
+        :param extra_data: extra data for the zone, can contain perks & quirks
         """
         assert level > 0
         self.zone_id = zone_id
         self.zone_name = zone_name
         self.level = level
         self.zone_description = zone_description
+        self.damage_modifiers: Damage = damage_modifiers
+        self.resist_modifiers: Damage = resist_modifiers
+        self.extra_data = extra_data
 
     def __eq__(self, other):
         return self.zone_id == other.zone_id
@@ -59,7 +74,15 @@ class Zone:
         return Zone(0, "", 1, "")
 
 
-TOWN_ZONE: Zone = Zone(0, ContentMeta.get("world.city.name"), 1, ContentMeta.get("world.city.description"))
+TOWN_ZONE: Zone = Zone(
+    0,
+    ContentMeta.get("world.city.name"),
+    1,
+    ContentMeta.get("world.city.description"),
+    Damage.get_empty(),
+    Damage.get_empty(),
+    {}
+)
 
 
 class Quest:
