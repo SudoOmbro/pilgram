@@ -1,11 +1,13 @@
+import json
 import re
 from datetime import datetime, timedelta
 from random import randint
-from typing import Dict, Union, Tuple, Callable
+from typing import Dict, Union, Tuple, Callable, Any
 
 from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Zone, Quest, ZoneEvent, Artifact, EnemyMeta
+from pilgram.combat_classes import Damage
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
@@ -135,6 +137,31 @@ class ProcessGetObjIntAttr(ProcessGetObjStrAttr):
             print(obj.__dict__)
         except Exception as e:
             return str(e)
+        return _progress(context)
+
+
+class ProcessGetObjJsonAttr:
+
+    def __init__(self, target_attr: str, convert_into: Any = None):
+        """
+        :param target_attr: the name of the object attribute to set
+        :param convert_into: the class to convert the object to. Must have "load_from_json" method.
+        """
+        self.target_attr = target_attr
+        self.convert_into = convert_into
+
+    def __call__(self, context: UserContext, user_input: str) -> str:
+        if (user_input == "") and (context.get("Ptype") == "edit"):
+            return f"{context.get('type')} {self.target_attr} not edited.\n" + _progress(context)
+        obj = context.get("obj")
+        try:
+            value = json.loads(user_input)
+            if self.convert_into:
+                value = self.convert_into.load_from_json(value)
+            obj.__dict__[self.target_attr] = value
+        except Exception as e:
+            return str(e)
+        print(obj.__dict__)
         return _progress(context)
 
 
@@ -359,6 +386,9 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
         ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
+        ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", Damage)),
+        ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", Damage)),
+        ("Write zone extra data", ProcessGetObjJsonAttr("extra_data", Damage)),
         ("Confirm?", process_obj_add_confirm)
     ),
     "add quest": (
@@ -391,6 +421,9 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
         ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
+        ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", Damage)),
+        ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", Damage)),
+        ("Write zone extra data", ProcessGetObjJsonAttr("extra_data", Damage)),
         ("Confirm?", process_obj_edit_confirm)
     ),
     "edit quest": (

@@ -71,7 +71,7 @@ class Zone:
 
     @classmethod
     def get_empty(cls) -> "Zone":
-        return Zone(0, "", 1, "")
+        return Zone(0, "", 1, "", Damage.get_empty(), Damage.get_empty(), {})
 
 
 TOWN_ZONE: Zone = Zone(
