@@ -16,9 +16,10 @@ from orm.models import db, PlayerModel, GuildModel, ZoneModel, create_tables, Zo
     QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
     Tourney, EnemyMeta
-from pilgram.combat_classes import Modifier, Damage
+from pilgram.combat_classes import Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, AlreadyExists
+from pilgram.modifiers import Modifier
 from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
 from pilgram.modifiers import get_modifier
 
@@ -125,6 +126,10 @@ def _thread_safe():
                 return func(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def _get_daily_seed():
+    return (datetime.now() - datetime(1998, 10, 1)).days
 
 
 class PilgramORMDatabase(PilgramDatabase):
@@ -824,3 +829,13 @@ class PilgramORMDatabase(PilgramDatabase):
     def delete_item(self, item: Equipment):
         with db.atomic():
             EquipmentModel.get(EquipmentModel.id == item.equipment_id).delete_instance()
+
+    # shops ----
+
+    @cache_ttl_single_value(ttl=3600)
+    def get_market_items(self) -> List[ConsumableItem]:
+        return ConsumableItem.get_random_selection(_get_daily_seed(), 10)
+
+    @cache_ttl_single_value(ttl=3600)
+    def get_smithy_items(self) -> List[EquipmentType]:
+        return EquipmentType.get_random_selection(_get_daily_seed(), 10)

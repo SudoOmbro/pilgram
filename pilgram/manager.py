@@ -7,7 +7,8 @@ from time import sleep
 from datetime import timedelta, datetime
 from typing import List, Dict, Tuple
 
-from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult
+from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult, Enemy
+from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
@@ -136,6 +137,7 @@ class QuestManager:
         ac.quest = None
         self.db().update_quest_progress(ac)
         player.progress.set_zone_progress(quest.zone, quest.number + 1)
+        player.hp_percent = 1.0
         self.db().update_player_data(player)
 
     def _process_event(self, ac: AdventureContainer):
@@ -168,9 +170,35 @@ class QuestManager:
                     text += f"You found an item:\n*{item.name}*"
         self.notifier.notify(ac.player, text)
 
+    def _process_combat(self, ac: AdventureContainer):
+        player: Player = self.db().get_player_data(ac.player.player_id)
+        enemy = Enemy(self.db().get_random_enemy_meta(ac.quest.zone), [], ac.quest.number)
+        combat = CombatContainer([player, enemy], {player: None, enemy: None})
+        text = f"Combat starts!\n\n" + combat.fight()
+        if player.is_dead():
+            log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
+            ac.quest = None
+            text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail
+            player.hp_percent = 1.0
+        else:
+            log.info(f"Player '{player.name}' won against a {enemy.meta.name}")
+            xp, money = enemy.get_rewards(player)
+            renown = (enemy.get_level() + ac.quest.number + 1) * 10
+            player.add_xp(xp)
+            money_am = player.add_money(money)
+            text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
+        self.db().update_player_data(player)
+        self.db().update_quest_progress(ac)
+        self.notifier.notify(ac.player, text)
+
     def process_update(self, ac: AdventureContainer):
-        if ac.is_on_a_quest() and ac.is_quest_finished():
-            self._complete_quest(ac)
+        if ac.is_on_a_quest():
+            if ac.is_quest_finished():
+                self._complete_quest(ac)
+            elif random.randint(1, 100) <= 15:  # 15% base chance of combat
+                self._process_combat(ac)
+            else:
+                self._process_event(ac)
         else:
             self._process_event(ac)
 

@@ -5,13 +5,13 @@ from copy import copy
 from time import time
 from typing import Union, List, Dict, Any
 
-from pilgram.modifiers import ModifierType, Modifier, ModifierContext
+import pilgram.modifiers as m
 
 
 class CombatActions:
     attack = 0,
     dodge = 1,
-    parry = 2
+    charge_attack = 2
     use_consumable = 3
     lick_wounds = 4
 
@@ -50,7 +50,7 @@ class Damage:
         result = self
         for modifier in supplier.get_modifiers(type_filter):
             new_result = modifier.apply(
-                ModifierContext({"damage": self, "supplier": supplier, "other": other, "context": combat_context})
+                m.ModifierContext({"damage": self, "supplier": supplier, "other": other, "context": combat_context})
             )
             if new_result:
                 result = new_result
@@ -187,8 +187,8 @@ class CombatActor(ABC):
 
     def __init__(self, hp_percent: float):
         self.hp_percent = hp_percent  # used out of fights
-        self.hp: int = 0  # only used during fights
-        self.timed_modifiers: List[Modifier] = []  # list of timed modifiers inflicted on the CombatActor
+        self.hp: int = int(self.get_max_hp() * hp_percent)  # only used during fights
+        self.timed_modifiers: List[m.Modifier] = []  # list of timed modifiers inflicted on the CombatActor
 
     def get_name(self) -> str:
         """ returns the name of the entity """
@@ -210,7 +210,7 @@ class CombatActor(ABC):
         """ generic method that should return the damage resistance of the entity """
         raise NotImplementedError
 
-    def get_entity_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_entity_modifiers(self, *type_filters: int) -> List["m.Modifier"]:
         """ generic method that should return an (optionally filtered) list of modifiers. (args are the filters) """
         raise NotImplementedError
 
@@ -230,9 +230,9 @@ class CombatActor(ABC):
         """ return what the entity wants to do (possible actions defined in CombatActions) """
         raise NotImplementedError
 
-    def get_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_modifiers(self, *type_filters: int) -> List["m.Modifier"]:
         """ returns the list of modifiers + timed modifiers """
-        modifiers: List[Modifier] = self.get_entity_modifiers(*type_filters)
+        modifiers: List[m.Modifier] = self.get_entity_modifiers(*type_filters)
         if not type_filters:
             modifiers.extend(self.timed_modifiers)
             modifiers.sort(key=lambda x: x.OP_ORDERING)
@@ -249,24 +249,34 @@ class CombatActor(ABC):
     def get_max_hp(self) -> int:
         """ get max hp of the entity applying all modifiers """
         max_hp = self.get_base_max_hp()
-        for modifier in self.get_entity_modifiers(ModifierType.MODIFY_MAX_HP):
-            max_hp = modifier.apply(ModifierContext({"entity": self, "value": max_hp}))
+        for modifier in self.get_entity_modifiers(m.ModifierType.MODIFY_MAX_HP):
+            max_hp = modifier.apply(m.ModifierContext({"entity": self, "value": max_hp}))
         return int(max_hp)
+
+    def get_hp_string(self) -> str:
+        return f"HP: {self.hp}/{self.get_max_hp()}"
 
     def attack(self, target: "CombatActor", combat_context: "CombatContainer") -> Damage:
         """ get the damage an attack would do """
-        damage = self.get_base_attack_damage().modify(self, target, ModifierType.ATTACK)
-        defense = target.get_base_attack_resistance().modify(target, self, ModifierType.DEFEND)
+        damage = self.get_base_attack_damage().modify(self, target, m.ModifierType.ATTACK)
+        defense = target.get_base_attack_resistance().modify(target, self, m.ModifierType.DEFEND)
         return damage - defense
 
-    def modify_hp(self, amount: int) -> bool:
+    def modify_hp(self, amount: int, overheal: bool = False) -> bool:
         """ Modify actor hp. Return True if the actor was killed, otherwise return False """
+        max_hp = self.get_max_hp()
+        if (amount > 0) and (not overheal) and (self.hp >= max_hp):
+            return False
         self.hp += amount
+        if (not overheal) and (self.hp >= max_hp):
+            self.hp = max_hp
+            self.hp_percent = self.hp / max_hp
+            return False
         if self.hp <= 0:
             self.hp = 0
             self.hp_percent = 0.0
             return True
-        self.hp_percent = self.hp / self.get_max_hp()
+        self.hp_percent = self.hp / max_hp
         return False
 
     def receive_damage(self, damage: Damage) -> bool:
@@ -303,21 +313,22 @@ class CombatContainer:
             self.resist_scale[actor] = 1.0
 
     def write_to_log(self, text: str):
-        self.combat_log += f"\n{text}"
+        self.combat_log += f"\n> {text}"
 
     def _cleanup_after_combat(self):
         """ remove all timed modifiers from combat participants """
         for participant in self.participants:
             participant.timed_modifiers.clear()
 
-    def get_mod_context(self, context: Dict[str, Any]) -> ModifierContext:
+    def get_mod_context(self, context: Dict[str, Any]) -> "m.ModifierContext":
         context["context"] = self
-        return ModifierContext(context)
+        return m.ModifierContext(context)
 
-    def start_combat(self):
-        self.combat_log = "*" + " vs ".join(x.get_name() for x in self.participants) + "*\n"
+    def _start_combat(self):
+        self.combat_log = "*" + " vs ".join(f"{x.get_name()} (lv. {x.get_level()})" for x in self.participants) + "*\n"
         for participant in self.participants:
-            for modifier in participant.get_entity_modifiers(ModifierType.COMBAT_START):
+            participant.hp = int(participant.get_max_hp() * participant.hp_percent)
+            for modifier in participant.get_entity_modifiers(m.ModifierType.COMBAT_START):
                 modifier.apply(self.get_mod_context({"entity": self}))
 
     def _attack(self, attacker: CombatActor, target: CombatActor):
@@ -327,18 +338,16 @@ class CombatContainer:
         self.resist_scale[target] = 1.0
         total_damage = damage.get_total_damage()
         target.modify_hp(-total_damage)
-        if target.is_dead():
-            self.write_to_log(f"{target.get_name()} is dead.")
-        else:
-            self.write_to_log(f"{target.get_name()} takes {total_damage} damage.")
-        for modifier in attacker.get_modifiers(ModifierType.POST_ATTACK):
+        self.write_to_log(f"{target.get_name()} takes {total_damage} damage ({target.get_hp_string()}).")
+        for modifier in attacker.get_modifiers(m.ModifierType.POST_ATTACK):
             modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
-        for modifier in attacker.get_modifiers(ModifierType.POST_DEFEND):
+        for modifier in attacker.get_modifiers(m.ModifierType.POST_DEFEND):
             modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
 
     def fight(self) -> str:
         """ simulate combat between players and enemies. Return battle report in a string. """
         is_fight_over: bool = False
+        self._start_combat()
         while not is_fight_over:
             # sort participants based on what they rolled on initiative
             self.participants.sort(key=lambda a: a.get_initiative())
@@ -347,33 +356,34 @@ class CombatContainer:
             opponents.reverse()
             # choose & perform actions
             for i, actor in enumerate(self.participants):
+                if actor.is_dead():
+                    continue
                 action_id = actor.choose_action(opponents[i])
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])
                 elif action_id == CombatActions.dodge:
-                    factor = random.choice((0.0, 0.05, 0.1))
+                    factor = random.choice((0.15, 0.25, 0.5))
                     self.resist_scale[actor] = factor
-                    self.write_to_log(f"{actor.get_name()} prepares to dodge. ({factor * 100}% damage)")
-                elif action_id == CombatActions.parry:
-                    self.damage_scale[actor] = 1.5
-                    self.resist_scale[actor] = 0.5
-                    self.write_to_log(f"{actor.get_name()} prepares to parry & riposte.")
+                    self.write_to_log(f"{actor.get_name()} prepares to dodge. (next dmg received: {int(factor * 100)}%)")
+                elif action_id == CombatActions.charge_attack:
+                    self.damage_scale[actor] += 0.5
+                    self.write_to_log(f"{actor.get_name()} charges an heavy attack (next attack {int(self.damage_scale[actor] * 100)}% dmg).")
                 elif action_id == CombatActions.use_consumable:
-                    text = actor.use_random_consumable(add_you=False)  # trust me this is right
+                    text, _ = actor.use_random_consumable(add_you=False)  # trust me this is right
                     self.write_to_log(f"{actor.get_name()} {text}")
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = 1 + int(actor.get_level() / 1.5)
                     actor.modify_hp(hp_restored)
-                    self.write_to_log(f"{actor.get_name()} licks their wounds, restoring {hp_restored} HP.")
+                    self.write_to_log(f"{actor.get_name()} licks their wounds, restoring {hp_restored} HP ({actor.get_hp_string()}).")
                 # use helpers
                 if self.helpers[actor] and (random.randint(1, 20) == 1):  # 5% chance of helper intervention
                     helper = self.helpers[actor]
                     damage = helper.get_level()
                     opponents[i].modify_hp(-damage)
                     self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} to {opponents[i].get_name()}.")
-            for actor in self.participants:
+            for i, actor in enumerate(self.participants):
                 if actor.is_dead():
                     is_fight_over = True
-                    self.write_to_log(f"The combat is over, {actor.get_name()} is dead.")
+                    self.write_to_log(f"The combat is over, {opponents[i].get_name()} has won.")
         self._cleanup_after_combat()
         return self.combat_log

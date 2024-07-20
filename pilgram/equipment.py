@@ -2,11 +2,12 @@ import time
 from random import randint, Random, choice
 from typing import Union, List, Dict, Any, Type, Tuple
 
+import pilgram.modifiers as m
+
 from pilgram.flags import StrengthBuff, OccultBuff, Flag, FireBuff, IceBuff, AcidBuff, ElectricBuff
 from pilgram.globals import ContentMeta
 from pilgram.listables import Listable
-from pilgram.combat_classes import Modifier, Damage
-from pilgram.modifiers import get_modifiers_by_rarity
+from pilgram.combat_classes import Damage
 from pilgram.strings import Strings
 
 
@@ -101,7 +102,7 @@ class Equipment:
             seed: float,
             damage: Damage,
             resist: Damage,
-            modifiers: List[Modifier]
+            modifiers: List["m.Modifier"]
     ):
         self.equipment_id = equipment_id
         self.level = level
@@ -112,7 +113,7 @@ class Equipment:
         self.resist = resist + self.equipment_type.resist.scale(level)
         self.modifiers = modifiers
 
-    def get_modifiers(self, type_filters: Union[Tuple[int, ...], None]) -> List[Modifier]:
+    def get_modifiers(self, type_filters: Union[Tuple[int, ...], None]) -> List["m.Modifier"]:
         if not type_filters:
             return self.modifiers
         result = []
@@ -182,13 +183,13 @@ class Equipment:
     def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> "Equipment":
         seed = time.time()
         mod_strings, damage, resist = cls.get_modifiers_and_damage(level, seed, equipment_type.is_weapon)
-        modifiers: List[Modifier] = []
+        modifiers: List[m.Modifier] = []
         if rarity > 0:
             for i in range(rarity):
                 category = randint(-4, rarity)
                 if category < 0:
                     category = 0
-                modifier_type = choice(get_modifiers_by_rarity(category))
+                modifier_type = choice(m.get_modifiers_by_rarity(category))
                 modifier = modifier_type.generate(level)
                 modifiers.append(modifier)
         return cls(
@@ -230,18 +231,18 @@ class ConsumableItem(Listable, meta_name="consumables"):
         self.effects = list(effects.keys())
 
     def __str__(self):
-        string = f"*{self.name}*\n_{self.description}_\nValue: {self.value}\nEffects:\n"
+        string = f"*{self.name}*\n_{self.description}_\nPrice: {self.value} {MONEY}\nEffects:\n"
         for effect in self.effects:
             value = self.__dict__[effect]
             if type(value) is float:
-                string += f"{Strings.effect_names.get(effect, effect)}: {int(value * 100)}%\n"
+                string += f"- {Strings.effect_names.get(effect, effect)}: {int(value * 100)}%\n"
             elif type(value) is list:
-                string += f"{Strings.effect_names.get(effect, effect)}: {', '.join(value)}\n"
+                string += f"- {Strings.effect_names.get(effect, effect)}: {', '.join(value)}\n"
             elif type(value) is bool:
                 if value:
-                    string += f"{Strings.effect_names.get(effect, effect)}\n"
+                    string += f"- {Strings.effect_names.get(effect, effect)}\n"
             else:
-                string += f"{Strings.effect_names.get(effect, effect)}: {value}\n"
+                string += f"- {Strings.effect_names.get(effect, effect)}: {value}\n"
         return string
 
     @classmethod

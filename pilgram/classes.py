@@ -8,12 +8,14 @@ from typing import Tuple, Dict, Any, Callable, Union, List, Type
 
 import numpy as np
 
-from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
+import pilgram.modifiers as m
+
+from pilgram.equipment import ConsumableItem, Equipment, EquipmentType, Slots
 from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
     LuckFlag2, Flag
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
-from pilgram.combat_classes import CombatActor, Modifier, Damage, CombatActions
+from pilgram.combat_classes import CombatActor, Damage, CombatActions
 from pilgram.utils import read_update_interval, FuncWithParam, save_json_to_file, read_json_file, print_bonus
 from pilgram.strings import MONEY, Strings
 
@@ -262,6 +264,8 @@ class Player(CombatActor):
     MAXIMUM_POWER: int = 100
     MAX_HOME_LEVEL = 10
 
+    FIST_DAMAGE = Damage(0, 0, 1, 0, 0, 0, 0, 0)
+
     def __init__(
             self,
             player_id: int,
@@ -462,6 +466,9 @@ class Player(CombatActor):
     def get_max_number_of_artifacts(self) -> int:
         return self.home_level * 2
 
+    def get_max_satchel_items(self) -> int:
+        return 10
+
     # combat stats
 
     def get_base_max_hp(self) -> int:
@@ -469,8 +476,14 @@ class Player(CombatActor):
 
     def get_base_attack_damage(self) -> Damage:
         base_damage = self.cult.damage.scale(self.level)
-        for _, item in self.equipped_items.items():
+        slots = []
+        for slot, item in self.equipped_items.items():
             base_damage += item.damage
+            slots.append(slot)
+        if Slots.PRIMARY not in slots:
+            base_damage += self.FIST_DAMAGE.scale(self.level)
+        if Slots.SECONDARY not in slots:
+            base_damage += self.FIST_DAMAGE.apply_bonus(self.gear_level)
         return base_damage
 
     def get_base_attack_resistance(self) -> Damage:
@@ -479,7 +492,7 @@ class Player(CombatActor):
             base_resistance += item.resist
         return base_resistance
 
-    def get_entity_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_entity_modifiers(self, *type_filters: int) -> List["m.Modifier"]:
         result = []
         for _, item in self.equipped_items.items():
             result.extend(item.get_modifiers(type_filters))
@@ -489,7 +502,9 @@ class Player(CombatActor):
         if self.hp > max_hp:
             self.hp = max_hp
 
-    def use_consumable(self, position_in_satchel: int, add_you: bool = True) -> str:
+    def use_consumable(self, position_in_satchel: int, add_you: bool = True) -> Tuple[str, bool]:
+        if not self.satchel:
+            return "No items in satchel!", False
         if position_in_satchel > len(self.satchel):
             return Strings.satchel_position_out_of_range.format(num=len(self.satchel))
         if position_in_satchel > 0:
@@ -505,15 +520,18 @@ class Player(CombatActor):
             self.hp_percent = self.hp / max_hp
         else:
             self.hp_percent = 1.0
-        self.flags = item.buff_flag.set(self.flags)
+        self.flags = self.flags | item.buff_flag
         text = Strings.used_item.format(verb=item.verb, item=item.name)
         if add_you:
-            return "You " + text
-        return text
+            return "You " + text, True
+        return text, True
 
     def use_random_consumable(self, add_you: bool = True) -> str:
+        if not self.satchel:
+            return "No items in satchel!"
         pos = random.randint(0, len(self.satchel) - 1)
-        return self.use_consumable(pos, add_you=add_you)
+        text, _ = self.use_consumable(pos, add_you=add_you)
+        return text
 
     def equip_item(self, item: Equipment):
         self.equipped_items[item.equipment_type.slot] = item
@@ -521,17 +539,30 @@ class Player(CombatActor):
     def get_stance(self):
         return self.stance
 
+    def get_delay(self) -> int:
+        value = 0
+        for item in self.equipped_items.values():
+            value += item.equipment_type.delay
+        return value
+
     STANCE_POOL = {
-        "b": (CombatActions.attack, CombatActions.attack, CombatActions.dodge, CombatActions.dodge, CombatActions.parry, CombatActions.use_consumable),
-        "s": (CombatActions.attack, CombatActions.dodge, CombatActions.dodge, CombatActions.parry, CombatActions.use_consumable),
-        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.parry, CombatActions.dodge)
+        "b": (CombatActions.attack, CombatActions.attack, CombatActions.dodge, CombatActions.charge_attack, CombatActions.dodge, CombatActions.use_consumable),
+        "s": (CombatActions.attack, CombatActions.dodge, CombatActions.dodge, CombatActions.use_consumable),
+        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.dodge)
+    }
+    STANCE_POOL_NC = {  # No Consumables
+        "b": (CombatActions.attack, CombatActions.attack, CombatActions.dodge, CombatActions.charge_attack, CombatActions.dodge),
+        "s": (CombatActions.attack, CombatActions.attack, CombatActions.dodge),
+        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.charge_attack, CombatActions.dodge)
     }
 
     def choose_action(self, opponent: "CombatActor") -> int:
-        selected_pool = self.STANCE_POOL.get(self.stance, (CombatActions.attack, CombatActions.dodge))
+        main_pool = self.STANCE_POOL if (self.satchel and (self.hp_percent < 0.8)) else self.STANCE_POOL_NC
+        selected_pool = main_pool.get(self.get_stance(), (CombatActions.attack, CombatActions.dodge))
         if self.cult.lick_wounds:
             selected_pool += (CombatActions.lick_wounds, )
-        return random.choice(selected_pool)
+        selection = random.choice(selected_pool)
+        return selection
 
     # utility
 
@@ -551,6 +582,8 @@ class Player(CombatActor):
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"
         if self.equipped_items:
             string += f"\n\nEquipped items:\n{'\n'.join(f"{Strings.slots[slot]} - *{item.name}*" for slot, item in self.equipped_items.items())}"
+        if self.satchel:
+            string += f"\n\nSatchel:\n{'\n'.join(f"{i+1}. {x.name}" for i, x in enumerate(self.satchel))}"
         return string
 
     def __repr__(self):
@@ -1076,30 +1109,34 @@ class EnemyMeta:
 class Enemy(CombatActor):
     """ the actual enemy object """
 
-    def __init__(self, meta: EnemyMeta, modifiers: List[Modifier], hp_modifier: int):
+    def __init__(self, meta: EnemyMeta, modifiers: List["m.Modifier"], level_modifier: int):
         self.meta = meta
         self.modifiers = modifiers
-        self.hp_modifier = hp_modifier + random.randint(-2, 4)
+        self.level_modifier = level_modifier + random.randint(-5, 2)
         self.delay = meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
         self.stance = self.meta.zone.extra_data.get("stance", "r")
-        super().__init__(self.get_max_hp())
+        super().__init__(1.0)
+
+    def roll(self, dice_faces: int):
+        return random.randint(1, dice_faces)
 
     def get_name(self) -> str:
-        return "the " + self.meta.name
+        return "the " + self.meta.name.rstrip()
 
     def get_level(self) -> int:
-        return self.meta.zone.level
+        value = self.meta.zone.level + self.level_modifier
+        return value if value > 0 else 0
 
     def get_base_max_hp(self) -> int:
-        return (20 + self.hp_modifier) * self.meta.zone.level
+        return (20 + self.level_modifier) * self.meta.zone.level
 
     def get_base_attack_damage(self) -> Damage:
-        return self.meta.zone.damage_modifiers
+        return self.meta.zone.damage_modifiers.scale(self.get_level())
 
     def get_base_attack_resistance(self) -> Damage:
-        return self.meta.zone.resist_modifiers
+        return self.meta.zone.resist_modifiers.scale(self.get_level())
 
-    def get_entity_modifiers(self, *type_filters: int) -> List["Modifier"]:
+    def get_entity_modifiers(self, *type_filters: int) -> List["m.Modifier"]:
         result = []
         for modifier in self.modifiers:
             if modifier.TYPE in type_filters:
@@ -1113,4 +1150,12 @@ class Enemy(CombatActor):
         return self.stance
 
     def choose_action(self, opponent: "CombatActor") -> int:
-        return random.choice((CombatActions.attack, CombatActions.dodge, CombatActions.lick_wounds))
+        if self.hp_percent > 0.5:
+            return random.choice((CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.dodge))
+        return random.choice((CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.dodge, CombatActions.dodge, CombatActions.lick_wounds))
+
+    def get_rewards(self, player: Player) -> Tuple[int, int]:
+        return 40 * self.get_level(), 40 * self.get_level()
+
+    def __str__(self):
+        return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"

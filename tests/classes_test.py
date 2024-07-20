@@ -1,9 +1,14 @@
+import time
 import unittest
 from random import randint
+from typing import List
 
-from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent
+import pilgram.modifiers as modifiers
+
+from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent, Enemy, EnemyMeta
+from pilgram.combat_classes import Damage, CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.modifiers import print_all_modifiers
+from pilgram.modifiers import print_all_modifiers, Modifier
 
 
 def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 100) -> float:
@@ -18,6 +23,21 @@ def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 100) -> floa
 
 def _print_quest_fail_rate(fail_rate: float, quest: Quest, player: Player):
     print(f"player  (lv {player.level}, gear {player.gear_level}) | quest (lv {quest.zone.level}, num {quest.number}) fail rate: {fail_rate:.2f}")
+
+
+def _generate_equipment(player: Player, equipment_type: EquipmentType, modifiers: List[Modifier]) -> Equipment:
+    _, damage, resist = Equipment.get_modifiers_and_damage(player.level, time.time(), equipment_type.is_weapon)
+    Damage.generate_from_seed(time.time(), player.level)
+    return Equipment(
+        0,
+        player.level,
+        equipment_type,
+        "longsword",
+        time.time(),
+        damage,
+        resist,
+        modifiers
+    )
 
 
 class TestClasses(unittest.TestCase):
@@ -67,3 +87,35 @@ class TestClasses(unittest.TestCase):
             print("\n-----------------------\n")
             equipment = Equipment.generate(5 + (10 * i), EquipmentType.get_random(), randint(0, 3))
             print(str(equipment))
+
+    def test_combat(self):
+        player = Player.create_default(0, "Ombro", "")
+        player.level = 1
+        player.gear_level = 1
+        zone = Zone(
+            1,
+            "zone name",
+            1,
+            "AAAA",
+            Damage(0, 0, 1, 0, 0, 0, 0, 0),
+            Damage(0, 0, 0, 0, 0, 0, 0, 0),
+            {}
+        )
+        # player.equip_item(_generate_equipment(
+        #     player,
+        #     EquipmentType.get(0),  # longsword
+        #     [modifiers.Vampiric(player.level), modifiers.FirstHitBonus(player.level)]
+        # ))
+        # player.equip_item(_generate_equipment(
+        #     player,
+        #     EquipmentType.get(21),  # Lorica segmentata
+        #     [modifiers.Blessed(player.level)]
+        # ))
+        enemy = Enemy(
+            EnemyMeta(0, zone, "Cock monger", "AAAAA", "WIN", "LOSS"),
+            [],
+            0
+        )
+        combat = CombatContainer([player, enemy], {player: None, enemy: None})
+        result = combat.fight()
+        print(result)

@@ -42,7 +42,8 @@ class Strings:
     not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n{quest}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
-    quest_fail = f"\n\nYou have failed to complete the quest '*{{name}}*'. An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
+    reappear = f"An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
+    quest_fail = "\n\nYou have failed to complete the quest '*{name}*'. " + reappear
     quest_roll = "(You rolled {roll}, Value to beat: {target})"
 
     # rank
@@ -209,8 +210,10 @@ class Strings:
     no_items_yet = "You don't have any items yet"
     invalid_item = "Invalid item."
     item_sold = f"You sold '*{{item}}*' for *{{money}} {MONEY}*."
+    item_bought = f"You bought '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
     cannot_sell_equipped_item = "You can't sell an equipped item!"
+    cannot_shop_on_a_quest = "You cannot shop while on a quest!"
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

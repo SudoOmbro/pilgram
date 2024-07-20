@@ -4,7 +4,7 @@ from datetime import timedelta, datetime
 from typing import List, Tuple, Union, Any
 
 from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact, Tourney, EnemyMeta
-from pilgram.equipment import Equipment
+from pilgram.equipment import Equipment, ConsumableItem, EquipmentType
 
 log = logging.getLogger(__name__)
 
@@ -322,6 +322,16 @@ class PilgramDatabase(ABC):
 
     def delete_item(self, item: Equipment):
         """ delete a specific item on the database """
+        raise NotImplementedError
+
+    # shops ----------------------------------
+
+    def get_market_items(self) -> List[ConsumableItem]:
+        """ gets daily consumable items to buy """
+        raise NotImplementedError
+
+    def get_smithy_items(self) -> List[EquipmentType]:
+        """ gets daily equipment to buy """
         raise NotImplementedError
 
 

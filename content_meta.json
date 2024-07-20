@@ -716,5 +716,44 @@
     "effects": {
       "hp_percent_restored": 50
     }
+  }, {
+    "id": 6,
+    "name": "Eye of the Idiot God",
+    "description": "Gelatinous black eyeball. It smells like death.",
+    "verb": "consumed",
+    "value": 2000,
+    "effects": {
+      "revive": true,
+      "hp_percent_restored": 50
+    }
+  }, {
+    "id": 7,
+    "name": "Black Apple",
+    "description": "Pitch black apple, it absorbs all light.",
+    "verb": "consumed",
+    "value": 8,
+    "effects": {
+      "hp_restored": 5
+    }
+  }, {
+    "id": 8,
+    "name": "God skin jerky",
+    "description": "Hard & crunchy. Fills you with power.",
+    "verb": "consumed",
+    "value": 1000,
+    "effects": {
+      "hp_restored": 17,
+      "buffs": ["strength"]
+    }
+  }, {
+    "id": 9,
+    "name": "Reaper Pepper",
+    "description": "Small, black & extremely hot.",
+    "verb": "consumed",
+    "value": 100,
+    "effects": {
+      "hp_restored": 2,
+      "buffs": ["ice"]
+    }
   }]
 }

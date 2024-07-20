@@ -1,5 +1,5 @@
 from abc import ABC
-from random import randint
+from random import randint, Random
 from typing import List, Dict
 
 from pilgram.globals import ContentMeta
@@ -26,5 +26,10 @@ class Listable(ABC):
         return cls.LIST[listable_id]
 
     @classmethod
-    def get_random(cls):
+    def get_random(cls) -> "Listable":
         return cls.LIST[randint(0, len(cls.LIST) - 1)]
+
+    @classmethod
+    def get_random_selection(cls, seed: float, amount: int) -> list:
+        rng = Random(seed)
+        return rng.sample(cls.LIST, amount)

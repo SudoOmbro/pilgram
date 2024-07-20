@@ -3,13 +3,14 @@ import re
 from copy import copy
 from datetime import datetime, timedelta
 from functools import cache
+from random import choice
 from typing import Tuple, Dict, Union, Callable, Type, List
 
 from minigames.generics import PilgramMinigame, MINIGAMES
 from minigames.games import AAA
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult
-from pilgram.equipment import Equipment
+from pilgram.equipment import Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
@@ -822,6 +823,85 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
         return Strings.no_character_yet
 
 
+def show_market(context: UserContext) -> str:
+    items = db().get_market_items()
+    text = "Here are today's market items:\n\n" + "\n".join(f"{i+1}. " + str(x) for i, x in enumerate(items))
+    return text
+
+
+def __get_item_type_value(item_type: EquipmentType, player: Player):
+    return (item_type.value + player.level) * 25
+
+
+def show_smithy(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        item_types = db().get_smithy_items()
+        return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i+1}. {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def market_buy(context: UserContext, item_pos_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        # TODO reactivate quest check!
+        # if db().is_player_on_a_quest(player):
+        #     return Strings.cannot_shop_on_a_quest
+        item_pos = int(item_pos_str)
+        if item_pos > 10:
+            return "Invalid item (max item: 10)"
+        if len(player.satchel) >= player.get_max_satchel_items():
+            return "Satchel already full!"
+        item = db().get_market_items()[item_pos - 1]
+        if player.money < item.value:
+            return Strings.not_enough_money.format(amount=item.value - player.money)
+        player.satchel.append(item)
+        player.money -= item.value
+        db().update_player_data(player)
+        return Strings.item_bought.format(item=item.name, money=item.value)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def smithy_craft(context: UserContext, item_pos_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        # TODO reactivate quest check!
+        # if db().is_player_on_a_quest(player):
+        #     return Strings.cannot_shop_on_a_quest
+        item_pos = int(item_pos_str)
+        if item_pos > 10:
+            return "Invalid item (max item: 10)"
+        items = db().get_player_items(player.player_id)
+        if len(items) >= player.get_inventory_size():
+            return "Inventory already full!"
+        item_type = db().get_smithy_items()[item_pos - 1]
+        price = __get_item_type_value(item_type, player)
+        if player.money < price:
+            return Strings.not_enough_money.format(amount=price - player.money)
+        item = Equipment.generate(player.level, item_type, choice((0, 0, 0, 0, 1)))
+        items.append(item)
+        db().add_item(item, player)
+        player.money -= price
+        db().update_player_data(player)
+        return Strings.item_bought.format(item=item.name, money=price)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def use_consumable(context: UserContext, item_pos_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        item_pos = int(item_pos_str)
+        text, used = player.use_consumable(item_pos)
+        if used:
+            db().update_player_data(player)
+        return text
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -839,6 +919,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
         "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild"),
         "item": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], check_item, "Shows the specified item stats"),
+        "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
+        "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
@@ -873,7 +955,10 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
     "equip": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], equip_item, "Equip an item from your inventory"),
-    "sell": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], sell_item, "Shows the specified manual page."),
+    "sell": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], sell_item, "Sell an item from your inventory."),
+    "buy": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], market_buy, "Buy something from the market."),
+    "craft": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], smithy_craft, "Craft something at the smithy."),
+    "consume": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], use_consumable, "Use an item in your satchel"),
     "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
     "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
