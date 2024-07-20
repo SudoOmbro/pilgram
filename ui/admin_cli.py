@@ -386,9 +386,9 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
         ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
-        ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", Damage)),
-        ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", Damage)),
-        ("Write zone extra data", ProcessGetObjJsonAttr("extra_data", Damage)),
+        ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", convert_into=Damage)),
+        ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", convert_into=Damage)),
+        ("Write zone extra data", ProcessGetObjJsonAttr("extra_data")),
         ("Confirm?", process_obj_add_confirm)
     ),
     "add quest": (
@@ -423,7 +423,7 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
         ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", convert_into=Damage)),
         ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", convert_into=Damage)),
-        ("Write zone extra data", ProcessGetObjJsonAttr("extra_data", Damage)),
+        ("Write zone extra data", ProcessGetObjJsonAttr("extra_data")),
         ("Confirm?", process_obj_edit_confirm)
     ),
     "edit quest": (
