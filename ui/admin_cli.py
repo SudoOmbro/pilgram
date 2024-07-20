@@ -155,7 +155,7 @@ class ProcessGetObjJsonAttr:
             return f"{context.get('type')} {self.target_attr} not edited.\n" + _progress(context)
         obj = context.get("obj")
         try:
-            value = json.loads(user_input)
+            value = json.loads(user_input.replace("'", "\""))
             if self.convert_into:
                 value = self.convert_into.load_from_json(value)
             obj.__dict__[self.target_attr] = value
@@ -421,8 +421,8 @@ ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
         ("Write Zone description", ProcessGetObjStrAttr("zone_description")),
-        ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", Damage)),
-        ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", Damage)),
+        ("Write zone damage modifiers", ProcessGetObjJsonAttr("damage_modifiers", convert_into=Damage)),
+        ("Write zone resist modifiers", ProcessGetObjJsonAttr("resist_modifiers", convert_into=Damage)),
         ("Write zone extra data", ProcessGetObjJsonAttr("extra_data", Damage)),
         ("Confirm?", process_obj_edit_confirm)
     ),
