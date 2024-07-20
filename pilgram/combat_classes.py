@@ -61,6 +61,10 @@ class Damage:
         dmg = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
         return dmg if dmg > 0 else self.MIN_DAMAGE
 
+    def is_zero(self):
+        val = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+        return val == 0
+
     def scale(self, scaling_factor: float) -> "Damage":
         return Damage(
             int(self.slash * scaling_factor),
@@ -145,6 +149,8 @@ class Damage:
         return dmg != 0
 
     def __str__(self):
+        if self.is_zero():
+            return "Empty"
         return "\n".join([f"{key}: {value}" for key, value in self.__dict__.items() if value > 0])
 
     @classmethod

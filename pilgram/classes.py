@@ -66,7 +66,7 @@ class Zone:
         return self.zone_id == other.zone_id
 
     def __str__(self):
-        return f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}\n\nDamage modifiers: {self.damage_modifiers}\n\nResist modifiers: {self.resist_modifiers}"
+        return f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}\n\nDamage modifiers:\n{self.damage_modifiers}\n\nResist modifiers:\n{self.resist_modifiers}"
 
     def __hash__(self):
         return hash(self.zone_id)
