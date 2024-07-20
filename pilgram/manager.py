@@ -173,7 +173,7 @@ class QuestManager:
     def _process_combat(self, ac: AdventureContainer):
         player: Player = self.db().get_player_data(ac.player.player_id)
         enemy = Enemy(self.db().get_random_enemy_meta(ac.quest.zone), [], ac.quest.number)
-        combat = CombatContainer([player, enemy], {player: None, enemy: None})
+        combat = CombatContainer([player, enemy], {player: None, enemy: None})  # TODO implement helpers
         text = f"Combat starts!\n\n" + combat.fight()
         if player.is_dead():
             log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
