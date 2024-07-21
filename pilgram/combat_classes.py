@@ -375,7 +375,7 @@ class CombatContainer:
                     self.damage_scale[actor] += 0.5
                     self.write_to_log(f"{actor.get_name()} charges an heavy attack (next attack {int(self.damage_scale[actor] * 100)}% dmg).")
                 elif action_id == CombatActions.use_consumable:
-                    text, _ = actor.use_random_consumable(add_you=False)  # trust me this is right
+                    text = actor.use_random_consumable(add_you=False)  # trust me this is right
                     self.write_to_log(f"{actor.get_name()} {text}")
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = 1 + int(actor.get_level() / 1.5)
