@@ -5,7 +5,7 @@ import random
 import time
 from time import sleep
 from datetime import timedelta, datetime
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult, Enemy
 from pilgram.combat_classes import CombatContainer
@@ -170,10 +170,16 @@ class QuestManager:
                     text += f"You found an item:\n*{item.name}*"
         self.notifier.notify(ac.player, text)
 
-    def _process_combat(self, ac: AdventureContainer):
+    def _process_combat(self, ac: AdventureContainer, updates: List[AdventureContainer]):
         player: Player = self.db().get_player_data(ac.player.player_id)
+        # select helper from current updates
+        helper: Union[Player, None] = None
+        for update in updates:
+            if update.is_on_a_quest() and (update.zone() == ac.zone()) and (update.player.guild is not None) and (update.player.guild == player.guild):
+                helper = update.player
+                break
         enemy = Enemy(self.db().get_random_enemy_meta(ac.quest.zone), [], ac.quest.number)
-        combat = CombatContainer([player, enemy], {player: None, enemy: None})  # TODO implement helpers
+        combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = f"Combat starts!\n\n" + combat.fight()
         if player.is_dead():
             log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
@@ -191,12 +197,12 @@ class QuestManager:
         self.db().update_quest_progress(ac)
         self.notifier.notify(ac.player, text)
 
-    def process_update(self, ac: AdventureContainer):
+    def process_update(self, ac: AdventureContainer, updates: List[AdventureContainer]):
         if ac.is_on_a_quest():
             if ac.is_quest_finished():
                 self._complete_quest(ac)
             elif random.randint(1, 100) <= 15:  # 15% base chance of combat
-                self._process_combat(ac)
+                self._process_combat(ac, updates)
             else:
                 self._process_event(ac)
         else:
@@ -249,7 +255,7 @@ class QuestManager:
         for update in updates:
             if update.player.cult.can_meet_players:
                 add_to_zones_players_map(zones_players_map, update)
-            self.process_update(update)
+            self.process_update(update, updates)
             sleep(self.updates_per_second)
         self.handle_players_meeting(zones_players_map)
 

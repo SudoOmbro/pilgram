@@ -6,6 +6,7 @@ from time import time
 from typing import Union, List, Dict, Any
 
 import pilgram.modifiers as m
+import pilgram.classes as c
 
 
 class CombatActions:
@@ -375,16 +376,27 @@ class CombatContainer:
                     self.damage_scale[actor] += 0.5
                     self.write_to_log(f"{actor.get_name()} charges an heavy attack (next attack {int(self.damage_scale[actor] * 100)}% dmg).")
                 elif action_id == CombatActions.use_consumable:
-                    text = actor.use_random_consumable(add_you=False)  # trust me this is right
-                    self.write_to_log(f"{actor.get_name()} {text}")
+                    if isinstance(actor, c.Player):
+                        text = actor.use_random_consumable(add_you=False)
+                        self.write_to_log(f"{actor.get_name()} {text}")
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = 1 + int(actor.get_level() / 1.5)
                     actor.modify_hp(hp_restored)
                     self.write_to_log(f"{actor.get_name()} licks their wounds, restoring {hp_restored} HP ({actor.get_hp_string()}).")
+                if actor.is_dead():
+                    # if player died but has a revive in his inventory then use it
+                    if isinstance(actor, c.Player):
+                        pos: int = -1
+                        for j, consumable in enumerate(actor.satchel):
+                            if consumable.revive:
+                                pos = j
+                                break
+                        if pos != -1:
+                            actor.use_consumable(pos)
                 # use helpers
                 if self.helpers[actor] and (random.randint(1, 20) == 1):  # 5% chance of helper intervention
                     helper = self.helpers[actor]
-                    damage = helper.get_level()
+                    damage = int(helper.get_level() * (1 + random.random()))
                     opponents[i].modify_hp(-damage)
                     self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} to {opponents[i].get_name()}.")
             for i, actor in enumerate(self.participants):
