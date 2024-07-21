@@ -12,7 +12,7 @@ import pilgram.modifiers as m
 
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType, Slots
 from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
-    LuckFlag2, Flag
+    LuckFlag2, Flag, FireBuff, StrengthBuff, OccultBuff, IceBuff, AcidBuff, ElectricBuff
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
 from pilgram.combat_classes import CombatActor, Damage, CombatActions
@@ -484,6 +484,21 @@ class Player(CombatActor):
             base_damage += self.FIST_DAMAGE.scale(self.level)
         if Slots.SECONDARY not in slots:
             base_damage += self.FIST_DAMAGE.apply_bonus(self.gear_level)
+        # apply buffs
+        if StrengthBuff.is_set(self.flags):
+            base_damage = base_damage.scale_single_value("slash", 1.5)
+            base_damage = base_damage.scale_single_value("pierce", 1.5)
+            base_damage = base_damage.scale_single_value("blunt", 1.5)
+        if OccultBuff.is_set(self.flags):
+            base_damage = base_damage.scale_single_value("occult", 2)
+        if FireBuff.is_set(self.flags):
+            base_damage = base_damage.scale_single_value("fire", 2)
+        if AcidBuff.is_set(self.flags):
+            base_damage = base_damage.scale_single_value("acid", 2)
+        if IceBuff.is_set(self.flags):
+            base_damage = base_damage.scale_single_value("freeze", 2)
+        if ElectricBuff.is_set(self.flags):
+            base_damage = base_damage.scale_single_value("electric", 2)
         return base_damage
 
     def get_base_attack_resistance(self) -> Damage:

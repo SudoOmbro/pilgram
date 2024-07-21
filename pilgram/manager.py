@@ -10,6 +10,7 @@ from typing import List, Dict, Tuple, Union
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult, Enemy
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
+from pilgram.flags import BUFF_FLAGS
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
@@ -193,6 +194,11 @@ class QuestManager:
             player.add_xp(xp)
             money_am = player.add_money(money)
             text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
+        # unset buff flags
+        for flag in BUFF_FLAGS:
+            if flag.is_set(player.flags):
+                player.flags = flag.unset(player.flags)
+        # save data to db
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         self.notifier.notify(ac.player, text)

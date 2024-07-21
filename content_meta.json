@@ -516,9 +516,9 @@
     "name": "Gloves",
     "slot": "arms",
     "weapon": false,
-    "delay": 0,
+    "delay": 1,
     "resist": {
-      "slash": 1
+      "slash": 2
     },
     "value": 1
   }, {
@@ -526,9 +526,9 @@
     "name": "Chest plate",
     "slot": "chest",
     "weapon": false,
-    "delay": 10,
+    "delay": 12,
     "resist": {
-      "slash": 5,
+      "slash": 6,
       "pierce": 2
     },
     "value": 15
@@ -660,6 +660,58 @@
       "occult": 2
     },
     "value": 4
+  }, {
+    "id": 25,
+    "name": "Flail",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 5,
+    "resist": {
+      "blunt": 3,
+      "pierce": 1
+    },
+    "value": 6
+  }, {
+    "id": 26,
+    "name": "Ballista",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 30,
+    "resist": {
+      "pierce": 30
+    },
+    "value": 40
+  }, {
+    "id": 27,
+    "name": "Scimitar",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 2,
+    "resist": {
+      "slash": 4
+    },
+    "value": 10
+  }, {
+    "id": 28,
+    "name": "Urumi",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 8,
+    "resist": {
+      "slash": 8
+    },
+    "value": 12
+  }, {
+    "id": 29,
+    "name": "Spell book",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "resist": {
+      "blunt": 1,
+      "occult": 2
+    },
+    "value": 10
   }],
   "consumables": [{
     "id": 0,
@@ -742,18 +794,52 @@
     "verb": "consumed",
     "value": 1000,
     "effects": {
-      "hp_restored": 17,
       "buffs": ["strength"]
     }
   }, {
     "id": 9,
     "name": "Reaper Pepper",
     "description": "Small, black & extremely hot.",
-    "verb": "consumed",
-    "value": 100,
+    "verb": "ate",
+    "value": 400,
     "effects": {
-      "hp_restored": 2,
+      "buffs": ["fire"]
+    }
+  }, {
+    "id": 10,
+    "name": "Bone flavoured ice cream",
+    "description": "Ice cream made with the ground up bones of the dead.",
+    "verb": "ate",
+    "value": 400,
+    "effects": {
       "buffs": ["ice"]
+    }
+  }, {
+    "id": 11,
+    "name": "Bottled madness",
+    "description": "bottled scream of a mad god.",
+    "verb": "Inhaled",
+    "value": 400,
+    "effects": {
+      "buffs": ["occult"]
+    }
+  }, {
+    "id": 12,
+    "name": "Acidic grease",
+    "description": "grease that corrodes any living flesh it touches.",
+    "verb": "applied",
+    "value": 400,
+    "effects": {
+      "buffs": ["acid"]
+    }
+  }, {
+    "id": 13,
+    "name": "Abyssal Eel entrails",
+    "description": "Jar of Abyssal Eel entrails, salted for conservation.",
+    "verb": "consumed",
+    "value": 400,
+    "effects": {
+      "buffs": ["electric"]
     }
   }]
 }

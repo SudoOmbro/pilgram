@@ -3,8 +3,6 @@ import unittest
 from random import randint
 from typing import List
 
-import pilgram.modifiers as modifiers
-
 from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent, Enemy, EnemyMeta
 from pilgram.combat_classes import Damage, CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
@@ -101,16 +99,16 @@ class TestClasses(unittest.TestCase):
             Damage(0, 0, 0, 0, 0, 0, 0, 0),
             {}
         )
-        # player.equip_item(_generate_equipment(
-        #     player,
-        #     EquipmentType.get(0),  # longsword
-        #     [modifiers.Vampiric(player.level), modifiers.FirstHitBonus(player.level)]
-        # ))
-        # player.equip_item(_generate_equipment(
-        #     player,
-        #     EquipmentType.get(21),  # Lorica segmentata
-        #     [modifiers.Blessed(player.level)]
-        # ))
+        player.equip_item(_generate_equipment(
+            player,
+            EquipmentType.get(0),  # longsword
+            []
+        ))
+        player.equip_item(_generate_equipment(
+            player,
+            EquipmentType.get(21),  # Lorica segmentata
+            []
+        ))
         enemy = Enemy(
             EnemyMeta(0, zone, "Cock monger", "AAAAA", "WIN", "LOSS"),
             [],

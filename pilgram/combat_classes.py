@@ -369,7 +369,7 @@ class CombatContainer:
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])
                 elif action_id == CombatActions.dodge:
-                    factor = random.choice((0.15, 0.25, 0.5))
+                    factor = actor.get_delay() / 100
                     self.resist_scale[actor] = factor
                     self.write_to_log(f"{actor.get_name()} prepares to dodge. (next dmg received: {int(factor * 100)}%)")
                 elif action_id == CombatActions.charge_attack:
