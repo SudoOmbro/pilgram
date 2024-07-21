@@ -418,7 +418,7 @@ class PilgramORMDatabase(PilgramDatabase):
             zs.level = zone.level
             zs.description = zone.zone_description
             zs.damage_json = json.dumps(zone.damage_modifiers.__dict__)
-            zs.resist_jsonn = json.dumps(zone.resist_modifiers.__dict__)
+            zs.resist_json = json.dumps(zone.resist_modifiers.__dict__)
             zs.extra_data_json = json.dumps(zone.extra_data)
             zs.save()
 
