@@ -183,8 +183,8 @@ class QuestManager:
         text = f"Combat starts!\n\n" + combat.fight()
         if player.is_dead():
             log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
+            text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(name=ac.quest.name)
             ac.quest = None
-            text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail
             player.hp_percent = 1.0
         else:
             log.info(f"Player '{player.name}' won against a {enemy.meta.name}")
