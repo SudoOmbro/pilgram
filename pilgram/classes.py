@@ -939,7 +939,7 @@ class QuickTimeEvent(Listable, meta_name="quick time events"):
             option = choice.get("option")
             chance = choice.get("chance")
             rewards_str = choice.get("rewards")
-            success = choice.get("success") + "\n\nYou gain " + rewards_str.replace("xp", "XP:").replace("mn", "MN:").replace("ap", "Artifact pieces:").replace("item", "an item")
+            success = choice.get("success") + "\n\nYou gain " + rewards_str.replace("xp", "XP:").replace("mn", f"{MONEY}:").replace("ap", "Artifact pieces:").replace("item", "an item")
             failure = choice.get("failure")
             # add params to struct
             options.append((option, chance))
