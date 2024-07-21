@@ -666,7 +666,7 @@ class Guild:
         return current_members < self.level * self.PLAYERS_PER_LEVEL
 
     def can_upgrade(self) -> bool:
-        return self.MAX_LEVEL > self.level
+        return self.level > self.MAX_LEVEL
 
     def get_upgrade_required_money(self) -> int:
         lv = self.level
