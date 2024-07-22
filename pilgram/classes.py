@@ -502,7 +502,7 @@ class Player(CombatActor):
         return base_damage
 
     def get_base_attack_resistance(self) -> Damage:
-        base_resistance = self.cult.damage.scale(self.level)
+        base_resistance = self.cult.resistance.scale(self.level)
         for _, item in self.equipped_items.items():
             base_resistance += item.resist
         return base_resistance
