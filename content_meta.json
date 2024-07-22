@@ -518,7 +518,7 @@
     "weapon": false,
     "delay": 1,
     "resist": {
-      "slash": 2
+      "slash": 1
     },
     "value": 1
   }, {
@@ -645,7 +645,7 @@
     "slot": "primary",
     "weapon": true,
     "delay": 8,
-    "resist": {
+    "damage": {
       "blunt": 1,
       "occult": 4
     },
@@ -666,7 +666,7 @@
     "slot": "primary",
     "weapon": true,
     "delay": 5,
-    "resist": {
+    "damage": {
       "blunt": 3,
       "pierce": 1
     },
@@ -677,7 +677,7 @@
     "slot": "primary",
     "weapon": true,
     "delay": 30,
-    "resist": {
+    "damage": {
       "pierce": 30
     },
     "value": 40
@@ -687,7 +687,7 @@
     "slot": "primary",
     "weapon": true,
     "delay": 2,
-    "resist": {
+    "damage": {
       "slash": 4
     },
     "value": 10
@@ -697,7 +697,7 @@
     "slot": "primary",
     "weapon": true,
     "delay": 8,
-    "resist": {
+    "damage": {
       "slash": 8
     },
     "value": 12
@@ -707,11 +707,60 @@
     "slot": "secondary",
     "weapon": true,
     "delay": 2,
-    "resist": {
+    "damage": {
       "blunt": 1,
       "occult": 2
     },
     "value": 10
+  }, {
+    "id": 30,
+    "name": "Naginata",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 4,
+    "damage": {
+      "slash": 2,
+      "pierce": 2
+    },
+    "value": 7
+  }, {
+    "id": 31,
+    "name": "Katana",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 3,
+    "damage": {
+      "slash": 4
+    },
+    "value": 8
+  }, {
+    "id": 32,
+    "name": "Bracelets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "value": 2
+  }, {
+    "id": 33,
+    "name": "Spauldrons",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 5
+    },
+    "value": 10
+  }, {
+    "id": 34,
+    "name": "Gauntlets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "slash": 2,
+      "blunt": 1
+    },
+    "value": 8
   }],
   "consumables": [{
     "id": 0,
