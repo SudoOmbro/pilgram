@@ -382,8 +382,8 @@ class CombatContainer:
                         text = actor.use_random_consumable(add_you=False)
                         self.write_to_log(f"{actor.get_name()} {text}")
                 elif action_id == CombatActions.lick_wounds:
-                    hp_restored = 1 + int(actor.get_level() / 1.5)
-                    actor.modify_hp(hp_restored)
+                    hp_restored = 1 + actor.get_level()
+                    actor.modify_hp(hp_restored if hp_restored > 0 else 1)
                     self.write_to_log(f"{actor.get_name()} licks their wounds, restoring {hp_restored} HP ({actor.get_hp_string()}).")
                 if actor.is_dead():
                     if isinstance(actor, c.Player):

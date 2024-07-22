@@ -16,13 +16,26 @@ The amount of xp required to *level up* is calculated with the *formula*:
 Upgrading your gear costs money, the *upgrade cost* is calculated with the following *formula*:
 `COST = 50 x lv^2 + 1000 x lv` where `lv` is the current level of your gear.
 
+🔷 *HP*: The amount of health you have. If it reaches zero during a quest you'll fail it.
+The amount of base hp you have is determined by:
+`HP = ((level + gear level) x 10) + [equipment bonuses]`
+
 🔷 *Home level*: You current home level, influences events rewards (formula follows later).
 Upgrading your home costs money, the *upgrade cost* is calculated with the *formula*:
 `COST = 100 x lv^2 + 5000 x lv` where `lv` is the current level of your home.
 
+🔷 *Stance*: Your current stance, determines how you behave in combat:
+- Balanced: A good mix of offence and defence.
+- Safe: More dodges than attacks, very few heavy attacks.
+- Reckless: All in on offence.
+
+🔷 *Cult*: The cult you are part of. Cults give you bonuses & maluses, choose the one that is more fitting to your play style.
+
 🔷 *Artifact pieces*: Used to assemble artifacts, explained later.
 
 🔷 *Renown*: Does nothing, used for rankings. It is gained by playing non-gambling mini-games & completing quests.
+
+🔷 *Total Base Damage/Resist*: The sum of all your equipment contributions for damage & resistance. Not affected by modifiers.
 
 ♦️♦️*Quests*♦️♦️
 Your main source of income & xp. *Succeeding in a quest* depends on a D20 throw:
@@ -74,7 +87,8 @@ It is reset every 2 weeks & at reset time the members in the *top 3* guilds get 
 2nd = 5000 Boromian Alloy
 3rd = 1000 Boromian Alloy
 
-an artifact piece is also rewarded to the owner of the first placed guild
+an artifact piece is also rewarded to the owner of the first placed guild.
+Tourney scores depend on how many members a guild has; The more members there are, the less a single completed quest is worth.
 
 ♦️♦️*Events*♦️♦️
 The random updates you are sent every once in a while.
@@ -102,7 +116,7 @@ Then use the command `explain minigame [minigame name]` to get more info about e
 The use the command `play [minigame name]` to, well, play the minigame.
 
 ♦️♦️*Artifacts*♦️♦️
-Exceedingly rare mysterious artifacts you can craft with 10 artifact pieces, each artifact is unique & increases your maximum eldritch power by 10 (starts from 0).
+Exceedingly rare mysterious artifacts you can craft with 8 artifact pieces, each artifact is unique & increases your maximum eldritch power by 10 (starts from 0).
 You can use your eldritch power to cast spells.
 Spells always use all your power; The more power they use, the more powerful they are.
 
@@ -110,3 +124,30 @@ Spells always use all your power; The more power they use, the more powerful the
 Acronym for "Quick Timed Events", are small prompts that you have a chance of getting when you get a notification for an event.
 Use the command `qte` [option] to respond to it before it expires.
 QTEs expire when the next event is sent to you, so you should have plenty of time to do them :)
+
+----
+
+♦️♦️*Combat*♦️♦️
+Combat is a big part of questing in Pilgram, it can determine whether you complete or fail a quest & it rewards you with a lot of XP & BA.
+Your combat stats are mainly determined by your equipment which has damage and resist value + modifiers.
+Combat is turn based and it consists of mainly 5 actions that both participants can perform:
+- *Attack*: deal attacker damage - target defence damage to the target
+- *Dodge*: the next attack the dodger receives will deal [total delay]% damage to them (capped at 90%) (The minimum damage is 1)
+- *Charge heavy attack*: The performer charges an heavy attack, adding 50% more damage to the next attack they'll do.
+- *Use consumable*: reserved to players, if a character's health is under 50% they'll have a chance to use items to automatically restore health
+- *Lick wounds*: mostly used by enemies but can also be used by players if their cult has the "Animal instincts" trait. The performer restores an HP amount equal to their level.
+
+If you win you get `40 x enemy level` XP & BA plus you have a chance to get an artifact piece if you force the combat.
+Note that forcing combat gives you increasingly strong enemies the closer you get to finishing a quest.
+
+♦️♦️*Equipment*♦️♦️
+Equipment is a very important part of you character, you can either find it while questing or craft if at the smithy.
+Equipment you find in during quests is much stronger than what you can craft at the smithy.
+You have 6 equipment slots on your character: Head, Chest, Legs, Arms, Primary & Secondary.
+Each equipped item gives you damage & resist boosts + modifiers if you have any on your equipment.
+You inventory size scales with your home level:
+`SIZE = 10 + [home level] x 4`
+
+♦️♦️*Consumables*♦️♦️
+Consumable items are important for restoring your HP during quests, boosting your damage or even reviving you.
+You can check out the dailiy items on sale at the market & buy them there. Note that you can hold a maximum of 10 consumables.

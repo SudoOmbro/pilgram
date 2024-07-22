@@ -717,9 +717,10 @@ def explain_minigame(context: UserContext, user_input: str) -> str:
 @cache
 def __get_mechanics(page_id: int):
     pages = read_text_file("mechanics.txt").split("\n\n----\n\n")
+    print(len(pages))
     if (page_id == 0) or (page_id > len(pages)):
         return Strings.invalid_page.format(pl=len(pages))
-    text = pages[page_id - 1] + (f"\n\nUse commands `man {page_id + 1}` to continue reading" if page_id != len(pages) else "")
+    text = pages[page_id - 1] + (f"\n\nUse command `man {page_id + 1}` to continue reading" if page_id != len(pages) else "")
     return text
 
 

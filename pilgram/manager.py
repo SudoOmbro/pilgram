@@ -109,7 +109,8 @@ class QuestManager:
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
-                guild.tourney_score += renown
+                guild_members = len(self.db().get_guild_members_data(guild))
+                guild.tourney_score += renown * (1.25 / guild_members)
                 self.db().update_guild(guild)
                 player.guild = guild
                 if guild.founder != player:  # check if winnings should be taxed
@@ -164,7 +165,7 @@ class QuestManager:
             elif random.randint(1, 10) <= (1 + player.cult.discovery_bonus):  # 10% base change of finding an item
                 items = self.db().get_player_items(player.player_id)
                 if len(items) < player.get_inventory_size():
-                    item = Equipment.generate(player.level, EquipmentType.get_random(), random.randint(0, 3))
+                    item = Equipment.generate(player.level + random.randint(0, 5), EquipmentType.get_random(), random.randint(0, 3))
                     # log.info(f"Player '{player.name}' found item: '{item.name}'.")
                     items.append(item)
                     self.db().add_item(item, player)
