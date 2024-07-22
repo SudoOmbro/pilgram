@@ -132,7 +132,7 @@ class Strings:
 
     # cults
     choose_cult = "Send the number of the cult you want to join."
-    cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist.}"
+    cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist."
     list_cults = "Here are all the existing cults:\n\n"
     modifier_names: Dict[str, str] = {
         "general_xp_mult": "General XP",

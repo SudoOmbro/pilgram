@@ -336,7 +336,7 @@ class CombatContainer:
         for participant in self.participants:
             participant.hp = int(participant.get_max_hp() * participant.hp_percent)
             for modifier in participant.get_entity_modifiers(m.ModifierType.COMBAT_START):
-                modifier.apply(self.get_mod_context({"entity": self}))
+                modifier.apply(self.get_mod_context({"entity": participant}))
 
     def _attack(self, attacker: CombatActor, target: CombatActor):
         self.write_to_log(f"{attacker.get_name()} attacks {target.get_name()}")
