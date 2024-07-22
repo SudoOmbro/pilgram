@@ -110,9 +110,11 @@ class QuestManager:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
                 guild_members = len(self.db().get_guild_members_data(guild))
-                mult = (2 / guild_members)
+                mult = (8 / guild_members)
                 if mult < 0.25:
                     mult = 0.25
+                elif mult > 2:
+                    mult = 2
                 guild.tourney_score += int(renown * mult)
                 self.db().update_guild(guild)
                 player.guild = guild
@@ -196,6 +198,7 @@ class QuestManager:
             xp, money = enemy.get_rewards(player)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             player.add_xp(xp)
+            player.renown += renown
             money_am = player.add_money(money)
             text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
         # unset buff flags
