@@ -46,7 +46,7 @@ class TestClasses(unittest.TestCase):
         player.level = 11
         player.gear_level = 9
         # setup quest
-        zone = Zone(0, "test", 5, "test")
+        zone = Zone(0, "test", 5, "test", Damage.get_empty(), Damage.get_empty(), {})
         quest = Quest(0, zone, 4, "test", "", "", "")
         # do tests
         for num in range(100):
@@ -56,14 +56,14 @@ class TestClasses(unittest.TestCase):
 
     def test_quest_rewards(self):
         player = Player.create_default(0, "test", "")
-        zone = Zone(0, "test", 5, "test")
+        zone = Zone(0, "test", 5, "test", Damage.get_empty(), Damage.get_empty(), {})
         quest = Quest(0, zone, 0, "test", "", "", "")
         self.assertEqual(quest.get_rewards(player), (4250, 3000))
 
     def test_zone_events(self):
         player = Player.create_default(0, "test", "")
         player.level = 10
-        zone = Zone(9, "test", 5, "test")
+        zone = Zone(9, "test", 5, "test", Damage.get_empty(), Damage.get_empty(), {})
         zone.level = 30
         zone_event = ZoneEvent(0, zone, "test")
         rewards_under_leveled = zone_event.get_rewards(player)
