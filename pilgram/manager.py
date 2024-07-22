@@ -110,7 +110,10 @@ class QuestManager:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
                 guild_members = len(self.db().get_guild_members_data(guild))
-                guild.tourney_score += renown * (1.25 / guild_members)
+                mult = (2 / guild_members)
+                if mult < 0.25:
+                    mult = 0.25
+                guild.tourney_score += int(renown * mult)
                 self.db().update_guild(guild)
                 player.guild = guild
                 if guild.founder != player:  # check if winnings should be taxed
