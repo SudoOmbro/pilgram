@@ -180,24 +180,24 @@ class Strings:
         "Eldritch"
     )
     weapon_modifiers: Dict[str, Tuple[str, ...]] = {
-        "slash": ("Sharp", "-Slashing", "Barbed"),
-        "pierce": ("Piercing", "-Thrusting", "Pointed"),
-        "blunt": ("Heavy", "-Crushing", "Devastating"),
+        "slash": ("Sharp", "-Slashing", "Barbed", "Keen", "Edged"),
+        "pierce": ("Piercing", "-Thrusting", "Pointed", "Tipped"),
+        "blunt": ("Heavy", "-Crushing", "Devastating", "Denting"),
         "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones", "Heretical"),
-        "fire": ("Flaming", "-Flame", "Draconic", "-Fire"),
-        "acid": ("-Acid", "Melting", "Corroding", "Oozing"),
-        "freeze": ("-Ice", "Freezing", "Chilling"),
-        "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel")
+        "fire": ("Flaming", "-Flame", "Draconic", "-Fire", "Blazing", "-Wildfire", "Flaring", "Hot"),
+        "acid": ("-Acid", "Melting", "Corroding", "Oozing", "-Rot", "Rotten"),
+        "freeze": ("-Ice", "Freezing", "Chilling", "-Frostbite", "Hailing", "-the Glacier"),
+        "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel", "Voltaic")
     }
     armor_modifiers: Dict[str, Tuple[str, ...]] = {
         "slash": ("Plated", "-the Bulwark", "Meshed"),
         "pierce": ("Reinforced", "-the Cataphract", "Thick"),
         "blunt": ("Heavy", "Stable", "Well-built", "Sturdy"),
-        "occult": ("Occult", "Eldritch", "Warded", "Runic"),
+        "occult": ("Occult", "Eldritch", "Warded", "Runic", "-the Inquisitor"),
         "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
         "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant"),
-        "freeze": ("Insulated", "Warm", "-the Crags", "Fur-lined"),
-        "electric": ("-Thunder", "Grounded", "Rubber-lined")
+        "freeze": ("Insulated", "Warm", "-the Crags", "Fur-lined", "Cozy"),
+        "electric": ("-Thunder", "Grounded", "Rubber-lined", "-Faraday")
     }
     slots: List[str] = [
         "Head",
