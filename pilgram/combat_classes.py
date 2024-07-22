@@ -370,6 +370,8 @@ class CombatContainer:
                     self._attack(actor, opponents[i])
                 elif action_id == CombatActions.dodge:
                     factor = actor.get_delay() / 100
+                    if factor > 0.9:
+                        factor = 0.9
                     self.resist_scale[actor] = factor
                     self.write_to_log(f"{actor.get_name()} prepares to dodge. (next dmg received: {int(factor * 100)}%)")
                 elif action_id == CombatActions.charge_attack:
@@ -384,8 +386,8 @@ class CombatContainer:
                     actor.modify_hp(hp_restored)
                     self.write_to_log(f"{actor.get_name()} licks their wounds, restoring {hp_restored} HP ({actor.get_hp_string()}).")
                 if actor.is_dead():
-                    # if player died but has a revive in his inventory then use it
                     if isinstance(actor, c.Player):
+                        # if player died but has a revive in his inventory then use it
                         pos: int = -1
                         for j, consumable in enumerate(actor.satchel):
                             if consumable.revive:
@@ -394,7 +396,7 @@ class CombatContainer:
                         if pos != -1:
                             actor.use_consumable(pos)
                 # use helpers
-                if self.helpers[actor] and (random.randint(1, 20) == 1):  # 5% chance of helper intervention
+                if self.helpers[actor] and (random.randint(1, 5) == 1):  # 20% chance of helper intervention
                     helper = self.helpers[actor]
                     damage = int(helper.get_level() * (1 + random.random()))
                     opponents[i].modify_hp(-damage)
