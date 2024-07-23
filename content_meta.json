@@ -17,7 +17,8 @@
     "max_level": 10,
     "players_per_level": 4,
     "creation_cost": 1000,
-    "max_tax": 50
+    "max_tax": 50,
+    "max_players": 20
   },
   "modify_cost": 1000,
   "money": {

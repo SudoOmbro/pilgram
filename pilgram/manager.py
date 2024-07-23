@@ -27,11 +27,26 @@ ARTIFACTS_THRESHOLD = 15
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
+NUM_MULT_LUT = {
+    4: 4,
+    8: 3,
+    12: 2,
+    16: 1,
+    20: 0.5
+}
+
 
 def _gain(xp: int, money: int, renown: int, tax: float = 0) -> str:
     tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
     renown_str = "" if renown == 0 else f"You gain {renown} renown"
     return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}\n\n{renown_str}_"
+
+
+def _get_tourney_score_multiplier(player_num: int) -> int:
+    for player_num_threshold, mult in NUM_MULT_LUT.items():
+        if player_num <= player_num_threshold:
+            return mult
+    return 1
 
 
 class _HighestQuests:
@@ -110,11 +125,7 @@ class QuestManager:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up to date object
                 guild.prestige += quest.get_prestige()
                 guild_members = len(self.db().get_guild_members_data(guild))
-                mult = (8 / guild_members)
-                if mult < 0.25:
-                    mult = 0.25
-                elif mult > 2:
-                    mult = 2
+                mult = _get_tourney_score_multiplier(guild_members)
                 guild.tourney_score += int(renown * mult)
                 self.db().update_guild(guild)
                 player.guild = guild

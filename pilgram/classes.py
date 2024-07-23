@@ -150,7 +150,8 @@ class Quest:
 
     def get_rewards(self, player: "Player") -> Tuple[int, int]:
         """ return the amount of xp & money the completion of the quest rewards """
-        multiplier = (self.zone.level + self.number) + (player.guild.level if player.guild else 0)
+        guild_level = player.guild_level()
+        multiplier = (self.zone.level + self.number) + (guild_level if guild_level < 10 else 15)
         rand = random.randint(1, 50)
         return (
             int(((self.BASE_XP_REWARD * multiplier) + rand) * player.cult.quest_xp_mult),
@@ -342,6 +343,11 @@ class Player(CombatActor):
 
     def get_level(self) -> int:
         return self.level
+
+    def guild_level(self) -> int:
+        if self.guild:
+            return self.guild.level
+        return 0
 
     def get_required_xp(self) -> int:
         lv = self.level
@@ -646,6 +652,7 @@ class Guild:
     """ Player created guilds that other players can join. Players get bonus xp & money from quests when in guilds """
     MAX_LEVEL = ContentMeta.get("guilds.max_level")
     PLAYERS_PER_LEVEL = ContentMeta.get("guilds.players_per_level")
+    MAX_PLAYERS = ContentMeta.get("guilds.max_players")
 
     def __init__(
             self,
@@ -680,8 +687,14 @@ class Guild:
         self.tourney_score = tourney_score
         self.tax = tax
 
+    def get_max_members(self):
+        value = self.level * self.PLAYERS_PER_LEVEL
+        if value <= self.MAX_PLAYERS:
+            return value
+        return self.MAX_LEVEL
+
     def can_add_member(self, current_members: int) -> bool:
-        return current_members < self.level * self.PLAYERS_PER_LEVEL
+        return current_members < self.get_max_members()
 
     def can_upgrade(self) -> bool:
         return self.level > self.MAX_LEVEL

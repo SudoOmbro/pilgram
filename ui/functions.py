@@ -814,7 +814,8 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
         item = items[item_pos - 1]
         if item in player.equipped_items.values():
             return Strings.cannot_sell_equipped_item
-        money = item.get_value()
+        mult = 1 if player.guild_level() < 6 else 2
+        money = int(item.get_value() * mult)
         player.add_money(money)
         items.pop(item_pos - 1)
         db().update_player_data(player)
@@ -854,12 +855,13 @@ def market_buy(context: UserContext, item_pos_str: str) -> str:
         if len(player.satchel) >= player.get_max_satchel_items():
             return "Satchel already full!"
         item = db().get_market_items()[item_pos - 1]
+        item_cost = int(item.value * (1 if player.guild_level() < 8 else 0.5))
         if player.money < item.value:
-            return Strings.not_enough_money.format(amount=item.value - player.money)
+            return Strings.not_enough_money.format(amount=item_cost - player.money)
         player.satchel.append(item)
-        player.money -= item.value
+        player.money -= item_cost
         db().update_player_data(player)
-        return Strings.item_bought.format(item=item.name, money=item.value)
+        return Strings.item_bought.format(item=item.name, money=item_cost)
     except KeyError:
         return Strings.no_character_yet
 
@@ -876,10 +878,11 @@ def smithy_craft(context: UserContext, item_pos_str: str) -> str:
         if len(items) >= player.get_inventory_size():
             return "Inventory already full!"
         item_type = db().get_smithy_items()[item_pos - 1]
-        price = __get_item_type_value(item_type, player)
+        price = int(__get_item_type_value(item_type, player) * (1 if player.guild_level() < 9 else 0.5))
         if player.money < price:
             return Strings.not_enough_money.format(amount=price - player.money)
-        item = Equipment.generate(player.level, item_type, choice((0, 0, 0, 0, 1)))
+        rarity: int = choice((0, 0, 0, 0, 1)) if player.guild_level() < 7 else 1
+        item = Equipment.generate(player.level, item_type, rarity)
         items.append(item)
         db().add_item(item, player)
         player.money -= price
