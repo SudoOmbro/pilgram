@@ -784,6 +784,107 @@
       "blunt": 1
     },
     "value": 8
+  }, {
+    "id": 35,
+    "name": "Inquisitor Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 5,
+      "pierce": 2,
+      "occult": 2
+    },
+    "value": 12
+  }, {
+    "id": 36,
+    "name": "Great Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 15,
+    "resist": {
+      "slash": 8,
+      "pierce": 6
+    },
+    "value": 20
+  }, {
+    "id": 37,
+    "name": "Spirals",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1,
+      "blunt": 1
+    },
+    "value": 8
+  }, {
+    "id": 38,
+    "name": "Greaves",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 10,
+    "resist": {
+      "slash": 6,
+      "pierce": 3
+    },
+    "value": 15
+  }, {
+    "id": 39,
+    "name": "Knee pads",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 3
+    },
+    "value": 6
+  }, {
+    "id": 40,
+    "name": "Elbow pads",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 3
+    },
+    "value": 6
+  }, {
+    "id": 41,
+    "name": "Curiass",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 4,
+      "pierce": 4,
+      "blunt": 2
+    },
+    "value": 20
+  }, {
+    "id": 42,
+    "name": "Bracers",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 3,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 1
+    },
+    "value": 8
+  }, {
+    "id": 43,
+    "name": "Gambeson",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 2
+    },
+    "value": 8
   }],
   "consumables": [{
     "id": 0,
