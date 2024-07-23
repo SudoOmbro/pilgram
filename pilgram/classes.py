@@ -609,7 +609,9 @@ class Player(CombatActor):
         return hash(self.player_id)
 
     def __eq__(self, other):
-        return (self.player_id == other.player_id) if other is not None else False
+        if isinstance(other, Player):
+            return self.player_id == other.player_id
+        return False
 
     @classmethod
     def create_default(cls, player_id: int, name: str, description: str) -> "Player":
@@ -693,7 +695,9 @@ class Guild:
         self.level += 1
 
     def __eq__(self, other):
-        return self.guild_id == other.guild_id
+        if isinstance(other, Guild):
+            return self.guild_id == other.guild_id
+        return False
 
     def __str__(self):
         return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: {self.founder.print_username() if self.founder else '???'}\n_Since {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}\n\n_Tax: {self.tax}%\nTourney score: {self.tourney_score}_"
@@ -1020,7 +1024,9 @@ class Cult(Listable, meta_name="cults"):
             self.__dict__[stat_name] = random.choice(choices)
 
     def __eq__(self, other):
-        return self.faction_id == other.faction_id
+        if isinstance(other, Cult):
+            return self.faction_id == other.faction_id
+        return False
 
     def __str__(self):
         string = f"{self.faction_id} - *{self.name}* ({self.number_of_members} members)\n_{self.description}_\n"

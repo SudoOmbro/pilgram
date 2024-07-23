@@ -182,7 +182,7 @@ class QuestManager:
         # select helper from current updates
         helper: Union[Player, None] = None
         for update in updates:
-            if (player.guild is not None) and update.is_on_a_quest() and (update.zone() == ac.zone()) and (update.player.guild is not None) and (update.player.guild == player.guild):
+            if (player.guild is not None) and (update.player != player) and update.is_on_a_quest() and (update.zone() == ac.zone()) and (update.player.guild is not None) and (update.player.guild == player.guild):
                 helper = update.player
                 break
         enemy = Enemy(self.db().get_random_enemy_meta(ac.quest.zone), [], ac.quest.number)
