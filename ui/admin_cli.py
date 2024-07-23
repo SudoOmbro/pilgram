@@ -307,6 +307,14 @@ def force_quest_complete(context: UserContext, player_name: str) -> str:
     return f"Force quest complete for player {player_name}: success"
 
 
+def force_quest_end_time(context: UserContext, player_name: str, hours: str) -> str:
+    player = db().get_player_from_name(player_name)
+    ac = db().get_player_adventure_container(player)
+    ac.finish_time = datetime.now() + timedelta(hours=int(hours))
+    db().update_quest_progress(ac)
+    return f"Force quest end time for player {player_name}: success ({ac.finish_time})"
+
+
 def give_random_item_to_player(context: UserContext, player_name: str) -> str:
     player = db().get_player_from_name(player_name)
     item = Equipment.generate(player.level, EquipmentType.get_random(), randint(0, 3))
@@ -376,7 +384,8 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "force": {
         "update": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_update, "Force update for the given player"),
         "quest": {
-            "complete": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player")
+            "complete": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player"),
+            "time": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error), RWE("hours", PIR, "Invalid integer id")], force_quest_end_time, "Force quest finish time in [hours] for the given player")
         }
     }
 }
