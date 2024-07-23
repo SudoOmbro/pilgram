@@ -54,7 +54,8 @@ class EquipmentType(Listable, meta_name="equipment types"):
             is_weapon: bool,
             delay: int,
             slot: int,
-            value: int
+            value: int,
+            equipment_class: str,
     ):
         """
         :param equipment_type_id: The id of the equipment type
@@ -75,6 +76,7 @@ class EquipmentType(Listable, meta_name="equipment types"):
         self.delay = delay
         self.slot = slot
         self.value = value
+        self.equipment_class = equipment_class
 
     @classmethod
     def create_from_json(cls, equipment_type_json: Dict[str, Any]) -> "EquipmentType":
@@ -87,7 +89,8 @@ class EquipmentType(Listable, meta_name="equipment types"):
             equipment_type_json["weapon"],
             equipment_type_json["delay"],
             _get_slot(equipment_type_json["slot"]),
-            equipment_type_json["value"]
+            equipment_type_json["value"],
+            equipment_type_json.get("equipment_class", "weapon" if equipment_type_json["weapon"] else "armor"),
         )
 
 

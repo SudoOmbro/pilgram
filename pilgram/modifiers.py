@@ -443,8 +443,8 @@ class Bashing(Modifier, rarity=Rarity.LEGENDARY):
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
         if isinstance(attacker, classes.Player):
-            secondary = attacker.equipped_items.get(equipment.Slots.SECONDARY)
-            if not secondary.equipment_type.is_weapon:
+            secondary = attacker.equipped_items.get(equipment.Slots.SECONDARY, None)
+            if (secondary is not None) and (not secondary.equipment_type.is_weapon) and (secondary.equipment_type.equipment_class == "shield"):
                 return damage.scale(1 + (self.get_fstrength()))
         return damage
 

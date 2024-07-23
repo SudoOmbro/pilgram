@@ -394,6 +394,7 @@
     "name": "Longsword",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 3,
     "damage": {
       "slash": 3,
@@ -405,6 +406,7 @@
     "name": "Spear",
     "slot": "primary",
     "weapon": true,
+    "class": "polearm",
     "delay": 3,
     "damage": {
       "pierce": 3
@@ -415,6 +417,7 @@
     "name": "Dagger",
     "slot": "secondary",
     "weapon": true,
+    "class": "dagger",
     "delay": 0,
     "damage": {
       "pierce": 1
@@ -425,6 +428,7 @@
     "name": "Round Shield",
     "slot": "secondary",
     "weapon": false,
+    "class": "shield",
     "delay": 2,
     "damage": {
       "blunt": 1
@@ -438,6 +442,7 @@
     "name": "Tower Shield",
     "slot": "secondary",
     "weapon": false,
+    "class": "shield",
     "delay": 6,
     "damage": {
       "blunt": 1
@@ -451,6 +456,7 @@
     "name": "FLint lock pistol",
     "slot": "secondary",
     "weapon": true,
+    "class": "firearm",
     "delay": 8,
     "damage": {
       "pierce": 5,
@@ -462,6 +468,7 @@
     "name": "Halberd",
     "slot": "primary",
     "weapon": true,
+    "class": "polearm",
     "delay": 5,
     "damage": {
       "slash": 2,
@@ -473,6 +480,7 @@
     "name": "Gladius",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 1,
     "damage": {
       "slash": 2,
@@ -548,6 +556,7 @@
     "name": "Mace",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 3,
     "damage": {
       "blunt": 3
@@ -558,6 +567,7 @@
     "name": "Morning star",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 5,
     "damage": {
       "blunt": 3,
@@ -569,6 +579,7 @@
     "name": "Scythe",
     "slot": "primary",
     "weapon": true,
+    "class": "scythe",
     "delay": 6,
     "damage": {
       "slash": 6
@@ -579,6 +590,7 @@
     "name": "Hand cannon",
     "slot": "primary",
     "weapon": true,
+    "class": "firearm",
     "delay": 16,
     "damage": {
       "blunt": 7,
@@ -590,6 +602,7 @@
     "name": "Zweihander",
     "slot": "primary",
     "weapon": true,
+    "class": "greatsword",
     "delay": 10,
     "damage": {
       "slash": 10,
@@ -601,6 +614,7 @@
     "name": "Spiked Club",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 6,
     "damage": {
       "blunt": 1,
@@ -634,6 +648,7 @@
     "name": "Fetish",
     "slot": "secondary",
     "weapon": true,
+    "class": "magic",
     "delay": 2,
     "damage": {
       "occult": 2
@@ -644,6 +659,7 @@
     "name": "Sorcery staff",
     "slot": "primary",
     "weapon": true,
+    "class": "staff",
     "delay": 8,
     "damage": {
       "blunt": 1,
@@ -665,6 +681,7 @@
     "name": "Flail",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 5,
     "damage": {
       "blunt": 3,
@@ -676,6 +693,7 @@
     "name": "Ballista",
     "slot": "primary",
     "weapon": true,
+    "class": "crossbow",
     "delay": 30,
     "damage": {
       "pierce": 30
@@ -686,6 +704,7 @@
     "name": "Scimitar",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 2,
     "damage": {
       "slash": 4
@@ -696,6 +715,7 @@
     "name": "Urumi",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 8,
     "damage": {
       "slash": 8
@@ -706,6 +726,7 @@
     "name": "Spell book",
     "slot": "secondary",
     "weapon": true,
+    "class": "magic",
     "delay": 2,
     "damage": {
       "blunt": 1,
@@ -717,6 +738,7 @@
     "name": "Naginata",
     "slot": "primary",
     "weapon": true,
+    "class": "polearm",
     "delay": 4,
     "damage": {
       "slash": 2,
@@ -728,6 +750,7 @@
     "name": "Katana",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 3,
     "damage": {
       "slash": 4
