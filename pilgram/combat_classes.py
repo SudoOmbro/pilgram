@@ -348,7 +348,7 @@ class CombatContainer:
         self.write_to_log(f"{target.get_name()} takes {total_damage} damage ({target.get_hp_string()}).")
         for modifier in attacker.get_modifiers(m.ModifierType.POST_ATTACK):
             modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
-        for modifier in attacker.get_modifiers(m.ModifierType.POST_DEFEND):
+        for modifier in target.get_modifiers(m.ModifierType.POST_DEFEND):
             modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
 
     def fight(self) -> str:

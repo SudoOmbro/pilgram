@@ -179,6 +179,35 @@ class _GenericDamageBonus(Modifier):
         return damage.add_single_value(self.DAMAGE_TYPE, self.strength)
 
 
+class _GenericDamageAbsorb(Modifier):
+    TYPE = ModifierType.POST_DEFEND
+
+    MAX_STRENGTH = 100
+    MIN_STRENGTH = 1
+    SCALING = 2
+
+    DESCRIPTION = "absorb {str}% of incoming DAMAGE damage as HP"
+    DAMAGE_TYPE: str
+
+    def __init_subclass__(cls, dmg_type: str = None, **kwargs):
+        if dmg_type is None:
+            raise ValueError("dmg_type cannot be None")
+        super().__init_subclass__(rarity=Rarity.UNCOMMON)
+        cls.DAMAGE_TYPE = dmg_type
+        cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
+        cls.NAME = f"{dmg_type.capitalize()} absorption"
+
+    def function(self, context: ModifierContext) -> Any:
+        # scales in the same way for attack & defence
+        damage: cc.Damage = context.get("damage")
+        defender: cc.CombatActor = context.get("other")
+        element_damage: int = damage.__dict__[self.DAMAGE_TYPE]
+        if element_damage > 0:
+            hp = int(element_damage * self.get_fstrength())
+            defender.modify_hp(hp, overheal=True)
+            self.write_to_log(context, f"{defender.get_name()} heals {hp} HP from {self.DAMAGE_TYPE} damage.")
+
+
 class SlashAttackMult(_GenericDamageMult, dmg_type="slash", mod_type=ModifierType.ATTACK): pass
 class PierceAttackMult(_GenericDamageMult, dmg_type="pierce", mod_type=ModifierType.ATTACK): pass
 class BluntAttackAttackMult(_GenericDamageMult, dmg_type="blunt", mod_type=ModifierType.ATTACK): pass
@@ -447,6 +476,29 @@ class Bashing(Modifier, rarity=Rarity.LEGENDARY):
             if (secondary is not None) and (not secondary.equipment_type.is_weapon) and (secondary.equipment_type.equipment_class == "shield"):
                 return damage.scale(1 + (self.get_fstrength()))
         return damage
+
+
+class Thorns(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.DEFEND
+
+    MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
+    SCALING = 5
+
+    NAME = "Thorns"
+    DESCRIPTION = "Any attacker will receive {str} damage."
+
+    def function(self, context: ModifierContext) -> Any:
+        defender: cc.CombatActor = context.get("supplier")
+        attacker: cc.CombatActor = context.get("supplier")
+        attacker.modify_hp(self.strength)
+        self.write_to_log(context, f"{defender.get_name()}'s thorns inflict {self.strength} damage to {attacker.get_name()}.")
+        return context.get("damage")
+
+class FireAbsorb(_GenericDamageAbsorb, dmg_type="fire"): pass
+class AcidAbsorb(_GenericDamageAbsorb, dmg_type="acid"): pass
+class FreezeAbsorb(_GenericDamageAbsorb, dmg_type="freeze"): pass
+class ElectricAbsorb(_GenericDamageAbsorb, dmg_type="electric"): pass
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
