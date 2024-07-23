@@ -73,10 +73,18 @@ On quest success you have a 20% chance of finding a piece of an artifact (explai
 
 ♦️♦️*Guilds*♦️♦️
 Clubs for you and your friends! Or ways to "compete" with others.
-Guilds can hold 4 players per level; The maximum level for guilds is 10 (so 40 players).
+Guilds can hold 4 players per level; The maximum level for guilds is 10.
 Creating a guild costs 1000, but upgrading it is extremely expensive:
 
 `COST = 10000 x lv^2 + 1000 x lv` where `lv` = guild level
+
+eah level grants +1 quest reward multiplier and:
+- Up until level 5: +4 guild members (so the cap is 20).
+- Level 6: Sold items yield double the Boromian Alloy.
+- Level 7: Crafted items at the smithy always have one modifier.
+- Level 8: 50% discount at the market.
+- Level 9: 50% discount at the smithy.
+- Level 10: +5 quest reward multiplier (for a total of 15).
 
 Guild prestige does nothing: the higher it is, the higher your guild will be on the ranking. That's it.
 
@@ -86,6 +94,8 @@ It is reset every 2 weeks & at reset time the members in the *top 3* guilds get 
 1st = 10000 Boromian Alloy
 2nd = 5000 Boromian Alloy
 3rd = 1000 Boromian Alloy
+
+Tourney score is scaled depending on guild size: The bigger the guild is, the less a completed quest is worth.
 
 an artifact piece is also rewarded to the owner of the first placed guild.
 Tourney scores depend on how many members a guild has; The more members there are, the less a single completed quest is worth.
@@ -127,19 +137,6 @@ QTEs expire when the next event is sent to you, so you should have plenty of tim
 
 ----
 
-♦️♦️*Combat*♦️♦️
-Combat is a big part of questing in Pilgram, it can determine whether you complete or fail a quest & it rewards you with a lot of XP & BA.
-Your combat stats are mainly determined by your equipment which has damage and resist value + modifiers.
-Combat is turn based and it consists of mainly 5 actions that both participants can perform:
-- *Attack*: deal attacker damage - target defence damage to the target
-- *Dodge*: the next attack the dodger receives will deal [total delay]% damage to them (capped at 90%) (The minimum damage is 1)
-- *Charge heavy attack*: The performer charges an heavy attack, multiplying the damage of their next attack by 150%.
-- *Use consumable*: reserved to players, if a character's health is under 50% they'll have a chance to use items to automatically restore health
-- *Lick wounds*: mostly used by enemies but can also be used by players if their cult has the "Animal instincts" trait. The performer restores an HP amount equal to their level.
-
-If you win you get `40 x enemy level` XP & BA plus you have a chance to get an artifact piece if you force the combat.
-Note that forcing combat gives you increasingly strong enemies the closer you get to finishing a quest.
-
 ♦️♦️*Equipment*♦️♦️
 Equipment is a very important part of you character, you can either find it while questing or craft if at the smithy.
 Equipment you find in during quests is much stronger than what you can craft at the smithy.
@@ -148,6 +145,40 @@ Each equipped item gives you damage & resist boosts + modifiers if you have any 
 You inventory size scales with your home level:
 `SIZE = 10 + [home level] x 4`
 
+Equipment can have 8 base damage/resistance stats:
+- Slash
+- Pierce
+- Blunt
+- Occult
+- Fire
+- Acid
+- Freeze
+- Electric
+
+The sum of all the stats determines your total base attack/defence.
+
+Equipment can have modifiers, which are powerful effects that range from simple damage percentage increases to giving you a shield that nullifies the first attack against you.
+There are more than 50 modifiers of varying rarity in total.
+Modifiers will show up on the weapon name as stars.
+
+♦️♦️*Combat*♦️♦️
+Combat is a big part of questing in Pilgram, it can determine whether you complete or fail a quest & it rewards you with a lot of XP & BA.
+Your combat stats are mainly determined by your equipment which has damage and resist value + modifiers.
+Combat is turn based and it consists of mainly 5 actions that both participants can perform:
+- *Attack*: deal attacker damage - target defence damage to the target
+- *Dodge*: the next attack the dodger receives will deal [total delay]% damage to them (capped at 90%) (The minimum damage is 1)
+- *Take aim*: The performer aims for a weak spot, multiplying the damage of their next attack by 150%.
+- *Use consumable*: reserved to players, if a character's health is under 50% they'll have a chance to use items to automatically restore health
+- *Lick wounds*: mostly used by enemies but can also be used by players if their cult has the "Animal instincts" trait. The performer restores an HP amount equal to their level.
+
+Attacking simply subtracts the target defence from the attacker's attack for each stat, so for example even if you have a very high slash resistance, a fire attack will pass right through your defence and will still hurt you.
+
+If you win you get `40 x enemy level` XP & BA plus you have a chance to get an artifact piece if you force the combat.
+Note that forcing combat gives you increasingly strong enemies the closer you get to finishing a quest.
+
+
 ♦️♦️*Consumables*♦️♦️
 Consumable items are important for restoring your HP during quests, boosting your damage or even reviving you.
 You can check out the dailiy items on sale at the market & buy them there. Note that you can hold a maximum of 10 consumables.
+
+Remember to bring plenty of healing items on quests as HP does NOT automatically regenerate until you get back to Town!
