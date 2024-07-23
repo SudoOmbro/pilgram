@@ -17,7 +17,8 @@
     "max_level": 10,
     "players_per_level": 4,
     "creation_cost": 1000,
-    "max_tax": 50
+    "max_tax": 50,
+    "max_players": 20
   },
   "modify_cost": 1000,
   "money": {
@@ -394,6 +395,7 @@
     "name": "Longsword",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 3,
     "damage": {
       "slash": 3,
@@ -405,6 +407,7 @@
     "name": "Spear",
     "slot": "primary",
     "weapon": true,
+    "class": "polearm",
     "delay": 3,
     "damage": {
       "pierce": 3
@@ -415,6 +418,7 @@
     "name": "Dagger",
     "slot": "secondary",
     "weapon": true,
+    "class": "dagger",
     "delay": 0,
     "damage": {
       "pierce": 1
@@ -425,6 +429,7 @@
     "name": "Round Shield",
     "slot": "secondary",
     "weapon": false,
+    "class": "shield",
     "delay": 2,
     "damage": {
       "blunt": 1
@@ -438,6 +443,7 @@
     "name": "Tower Shield",
     "slot": "secondary",
     "weapon": false,
+    "class": "shield",
     "delay": 6,
     "damage": {
       "blunt": 1
@@ -451,6 +457,7 @@
     "name": "FLint lock pistol",
     "slot": "secondary",
     "weapon": true,
+    "class": "firearm",
     "delay": 8,
     "damage": {
       "pierce": 5,
@@ -462,6 +469,7 @@
     "name": "Halberd",
     "slot": "primary",
     "weapon": true,
+    "class": "polearm",
     "delay": 5,
     "damage": {
       "slash": 2,
@@ -473,6 +481,7 @@
     "name": "Gladius",
     "slot": "primary",
     "weapon": true,
+    "class": "sword",
     "delay": 1,
     "damage": {
       "slash": 2,
@@ -516,7 +525,7 @@
     "name": "Gloves",
     "slot": "arms",
     "weapon": false,
-    "delay": 0,
+    "delay": 1,
     "resist": {
       "slash": 1
     },
@@ -526,9 +535,9 @@
     "name": "Chest plate",
     "slot": "chest",
     "weapon": false,
-    "delay": 10,
+    "delay": 12,
     "resist": {
-      "slash": 5,
+      "slash": 6,
       "pierce": 2
     },
     "value": 15
@@ -548,6 +557,7 @@
     "name": "Mace",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 3,
     "damage": {
       "blunt": 3
@@ -558,6 +568,7 @@
     "name": "Morning star",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 5,
     "damage": {
       "blunt": 3,
@@ -569,6 +580,7 @@
     "name": "Scythe",
     "slot": "primary",
     "weapon": true,
+    "class": "scythe",
     "delay": 6,
     "damage": {
       "slash": 6
@@ -579,6 +591,7 @@
     "name": "Hand cannon",
     "slot": "primary",
     "weapon": true,
+    "class": "firearm",
     "delay": 16,
     "damage": {
       "blunt": 7,
@@ -590,6 +603,7 @@
     "name": "Zweihander",
     "slot": "primary",
     "weapon": true,
+    "class": "greatsword",
     "delay": 10,
     "damage": {
       "slash": 10,
@@ -601,6 +615,7 @@
     "name": "Spiked Club",
     "slot": "primary",
     "weapon": true,
+    "class": "mace",
     "delay": 6,
     "damage": {
       "blunt": 1,
@@ -634,6 +649,7 @@
     "name": "Fetish",
     "slot": "secondary",
     "weapon": true,
+    "class": "magic",
     "delay": 2,
     "damage": {
       "occult": 2
@@ -644,8 +660,9 @@
     "name": "Sorcery staff",
     "slot": "primary",
     "weapon": true,
+    "class": "staff",
     "delay": 8,
-    "resist": {
+    "damage": {
       "blunt": 1,
       "occult": 4
     },
@@ -660,6 +677,215 @@
       "occult": 2
     },
     "value": 4
+  }, {
+    "id": 25,
+    "name": "Flail",
+    "slot": "primary",
+    "weapon": true,
+    "class": "mace",
+    "delay": 5,
+    "damage": {
+      "blunt": 3,
+      "pierce": 1
+    },
+    "value": 6
+  }, {
+    "id": 26,
+    "name": "Ballista",
+    "slot": "primary",
+    "weapon": true,
+    "class": "crossbow",
+    "delay": 30,
+    "damage": {
+      "pierce": 30
+    },
+    "value": 40
+  }, {
+    "id": 27,
+    "name": "Scimitar",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 2,
+    "damage": {
+      "slash": 4
+    },
+    "value": 10
+  }, {
+    "id": 28,
+    "name": "Urumi",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 8,
+    "damage": {
+      "slash": 8
+    },
+    "value": 12
+  }, {
+    "id": 29,
+    "name": "Spell book",
+    "slot": "secondary",
+    "weapon": true,
+    "class": "magic",
+    "delay": 2,
+    "damage": {
+      "blunt": 1,
+      "occult": 2
+    },
+    "value": 10
+  }, {
+    "id": 30,
+    "name": "Naginata",
+    "slot": "primary",
+    "weapon": true,
+    "class": "polearm",
+    "delay": 4,
+    "damage": {
+      "slash": 2,
+      "pierce": 2
+    },
+    "value": 7
+  }, {
+    "id": 31,
+    "name": "Katana",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 3,
+    "damage": {
+      "slash": 4
+    },
+    "value": 8
+  }, {
+    "id": 32,
+    "name": "Bracelets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "value": 2
+  }, {
+    "id": 33,
+    "name": "Spauldrons",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 5
+    },
+    "value": 10
+  }, {
+    "id": 34,
+    "name": "Gauntlets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "slash": 2,
+      "blunt": 1
+    },
+    "value": 8
+  }, {
+    "id": 35,
+    "name": "Inquisitor Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 5,
+      "pierce": 2,
+      "occult": 2
+    },
+    "value": 12
+  }, {
+    "id": 36,
+    "name": "Great Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 15,
+    "resist": {
+      "slash": 8,
+      "pierce": 6
+    },
+    "value": 20
+  }, {
+    "id": 37,
+    "name": "Spirals",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1,
+      "blunt": 1
+    },
+    "value": 8
+  }, {
+    "id": 38,
+    "name": "Greaves",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 10,
+    "resist": {
+      "slash": 6,
+      "pierce": 3
+    },
+    "value": 15
+  }, {
+    "id": 39,
+    "name": "Knee pads",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 3
+    },
+    "value": 6
+  }, {
+    "id": 40,
+    "name": "Elbow pads",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 3
+    },
+    "value": 6
+  }, {
+    "id": 41,
+    "name": "Curiass",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 4,
+      "pierce": 4,
+      "blunt": 2
+    },
+    "value": 20
+  }, {
+    "id": 42,
+    "name": "Bracers",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 3,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 1
+    },
+    "value": 8
+  }, {
+    "id": 43,
+    "name": "Gambeson",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 2
+    },
+    "value": 8
   }],
   "consumables": [{
     "id": 0,
@@ -715,6 +941,79 @@
     "value": 1000,
     "effects": {
       "hp_percent_restored": 50
+    }
+  }, {
+    "id": 6,
+    "name": "Eye of the Idiot God",
+    "description": "Gelatinous black eyeball. It smells like death.",
+    "verb": "consumed",
+    "value": 2000,
+    "effects": {
+      "revive": true,
+      "hp_percent_restored": 50
+    }
+  }, {
+    "id": 7,
+    "name": "Black Apple",
+    "description": "Pitch black apple, it absorbs all light.",
+    "verb": "consumed",
+    "value": 8,
+    "effects": {
+      "hp_restored": 5
+    }
+  }, {
+    "id": 8,
+    "name": "God skin jerky",
+    "description": "Hard & crunchy. Fills you with power.",
+    "verb": "consumed",
+    "value": 1000,
+    "effects": {
+      "buffs": ["strength"]
+    }
+  }, {
+    "id": 9,
+    "name": "Reaper Pepper",
+    "description": "Small, black & extremely hot.",
+    "verb": "ate",
+    "value": 400,
+    "effects": {
+      "buffs": ["fire"]
+    }
+  }, {
+    "id": 10,
+    "name": "Bone flavoured ice cream",
+    "description": "Ice cream made with the ground up bones of the dead.",
+    "verb": "ate",
+    "value": 400,
+    "effects": {
+      "buffs": ["ice"]
+    }
+  }, {
+    "id": 11,
+    "name": "Bottled madness",
+    "description": "bottled scream of a mad god.",
+    "verb": "Inhaled",
+    "value": 400,
+    "effects": {
+      "buffs": ["occult"]
+    }
+  }, {
+    "id": 12,
+    "name": "Acidic grease",
+    "description": "grease that corrodes any living flesh it touches.",
+    "verb": "applied",
+    "value": 400,
+    "effects": {
+      "buffs": ["acid"]
+    }
+  }, {
+    "id": 13,
+    "name": "Abyssal Eel entrails",
+    "description": "Jar of Abyssal Eel entrails, salted for conservation.",
+    "verb": "consumed",
+    "value": 400,
+    "effects": {
+      "buffs": ["electric"]
     }
   }]
 }

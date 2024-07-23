@@ -219,6 +219,7 @@ class QuestManager:
         # save data to db
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
+        # notify player
         self.notifier.notify(ac.player, text)
 
     def process_update(self, ac: AdventureContainer, updates: List[AdventureContainer]):

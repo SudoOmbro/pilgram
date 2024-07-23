@@ -320,7 +320,7 @@ class CombatContainer:
             self.resist_scale[actor] = 1.0
 
     def write_to_log(self, text: str):
-        self.combat_log += f"\n> {text}"
+        self.combat_log += f"\n{text}"
 
     def _cleanup_after_combat(self):
         """ remove all timed modifiers from combat participants """
@@ -332,20 +332,20 @@ class CombatContainer:
         return m.ModifierContext(context)
 
     def _start_combat(self):
-        self.combat_log = "*" + " vs ".join(f"{x.get_name()} (lv. {x.get_level()})" for x in self.participants) + "*\n"
+        self.combat_log = "*" + " vs ".join(f"{x.get_name()} (lv. {x.get_level()})" for x in self.participants) + "*"
         for participant in self.participants:
             participant.hp = int(participant.get_max_hp() * participant.hp_percent)
             for modifier in participant.get_entity_modifiers(m.ModifierType.COMBAT_START):
                 modifier.apply(self.get_mod_context({"entity": participant}))
 
     def _attack(self, attacker: CombatActor, target: CombatActor):
-        self.write_to_log(f"{attacker.get_name()} attacks {target.get_name()}")
+        self.write_to_log(f"{attacker.get_name()} attacks.")
         damage = attacker.attack(target, self).scale(self.resist_scale[target]).scale(self.damage_scale[attacker])
         self.damage_scale[attacker] = 1.0
         self.resist_scale[target] = 1.0
         total_damage = damage.get_total_damage()
         target.modify_hp(-total_damage)
-        self.write_to_log(f"{target.get_name()} takes {total_damage} damage ({target.get_hp_string()}).")
+        self.write_to_log(f"{target.get_name()} takes {total_damage} dmg ({target.get_hp_string()}).")
         for modifier in attacker.get_modifiers(m.ModifierType.POST_ATTACK):
             modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
         for modifier in target.get_modifiers(m.ModifierType.POST_DEFEND):
@@ -356,6 +356,7 @@ class CombatContainer:
         is_fight_over: bool = False
         self._start_combat()
         while not is_fight_over:
+            self.write_to_log("")
             # sort participants based on what they rolled on initiative
             self.participants.sort(key=lambda a: a.get_initiative())
             # get opponents by copying & reversing the participant list
@@ -373,10 +374,10 @@ class CombatContainer:
                     if factor > 0.9:
                         factor = 0.9
                     self.resist_scale[actor] = factor
-                    self.write_to_log(f"{actor.get_name()} prepares to dodge. (next dmg received: {int(factor * 100)}%)")
+                    self.write_to_log(f"{actor.get_name()} dodges (next dmg taken -{100 - int(factor * 100)}%).")
                 elif action_id == CombatActions.charge_attack:
                     self.damage_scale[actor] *= 1.5
-                    self.write_to_log(f"{actor.get_name()} charges an heavy attack (next attack {int(self.damage_scale[actor] * 100)}% dmg).")
+                    self.write_to_log(f"{actor.get_name()} takes aim (next dmg dealt +{int(self.damage_scale[actor] * 100) - 100}%).")
                 elif action_id == CombatActions.use_consumable:
                     if isinstance(actor, c.Player):
                         text = actor.use_random_consumable(add_you=False)
@@ -384,7 +385,7 @@ class CombatContainer:
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = 1 + actor.get_level()
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
-                    self.write_to_log(f"{actor.get_name()} licks their wounds, restoring {hp_restored} HP ({actor.get_hp_string()}).")
+                    self.write_to_log(f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()}).")
                 if actor.is_dead():
                     if isinstance(actor, c.Player):
                         # if player died but has a revive in his inventory then use it
@@ -400,10 +401,10 @@ class CombatContainer:
                     helper = self.helpers[actor]
                     damage = int(helper.get_level() * (1 + random.random()))
                     opponents[i].modify_hp(-damage)
-                    self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} damage to {opponents[i].get_name()}.")
+                    self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} dmg to {opponents[i].get_name()}.")
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
                     is_fight_over = True
-                    self.write_to_log(f"The combat is over, {opponents[i].get_name()} has won.")
+                    self.write_to_log(f"\n{opponents[i].get_name()} wins.")
         self._cleanup_after_combat()
         return self.combat_log

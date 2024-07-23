@@ -261,13 +261,13 @@ class FirstHitBonus(Modifier, rarity=Rarity.UNCOMMON):
         return damage
 
 
-class KillAtPercentHealth(Modifier, rarity=Rarity.UNCOMMON):
+class KillAtPercentHealth(Modifier, rarity=Rarity.RARE):
     TYPE = ModifierType.ATTACK
 
     MAX_STRENGTH = 50
     SCALING = 5
 
-    NAME = "Lethality"
+    NAME = "Obliteration"
     DESCRIPTION = "Instantly kill the target if its health is below {str}%"
 
     def function(self, context: ModifierContext) -> Any:
@@ -276,7 +276,7 @@ class KillAtPercentHealth(Modifier, rarity=Rarity.UNCOMMON):
             # doing this will instantly kill the entity since the minimum damage an attack can do is 1
             target.hp = 0
             target.hp_percent = 0.0
-            self.write_to_log(context, f"{target.get_name()} is executed!")
+            self.write_to_log(context, f"Obliteration.")
         return context.get("damage")
 
 
@@ -310,7 +310,7 @@ class ChaosBrand(Modifier, rarity=Rarity.UNCOMMON):
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
         scaling_factor = 0.8 + (random.random() * self.get_fstrength())
-        self.write_to_log(context, f"Chaos scales the damage by {int(scaling_factor * 100)}%")
+        self.write_to_log(context, f"Chaos: {int(scaling_factor * 100)}%")
         return damage.scale(scaling_factor)
 
 
@@ -349,7 +349,7 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
         def function(self, context: ModifierContext) -> Any:
             target: cc.CombatActor = context.get("supplier")
             target.modify_hp(-(self.strength))
-            self.write_to_log(context, f"{target.get_name()} takes {self.strength} poison damage. ({target.get_hp_string()})")
+            self.write_to_log(context, f"{target.get_name()} takes {self.strength} poison dmg. ({target.get_hp_string()})")
 
     def function(self, context: ModifierContext) -> Any:
         target: cc.CombatActor = context.get("other")
@@ -420,7 +420,7 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
         def function(self, context: ModifierContext) -> Any:
             me: cc.CombatActor = context.get("supplier")
             if me.hp == 0:
-                self.write_to_log(context, f"Thanks to their Unyielding Will {me.get_name()} still stands.")
+                self.write_to_log(context, f"{me.get_name()} still stands.")
                 me.modify_hp(int(me.get_max_hp() / 50))
             else:
                 self.duration += 1  # if the bonus was not used then restore duration
@@ -492,7 +492,7 @@ class Thorns(Modifier, rarity=Rarity.UNCOMMON):
         defender: cc.CombatActor = context.get("supplier")
         attacker: cc.CombatActor = context.get("supplier")
         attacker.modify_hp(self.strength)
-        self.write_to_log(context, f"{defender.get_name()}'s thorns inflict {self.strength} damage to {attacker.get_name()}.")
+        self.write_to_log(context, f"{attacker.get_name()} loses {self.strength} HP from thorns.")
         return context.get("damage")
 
 class FireAbsorb(_GenericDamageAbsorb, dmg_type="fire"): pass

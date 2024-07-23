@@ -185,9 +185,12 @@ class PilgramBot(PilgramNotifier):
         try:
             chat_id = player.player_id
             url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={quote(text)}"
-            return requests.get(url).json()
+            result = requests.get(url)
+            if result.ok:
+                return result.json()
+            raise Exception(result.text)
         except Exception as e:
-            log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}")
+            log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}\nMessage ({len(text)} chars): {text}")
 
     def has_sent_a_message_too_recently(self, user_id: int, cooldown: int) -> bool:
         return has_recently_accessed_cache(self.storage, user_id, cooldown)
