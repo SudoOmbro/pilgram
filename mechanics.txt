@@ -133,7 +133,7 @@ Your combat stats are mainly determined by your equipment which has damage and r
 Combat is turn based and it consists of mainly 5 actions that both participants can perform:
 - *Attack*: deal attacker damage - target defence damage to the target
 - *Dodge*: the next attack the dodger receives will deal [total delay]% damage to them (capped at 90%) (The minimum damage is 1)
-- *Charge heavy attack*: The performer charges an heavy attack, adding 50% more damage to the next attack they'll do.
+- *Charge heavy attack*: The performer charges an heavy attack, multiplying the damage of their next attack by 150%.
 - *Use consumable*: reserved to players, if a character's health is under 50% they'll have a chance to use items to automatically restore health
 - *Lick wounds*: mostly used by enemies but can also be used by players if their cult has the "Animal instincts" trait. The performer restores an HP amount equal to their level.
 

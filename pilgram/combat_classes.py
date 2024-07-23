@@ -375,7 +375,7 @@ class CombatContainer:
                     self.resist_scale[actor] = factor
                     self.write_to_log(f"{actor.get_name()} prepares to dodge. (next dmg received: {int(factor * 100)}%)")
                 elif action_id == CombatActions.charge_attack:
-                    self.damage_scale[actor] += 0.5
+                    self.damage_scale[actor] *= 1.5
                     self.write_to_log(f"{actor.get_name()} charges an heavy attack (next attack {int(self.damage_scale[actor] * 100)}% dmg).")
                 elif action_id == CombatActions.use_consumable:
                     if isinstance(actor, c.Player):
