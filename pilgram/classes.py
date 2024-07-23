@@ -569,12 +569,14 @@ class Player(CombatActor):
     STANCE_POOL = {
         "b": (CombatActions.attack, CombatActions.attack, CombatActions.dodge, CombatActions.charge_attack, CombatActions.dodge, CombatActions.use_consumable),
         "s": (CombatActions.attack, CombatActions.dodge, CombatActions.dodge, CombatActions.use_consumable),
-        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.dodge)
+        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.dodge),
+        "a": (CombatActions.attack, CombatActions.attack)
     }
     STANCE_POOL_NC = {  # No Consumables
         "b": (CombatActions.attack, CombatActions.attack, CombatActions.dodge, CombatActions.charge_attack, CombatActions.dodge),
         "s": (CombatActions.attack, CombatActions.attack, CombatActions.dodge),
-        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.charge_attack, CombatActions.dodge)
+        "r": (CombatActions.attack, CombatActions.attack, CombatActions.attack, CombatActions.charge_attack, CombatActions.charge_attack, CombatActions.dodge),
+        "a": (CombatActions.attack, CombatActions.attack)
     }
 
     def choose_action(self, opponent: "CombatActor") -> int:

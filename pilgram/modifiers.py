@@ -501,4 +501,21 @@ class FreezeAbsorb(_GenericDamageAbsorb, dmg_type="freeze"): pass
 class ElectricAbsorb(_GenericDamageAbsorb, dmg_type="electric"): pass
 
 
+class RouletteAttack(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.ATTACK
+
+    MIN_STRENGTH = 1
+    SCALING = 3.5
+
+    NAME = "Roulette Attack"
+    DESCRIPTION = "Deal +{str} damage of a random type"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        key = random.choice(list(damage.__dict__.keys()))
+        damage_modifier = damage.get_empty()
+        damage.__dict__[key] = self.strength
+        return damage + damage_modifier
+
+
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end

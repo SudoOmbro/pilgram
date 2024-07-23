@@ -229,8 +229,9 @@ class Strings:
     invalid_stance = "Invalid stance, here are the available stances (you can write just the first letter):\n"
     stances = {
         "b": ("Balanced", "A good balance between aggression & defence."),
-        "r": ("Reckless", "All-in on attacking."),
-        "s": ("Safe", "Be defensive, try to keep your hp high")
+        "r": ("Reckless", "All-in on attacks & heavy attacks."),
+        "s": ("Safe", "Be defensive, try to keep your hp high"),
+        "a": ("Automaton", "Just attack. Nothing else.")
     }
     stance_switch = "Stance switched to "
 
