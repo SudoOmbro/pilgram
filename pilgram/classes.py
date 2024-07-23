@@ -1158,7 +1158,7 @@ class Enemy(CombatActor):
         return random.randint(1, dice_faces)
 
     def get_name(self) -> str:
-        return "the " + self.meta.name.rstrip()
+        return "the " + self.meta.name.rstrip().lstrip("The ")
 
     def get_level(self) -> int:
         value = self.meta.zone.level + self.level_modifier
