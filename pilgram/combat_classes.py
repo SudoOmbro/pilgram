@@ -400,7 +400,7 @@ class CombatContainer:
                     helper = self.helpers[actor]
                     damage = int(helper.get_level() * (1 + random.random()))
                     opponents[i].modify_hp(-damage)
-                    self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} to {opponents[i].get_name()}.")
+                    self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} damage to {opponents[i].get_name()}.")
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
                     is_fight_over = True
