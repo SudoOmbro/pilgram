@@ -1,0 +1,5 @@
+PRIVACY NOTICE
+
+The only information about you this bot stores is your *user id*, which is the bare minimum to make the bot function.
+
+Everything else stored in the database is just game related data, like your character's name, description, etc.

@@ -26,6 +26,7 @@ logging.basicConfig(
 DEV_NAME = GlobalSettings.get('dev contacts.telegram')
 INFO_STRING = f"Made with ❤️ by {DEV_NAME}\n\n" + "\n\n".join(f"[{name}]({link})" for name, link in GlobalSettings.get("links").items())
 START_STRING = read_text_file("intro.txt").format(wn=ContentMeta.get("world.name"), mn=ContentMeta.get("money.name"))
+PRIVACY_STRING = read_text_file("privacy.txt")
 
 
 async def notify_with_id(bot: Bot, player_id: int, text: str):
@@ -63,6 +64,10 @@ async def info(update: Update, c: ContextTypes.DEFAULT_TYPE):
     await c.bot.send_message(chat_id=update.effective_chat.id, text=INFO_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
 
 
+async def privacy(update: Update, c: ContextTypes.DEFAULT_TYPE):
+    await c.bot.send_message(chat_id=update.effective_chat.id, text=PRIVACY_STRING, parse_mode=ParseMode.MARKDOWN, disable_web_page_preview=True)
+
+
 def _delimit_markdown_entities(text: str) -> str:
     result = text
     for char in ["_", "*", "~"]:
@@ -78,6 +83,7 @@ class PilgramBot(PilgramNotifier):
         self.__app = ApplicationBuilder().token(bot_token).build()
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
+        self.__app.add_handler(CommandHandler("privacy", privacy))
         self.__app.add_handler(CommandHandler("quit", self.quit))
         for command, args, _ in self.interpreter.commands_list:
             self.__app.add_handler(CommandHandler(command, self.handle_message, has_args=args))
