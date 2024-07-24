@@ -1,10 +1,15 @@
 Greetings stranger. Welcome to the grim & dark world of {wn}.
 
 Test your strength and your gear by going on endless quests and become the ultimate adventurer.
-Gain wealth ({mn}) and experience, meet friendly faces during your travels, acquire powerful gear & beautiful homes!
+Gain wealth ({mn}) and experience, join cults, meet friendly faces during your travels, acquire powerful gear & beautiful homes!
 
 You can do all that & more in Pilgram, you just have to create a character with the `create character` command!
-Then after that, use the `embark 1` command to begin your first quest! Enjoy!
+
+The first thing you should do is crafting something to defend yourself with at the smithy, use `check smithy` & `craft [number]` to craft the item you want.
+To then equip your new item use the `equip 1` command (check inventory with the `inventory` command)
+
+Then after that, use the `embark 1` command to begin your first quest!
+Enjoy!
 
 Use the `help` command to see all the commands you can use.
 
