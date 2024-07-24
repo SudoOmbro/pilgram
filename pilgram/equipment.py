@@ -129,7 +129,7 @@ class Equipment:
         return (self.equipment_type.value + self.level) * (len(self.modifiers) + 1)
 
     def __str__(self):
-        string = f"*{self.name}* | lv. {self.level}\n- {Strings.slots[self.equipment_type.slot]} -\nDelay: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}"
+        string = f"*{self.name}* | lv. {self.level}\n- {Strings.slots[self.equipment_type.slot]} -\nWeight: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}"
         if self.equipment_type.description:
             string += f"\n_{self.equipment_type.description}_"
         if self.damage:
