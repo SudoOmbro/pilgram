@@ -187,7 +187,15 @@ class PilgramBot(PilgramNotifier):
             await notify_with_id(self.get_bot(), player_id, text)
             await asyncio.sleep(timeout)
 
-    def notify(self, player: Player, text: str):
+    def notify(self, player: Player, text: str, notification_type: str = "notification"):
+        if len(text) > 4096:
+            log.info(f"Text too long, seding notification to {player.name} as file")
+            return self.send_file(
+                player,
+                f"{notification_type}.txt",
+                text.encode("utf-8"),
+                f"Your {notification_type} was too long for a message, here's a text file containing it."
+            )
         try:
             chat_id = player.player_id
             url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={quote(text)}"
@@ -197,6 +205,20 @@ class PilgramBot(PilgramNotifier):
             raise Exception(result.text)
         except Exception as e:
             log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}\nMessage ({len(text)} chars): {text}")
+
+    def send_file(self, player: Player, file_name: str, file_bytes: bytes, caption: str):
+        try:
+            payload = {
+                "chat_id": player.player_id,
+                "caption": caption
+            }
+            url = f"https://api.telegram.org/bot{self.__token}/sendDocument"
+            result = requests.post(url, data=payload, files={"document": (file_name, file_bytes)})
+            if result.ok:
+                return result.json()
+            raise Exception(result.text)
+        except Exception as e:
+            log.error(f"Error while sending file to player {player.name}: {e}")
 
     def has_sent_a_message_too_recently(self, user_id: int, cooldown: int) -> bool:
         return has_recently_accessed_cache(self.storage, user_id, cooldown)

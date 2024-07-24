@@ -220,7 +220,7 @@ class QuestManager:
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         # notify player
-        self.notifier.notify(ac.player, text)
+        self.notifier.notify(ac.player, text, notification_type="Combat Log")
 
     def process_update(self, ac: AdventureContainer, updates: List[AdventureContainer]):
         if ac.is_on_a_quest():

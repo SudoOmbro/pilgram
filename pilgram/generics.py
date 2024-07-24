@@ -352,5 +352,5 @@ class PilgramGenerator(ABC):
 
 class PilgramNotifier(ABC):
 
-    def notify(self, player: Player, text: str):
+    def notify(self, player: Player, text: str, notification_type: str = "notification"):
         raise NotImplementedError

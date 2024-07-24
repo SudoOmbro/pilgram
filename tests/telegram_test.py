@@ -30,3 +30,8 @@ class TestTelegram(unittest.TestCase):
         bot = PilgramBot(GlobalSettings.get("Telegram bot token"))
         player = Player.create_default(633679661, "Ombro", "A really cool guy")
         bot.notify(player, "test" * 4000)
+
+    def test_telegram_send_file(self):
+        bot = PilgramBot(GlobalSettings.get("Telegram bot token"))
+        player = Player.create_default(633679661, "Ombro", "A really cool guy")
+        bot.send_file(player, "AAA.txt", b"AAAAA", "AAAAA")
