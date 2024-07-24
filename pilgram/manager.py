@@ -158,6 +158,13 @@ class QuestManager:
         player.hp_percent = 1.0
         self.db().update_player_data(player)
 
+    @staticmethod
+    def __player_regenerate_hp(ac: AdventureContainer, player: Player) -> str:
+        hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
+        regenerated_hp: int = 1 + int(player.gear_level * hours_passed) + player.cult.passive_regeneration
+        player.modify_hp(regenerated_hp)
+        return f"You regenerate {regenerated_hp} HP ({player.get_hp_string()})."
+
     def _process_event(self, ac: AdventureContainer):
         zone = ac.zone()
         event = self.db().get_random_zone_event(zone)
@@ -166,6 +173,7 @@ class QuestManager:
         player.add_xp(xp)
         money_am = player.add_money(money)  # am = after modifiers
         ac.player = player
+        regeneration_text = self.__player_regenerate_hp(ac, player)
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
@@ -177,7 +185,7 @@ class QuestManager:
                 # log.info(f"Player '{player.name}' encountered a QTE.")
                 qte = random.choice(QuickTimeEvent.LIST)
                 QTE_CACHE[player.player_id] = qte
-                text += f"*QTE*\n\n{qte}"
+                text += f"*QTE*\n\n{qte}\n\n"
             elif random.randint(1, 10) <= (1 + player.cult.discovery_bonus):  # 10% base change of finding an item
                 items = self.db().get_player_items(player.player_id)
                 if len(items) < player.get_inventory_size():
@@ -185,16 +193,16 @@ class QuestManager:
                     # log.info(f"Player '{player.name}' found item: '{item.name}'.")
                     items.append(item)
                     self.db().add_item(item, player)
-                    text += f"You found an item:\n*{item.name}*"
-            # regenerate HP
-            hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
-            regenerated_hp: int = 1 + int(player.gear_level * hours_passed) + player.cult.passive_regeneration
-            player.modify_hp(regenerated_hp)
-            text += f"\n\nYou regenerate {regenerated_hp} HP ({player.get_hp_string()})."
+                    text += f"You found an item:\n*{item.name}*\n\n"
+            text += regeneration_text
         self.notifier.notify(ac.player, text)
 
     def _process_combat(self, ac: AdventureContainer, updates: List[AdventureContainer]):
         player: Player = self.db().get_player_data(ac.player.player_id)
+        self.__player_regenerate_hp(ac, player)
+        hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
+        regenerated_hp: int = 1 + int(player.gear_level * hours_passed) + player.cult.passive_regeneration
+        player.modify_hp(regenerated_hp)
         # select helper from current updates
         helper: Union[Player, None] = None
         for update in updates:
