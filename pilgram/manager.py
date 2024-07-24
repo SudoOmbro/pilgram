@@ -186,6 +186,11 @@ class QuestManager:
                     items.append(item)
                     self.db().add_item(item, player)
                     text += f"You found an item:\n*{item.name}*"
+            # regenerate HP
+            hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
+            regenerated_hp: int = 1 + int(player.gear_level * hours_passed) + player.cult.passive_regeneration
+            player.modify_hp(regenerated_hp)
+            text += f"\n\nYou regenerate {regenerated_hp} HP ({player.get_hp_string()})."
         self.notifier.notify(ac.player, text)
 
     def _process_combat(self, ac: AdventureContainer, updates: List[AdventureContainer]):

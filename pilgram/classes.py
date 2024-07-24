@@ -786,7 +786,13 @@ class ZoneEvent:
 class AdventureContainer:
     """ Utility class to help manage player updates """
 
-    def __init__(self, player: Player, quest: Union[Quest, None], finish_time: Union[datetime, None]):
+    def __init__(
+            self,
+            player: Player,
+            quest: Union[Quest, None],
+            finish_time: Union[datetime, None],
+            last_update: datetime
+    ):
         """
         :param player:
             the player questing
@@ -798,6 +804,7 @@ class AdventureContainer:
         self.player = player
         self.quest = quest
         self.finish_time = finish_time
+        self.last_update = last_update
 
     def is_quest_finished(self) -> bool:
         """ returns whether the current quest is finished by checking the finish time """
@@ -1020,6 +1027,7 @@ class Cult(Listable, meta_name="cults"):
         self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
         self.discovery_bonus: int = modifiers.get("discovery_bonus", 0)
         self.lick_wounds: bool = modifiers.get("lick_wounds", False)
+        self.passive_regeneration: int = modifiers.get("passive_regeneration", 0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:

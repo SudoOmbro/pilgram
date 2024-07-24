@@ -161,7 +161,8 @@ class Strings:
         "damage": "Damage x level",
         "resistance": "Resist x level",
         "discovery_bonus": "Item discovery bonus",
-        "lick_wounds": "Animal instincts"
+        "lick_wounds": "Animal instincts",
+        "passive_regeneration": "Passive HP regeneration",
     }
 
     # items
