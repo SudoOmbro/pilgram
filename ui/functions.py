@@ -11,6 +11,7 @@ from minigames.games import AAA
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult
 from pilgram.equipment import Equipment, EquipmentType
+from pilgram.flags import ForcedCombat
 from pilgram.generics import PilgramDatabase, AlreadyExists
 from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
     MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
@@ -904,6 +905,16 @@ def use_consumable(context: UserContext, item_pos_str: str) -> str:
         return Strings.no_character_yet
 
 
+def force_combat(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        player.set_flag(ForcedCombat)
+        db().update_player_data(player)
+        return Strings.force_combat
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -971,6 +982,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
     "cults": IFW(None, list_cults, "Shows all cults"),
+    "hunt": IFW(None, force_combat, "Hunt for a strong enemy"),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),

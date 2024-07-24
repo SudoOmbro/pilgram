@@ -10,7 +10,7 @@ from typing import List, Dict, Tuple, Union
 from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult, Enemy
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.flags import BUFF_FLAGS
+from pilgram.flags import BUFF_FLAGS, ForcedCombat
 from pilgram.generics import PilgramDatabase, PilgramNotifier, PilgramGenerator
 from pilgram.globals import ContentMeta
 from pilgram.strings import Strings
@@ -196,7 +196,11 @@ class QuestManager:
             if (player.guild is not None) and (update.player != player) and update.is_on_a_quest() and (update.zone() == ac.zone()) and (update.player.guild is not None) and (update.player.guild == player.guild):
                 helper = update.player
                 break
-        enemy = Enemy(self.db().get_random_enemy_meta(ac.quest.zone), [], ac.quest.number)
+        enemy_level_modifier: int = ac.quest.number
+        if ForcedCombat.is_set(player.flags):
+            days_left = (ac.finish_time - datetime.now()).days
+            enemy_level_modifier += 5 - days_left if days_left < 5 else 1
+        enemy = Enemy(self.db().get_random_enemy_meta(ac.quest.zone), [], enemy_level_modifier)
         combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = f"Combat starts!\n\n" + combat.fight()
         if player.is_dead():
@@ -212,10 +216,18 @@ class QuestManager:
             player.renown += renown
             money_am = player.add_money(money)
             text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
-        # unset buff flags
+            # more rewards if combat was forced
+            if ForcedCombat.is_set(player.flags) and (random.random() <= 0.5):  # 50% change to get an artifact piece if combat was forced
+                if (player.level - ac.quest.zone.level) < 6:
+                    log.info(f"Artifact piece drop for {player.name}")
+                    player.add_artifact_pieces(1)
+                    text += Strings.piece_found
+        # unset player flags
         for flag in BUFF_FLAGS:
             if flag.is_set(player.flags):
                 player.flags = flag.unset(player.flags)
+        if ForcedCombat.is_set(player.flags):
+            player.flags = ForcedCombat.unset(player.flags)
         # save data to db
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
@@ -224,9 +236,10 @@ class QuestManager:
 
     def process_update(self, ac: AdventureContainer, updates: List[AdventureContainer]):
         if ac.is_on_a_quest():
+            player: Player = self.db().get_player_data(ac.player.player_id)
             if ac.is_quest_finished():
                 self._complete_quest(ac)
-            elif random.randint(1, 100) <= 15:  # 15% base chance of combat
+            elif ForcedCombat.is_set(player.flags) or (random.randint(1, 100) <= 10):  # 10% base chance of combat
                 self._process_combat(ac, updates)
             else:
                 self._process_event(ac)

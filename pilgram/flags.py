@@ -91,4 +91,8 @@ class ElectricBuff(Flag):
     pass
 
 
+class ForcedCombat(Flag):
+    pass
+
+
 BUFF_FLAGS: Tuple[Type[Flag], ...] = (StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff)

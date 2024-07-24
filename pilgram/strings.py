@@ -234,6 +234,7 @@ class Strings:
         "a": ("Automaton", "Just attack. Nothing else.")
     }
     stance_switch = "Stance switched to "
+    force_combat = "You look for something strong to kill..."
 
     # artifacts
     max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."

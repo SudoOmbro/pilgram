@@ -202,6 +202,10 @@ class PilgramBot(PilgramNotifier):
             result = requests.get(url)
             if result.ok:
                 return result.json()
+            if result.status_code == 403:
+                # ignore unauthorized requests
+                # TODO maybe delete characters of people who blocked the Bot
+                return {}
             raise Exception(result.text)
         except Exception as e:
             log.error(f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}\nMessage ({len(text)} chars): {text}")
