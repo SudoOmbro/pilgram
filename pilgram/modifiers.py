@@ -495,6 +495,7 @@ class Thorns(Modifier, rarity=Rarity.UNCOMMON):
         self.write_to_log(context, f"{attacker.get_name()} loses {self.strength} HP from thorns.")
         return context.get("damage")
 
+
 class FireAbsorb(_GenericDamageAbsorb, dmg_type="fire"): pass
 class AcidAbsorb(_GenericDamageAbsorb, dmg_type="acid"): pass
 class FreezeAbsorb(_GenericDamageAbsorb, dmg_type="freeze"): pass
