@@ -364,6 +364,7 @@ class CombatContainer:
                 self.write_to_log(f"{actor.get_name()} {text}, they are revived! ({actor.get_hp_string()})")
                 return True
             return False
+
     def fight(self) -> str:
         """ simulate combat between players and enemies. Return battle report in a string. """
         is_fight_over: bool = False
