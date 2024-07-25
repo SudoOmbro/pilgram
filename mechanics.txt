@@ -157,9 +157,12 @@ Equipment can have 8 base damage/resistance stats:
 
 The sum of all the stats determines your total base attack/defence.
 
-Equipment can have modifiers, which are powerful effects that range from simple damage percentage increases to giving you a shield that nullifies the first attack against you.
-There are more than 50 modifiers of varying rarity in total.
-Modifiers will show up on the weapon name as stars.
+Equipment can have perks, which are powerful effects that range from simple damage percentage increases to giving you a shield that nullifies the first attack against you.
+There are more than 50 Perks of varying rarity in total.
+Perks will show up on the weapon name as stars.
+
+You can `reroll` items stats & perks for 20 times the value of the item in Boromian Alloy.
+You can `enchant` items to add a new perk to them for an artifact piece (you can't have more than 4 perks on an item).
 
 ♦️♦️*Combat*♦️♦️
 Combat is a big part of questing in Pilgram, it can determine whether you complete or fail a quest & it rewards you with a lot of XP & BA.
@@ -168,14 +171,15 @@ Combat is turn based and it consists of mainly 5 actions that both participants 
 - *Attack*: deal attacker damage - target defence damage to the target
 - *Dodge*: the next attack the dodger receives will deal [total delay]% damage to them (capped at 90%) (The minimum damage is 1)
 - *Take aim*: The performer aims for a weak spot, multiplying the damage of their next attack by 150%.
-- *Use consumable*: reserved to players, if a character's health is under 50% they'll have a chance to use items to automatically restore health
+- *Use consumable*: reserved to players, if a character's health is under 50% they'll have a chance to use healing items to automatically restore health
 - *Lick wounds*: mostly used by enemies but can also be used by players if their cult has the "Animal instincts" trait. The performer restores an HP amount equal to their level.
 
 Attacking simply subtracts the target defence from the attacker's attack for each stat, so for example even if you have a very high slash resistance, a fire attack will pass right through your defence and will still hurt you.
 
+If you die during combat and you have a revive in your inventory, the revive will be automatically used by your character.
+
 If you win you get `40 x enemy level` XP & BA plus you have a chance to get an artifact piece if you force the combat.
 Note that forcing combat gives you increasingly strong enemies the closer you get to finishing a quest.
-
 
 ♦️♦️*Consumables*♦️♦️
 Consumable items are important for restoring your HP during quests, boosting your damage or even reviving you.
