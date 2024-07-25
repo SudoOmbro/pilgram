@@ -5,7 +5,7 @@ from typing import List
 
 from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent, Enemy, EnemyMeta
 from pilgram.combat_classes import Damage, CombatContainer
-from pilgram.equipment import Equipment, EquipmentType
+from pilgram.equipment import Equipment, EquipmentType, ConsumableItem
 from pilgram.modifiers import print_all_modifiers, Modifier
 
 
@@ -88,12 +88,12 @@ class TestClasses(unittest.TestCase):
 
     def test_combat(self):
         player = Player.create_default(0, "Ombro", "")
-        player.level = 1
-        player.gear_level = 1
+        player.level = 2
+        player.gear_level = 2
         zone = Zone(
             1,
             "zone name",
-            1,
+            8,
             "AAAA",
             Damage(0, 0, 1, 0, 0, 0, 0, 0),
             Damage(0, 0, 0, 0, 0, 0, 0, 0),
@@ -109,6 +109,7 @@ class TestClasses(unittest.TestCase):
             EquipmentType.get(21),  # Lorica segmentata
             []
         ))
+        player.satchel = [ConsumableItem.get(15), ConsumableItem.get(7), ConsumableItem.get(6), ConsumableItem.get(5), ConsumableItem.get(13)]
         enemy = Enemy(
             EnemyMeta(0, zone, "Cock monger", "AAAAA", "WIN", "LOSS"),
             [],

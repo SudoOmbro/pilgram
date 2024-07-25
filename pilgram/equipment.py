@@ -233,6 +233,10 @@ class ConsumableItem(Listable, meta_name="consumables"):
         self.buffs = buffs
         self.effects = list(effects.keys())
 
+    def is_healing_item(self) -> bool:
+        """ return whether a consumable is just a healing item """
+        return (not self.revive) and (self.buff_flag == 0)
+
     def __str__(self):
         string = f"*{self.name}*\n_{self.description}_\nPrice: {self.value} {MONEY}\nEffects:\n"
         for effect in self.effects:

@@ -351,6 +351,19 @@ class CombatContainer:
         for modifier in target.get_modifiers(m.ModifierType.POST_DEFEND):
             modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
 
+    def _try_revive(self, actor: CombatActor) -> bool:
+        if isinstance(actor, c.Player):
+            # if player died but has a revive in his inventory then use it
+            pos: int = -1
+            for j, consumable in enumerate(actor.satchel):
+                if consumable.revive:
+                    pos = j
+                    break
+            if pos != -1:
+                text, _ = actor.use_consumable(pos+1, add_you=False)
+                self.write_to_log(f"{actor.get_name()} {text}, they are revived! ({actor.get_hp_string()})")
+                return True
+            return False
     def fight(self) -> str:
         """ simulate combat between players and enemies. Return battle report in a string. """
         is_fight_over: bool = False
@@ -365,7 +378,8 @@ class CombatContainer:
             # choose & perform actions
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
-                    continue
+                    if not self._try_revive(actor):
+                        continue
                 action_id = actor.choose_action(opponents[i])
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])
@@ -380,22 +394,15 @@ class CombatContainer:
                     self.write_to_log(f"{actor.get_name()} takes aim (next dmg dealt +{int(self.damage_scale[actor] * 100) - 100}%).")
                 elif action_id == CombatActions.use_consumable:
                     if isinstance(actor, c.Player):
-                        text = actor.use_random_consumable(add_you=False)
-                        self.write_to_log(f"{actor.get_name()} {text}")
+                        text, used_item = actor.use_healing_consumable(add_you=False)
+                        if used_item:
+                            self.write_to_log(f"{actor.get_name()} {text}. ({actor.get_hp_string()})")
+                        else:
+                            self._attack(actor, opponents[i])
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = 1 + actor.get_level()
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
                     self.write_to_log(f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()}).")
-                if actor.is_dead():
-                    if isinstance(actor, c.Player):
-                        # if player died but has a revive in his inventory then use it
-                        pos: int = -1
-                        for j, consumable in enumerate(actor.satchel):
-                            if consumable.revive:
-                                pos = j
-                                break
-                        if pos != -1:
-                            actor.use_consumable(pos)
                 # use helpers
                 if self.helpers[actor] and (random.randint(1, 5) == 1):  # 20% chance of helper intervention
                     helper = self.helpers[actor]
@@ -404,7 +411,8 @@ class CombatContainer:
                     self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} dmg to {opponents[i].get_name()}.")
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
-                    is_fight_over = True
-                    self.write_to_log(f"\n{opponents[i].get_name()} wins.")
+                    if not self._try_revive(actor):
+                        is_fight_over = True
+                        self.write_to_log(f"\n{opponents[i].get_name()} wins.")
         self._cleanup_after_combat()
         return self.combat_log

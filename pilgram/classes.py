@@ -524,6 +524,7 @@ class Player(CombatActor):
             self.hp = max_hp
 
     def use_consumable(self, position_in_satchel: int, add_you: bool = True) -> Tuple[str, bool]:
+        """ return the use text & if you actually used a consumable """
         if not self.satchel:
             return "No items in satchel!", False
         if position_in_satchel > len(self.satchel):
@@ -547,12 +548,22 @@ class Player(CombatActor):
             return "You " + text, True
         return text, True
 
-    def use_random_consumable(self, add_you: bool = True) -> str:
+    def use_healing_consumable(self, add_you: bool = True) -> Tuple[str, bool]:
         if not self.satchel:
-            return "No items in satchel!"
-        pos = random.randint(0, len(self.satchel) - 1)
-        text, _ = self.use_consumable(pos, add_you=add_you)
-        return text
+            return "No items in satchel!", False
+        max_hp: int = self.get_max_hp()
+        pos: int = -1
+        best_healing: int = 0
+        for i, item in enumerate(self.satchel):
+            if item.is_healing_item():
+                item_healing = item.hp_restored + (item.hp_percent_restored * max_hp)
+                if item_healing > best_healing:
+                    best_healing = item_healing
+                    pos = i
+        if pos == -1:
+            return "No healing items in satchel!", False
+        text, _ = self.use_consumable(pos+1, add_you=add_you)
+        return text, True
 
     def equip_item(self, item: Equipment):
         self.equipped_items[item.equipment_type.slot] = item
@@ -580,7 +591,7 @@ class Player(CombatActor):
     }
 
     def choose_action(self, opponent: "CombatActor") -> int:
-        main_pool = self.STANCE_POOL if (self.satchel and (self.hp_percent < 0.8)) else self.STANCE_POOL_NC
+        main_pool = self.STANCE_POOL if (self.satchel and (self.hp_percent < 0.55)) else self.STANCE_POOL_NC
         selected_pool = main_pool.get(self.get_stance(), (CombatActions.attack, CombatActions.dodge))
         if self.cult.lick_wounds:
             selected_pool += (CombatActions.lick_wounds, )
