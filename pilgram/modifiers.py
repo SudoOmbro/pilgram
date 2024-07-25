@@ -518,4 +518,31 @@ class RouletteAttack(Modifier, rarity=Rarity.RARE):
         return damage + damage_modifier
 
 
+class IdiotGodBlessing(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.COMBAT_START
+
+    MAX_STRENGTH = 100
+    MIN_STRENGTH = 10
+    SCALING = 5
+
+    NAME = "Idiot God Blessing"
+    DESCRIPTION = "Gives you 1 free revive per combat (restores {str} hp)."
+
+    class FreeRevive(Modifier):
+        TYPE = ModifierType.POST_DEFEND
+
+        def function(self, context: ModifierContext) -> Any:
+            entity: cc.CombatActor = context.get("other")
+            if entity.is_dead():
+                entity.modify_hp(int(entity.get_max_hp() * self.get_fstrength()))
+                self.write_to_log(context, f"The Idiot God blessing revives {entity.get_name()}! ({entity.get_hp_string()})")
+            else:
+                self.duration += 1
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        entity.timed_modifiers.append(self.FreeRevive(self.strength, duration=1))
+        return 0
+
+
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
