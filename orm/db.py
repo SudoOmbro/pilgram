@@ -161,7 +161,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # player ----
 
-    @cache_sized_ttl_quick(size_limit=2000, ttl=3600)
+    # @cache_sized_ttl_quick(size_limit=2000, ttl=3600)
     def get_player_data(self, player_id) -> Player:
         # we are using a cache in front of this function since it's going to be called a lot, because of how the
         # function is structured the cache will store the Player objects which will always be updated in memory along

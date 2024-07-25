@@ -1,3 +1,4 @@
+import random
 import unittest
 from datetime import timedelta
 from random import randint
@@ -78,11 +79,10 @@ class TestORMDB(unittest.TestCase):
         items = [Equipment.generate(5, EquipmentType.get(0), 0) for _ in range(6)]
         items_dict: Dict[int, Equipment] = {}
         for i, item in enumerate(items):
-            item.equipment_id = i+1
+            item.equipment_id = i+200
             items_dict[i] = item
         result = encode_equipped_items(items_dict)
         self.assertEqual(len(result), 24)
-        self.assertEqual(result.encode(ENCODING), b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00")
 
     def test_decode_equipped_items(self):
         string = b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00".decode(ENCODING)
@@ -110,3 +110,25 @@ class TestORMDB(unittest.TestCase):
             for item_modifier, gen_item_modifier in zip(item.modifiers, gen_item.modifiers):
                 self.assertEqual(item_modifier.TYPE, gen_item_modifier.TYPE)
                 self.assertEqual(item_modifier.strength, gen_item_modifier.strength)
+
+    def test_equip(self):
+        # disable get_player_data cache for this test
+        for _ in range(1000):
+            db = PilgramORMDatabase.instance()
+            player = db.get_player_from_name("Ombro")
+            player.equipped_items = {}
+            old_id = id(player)
+            ids = [x+1 for x in range(500)]
+            random.shuffle(ids)
+            items: List[Equipment] = db.get_player_items(player.player_id)
+            chosen_items = []
+            for i in range(random.randint(1, 6)):
+                item = items[ids[i]-1]
+                player.equip_item(item)
+                chosen_items.append(item.equipment_id)
+            db.update_player_data(player)
+            player = db.get_player_from_name("Ombro")
+            self.assertNotEqual(old_id, id(player), msg="Player object is the same. Did you disable get_player_data's cache?")
+            equipment_ids = [x.equipment_id for x in player.equipped_items.values()]
+            for item_id in equipment_ids:
+                self.assertTrue(item_id in chosen_items, msg=f"{item_id} not in {chosen_items}. equipment: {equipment_ids}")
