@@ -422,10 +422,10 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
         TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            me: cc.CombatActor = context.get("supplier")
-            if me.hp == 0:
-                self.write_to_log(context, f"{me.get_name()} still stands.")
-                me.modify_hp(int(me.get_max_hp() / 50))
+            defender: cc.CombatActor = context.get("other")
+            if defender.hp == 0:
+                self.write_to_log(context, f"{defender.get_name()} still stands.")
+                defender.modify_hp(int(defender.get_max_hp() / 2))
             else:
                 self.duration += 1  # if the bonus was not used then restore duration
 
