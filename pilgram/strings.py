@@ -166,6 +166,7 @@ class Strings:
     }
 
     # items
+    enchant_symbol = "⭐"
     effect_names: Dict[str, str] = {
         "hp_restored": "HP restored",
         "hp_percent_restored": "HP % restored",
@@ -215,6 +216,10 @@ class Strings:
     item_equipped = "You equipped '{item}' in the {slot} slot."
     cannot_sell_equipped_item = "You can't sell an equipped item!"
     cannot_shop_on_a_quest = "You cannot shop while on a quest!"
+    item_rerolled = F"You paid {{amount}} {MONEY} to reroll {{old_name}} into:"
+    item_enchanted = "You used 1 artifact piece to enchant:"
+    no_ap_to_enchant = "You don't have any artifact pieces to enchant with."
+    max_enchants_reached = "You have reached the maximum amount of perks on this item."
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"
@@ -235,7 +240,7 @@ class Strings:
         "a": ("Automaton", "Just attack. Nothing else.")
     }
     stance_switch = "Stance switched to "
-    force_combat = "You look for something strong to kill..."
+    force_combat = "You hunt for something strong to kill..."
 
     # artifacts
     max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."

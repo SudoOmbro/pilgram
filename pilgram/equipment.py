@@ -1,5 +1,5 @@
 import time
-from random import randint, Random, choice
+from random import Random, choice
 from typing import Union, List, Dict, Any, Type, Tuple
 
 import pilgram.modifiers as m
@@ -125,8 +125,24 @@ class Equipment:
                 result.append(modifier)
         return result
 
+    def get_rarity(self) -> int:
+        return len(self.modifiers)
+
     def get_value(self) -> int:
-        return (self.equipment_type.value + self.level) * (len(self.modifiers) + 1)
+        return (self.equipment_type.value + self.level) * (self.get_rarity() + 1)
+
+    def reroll(self):
+        seed = time.time()
+        rarity = len(self.modifiers)
+        dmg_type_string, damage, resist = self.get_dmg_and_resist_values(self.level, seed, self.equipment_type.is_weapon)
+        self.name = self.generate_name(self.equipment_type, dmg_type_string, rarity)
+        self.modifiers = self.generate_modifiers(rarity, rarity)
+        self.damage = damage
+        self.resist = resist
+
+    def enchant(self):
+        self.name += Strings.enchant_symbol
+        self.modifiers.append(self._get_random_modifier(self.level))
 
     def __str__(self):
         string = f"*{self.name}* | lv. {self.level}\n- {Strings.slots[self.equipment_type.slot]} -\nWeight: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}"
@@ -138,7 +154,7 @@ class Equipment:
             string += f"\n\n*Resist*:\n{str(self.resist)}"
         if not self.modifiers:
             return string
-        return string + f"\n\n*Modifiers*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
+        return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
 
     def __eq__(self, other):
         if isinstance(other, Equipment):
@@ -148,13 +164,13 @@ class Equipment:
     @staticmethod
     def generate_name(
             equipment_type: EquipmentType,
-            modifiers: List[str],
+            damage_types: List[str],
             rarity: int
     ) -> str:
         pool = Strings.weapon_modifiers if equipment_type.is_weapon else Strings.armor_modifiers
         name = equipment_type.name
         added_of = False
-        for modifier in modifiers:
+        for modifier in damage_types:
             adjective = choice(pool[modifier])
             if adjective.startswith("-"):
                 if added_of:
@@ -164,10 +180,10 @@ class Equipment:
                     added_of = True
             else:
                 name = adjective + " " + name
-        return name + (" " + ("⭐" * rarity) if rarity > 0 else "")
+        return name + (" " + (Strings.enchant_symbol * rarity) if rarity > 0 else "")
 
     @staticmethod
-    def get_modifiers_and_damage(level: int, seed: float, is_weapon: bool) -> Tuple[List[str], Damage, Damage]:
+    def get_dmg_and_resist_values(level: int, seed: float, is_weapon: bool) -> Tuple[List[str], Damage, Damage]:
         rng = Random(seed)
         number_of_modifiers: int = rng.randint(1, 3)
         modifiers_to_exclude = ["slash", "pierce", "blunt", "occult", "fire", "acid", "freeze", "electric"]
@@ -183,23 +199,41 @@ class Equipment:
             return chosen_modifiers, Damage.get_empty(), resist
 
     @classmethod
+    def _get_random_modifier(cls, level: int) -> "m.Modifier":
+        category = choice((
+            m.Rarity.COMMON,
+            m.Rarity.COMMON,
+            m.Rarity.COMMON,
+            m.Rarity.COMMON,
+            m.Rarity.COMMON,
+            m.Rarity.UNCOMMON,
+            m.Rarity.UNCOMMON,
+            m.Rarity.UNCOMMON,
+            m.Rarity.RARE,
+            m.Rarity.RARE,
+            m.Rarity.LEGENDARY
+        ))
+        modifier_type = choice(m.get_modifiers_by_rarity(category))
+        return modifier_type.generate(level)
+
+    @classmethod
+    def generate_modifiers(cls, amount: int, item_level: int) -> List["m.Modifier"]:
+        modifiers: List[m.Modifier] = []
+        if amount > 0:
+            for i in range(amount):
+                modifiers.append(cls._get_random_modifier(item_level))
+        return modifiers
+
+    @classmethod
     def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> "Equipment":
         seed = time.time()
-        mod_strings, damage, resist = cls.get_modifiers_and_damage(level, seed, equipment_type.is_weapon)
-        modifiers: List[m.Modifier] = []
-        if rarity > 0:
-            for i in range(rarity):
-                category = randint(-4, rarity)
-                if category < 0:
-                    category = 0
-                modifier_type = choice(m.get_modifiers_by_rarity(category))
-                modifier = modifier_type.generate(level)
-                modifiers.append(modifier)
+        dmg_type_string, damage, resist = cls.get_dmg_and_resist_values(level, seed, equipment_type.is_weapon)
+        modifiers: List[m.Modifier] = cls.generate_modifiers(rarity, rarity)
         return cls(
             0,
             level,
             equipment_type,
-            cls.generate_name(equipment_type, mod_strings, rarity),
+            cls.generate_name(equipment_type, dmg_type_string, rarity),
             seed,
             damage,
             resist,

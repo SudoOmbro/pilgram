@@ -265,8 +265,8 @@ class CombatActor(ABC):
 
     def attack(self, target: "CombatActor", combat_context: "CombatContainer") -> Damage:
         """ get the damage an attack would do """
-        damage = self.get_base_attack_damage().modify(self, target, m.ModifierType.ATTACK)
-        defense = target.get_base_attack_resistance().modify(target, self, m.ModifierType.DEFEND)
+        damage = self.get_base_attack_damage().modify(self, target, m.ModifierType.PRE_ATTACK, combat_context=combat_context)
+        defense = target.get_base_attack_resistance().modify(target, self, m.ModifierType.PRE_DEFEND, combat_context=combat_context)
         return damage - defense
 
     def modify_hp(self, amount: int, overheal: bool = False) -> bool:
@@ -343,6 +343,14 @@ class CombatContainer:
         damage = attacker.attack(target, self).scale(self.resist_scale[target]).scale(self.damage_scale[attacker])
         self.damage_scale[attacker] = 1.0
         self.resist_scale[target] = 1.0
+        for modifier in attacker.get_modifiers(m.ModifierType.MID_ATTACK):
+            new_damage = modifier.apply(self.get_mod_context({"damage": damage, "attacker": attacker, "target": target}))
+            if new_damage is not None:
+                damage = new_damage
+        for modifier in target.get_modifiers(m.ModifierType.MID_DEFEND):
+            new_damage = modifier.apply(self.get_mod_context({"damage": damage, "attacker": attacker, "target": target}))
+            if new_damage is not None:
+                damage = new_damage
         total_damage = damage.get_total_damage()
         target.modify_hp(-total_damage)
         self.write_to_log(f"{target.get_name()} takes {total_damage} dmg ({target.get_hp_string()}).")

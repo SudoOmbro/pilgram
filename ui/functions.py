@@ -814,6 +814,56 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
         return Strings.no_character_yet
 
 
+def reroll_item(context: UserContext, item_pos_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        items = db().get_player_items(player.player_id)
+        item_pos = int(item_pos_str)
+        if not items:
+            return Strings.no_items_yet
+        if not __item_id_is_valid(item_pos, items):
+            return Strings.invalid_item
+        item = items[item_pos - 1]
+        price = item.get_value() * 20
+        if player.money < price:
+            return Strings.not_enough_money.format(amount=price - player.money)
+        old_name = item.name
+        item.reroll()
+        if item in player.equipped_items.values():
+            player.equip_item(item)
+        player.money -= price
+        db().update_player_data(player)
+        db().update_item(item, player)
+        return Strings.item_rerolled.format(amount=price, old_name=old_name) + "\n\n" + str(item)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def enchant_item(context: UserContext, item_pos_str: str) -> str:
+    try:
+        item_pos = int(item_pos_str)
+        player = db().get_player_data(context.get("id"))
+        if player.artifact_pieces < 1:
+            return Strings.no_items_yet
+        items = db().get_player_items(player.player_id)
+        if not items:
+            return Strings.no_items_yet
+        if not __item_id_is_valid(item_pos, items):
+            return Strings.invalid_item
+        item = items[item_pos - 1]
+        if item.get_rarity() >= 4:
+            return Strings.max_enchants_reached
+        item.enchant()
+        player.artifact_pieces -= 1
+        if item in player.equipped_items.values():
+            player.equip_item(item)
+        db().update_player_data(player)
+        db().update_item(item, player)
+        return Strings.item_enchanted + "\n\n" + str(item)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def sell_item(context: UserContext, item_pos_str: str) -> str:
     try:
         item_pos = int(item_pos_str)
@@ -982,6 +1032,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "sell": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], sell_item, "Sell an item from your inventory."),
     "buy": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], market_buy, "Buy something from the market."),
     "craft": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], smithy_craft, "Craft something at the smithy."),
+    "reroll": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], reroll_item, "Reroll an item from your inventory"),
+    "enchant": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], enchant_item, "Add a perk to an item from your inventory"),
     "consume": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], use_consumable, "Use an item in your satchel"),
     "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
     "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),

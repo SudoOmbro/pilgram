@@ -773,7 +773,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def __build_item(self, its: EquipmentModel) -> Equipment:
         equipment_type = EquipmentType.get(its.equipment_type)
-        _, damage, resist = Equipment.get_modifiers_and_damage(its.level, its.damage_seed, equipment_type.is_weapon)
+        _, damage, resist = Equipment.get_dmg_and_resist_values(its.level, its.damage_seed, equipment_type.is_weapon)
         return Equipment(
             its.id,
             its.level,
@@ -809,6 +809,9 @@ class PilgramORMDatabase(PilgramDatabase):
                 its = EquipmentModel.get(EquipmentModel.id == item.equipment_id)
                 its.owner = owner.player_id
                 its.name = item.name
+                its.modifiers = encode_modifiers(item.modifiers)
+                its.damage_seed = item.seed
+                its.level = item.level
                 its.save()
         except EquipmentModel.DoesNotExist:
             raise KeyError(f"Could not find item with id {item.equipment_id}")
