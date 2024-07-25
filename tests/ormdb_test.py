@@ -1,10 +1,10 @@
 import unittest
 from datetime import timedelta
 from random import randint
-from typing import List
+from typing import List, Dict
 
 from orm.db import decode_progress, encode_progress, PilgramORMDatabase, decode_satchel, encode_satchel, \
-    decode_modifiers, encode_modifiers, ENCODING
+    decode_modifiers, encode_modifiers, ENCODING, encode_equipped_items, decode_equipped_items_ids
 from pilgram.classes import Player
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.modifiers import get_modifier
@@ -73,6 +73,21 @@ class TestORMDB(unittest.TestCase):
     def test_encode_modifiers(self):
         self.assertEqual(encode_modifiers([]), b"")
         self.assertEqual(encode_modifiers([get_modifier(1, 1)]), b"\x01\x00\x01\x00\x00\x00")
+
+    def test_encode_equipped_items(self):
+        items = [Equipment.generate(5, EquipmentType.get(0), 0) for _ in range(6)]
+        items_dict: Dict[int, Equipment] = {}
+        for i, item in enumerate(items):
+            item.equipment_id = i+1
+            items_dict[i] = item
+        result = encode_equipped_items(items_dict)
+        self.assertEqual(len(result), 24)
+        self.assertEqual(result.encode(ENCODING), b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00")
+
+    def test_decode_equipped_items(self):
+        string = b"\x01\x00\x00\x00\x02\x00\x00\x00\x03\x00\x00\x00\x04\x00\x00\x00\x05\x00\x00\x00\x06\x00\x00\x00".decode(ENCODING)
+        result = decode_equipped_items_ids(string)
+        self.assertEqual(result, [1, 2, 3, 4, 5, 6])
 
     def test_get_updates(self):
         db = PilgramORMDatabase.instance()
