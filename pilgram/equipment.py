@@ -137,8 +137,8 @@ class Equipment:
         dmg_type_string, damage, resist = self.get_dmg_and_resist_values(self.level, seed, self.equipment_type.is_weapon)
         self.name = self.generate_name(self.equipment_type, dmg_type_string, rarity)
         self.modifiers = self.generate_modifiers(rarity, rarity)
-        self.damage = damage
-        self.resist = resist
+        self.damage = self.equipment_type.damage.scale(self.level) + damage
+        self.resist = self.equipment_type.resist.scale(self.level) + resist
 
     def enchant(self):
         self.name += Strings.enchant_symbol
@@ -228,7 +228,7 @@ class Equipment:
     def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> "Equipment":
         seed = time.time()
         dmg_type_string, damage, resist = cls.get_dmg_and_resist_values(level, seed, equipment_type.is_weapon)
-        modifiers: List[m.Modifier] = cls.generate_modifiers(rarity, rarity)
+        modifiers: List[m.Modifier] = cls.generate_modifiers(rarity, level)
         return cls(
             0,
             level,

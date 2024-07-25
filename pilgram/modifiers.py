@@ -71,7 +71,7 @@ class Modifier(ABC):
     TYPE: int  # This should be set manually for each defined modifier
     OP_ORDERING: int = 0  # used to order modifiers
 
-    MAX_STRENGTH: int  # used during generation
+    MAX_STRENGTH: int = 0  # used during generation (keep 0 if modifier should scale infinitely)
     MIN_STRENGTH: int = 1  # used during generation
     SCALING: Union[int, float]  # determines how the modifiers scales with the level of the entity (at generation) (strength / SCALING)
 
@@ -412,6 +412,7 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
     TYPE = ModifierType.COMBAT_START
 
     MAX_STRENGTH = 2
+    MIN_STRENGTH = 1
     SCALING = 80
 
     NAME = "Unyielding Will"
@@ -507,6 +508,7 @@ class ElectricAbsorb(_GenericDamageAbsorb, dmg_type="electric"): pass
 class RouletteAttack(Modifier, rarity=Rarity.RARE):
     TYPE = ModifierType.PRE_ATTACK
 
+    MAX_STRENGTH = 0
     MIN_STRENGTH = 1
     SCALING = 3.5
 
@@ -529,7 +531,7 @@ class IdiotGodBlessing(Modifier, rarity=Rarity.LEGENDARY):
     SCALING = 5
 
     NAME = "Idiot God Blessing"
-    DESCRIPTION = "Gives you 1 free revive per combat (restores {str} hp)."
+    DESCRIPTION = "Gives you 1 free revive per combat (restores {str}% hp)."
 
     class FreeRevive(Modifier):
         TYPE = ModifierType.POST_DEFEND
@@ -552,6 +554,7 @@ class Brutal(Modifier, rarity=Rarity.UNCOMMON):
     TYPE = ModifierType.POST_ATTACK
 
     MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
     SCALING = 3
 
     NAME = "Brutality"
