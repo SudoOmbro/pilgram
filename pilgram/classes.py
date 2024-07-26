@@ -1216,3 +1216,33 @@ class Enemy(CombatActor):
 
     def __str__(self):
         return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"
+
+
+class Auction:
+
+    def __init__(
+            self,
+            auction_id: int,
+            auctioneer: Player,
+            item: Equipment,
+            best_bidder: Union[Player, None],
+            best_bid: int,
+            creation_date: datetime
+    ):
+        self.auction_id = auction_id
+        self.auctioneer = auctioneer
+        self.item = item
+        self.best_bidder = best_bidder
+        self.best_bid = best_bid
+        self.creation_date = creation_date
+
+    def place_bid(self, bidder: Player, bid: int) -> bool:
+        if bid <= self.best_bid:
+            return False
+        self.best_bid = bid
+        self.best_bidder = bidder
+        return True
+
+    @classmethod
+    def create_default(cls, auctioneer: Player, item: Equipment, starting_bid: int) -> "Auction":
+        return cls(0, auctioneer, item, None, starting_bid, datetime.now())

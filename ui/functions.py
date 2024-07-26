@@ -876,6 +876,7 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
         item = items[item_pos - 1]
         if item in player.equipped_items.values():
             return Strings.cannot_sell_equipped_item
+        # TODO check if the item isn't being auctioned
         mult = 1 if player.guild_level() < 6 else 2
         money = int(item.get_value() * mult)
         player.add_money(money)
@@ -976,6 +977,34 @@ def force_combat(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
+def create_auction(context: UserContext, item_pos_str: str, starting_bid_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        items = db().get_player_items(player.player_id)
+        item_pos = int(item_pos_str)
+        if item_pos > len(items):
+            return Strings.invalid_item
+        item = items[item_pos - 1]
+        if item in player.equipped_items.values():
+            return Strings.cannot_sell_equipped_item
+        starting_bid = int(starting_bid_str)
+        # TODO actually create auction
+        return Strings.auction_created.format(item=item.name)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def bid_on_auction(context: UserContext, auction_id_str: str, bid_str: str) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        auction_id = int(auction_id_str)
+        bid = int(bid_str)
+        # TODO actually get auction & place bid
+        return Strings.bid_placed.format(amount=bid, item="TODO")
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -998,8 +1027,10 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
-        "guild": IFW(None, start_guild_creation, f"Create your own Guild (cost: {ContentMeta.get('guilds.creation_cost')} {MONEY}).")
+        "guild": IFW(None, start_guild_creation, f"Create your own Guild (cost: {ContentMeta.get('guilds.creation_cost')} {MONEY})."),
+        "auction": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="item")), RWE("starting bid", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], create_auction, "auctions the selected item."),
     },
+    "bid": IFW([RWE("auction id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="item")), RWE("bid", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], bid_on_auction, "bid on the selected auction."),
     "upgrade": {
         "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
         "home": IFW(None, upgrade, "Upgrade your home.", default_args={"obj": "home"}),
@@ -1050,8 +1081,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
     },
-    "man": IFW([RWE("page", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Page"))], manual, "Shows the specified manual page."),
-    "bestiary": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], bestiary, "shows all enemies that can be found in the given zone.")
+    "bestiary": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], bestiary, "shows all enemies that can be found in the given zone."),
+    "man": IFW([RWE("page", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Page"))], manual, "Shows the specified manual page.")
 }
 
 USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {

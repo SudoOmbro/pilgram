@@ -160,3 +160,23 @@ def __migrate_v5_to_v6():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v5.db", "pilgram_v6.db")
+
+
+@__add_to_migration_list("pilgram_v6.db")
+def __migrate_v6_to_v7():
+    from ._models_v6 import db as previous_db, BaseModel, PlayerModel, ArtifactModel
+
+    class AuctionModel(BaseModel):
+        id = AutoField(primary_key=True)
+        auctioneer_id = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
+        item_id = ForeignKeyField(ArtifactModel, null=False)
+        best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=False)
+        best_bid = IntegerField(null=False, default=0)
+        creation_date = DateTimeField(default=datetime.now)
+
+    log.info(f"Migrating v6 to v7...")
+    previous_db.connect()
+    previous_db.create_tables([AuctionModel])
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v6.db", "pilgram_v7.db")

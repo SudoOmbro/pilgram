@@ -220,6 +220,8 @@ class Strings:
     item_enchanted = "You used 1 artifact piece to enchant:"
     no_ap_to_enchant = "You don't have any artifact pieces to enchant with."
     max_enchants_reached = "You have reached the maximum amount of perks on this item."
+    auction_created = "Auction for item {item} created successfully."
+    bid_placed = f"You placed a bid of {{amount}} {MONEY} on item {{item}}."
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

@@ -5,7 +5,7 @@ from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyFie
     AutoField, FloatField, FixedCharField
 
 
-DB_FILENAME: str = "pilgram_v7.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v6.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -114,15 +114,6 @@ class EnemyTypeModel(BaseModel):
     lose_text = CharField(null=False)
 
 
-class AuctionModel(BaseModel):
-    id = AutoField(primary_key=True)
-    auctioneer_id = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
-    item_id = ForeignKeyField(ArtifactModel, null=False)
-    best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=False)
-    best_bid = IntegerField(null=False, default=0)
-    creation_date = DateTimeField(default=datetime.now)
-
-
 def db_connect():
     log.info("Connecting to database")
     db.connect(reuse_if_open=True)
@@ -145,7 +136,6 @@ def create_tables():
         QuestProgressModel,
         ArtifactModel,
         EquipmentModel,
-        EnemyTypeModel,
-        AuctionModel
+        EnemyTypeModel
     ], safe=True)
     db_disconnect()

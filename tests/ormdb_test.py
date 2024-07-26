@@ -112,10 +112,16 @@ class TestORMDB(unittest.TestCase):
                 self.assertEqual(item_modifier.strength, gen_item_modifier.strength)
 
     def test_equip(self):
-        # disable get_player_data cache for this test
+        # disable get_player_data cache before running this test!
+        db = PilgramORMDatabase.instance()
+        player = db.get_player_from_name("Ombro")
+        if not player:
+            player = Player.create_default(1234, "Ombro", "AAAAAAAA")
+            db.add_player(player)
+        for i in range(500):
+            item = Equipment.generate(i, EquipmentType.get_random(), randint(0, 3))
+            db.add_item(item, player)
         for _ in range(1000):
-            db = PilgramORMDatabase.instance()
-            player = db.get_player_from_name("Ombro")
             player.equipped_items = {}
             old_id = id(player)
             ids = [x+1 for x in range(500)]

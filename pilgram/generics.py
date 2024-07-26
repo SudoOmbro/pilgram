@@ -3,7 +3,8 @@ from abc import ABC
 from datetime import timedelta, datetime
 from typing import List, Tuple, Union, Any
 
-from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact, Tourney, EnemyMeta
+from pilgram.classes import Player, Zone, Quest, Guild, ZoneEvent, AdventureContainer, Artifact, Tourney, EnemyMeta, \
+    Auction
 from pilgram.equipment import Equipment, ConsumableItem, EquipmentType
 
 log = logging.getLogger(__name__)
@@ -332,6 +333,24 @@ class PilgramDatabase(ABC):
 
     def get_smithy_items(self) -> List[EquipmentType]:
         """ gets daily equipment to buy """
+        raise NotImplementedError
+
+    # auctions ----------------------------------
+
+    def get_auctions(self, page: int) -> List[Auction]:
+        """ gets auctions (paged) """
+        raise NotImplementedError
+
+    def update_auction(self, auction: Auction):
+        """ update the auction db row """
+        raise NotImplementedError
+
+    def add_auction(self, auction: Auction):
+        """ creates a new auction """
+        raise NotImplementedError
+
+    def delete_auction(self, auction: Auction):
+        """ removes the auction db row """
         raise NotImplementedError
 
 
