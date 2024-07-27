@@ -1,8 +1,6 @@
 from abc import ABC
-from typing import Tuple, Type
 
 import numpy as np
-
 
 _NEXT_FLAG: np.uint32 = np.uint32(1)  # we can have a maximum of 32 flags
 
@@ -10,7 +8,7 @@ _NEXT_FLAG: np.uint32 = np.uint32(1)  # we can have a maximum of 32 flags
 class Flag(ABC):
     FLAG: np.uint32
 
-    def __init_subclass__(cls, **kwargs):
+    def __init_subclass__(cls, **kwargs) -> None:
         global _NEXT_FLAG
         super().__init_subclass__()
         cls.FLAG = _NEXT_FLAG
@@ -18,7 +16,7 @@ class Flag(ABC):
 
     @classmethod
     def set(cls, target: np.uint32) -> np.uint32:
-        """ returns the target flag container (a 64 bit int) with the current flag set """
+        """returns the target flag container (a 64 bit int) with the current flag set"""
         return np.bitwise_or(cls.FLAG, target)
 
     @classmethod
@@ -67,7 +65,8 @@ class LuckFlag2(Flag):
 
 
 class StrengthBuff(Flag):
-    """ buff all normal damage (slash, pierce & blunt) """
+    """buff all normal damage (slash, pierce & blunt)"""
+
     pass
 
 
@@ -95,4 +94,11 @@ class ForcedCombat(Flag):
     pass
 
 
-BUFF_FLAGS: Tuple[Type[Flag], ...] = (StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff)
+BUFF_FLAGS: tuple[type[Flag], ...] = (
+    StrengthBuff,
+    OccultBuff,
+    FireBuff,
+    IceBuff,
+    AcidBuff,
+    ElectricBuff,
+)

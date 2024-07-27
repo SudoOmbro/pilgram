@@ -1,11 +1,18 @@
 import logging
 from datetime import datetime
 
-from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
-    AutoField
+from peewee import (
+    AutoField,
+    CharField,
+    DateTimeField,
+    DeferredForeignKey,
+    ForeignKeyField,
+    IntegerField,
+    Model,
+    SqliteDatabase,
+)
 
-
-DB_FILENAME: str = f"pilgram_v3.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v3.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 

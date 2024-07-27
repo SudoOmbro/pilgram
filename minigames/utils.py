@@ -1,10 +1,9 @@
 import itertools
 import re
-from random import randint, randrange, shuffle, choice
-from typing import Union, Tuple, List, Dict, Callable
+from collections.abc import Callable
+from random import choice, randint, randrange, shuffle
 
 from pilgram.globals import POSITIVE_INTEGER_REGEX
-
 
 DIRECTIONS = [(1, 0), (0, 1), (-1, 0), (0, -1)]
 
@@ -19,7 +18,7 @@ class MAZE:
     END = 5
 
 
-TILE_REPRESENTATIONS: Dict[int, str] = {
+TILE_REPRESENTATIONS: dict[int, str] = {
     MAZE.EMPTY: "⬜",
     MAZE.WALL: "⬛",
     MAZE.PLAYER: "🧑",
@@ -41,9 +40,9 @@ def roll(dice_faces: int) -> int:
 
 def get_positive_integer_from_string(
         string: str,
-        boundaries: Union[Tuple[int, int], None] = None,
-        exclude: Union[Tuple[int, ...], None] = None
-) -> Union[int, None]:
+        boundaries: tuple[int, int] | None = None,
+        exclude: tuple[int, ...] | None = None
+) -> int | None:
     """
     returns a positive integer from the given string if it passes all checks.
     :param string: the input string
@@ -63,11 +62,11 @@ def get_positive_integer_from_string(
 
 def get_random_word() -> str:
     index: int = randrange(0, WORDS_FILE_SIZE)
-    with open("words.txt", "r") as f:
+    with open("words.txt") as f:
         return next(itertools.islice(f, index, index + 1), None).rstrip()
 
 
-def get_word_letters(word: str) -> List[str]:
+def get_word_letters(word: str) -> list[str]:
     result = []
     for letter in word:
         if letter not in result:
@@ -88,7 +87,7 @@ def print_maze(maze) -> str:
     return result
 
 
-def get_direction_plus_90_degrees(direction_index: int) -> Tuple[int, int]:
+def get_direction_plus_90_degrees(direction_index: int) -> tuple[int, int]:
     return DIRECTIONS[(direction_index + 1) % 4]
 
 

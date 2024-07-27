@@ -1,7 +1,5 @@
-from typing import List, Dict, Tuple
 
 from pilgram.globals import ContentMeta
-
 
 WORLD = ContentMeta.get('world.name')
 MONEY = ContentMeta.get("money.name")
@@ -93,8 +91,8 @@ class Strings:
     # player meeting
     players_meet_in_town = "While in town you meet {name} and you"
     players_meet_on_a_quest = "You stumble upon {name} and you"
-    town_actions: List[str] = ContentMeta.get("meeting events.town")
-    quest_actions: List[str] = ContentMeta.get("meeting events.zones")
+    town_actions: list[str] = ContentMeta.get("meeting events.town")
+    quest_actions: list[str] = ContentMeta.get("meeting events.zones")
     xp_gain = "You gain {xp} xp"
 
     # minigames
@@ -134,7 +132,7 @@ class Strings:
     choose_cult = "Send the number of the cult you want to join."
     cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist."
     list_cults = "Here are all the existing cults:\n\n"
-    modifier_names: Dict[str, str] = {
+    modifier_names: dict[str, str] = {
         "general_xp_mult": "General XP",
         "general_money_mult": "General BA",
         "quest_xp_mult": "Quest XP",
@@ -167,7 +165,7 @@ class Strings:
 
     # items
     enchant_symbol = "⭐"
-    effect_names: Dict[str, str] = {
+    effect_names: dict[str, str] = {
         "hp_restored": "HP restored",
         "hp_percent_restored": "HP % restored",
         "revive": "Revives you",
@@ -181,7 +179,7 @@ class Strings:
         "Strange",
         "Eldritch"
     )
-    weapon_modifiers: Dict[str, Tuple[str, ...]] = {
+    weapon_modifiers: dict[str, tuple[str, ...]] = {
         "slash": ("Sharp", "-Slashing", "Barbed", "Keen", "Edged"),
         "pierce": ("Piercing", "-Thrusting", "Pointed", "Tipped"),
         "blunt": ("Heavy", "-Crushing", "Devastating", "Denting"),
@@ -191,7 +189,7 @@ class Strings:
         "freeze": ("-Ice", "Freezing", "Chilling", "-Frostbite", "Hailing", "-the Glacier"),
         "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel", "Voltaic")
     }
-    armor_modifiers: Dict[str, Tuple[str, ...]] = {
+    armor_modifiers: dict[str, tuple[str, ...]] = {
         "slash": ("Plated", "-the Bulwark", "Meshed"),
         "pierce": ("Reinforced", "-the Cataphract", "Thick"),
         "blunt": ("Heavy", "Stable", "Well-built", "Sturdy"),
@@ -201,7 +199,7 @@ class Strings:
         "freeze": ("Insulated", "Warm", "-the Crags", "Fur-lined", "Cozy"),
         "electric": ("-Thunder", "Grounded", "Rubber-lined", "-Faraday")
     }
-    slots: List[str] = [
+    slots: list[str] = [
         "Head",
         "Chest",
         "Legs",

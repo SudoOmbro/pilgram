@@ -1,24 +1,26 @@
+from __future__ import annotations
+
 import random
 from abc import ABC
 from copy import copy
-
 from time import time
-from typing import Union, List, Dict, Any
+from typing import Any
 
-import pilgram.modifiers as m
 import pilgram.classes as c
+import pilgram.modifiers as m
 
 
 class CombatActions:
-    attack = 0,
-    dodge = 1,
+    attack = 0
+    dodge = 1
     charge_attack = 2
     use_consumable = 3
     lick_wounds = 4
 
 
 class Damage:
-    """ used to express damage & resistance values """
+    """used to express damage & resistance values"""
+
     MIN_DAMAGE: int = 1
 
     def __init__(
@@ -30,8 +32,8 @@ class Damage:
         fire: int,
         acid: int,
         freeze: int,
-        electric: int
-    ):
+        electric: int,
+    ) -> None:
         self.slash = slash
         self.pierce = pierce
         self.blunt = blunt
@@ -42,31 +44,56 @@ class Damage:
         self.electric = electric
 
     def modify(
-            self,
-            supplier: "CombatActor",
-            other: "CombatActor",
-            type_filter: int,
-            combat_context: "CombatContainer" = None
-    ) -> "Damage":
+        self,
+        supplier: CombatActor,
+        other: CombatActor,
+        type_filter: int,
+        combat_context: CombatContainer = None,
+    ) -> Damage:
         result = self
         for modifier in supplier.get_modifiers(type_filter):
             new_result = modifier.apply(
-                m.ModifierContext({"damage": self, "supplier": supplier, "other": other, "context": combat_context})
+                m.ModifierContext(
+                    {
+                        "damage": self,
+                        "supplier": supplier,
+                        "other": other,
+                        "context": combat_context,
+                    }
+                )
             )
             if new_result:
                 result = new_result
         return result
 
     def get_total_damage(self) -> int:
-        """ return the total damage dealt by the attack. Damage can't be 0, it must be at least 1 """
-        dmg = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+        """return the total damage dealt by the attack. Damage can't be 0, it must be at least 1"""
+        dmg = (
+            self.slash
+            + self.pierce
+            + self.blunt
+            + self.occult
+            + self.fire
+            + self.acid
+            + self.freeze
+            + self.electric
+        )
         return dmg if dmg > 0 else self.MIN_DAMAGE
 
-    def is_zero(self):
-        val = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+    def is_zero(self) -> bool:
+        val = (
+            self.slash
+            + self.pierce
+            + self.blunt
+            + self.occult
+            + self.fire
+            + self.acid
+            + self.freeze
+            + self.electric
+        )
         return val == 0
 
-    def scale(self, scaling_factor: float) -> "Damage":
+    def scale(self, scaling_factor: float) -> Damage:
         return Damage(
             int(self.slash * scaling_factor),
             int(self.pierce * scaling_factor),
@@ -75,10 +102,10 @@ class Damage:
             int(self.fire * scaling_factor),
             int(self.acid * scaling_factor),
             int(self.freeze * scaling_factor),
-            int(self.electric * scaling_factor)
+            int(self.electric * scaling_factor),
         )
 
-    def apply_bonus(self, bonus: int) -> "Damage":
+    def apply_bonus(self, bonus: int) -> Damage:
         return Damage(
             (self.slash + bonus) if self.slash else 0,
             (self.pierce + bonus) if self.pierce else 0,
@@ -87,20 +114,22 @@ class Damage:
             (self.fire + bonus) if self.fire else 0,
             (self.acid + bonus) if self.acid else 0,
             (self.freeze + bonus) if self.freeze else 0,
-            (self.electric + bonus) if self.electric else 0
+            (self.electric + bonus) if self.electric else 0,
         )
 
-    def scale_single_value(self, key: str, scaling_factor: float) -> "Damage":
+    def scale_single_value(self, key: str, scaling_factor: float) -> Damage:
         new_damage = copy(self)
         new_damage.__dict__[key] = int(new_damage.__dict__[key] * scaling_factor)
         return new_damage
 
-    def add_single_value(self, key: str, value: int) -> "Damage":
+    def add_single_value(self, key: str, value: int) -> Damage:
         new_damage = copy(self)
         new_damage.__dict__[key] = new_damage.__dict__[key] + value
         return new_damage
 
-    def __add__(self, other):
+    def __add__(self, other: Any) -> Damage:
+        if not isinstance(other, Damage):
+            return NotImplemented
         return Damage(
             self.slash + other.slash,
             self.pierce + other.pierce,
@@ -109,10 +138,12 @@ class Damage:
             self.fire + other.fire,
             self.acid + other.acid,
             self.freeze + other.freeze,
-            self.electric + other.electric
+            self.electric + other.electric,
         )
 
-    def __mul__(self, other):
+    def __mul__(self, other: Any) -> Damage:
+        if not isinstance(other, Damage):
+            return NotImplemented
         return Damage(
             self.slash * other.slash,
             self.pierce * other.pierce,
@@ -121,11 +152,13 @@ class Damage:
             self.fire * other.fire,
             self.acid * other.acid,
             self.freeze * other.freeze,
-            self.electric * other.electric
+            self.electric * other.electric,
         )
 
-    def __sub__(self, other):
-        """ used when self attacks other """
+    def __sub__(self, other: Any) -> Damage:
+        """used when self attacks other"""
+        if not isinstance(other, Damage):
+            return NotImplemented
         slash = (self.slash - other.slash) if self.slash else 0
         pierce = (self.pierce - other.pierce) if self.pierce else 0
         blunt = (self.blunt - other.blunt) if self.blunt else 0
@@ -135,31 +168,44 @@ class Damage:
         freeze = (self.freeze - other.freeze) if self.freeze else 0
         electric = (self.electric - other.electric) if self.electric else 0
         return Damage(
-            slash if slash > 0 else 0,
-            pierce if pierce > 0 else 0,
-            blunt if blunt > 0 else 0,
-            occult if occult > 0 else 0,
-            fire if fire > 0 else 0,
-            acid if acid > 0 else 0,
-            freeze if freeze > 0 else 0,
-            electric if electric > 0 else 0
+            max(0, slash),
+            max(0, pierce),
+            max(0, blunt),
+            max(0, occult),
+            max(0, fire),
+            max(0, acid),
+            max(0, freeze),
+            max(0, electric),
         )
 
-    def __bool__(self):
-        dmg = self.slash + self.pierce + self.blunt + self.occult + self.fire + self.acid + self.freeze + self.electric
+    def __bool__(self) -> bool:
+        dmg = (
+            self.slash
+            + self.pierce
+            + self.blunt
+            + self.occult
+            + self.fire
+            + self.acid
+            + self.freeze
+            + self.electric
+        )
         return dmg != 0
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.is_zero():
             return "Empty"
-        return "\n".join([f"{key}: {value}" for key, value in self.__dict__.items() if value > 0])
+        return "\n".join(
+            [f"{key}: {value}" for key, value in self.__dict__.items() if value > 0]
+        )
 
     @classmethod
-    def get_empty(cls) -> "Damage":
+    def get_empty(cls) -> Damage:
         return Damage(0, 0, 0, 0, 0, 0, 0, 0)
 
     @classmethod
-    def generate_from_seed(cls, seed: float, iterations: int, exclude_params: Union[List[str], None] = None) -> "Damage":
+    def generate_from_seed(
+        cls, seed: float, iterations: int, exclude_params: list[str] | None = None
+    ) -> Damage:
         damage = cls.get_empty()
         rng = random.Random(seed)
         params = copy(damage.__dict__)
@@ -173,7 +219,7 @@ class Damage:
         return damage
 
     @classmethod
-    def load_from_json(cls, damage_json: Dict[str, int]) -> "Damage":
+    def load_from_json(cls, damage_json: dict[str, int]) -> Damage:
         return cls(
             damage_json.get("slash", 0),
             damage_json.get("pierce", 0),
@@ -186,60 +232,62 @@ class Damage:
         )
 
     @classmethod
-    def generate(cls, iterations: int, exclude_params: Union[List[str], None] = None) -> "Damage":
+    def generate(
+        cls, iterations: int, exclude_params: list[str] | None = None
+    ) -> Damage:
         return cls.generate_from_seed(time(), iterations, exclude_params)
 
 
 class CombatActor(ABC):
-
-    def __init__(self, hp_percent: float):
+    def __init__(self, hp_percent: float) -> None:
         self.hp_percent = hp_percent  # used out of fights
         self.hp: int = int(self.get_max_hp() * hp_percent)  # only used during fights
-        self.timed_modifiers: List[m.Modifier] = []  # list of timed modifiers inflicted on the CombatActor
+        # list of timed modifiers inflicted on the CombatActor
+        self.timed_modifiers: list[m.Modifier] = []
 
     def get_name(self) -> str:
-        """ returns the name of the entity """
+        """returns the name of the entity"""
         raise NotImplementedError
 
     def get_level(self) -> int:
-        """ returns the level of the entity """
+        """returns the level of the entity"""
         raise NotImplementedError
 
     def get_base_max_hp(self) -> int:
-        """ returns the maximum hp of the combat actor (players & enemies) """
+        """returns the maximum hp of the combat actor (players & enemies)"""
         raise NotImplementedError
 
     def get_base_attack_damage(self) -> Damage:
-        """ generic method that should return the damage done by the entity """
+        """generic method that should return the damage done by the entity"""
         raise NotImplementedError
 
     def get_base_attack_resistance(self) -> Damage:
-        """ generic method that should return the damage resistance of the entity """
+        """generic method that should return the damage resistance of the entity"""
         raise NotImplementedError
 
-    def get_entity_modifiers(self, *type_filters: int) -> List["m.Modifier"]:
-        """ generic method that should return an (optionally filtered) list of modifiers. (args are the filters) """
+    def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
+        """generic method that should return an (optionally filtered) list of modifiers. (args are the filters)"""
         raise NotImplementedError
 
     def roll(self, dice_faces: int):
-        """ generic method used to roll dices for entities """
+        """generic method used to roll dices for entities"""
         raise NotImplementedError
 
     def get_delay(self) -> int:
-        """ returns the delay of the actor, which is a factor that determines who goes first in the combat turn """
+        """returns the delay of the actor, which is a factor that determines who goes first in the combat turn"""
         raise NotImplementedError
 
     def get_stance(self):
-        """ returns the stance of the actor, which determines how it behaves in combat """
+        """returns the stance of the actor, which determines how it behaves in combat"""
         raise NotImplementedError
 
-    def choose_action(self, opponent: "CombatActor") -> int:
-        """ return what the entity wants to do (possible actions defined in CombatActions) """
+    def choose_action(self, opponent: CombatActor) -> int:
+        """return what the entity wants to do (possible actions defined in CombatActions)"""
         raise NotImplementedError
 
-    def get_modifiers(self, *type_filters: int) -> List["m.Modifier"]:
-        """ returns the list of modifiers + timed modifiers """
-        modifiers: List[m.Modifier] = self.get_entity_modifiers(*type_filters)
+    def get_modifiers(self, *type_filters: int) -> list[m.Modifier]:
+        """returns the list of modifiers + timed modifiers"""
+        modifiers: list[m.Modifier] = self.get_entity_modifiers(*type_filters)
         if not type_filters:
             modifiers.extend(self.timed_modifiers)
             modifiers.sort(key=lambda x: x.OP_ORDERING)
@@ -250,27 +298,33 @@ class CombatActor(ABC):
         modifiers.sort(key=lambda x: x.OP_ORDERING)
         return modifiers
 
-    def start_fight(self):
+    def start_fight(self) -> None:
         self.hp = int(self.get_max_hp() * self.hp_percent)
 
     def get_max_hp(self) -> int:
-        """ get max hp of the entity applying all modifiers """
+        """get max hp of the entity applying all modifiers"""
         max_hp = self.get_base_max_hp()
         for modifier in self.get_entity_modifiers(m.ModifierType.MODIFY_MAX_HP):
-            max_hp = modifier.apply(m.ModifierContext({"entity": self, "value": max_hp}))
+            max_hp = modifier.apply(
+                m.ModifierContext({"entity": self, "value": max_hp})
+            )
         return int(max_hp)
 
     def get_hp_string(self) -> str:
         return f"HP: {self.hp}/{self.get_max_hp()}"
 
-    def attack(self, target: "CombatActor", combat_context: "CombatContainer") -> Damage:
-        """ get the damage an attack would do """
-        damage = self.get_base_attack_damage().modify(self, target, m.ModifierType.PRE_ATTACK, combat_context=combat_context)
-        defense = target.get_base_attack_resistance().modify(target, self, m.ModifierType.PRE_DEFEND, combat_context=combat_context)
+    def attack(self, target: CombatActor, combat_context: CombatContainer) -> Damage:
+        """get the damage an attack would do"""
+        damage = self.get_base_attack_damage().modify(
+            self, target, m.ModifierType.PRE_ATTACK, combat_context=combat_context
+        )
+        defense = target.get_base_attack_resistance().modify(
+            target, self, m.ModifierType.PRE_DEFEND, combat_context=combat_context
+        )
         return damage - defense
 
     def modify_hp(self, amount: int, overheal: bool = False) -> bool:
-        """ Modify actor hp. Return True if the actor was killed, otherwise return False """
+        """Modify actor hp. Return True if the actor was killed, otherwise return False"""
         max_hp = self.get_max_hp()
         if (amount > 0) and (not overheal) and (self.hp >= max_hp):
             return False
@@ -287,12 +341,12 @@ class CombatActor(ABC):
         return False
 
     def receive_damage(self, damage: Damage) -> bool:
-        """ damage the actor with damage. Return True if the actor was killed, otherwise return False """
+        """damage the actor with damage. Return True if the actor was killed, otherwise return False"""
         damage_received = -damage.get_total_damage()
         return self.modify_hp(damage_received)
 
     def get_initiative(self) -> int:
-        """ returns the initiative of the actor, which determines who goes first in the combat turn """
+        """returns the initiative of the actor, which determines who goes first in the combat turn"""
         value = self.get_delay() - self.roll(20)
         if self.get_stance() == "r":
             value -= 1
@@ -305,59 +359,92 @@ class CombatActor(ABC):
 
 
 class CombatContainer:
-
-    def __init__(self, participants: List[CombatActor], helpers: Dict[CombatActor, Union[CombatActor, None]]):
+    def __init__(
+        self,
+        participants: list[CombatActor],
+        helpers: dict[CombatActor, CombatActor | None],
+    ) -> None:
         self.participants = participants
         self.helpers = helpers
         self.combat_log: str = ""
-        self.damage_scale: Dict[CombatActor, float] = {}
-        self.resist_scale: Dict[CombatActor, float] = {}
+        self.damage_scale: dict[CombatActor, float] = {}
+        self.resist_scale: dict[CombatActor, float] = {}
         self._reset_damage_and_resist_scales()
 
-    def _reset_damage_and_resist_scales(self):
+    def _reset_damage_and_resist_scales(self) -> None:
         for actor in self.participants:
             self.damage_scale[actor] = 1.0
             self.resist_scale[actor] = 1.0
 
-    def write_to_log(self, text: str):
+    def write_to_log(self, text: str) -> None:
         self.combat_log += f"\n{text}"
 
-    def _cleanup_after_combat(self):
-        """ remove all timed modifiers from combat participants """
+    def _cleanup_after_combat(self) -> None:
+        """remove all timed modifiers from combat participants"""
         for participant in self.participants:
             participant.timed_modifiers.clear()
 
-    def get_mod_context(self, context: Dict[str, Any]) -> "m.ModifierContext":
+    def get_mod_context(self, context: dict[str, Any]) -> m.ModifierContext:
         context["context"] = self
         return m.ModifierContext(context)
 
-    def _start_combat(self):
-        self.combat_log = "*" + " vs ".join(f"{x.get_name()} (lv. {x.get_level()})" for x in self.participants) + "*"
+    def _start_combat(self) -> None:
+        self.combat_log = (
+            "*"
+            + " vs ".join(
+                f"{x.get_name()} (lv. {x.get_level()})" for x in self.participants
+            )
+            + "*"
+        )
         for participant in self.participants:
             participant.hp = int(participant.get_max_hp() * participant.hp_percent)
-            for modifier in participant.get_entity_modifiers(m.ModifierType.COMBAT_START):
+            for modifier in participant.get_entity_modifiers(
+                m.ModifierType.COMBAT_START
+            ):
                 modifier.apply(self.get_mod_context({"entity": participant}))
 
-    def _attack(self, attacker: CombatActor, target: CombatActor):
+    def _attack(self, attacker: CombatActor, target: CombatActor) -> None:
         self.write_to_log(f"{attacker.get_name()} attacks.")
-        damage = attacker.attack(target, self).scale(self.resist_scale[target]).scale(self.damage_scale[attacker])
+        damage = (
+            attacker.attack(target, self)
+            .scale(self.resist_scale[target])
+            .scale(self.damage_scale[attacker])
+        )
         self.damage_scale[attacker] = 1.0
         self.resist_scale[target] = 1.0
         for modifier in attacker.get_modifiers(m.ModifierType.MID_ATTACK):
-            new_damage = modifier.apply(self.get_mod_context({"damage": damage, "attacker": attacker, "target": target}))
+            new_damage = modifier.apply(
+                self.get_mod_context(
+                    {"damage": damage, "attacker": attacker, "target": target}
+                )
+            )
             if new_damage is not None:
                 damage = new_damage
         for modifier in target.get_modifiers(m.ModifierType.MID_DEFEND):
-            new_damage = modifier.apply(self.get_mod_context({"damage": damage, "attacker": attacker, "target": target}))
+            new_damage = modifier.apply(
+                self.get_mod_context(
+                    {"damage": damage, "attacker": attacker, "target": target}
+                )
+            )
             if new_damage is not None:
                 damage = new_damage
         total_damage = damage.get_total_damage()
         target.modify_hp(-total_damage)
-        self.write_to_log(f"{target.get_name()} takes {total_damage} dmg ({target.get_hp_string()}).")
+        self.write_to_log(
+            f"{target.get_name()} takes {total_damage} dmg ({target.get_hp_string()})."
+        )
         for modifier in attacker.get_modifiers(m.ModifierType.POST_ATTACK):
-            modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
+            modifier.apply(
+                self.get_mod_context(
+                    {"damage": damage, "supplier": attacker, "other": target}
+                )
+            )
         for modifier in target.get_modifiers(m.ModifierType.POST_DEFEND):
-            modifier.apply(self.get_mod_context({"damage": damage, "supplier": attacker, "other": target}))
+            modifier.apply(
+                self.get_mod_context(
+                    {"damage": damage, "supplier": attacker, "other": target}
+                )
+            )
 
     def _try_revive(self, actor: CombatActor) -> bool:
         if isinstance(actor, c.Player):
@@ -368,13 +455,15 @@ class CombatContainer:
                     pos = j
                     break
             if pos != -1:
-                text, _ = actor.use_consumable(pos+1, add_you=False)
-                self.write_to_log(f"{actor.get_name()} {text}, they are revived! ({actor.get_hp_string()})")
+                text, _ = actor.use_consumable(pos + 1, add_you=False)
+                self.write_to_log(
+                    f"{actor.get_name()} {text}, they are revived! ({actor.get_hp_string()})"
+                )
                 return True
             return False
 
     def fight(self) -> str:
-        """ simulate combat between players and enemies. Return battle report in a string. """
+        """simulate combat between players and enemies. Return battle report in a string."""
         is_fight_over: bool = False
         self._start_combat()
         while not is_fight_over:
@@ -397,27 +486,39 @@ class CombatContainer:
                     if factor > 0.9:
                         factor = 0.9
                     self.resist_scale[actor] = factor
-                    self.write_to_log(f"{actor.get_name()} dodges (next dmg taken -{100 - int(factor * 100)}%).")
+                    self.write_to_log(
+                        f"{actor.get_name()} dodges (next dmg taken -{100 - int(factor * 100)}%)."
+                    )
                 elif action_id == CombatActions.charge_attack:
                     self.damage_scale[actor] *= 1.5
-                    self.write_to_log(f"{actor.get_name()} takes aim (next dmg dealt +{int(self.damage_scale[actor] * 100) - 100}%).")
+                    self.write_to_log(
+                        f"{actor.get_name()} takes aim (next dmg dealt +{int(self.damage_scale[actor] * 100) - 100}%)."
+                    )
                 elif action_id == CombatActions.use_consumable:
                     if isinstance(actor, c.Player):
                         text, used_item = actor.use_healing_consumable(add_you=False)
                         if used_item:
-                            self.write_to_log(f"{actor.get_name()} {text}. ({actor.get_hp_string()})")
+                            self.write_to_log(
+                                f"{actor.get_name()} {text}. ({actor.get_hp_string()})"
+                            )
                         else:
                             self._attack(actor, opponents[i])
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = 1 + actor.get_level()
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
-                    self.write_to_log(f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()}).")
+                    self.write_to_log(
+                        f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()})."
+                    )
                 # use helpers
-                if self.helpers[actor] and (random.randint(1, 5) == 1):  # 20% chance of helper intervention
+                if self.helpers[actor] and (
+                    random.randint(1, 5) == 1
+                ):  # 20% chance of helper intervention
                     helper = self.helpers[actor]
                     damage = int(helper.get_level() * (1 + random.random()))
                     opponents[i].modify_hp(-damage)
-                    self.write_to_log(f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} dmg to {opponents[i].get_name()}.")
+                    self.write_to_log(
+                        f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} dmg to {opponents[i].get_name()}."
+                    )
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
                     if not self._try_revive(actor):

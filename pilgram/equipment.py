@@ -1,15 +1,23 @@
+from __future__ import annotations
+
 import time
 from random import Random, choice
-from typing import Union, List, Dict, Any, Type, Tuple
+from typing import Any
 
 import pilgram.modifiers as m
-
-from pilgram.flags import StrengthBuff, OccultBuff, Flag, FireBuff, IceBuff, AcidBuff, ElectricBuff
+from pilgram.combat_classes import Damage
+from pilgram.flags import (
+    AcidBuff,
+    ElectricBuff,
+    FireBuff,
+    Flag,
+    IceBuff,
+    OccultBuff,
+    StrengthBuff,
+)
 from pilgram.globals import ContentMeta
 from pilgram.listables import Listable
-from pilgram.combat_classes import Damage
 from pilgram.strings import Strings
-
 
 MONEY = ContentMeta.get("money.name")
 
@@ -33,12 +41,11 @@ class Slots:
         return class_vars[string.upper()]
 
 
-def _get_slot(value: Union[str, int]) -> int:
-    if type(value) is str:
-        value = Slots.get_from_string(value)
-    if (value > Slots.NUMBER) and (value < 0):
-        raise IndexError(f"Invalid slot '{value}'")
-    return value
+def _get_slot(value: str | int) -> int:
+    int_value: int = Slots.get_from_string(value) if isinstance(value, str) else value
+    if (int_value > Slots.NUMBER) and (int_value < 0):
+        raise IndexError(f"Invalid slot '{int_value}'")
+    return int_value
 
 
 class EquipmentType(Listable, meta_name="equipment types"):
@@ -50,13 +57,13 @@ class EquipmentType(Listable, meta_name="equipment types"):
             damage: Damage,
             resist: Damage,
             name: str,
-            description: Union[str, None],
+            description: str | None,
             is_weapon: bool,
             delay: int,
             slot: int,
             value: int,
             equipment_class: str,
-    ):
+    ) -> None:
         """
         :param equipment_type_id: The id of the equipment type
         :param damage: Damage dealt
@@ -79,13 +86,13 @@ class EquipmentType(Listable, meta_name="equipment types"):
         self.equipment_class = equipment_class
 
     @classmethod
-    def create_from_json(cls, equipment_type_json: Dict[str, Any]) -> "EquipmentType":
+    def create_from_json(cls, equipment_type_json: dict[str, Any]) -> EquipmentType:
         return cls(
             equipment_type_json["id"],
             Damage.load_from_json(equipment_type_json.get("damage", {})),
             Damage.load_from_json(equipment_type_json.get("resist", {})),
             equipment_type_json["name"],
-            equipment_type_json.get("description", None),
+            equipment_type_json.get("description"),
             equipment_type_json["weapon"],
             equipment_type_json["delay"],
             _get_slot(equipment_type_json["slot"]),
@@ -105,8 +112,8 @@ class Equipment:
             seed: float,
             damage: Damage,
             resist: Damage,
-            modifiers: List["m.Modifier"]
-    ):
+            modifiers: list[m.Modifier]
+    ) -> None:
         self.equipment_id = equipment_id
         self.level = level
         self.name = name
@@ -116,7 +123,7 @@ class Equipment:
         self.resist = resist + self.equipment_type.resist.scale(level)
         self.modifiers = modifiers
 
-    def get_modifiers(self, type_filters: Union[Tuple[int, ...], None]) -> List["m.Modifier"]:
+    def get_modifiers(self, type_filters: tuple[int, ...] | None) -> list[m.Modifier]:
         if not type_filters:
             return self.modifiers
         result = []
@@ -131,7 +138,7 @@ class Equipment:
     def get_value(self) -> int:
         return (self.equipment_type.value + self.level) * (self.get_rarity() + 1)
 
-    def reroll(self):
+    def reroll(self) -> None:
         seed = time.time()
         rarity = len(self.modifiers)
         dmg_type_string, damage, resist = self.get_dmg_and_resist_values(self.level, seed, self.equipment_type.is_weapon)
@@ -140,11 +147,11 @@ class Equipment:
         self.damage = self.equipment_type.damage.scale(self.level) + damage
         self.resist = self.equipment_type.resist.scale(self.level) + resist
 
-    def enchant(self):
+    def enchant(self) -> None:
         self.name += Strings.enchant_symbol
         self.modifiers.append(self._get_random_modifier(self.level))
 
-    def __str__(self):
+    def __str__(self) -> str:
         string = f"*{self.name}* | lv. {self.level}\n- {Strings.slots[self.equipment_type.slot]} -\nWeight: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}"
         if self.equipment_type.description:
             string += f"\n_{self.equipment_type.description}_"
@@ -156,18 +163,18 @@ class Equipment:
             return string
         return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
 
-    def __eq__(self, other):
+    def __eq__(self, other: Any) -> bool:
         if isinstance(other, Equipment):
             return self.equipment_id == other.equipment_id
         return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.equipment_id)
 
     @staticmethod
     def generate_name(
             equipment_type: EquipmentType,
-            damage_types: List[str],
+            damage_types: list[str],
             rarity: int
     ) -> str:
         pool = Strings.weapon_modifiers if equipment_type.is_weapon else Strings.armor_modifiers
@@ -186,11 +193,11 @@ class Equipment:
         return name + (" " + (Strings.enchant_symbol * rarity) if rarity > 0 else "")
 
     @staticmethod
-    def get_dmg_and_resist_values(level: int, seed: float, is_weapon: bool) -> Tuple[List[str], Damage, Damage]:
+    def get_dmg_and_resist_values(level: int, seed: float, is_weapon: bool) -> tuple[list[str], Damage, Damage]:
         rng = Random(seed)
         number_of_modifiers: int = rng.randint(1, 3)
         modifiers_to_exclude = ["slash", "pierce", "blunt", "occult", "fire", "acid", "freeze", "electric"]
-        chosen_modifiers: List[str] = []
+        chosen_modifiers: list[str] = []
         for _ in range(number_of_modifiers):
             modifier_string = modifiers_to_exclude.pop(rng.randint(0, len(modifiers_to_exclude) - 1))
             chosen_modifiers.append(modifier_string)
@@ -202,7 +209,7 @@ class Equipment:
             return chosen_modifiers, Damage.get_empty(), resist
 
     @classmethod
-    def _get_random_modifier(cls, level: int) -> "m.Modifier":
+    def _get_random_modifier(cls, level: int) -> m.Modifier:
         category = choice((
             m.Rarity.COMMON,
             m.Rarity.COMMON,
@@ -220,18 +227,18 @@ class Equipment:
         return modifier_type.generate(level)
 
     @classmethod
-    def generate_modifiers(cls, amount: int, item_level: int) -> List["m.Modifier"]:
-        modifiers: List[m.Modifier] = []
+    def generate_modifiers(cls, amount: int, item_level: int) -> list[m.Modifier]:
+        modifiers: list[m.Modifier] = []
         if amount > 0:
             for i in range(amount):
                 modifiers.append(cls._get_random_modifier(item_level))
         return modifiers
 
     @classmethod
-    def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> "Equipment":
+    def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> Equipment:
         seed = time.time()
         dmg_type_string, damage, resist = cls.get_dmg_and_resist_values(level, seed, equipment_type.is_weapon)
-        modifiers: List[m.Modifier] = cls.generate_modifiers(rarity, level)
+        modifiers: list[m.Modifier] = cls.generate_modifiers(rarity, level)
         return cls(
             0,
             level,
@@ -254,9 +261,9 @@ class ConsumableItem(Listable, meta_name="consumables"):
             description: str,
             verb: str,
             value: int,  # buy price, sell price is halved
-            effects: Dict[str, Any]
-    ):
-        buffs: List[str] = effects.get("buffs", [])
+            effects: dict[str, Any]
+    ) -> None:
+        buffs: list[str] = effects.get("buffs", [])
         self.consumable_id = consumable_id
         self.name = name
         self.description = description
@@ -274,7 +281,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
         """ return whether a consumable is just a healing item """
         return (not self.revive) and (self.buff_flag == 0)
 
-    def __str__(self):
+    def __str__(self) -> str:
         string = f"*{self.name}*\n_{self.description}_\nPrice: {self.value} {MONEY}\nEffects:\n"
         for effect in self.effects:
             value = self.__dict__[effect]
@@ -290,9 +297,9 @@ class ConsumableItem(Listable, meta_name="consumables"):
         return string
 
     @classmethod
-    def get_buff_flag(cls, buff_strings: List[str]) -> Flag:
+    def get_buff_flag(cls, buff_strings: list[str]) -> Flag:
         result = Flag.get_empty()
-        buff_map: Dict[str, Type[Flag]] = {
+        buff_map: dict[str, type[Flag]] = {
             "strength": StrengthBuff,
             "occult": OccultBuff,
             "fire": FireBuff,
@@ -306,7 +313,7 @@ class ConsumableItem(Listable, meta_name="consumables"):
         return result
 
     @classmethod
-    def create_from_json(cls, consumables_json: Dict[str, Any]) -> "ConsumableItem":
+    def create_from_json(cls, consumables_json: dict[str, Any]) -> ConsumableItem:
         return cls(
             consumables_json["id"],
             consumables_json["name"],

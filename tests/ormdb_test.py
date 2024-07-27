@@ -2,10 +2,19 @@ import random
 import unittest
 from datetime import timedelta
 from random import randint
-from typing import List, Dict
 
-from orm.db import decode_progress, encode_progress, PilgramORMDatabase, decode_satchel, encode_satchel, \
-    decode_modifiers, encode_modifiers, ENCODING, encode_equipped_items, decode_equipped_items_ids
+from orm.db import (
+    ENCODING,
+    PilgramORMDatabase,
+    decode_equipped_items_ids,
+    decode_modifiers,
+    decode_progress,
+    decode_satchel,
+    encode_equipped_items,
+    encode_modifiers,
+    encode_progress,
+    encode_satchel,
+)
 from pilgram.classes import Player
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.modifiers import get_modifier
@@ -77,9 +86,9 @@ class TestORMDB(unittest.TestCase):
 
     def test_encode_equipped_items(self):
         items = [Equipment.generate(5, EquipmentType.get(0), 0) for _ in range(6)]
-        items_dict: Dict[int, Equipment] = {}
+        items_dict: dict[int, Equipment] = {}
         for i, item in enumerate(items):
-            item.equipment_id = i+200
+            item.equipment_id = i + 200
             items_dict[i] = item
         result = encode_equipped_items(items_dict)
         self.assertEqual(len(result), 24)
@@ -100,14 +109,14 @@ class TestORMDB(unittest.TestCase):
         if not player:
             player = Player.create_default(1234, "Ombro", "AAAAAAAA")
             db.add_player(player)
-        generated_items: List[Equipment] = []
+        generated_items: list[Equipment] = []
         for i in range(100):
             item = Equipment.generate(i, EquipmentType.get_random(), randint(0, 3))
             db.add_item(item, player)
             generated_items.append(item)
-        items: List[Equipment] = db.get_player_items(player.player_id)
-        for item, gen_item in zip(items, generated_items):
-            for item_modifier, gen_item_modifier in zip(item.modifiers, gen_item.modifiers):
+        items: list[Equipment] = db.get_player_items(player.player_id)
+        for item, gen_item in zip(items, generated_items, strict=False):
+            for item_modifier, gen_item_modifier in zip(item.modifiers, gen_item.modifiers, strict=False):
                 self.assertEqual(item_modifier.TYPE, gen_item_modifier.TYPE)
                 self.assertEqual(item_modifier.strength, gen_item_modifier.strength)
 
@@ -124,12 +133,12 @@ class TestORMDB(unittest.TestCase):
         for _ in range(1000):
             player.equipped_items = {}
             old_id = id(player)
-            ids = [x+1 for x in range(500)]
+            ids = [x + 1 for x in range(500)]
             random.shuffle(ids)
-            items: List[Equipment] = db.get_player_items(player.player_id)
+            items: list[Equipment] = db.get_player_items(player.player_id)
             chosen_items = []
             for i in range(random.randint(1, 6)):
-                item = items[ids[i]-1]
+                item = items[ids[i] - 1]
                 player.equip_item(item)
                 chosen_items.append(item.equipment_id)
             db.update_player_data(player)

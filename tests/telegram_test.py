@@ -3,7 +3,11 @@ import unittest
 from pilgram.classes import Player
 from pilgram.globals import GlobalSettings
 from pilgram.strings import Strings
-from ui.telegram_bot import get_event_notification_string_and_targets, _delimit_markdown_entities, PilgramBot
+from ui.telegram_bot import (
+    PilgramBot,
+    _delimit_markdown_entities,
+    get_event_notification_string_and_targets,
+)
 from ui.utils import UserContext
 
 

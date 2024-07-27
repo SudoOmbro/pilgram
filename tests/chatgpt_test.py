@@ -1,16 +1,34 @@
-import json, unittest
+import json
+import unittest
 
-from AI.chatgpt import build_messages, ChatGPTAPI, get_quests_system_prompt, get_events_system_prompt, QUESTS_PROMPT, \
-    EVENTS_PROMPT, ChatGPTGenerator, EVENTS_PER_BATCH, ARTIFACTS_PER_BATCH, get_artifacts_system_prompt, \
-    ARTIFACTS_PROMPT, get_enemies_system_prompt, ENEMIES_PROMPT, MONSTERS_PER_BATCH
-from AI.utils import filter_string_list_remove_empty, remove_leading_numbers, filter_strings_list_remove_too_short
+from AI.chatgpt import (
+    ARTIFACTS_PER_BATCH,
+    ARTIFACTS_PROMPT,
+    ENEMIES_PROMPT,
+    EVENTS_PER_BATCH,
+    EVENTS_PROMPT,
+    MONSTERS_PER_BATCH,
+    QUESTS_PROMPT,
+    ChatGPTAPI,
+    ChatGPTGenerator,
+    build_messages,
+    get_artifacts_system_prompt,
+    get_enemies_system_prompt,
+    get_events_system_prompt,
+    get_quests_system_prompt,
+)
+from AI.utils import (
+    filter_string_list_remove_empty,
+    filter_strings_list_remove_too_short,
+    remove_leading_numbers,
+)
 from pilgram.classes import Zone
 
 SETTINGS = json.load(open('settings.json'))
 
 
 def _read_file(filename: str) -> str:
-    with open(filename, 'r') as f:
+    with open(filename) as f:
         return f.read()
 
 
@@ -62,7 +80,7 @@ class TestChatGPT(unittest.TestCase):
     def test_build_quests_from_generated_text(self):
         text = _read_file("mock_quests_response.txt")
         quests = self.generator._get_quests_from_generated_text(text, self.ZONE, 5)
-        for quest, num in zip(quests, range(5, 10)):
+        for quest, num in zip(quests, range(5, 10), strict=False):
             self.assertEqual(quest.number, num)
             print(f"{quest}\nnum: {quest.number}, success: '{quest.success_text}', failure: '{quest.failure_text}'\n")
 

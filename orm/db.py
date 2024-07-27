@@ -2,26 +2,47 @@ import json
 import logging
 import random
 import threading
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
 from time import sleep
+from typing import Any
 
 import numpy as np
-
-from typing import Dict, Union, List, Tuple, Any
-
-from peewee import fn, JOIN
+from peewee import JOIN, fn
 
 from orm.migration import migrate_older_dbs
-from orm.models import db, PlayerModel, GuildModel, ZoneModel, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel, AuctionModel
-from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
-    Tourney, EnemyMeta, Auction
+from orm.models import (
+    ArtifactModel,
+    AuctionModel,
+    EnemyTypeModel,
+    EquipmentModel,
+    GuildModel,
+    PlayerModel,
+    QuestModel,
+    QuestProgressModel,
+    ZoneEventModel,
+    ZoneModel,
+    create_tables,
+    db,
+)
+from orm.utils import cache_sized_ttl_quick, cache_ttl_quick, cache_ttl_single_value
+from pilgram.classes import (
+    AdventureContainer,
+    Artifact,
+    Auction,
+    Cult,
+    EnemyMeta,
+    Guild,
+    Player,
+    Progress,
+    Quest,
+    Tourney,
+    Zone,
+    ZoneEvent,
+)
 from pilgram.combat_classes import Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
-from pilgram.generics import PilgramDatabase, AlreadyExists
-from pilgram.modifiers import Modifier
-from orm.utils import cache_ttl_quick, cache_sized_ttl_quick, cache_ttl_single_value
-from pilgram.modifiers import get_modifier
+from pilgram.generics import AlreadyExists, PilgramDatabase
+from pilgram.modifiers import Modifier, get_modifier
 
 log = logging.getLogger(__name__)
 
@@ -32,14 +53,14 @@ ENCODING = "cp437"  # we use this encoding since we are working with raw bytes &
 NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # stands for 'numpy modifiers data'
 
 
-def decode_progress(data: Union[str, None]) -> Dict[int, int]:
+def decode_progress(data: str | None) -> dict[int, int]:
     """
         decodes the bytestring saved in progress field to an integer map.
         Even bytes represent zone ids, odd bytes represent the progress in the associated zone.
     """
     if not data:
         return {}
-    progress_dictionary: Dict[int, int] = {}
+    progress_dictionary: dict[int, int] = {}
     encoded_data = bytes(data, ENCODING)
     if len(encoded_data) == 4:
         # special case for progress with a single element, numpy returned the wrong array shape
@@ -51,7 +72,7 @@ def decode_progress(data: Union[str, None]) -> Dict[int, int]:
     return progress_dictionary
 
 
-def encode_progress(data: Dict[int, int]) -> str:
+def encode_progress(data: dict[int, int]) -> str:
     """ encodes the data dictionary contained in the progress object to a bytestring that can be saved on the db """
     dict_size = len(data)
     packed_array = np.empty(dict_size << 1, np.uint16)
@@ -62,8 +83,8 @@ def encode_progress(data: Dict[int, int]) -> str:
     return packed_array.tobytes().decode(encoding=ENCODING)
 
 
-def decode_satchel(data: str) -> List[ConsumableItem]:
-    result: List[ConsumableItem] = []
+def decode_satchel(data: str) -> list[ConsumableItem]:
+    result: list[ConsumableItem] = []
     if not data:
         return result
     encoded_data = bytes(data, ENCODING)
@@ -73,37 +94,37 @@ def decode_satchel(data: str) -> List[ConsumableItem]:
     return result
 
 
-def encode_satchel(satchel: List[ConsumableItem]) -> str:
+def encode_satchel(satchel: list[ConsumableItem]) -> str:
     packed_array = np.empty(len(satchel), np.uint8)
     for i, consumable in enumerate(satchel):
         packed_array[i] = consumable.consumable_id
     return packed_array.tobytes().decode(encoding=ENCODING)
 
 
-def decode_equipped_items_ids(data: Union[str]) -> List[int]:
+def decode_equipped_items_ids(data: str) -> list[int]:
     encoded_data = bytes(data, ENCODING)
-    equipment_list: List[int] = []
+    equipment_list: list[int] = []
     for item in np.frombuffer(encoded_data, dtype=np.uint32):
         equipment_list.append(item.item())
     return equipment_list
 
 
-def encode_equipped_items(equipped_items: Dict[int, Equipment]) -> str:
+def encode_equipped_items(equipped_items: dict[int, Equipment]) -> str:
     packed_array = np.empty(len(list(equipped_items.keys())), np.uint32)
     for i, equipment in enumerate(list(equipped_items.values())):
         packed_array[i] = equipment.equipment_id
     return packed_array.tobytes().decode(encoding=ENCODING)
 
 
-def decode_modifiers(data: Union[str, None]) -> List[Modifier]:
+def decode_modifiers(data: str | None) -> list[Modifier]:
     encoded_data = bytes(data, ENCODING)
-    modifiers_list: List[Modifier] = []
+    modifiers_list: list[Modifier] = []
     for item in np.frombuffer(encoded_data, dtype=NP_MD):
         modifiers_list.append(get_modifier(item["id"].item(), item["strength"].item()))
     return modifiers_list
 
 
-def encode_modifiers(modifiers: List[Modifier]) -> str:
+def encode_modifiers(modifiers: list[Modifier]) -> str:
     packed_array = np.empty(int(len(modifiers)), NP_MD)
     for i, modifier in enumerate(modifiers):
         packed_array[i]["id"] = modifier.ID
@@ -171,7 +192,7 @@ class PilgramORMDatabase(PilgramDatabase):
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             artifacts = self.get_player_artifacts(player_id)
             items = self.get_player_items(player_id)
-            equipped_items_ids: List[int] = decode_equipped_items_ids(pls.equipped_items)
+            equipped_items_ids: list[int] = decode_equipped_items_ids(pls.equipped_items)
             equipped_items = {}
             for item in items:
                 if item.equipment_id in equipped_items_ids:
@@ -267,7 +288,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise AlreadyExists(f"Player with name {player.name} already exists")
 
     @cache_ttl_single_value(ttl=600)
-    def rank_top_players(self) -> List[Tuple[str, int]]:
+    def rank_top_players(self) -> list[tuple[str, int]]:
         ps = PlayerModel.select(
             PlayerModel.name, PlayerModel.renown
         ).order_by(PlayerModel.renown.desc()).limit(20).namedtuples()
@@ -275,7 +296,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # guilds ----
 
-    def build_guild_object(self, gs: GuildModel, calling_player_id: Union[int, None]):
+    def build_guild_object(self, gs: GuildModel, calling_player_id: int | None):
         """
             build the guild object, also check if the player requesting the guild is the founder of said guild
             to avoid an infinite recursion loop.
@@ -297,7 +318,7 @@ class PilgramORMDatabase(PilgramDatabase):
         )
 
     @cache_sized_ttl_quick(size_limit=400, ttl=3600)
-    def get_guild(self, guild_id: int, calling_player_id: Union[int, None] = None) -> Guild:
+    def get_guild(self, guild_id: int, calling_player_id: int | None = None) -> Guild:
         try:
             gs = GuildModel.get(GuildModel.id == guild_id)
             return self.build_guild_object(gs, calling_player_id)
@@ -319,12 +340,12 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f'Guild founded by player with id {player.player_id} not found')
 
     @cache_sized_ttl_quick(size_limit=50, ttl=300)
-    def __get_guild_members_data(self, guild_id: int) -> List[Tuple[int, str, int]]:
+    def __get_guild_members_data(self, guild_id: int) -> list[tuple[int, str, int]]:
         """ cache based on the id should work a bit better """
         gms = GuildModel.get(guild_id == GuildModel.id).members
         return [(x.id, x.name, x.level) for x in gms]
 
-    def get_guild_members_data(self, guild: Guild) -> List[Tuple[int, str, int]]:  # id, name, level
+    def get_guild_members_data(self, guild: Guild) -> list[tuple[int, str, int]]:  # id, name, level
         return self.__get_guild_members_data(guild.guild_id)
 
     @cache_ttl_quick(ttl=60)
@@ -361,14 +382,14 @@ class PilgramORMDatabase(PilgramDatabase):
             raise AlreadyExists(f"Guild with name {guild.name} already exists")
 
     @cache_ttl_single_value(ttl=14400)
-    def rank_top_guilds(self) -> List[Tuple[str, int]]:
+    def rank_top_guilds(self) -> list[tuple[str, int]]:
         gs = GuildModel.select(
             GuildModel.name, GuildModel.prestige
         ).order_by(GuildModel.prestige.desc()).limit(20).namedtuples()
         return [(guild_row.name, guild_row.prestige) for guild_row in gs]
 
     @cache_ttl_quick(ttl=600)
-    def get_top_n_guilds_by_score(self, n: int) -> List[Guild]:
+    def get_top_n_guilds_by_score(self, n: int) -> list[Guild]:
         gs = GuildModel.select().order_by(GuildModel.tourney_score.desc()).limit(n)
         return [self.build_guild_object(g, None) for g in gs]
 
@@ -401,7 +422,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find zone with id {zone_id}")
 
     @cache_ttl_single_value(ttl=86400)
-    def get_all_zones(self) -> List[Zone]:
+    def get_all_zones(self) -> list[Zone]:
         try:
             zs = ZoneModel.select().namedtuples()
         except ZoneModel.DoesNotExist:
@@ -451,7 +472,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find zone event with id {event_id}")
 
     @cache_ttl_quick(ttl=10)
-    def get_random_zone_event(self, zone: Union[Zone, None]) -> ZoneEvent:
+    def get_random_zone_event(self, zone: Zone | None) -> ZoneEvent:
         # cache lasts only 10 seconds to optimize the most frequent use case
         try:
             if zone:
@@ -486,14 +507,14 @@ class PilgramORMDatabase(PilgramDatabase):
             )
 
     @_thread_safe()
-    def add_zone_events(self, events: List[ZoneEvent]):
+    def add_zone_events(self, events: list[ZoneEvent]):
         data_to_insert = [{"zone_id": e.zone.zone_id if e.zone else 0, "event_text": e.event_text} for e in events]
         with db.atomic():
             ZoneEventModel.insert_many(data_to_insert).execute()
 
     # quests ----
 
-    def build_quest_object(self, qs: QuestModel, zone: Union[Zone, None] = None) -> Quest:
+    def build_quest_object(self, qs: QuestModel, zone: Zone | None = None) -> Quest:
         if not zone:
             zone = self.get_zone(qs.zone_id)
         return Quest(
@@ -549,8 +570,8 @@ class PilgramORMDatabase(PilgramDatabase):
             )
 
     @_thread_safe()
-    def add_quests(self, quests: List[Quest]):
-        data_to_insert: List[Dict[str, Any]] = [
+    def add_quests(self, quests: list[Quest]):
+        data_to_insert: list[dict[str, Any]] = [
             {
                 "name": q.name,
                 "zone_id": q.zone.zone_id,
@@ -564,7 +585,7 @@ class PilgramORMDatabase(PilgramDatabase):
             QuestModel.insert_many(data_to_insert).execute()
 
     @cache_ttl_single_value(ttl=30)
-    def get_quests_counts(self) -> List[int]:
+    def get_quests_counts(self) -> list[int]:
         """ returns a list of quest amounts per zone, position in the list is determined by zone id """
         query = (ZoneModel.select(fn.Count(QuestModel.id).alias('quest_count')).
                  join(QuestModel, JOIN.LEFT_OUTER).
@@ -574,7 +595,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # in progress quest management ----
 
-    def build_adventure_container(self, qps: QuestProgressModel, owner: Union[Player, None] = None) -> AdventureContainer:
+    def build_adventure_container(self, qps: QuestProgressModel, owner: Player | None = None) -> AdventureContainer:
         player = self.get_player_data(int(qps.player_id)) if owner is None else owner
         quest = self.get_quest(qps.quest_id) if qps.quest_id else None
         return AdventureContainer(player, quest, qps.end_time, qps.last_update)
@@ -587,18 +608,18 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {player.player_id}")
 
-    def get_player_current_quest(self, player: Player) -> Union[Quest, None]:
+    def get_player_current_quest(self, player: Player) -> Quest | None:
         adventure_container = self.get_player_adventure_container(player)
         return adventure_container.quest
 
-    def get_all_pending_updates(self, delta: timedelta) -> List[AdventureContainer]:
+    def get_all_pending_updates(self, delta: timedelta) -> list[AdventureContainer]:
         try:
             qps = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta).namedtuples()
             return [self.build_adventure_container(x) for x in qps]
         except QuestProgressModel.DoesNotExist:
             return []
 
-    def update_quest_progress(self, adventure_container: AdventureContainer, last_update: Union[datetime, None] = None):
+    def update_quest_progress(self, adventure_container: AdventureContainer, last_update: datetime | None = None):
         try:
             with db.atomic():
                 qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
@@ -619,7 +640,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find any artifact with id {artifact_id}")
 
     @cache_sized_ttl_quick(size_limit=200, ttl=300)
-    def get_player_artifacts(self, player_id: int) -> List[Artifact]:
+    def get_player_artifacts(self, player_id: int) -> list[Artifact]:
         try:
             ps = PlayerModel.get(PlayerModel.id == player_id)
             arse = ps.artifacts  # ARtifact SElection.  :)
@@ -651,8 +672,8 @@ class PilgramORMDatabase(PilgramDatabase):
             ArtifactModel.create(name=artifact.name, description=artifact.description, owner=None)
 
     @_thread_safe()
-    def add_artifacts(self, artifacts: List[Artifact]):
-        data_to_insert: List[Dict[str, Any]] = [
+    def add_artifacts(self, artifacts: list[Artifact]):
+        data_to_insert: list[dict[str, Any]] = [
             {
                 "name": a.name,
                 "description": a.description,
@@ -663,7 +684,7 @@ class PilgramORMDatabase(PilgramDatabase):
             ArtifactModel.insert_many(data_to_insert).execute()
 
     @_thread_safe()
-    def update_artifact(self, artifact: Artifact, owner: Union[Player, None]):
+    def update_artifact(self, artifact: Artifact, owner: Player | None):
         try:
             with db.atomic():
                 arse = ArtifactModel.get(ArtifactModel.id == artifact.artifact_id)
@@ -678,7 +699,7 @@ class PilgramORMDatabase(PilgramDatabase):
     # cults ----
 
     @cache_ttl_single_value(ttl=1200)
-    def get_cults_members_number(self) -> List[Tuple[int, int]]:  # cult id, number of members
+    def get_cults_members_number(self) -> list[tuple[int, int]]:  # cult id, number of members
         query = (PlayerModel.select(PlayerModel.cult_id, fn.Count(PlayerModel.id).alias('player_count')).
                  group_by(PlayerModel.cult_id).
                  order_by(PlayerModel.cult_id.asc()))
@@ -729,7 +750,7 @@ class PilgramORMDatabase(PilgramDatabase):
             return self.__build_enemy_meta(em)
 
     @cache_sized_ttl_quick(size_limit=20, ttl=300)
-    def get_all_zone_enemies(self, zone: Zone) -> List[EnemyMeta]:
+    def get_all_zone_enemies(self, zone: Zone) -> list[EnemyMeta]:
         ems = EnemyTypeModel.select(
             EnemyTypeModel.id,
             EnemyTypeModel.zone_id,
@@ -740,7 +761,7 @@ class PilgramORMDatabase(PilgramDatabase):
         ).where(
             EnemyTypeModel.zone_id == zone.zone_id
         ).namedtuples()
-        result: List[EnemyMeta] = []
+        result: list[EnemyMeta] = []
         for em in ems:
             result.append(self.__build_enemy_meta(em))
         return result
@@ -793,7 +814,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find item with id {item_id}")
 
     @cache_sized_ttl_quick(size_limit=100, ttl=300)
-    def get_player_items(self, player_id: int) -> List[Equipment]:
+    def get_player_items(self, player_id: int) -> list[Equipment]:
         try:
             its = PlayerModel.get(PlayerModel.id == player_id).items
             return [self.__build_item(x) for x in its]
@@ -836,11 +857,11 @@ class PilgramORMDatabase(PilgramDatabase):
     # shops ----
 
     @cache_ttl_single_value(ttl=3600)
-    def get_market_items(self) -> List[ConsumableItem]:
+    def get_market_items(self) -> list[ConsumableItem]:
         return ConsumableItem.get_random_selection(_get_daily_seed(), 10)
 
     @cache_ttl_single_value(ttl=3600)
-    def get_smithy_items(self) -> List[EquipmentType]:
+    def get_smithy_items(self) -> list[EquipmentType]:
         return EquipmentType.get_random_selection(_get_daily_seed(), 10)
 
     # auctions ----
@@ -875,7 +896,7 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find auction id associated with item {item.equipment_id}")
 
     @cache_ttl_single_value(ttl=600)
-    def get_auctions(self) -> List[Auction]:
+    def get_auctions(self) -> list[Auction]:
         try:
             ass = AuctionModel.select()
             return [self.__build_auction(x) for x in ass]
@@ -883,7 +904,7 @@ class PilgramORMDatabase(PilgramDatabase):
             return []
 
     @cache_sized_ttl_quick()
-    def get_player_auctions(self, player: Player) -> List[Auction]:
+    def get_player_auctions(self, player: Player) -> list[Auction]:
         try:
             ass = PlayerModel.get(PlayerModel.id == player.player_id).auctions
             return [self.__build_auction(x) for x in ass]

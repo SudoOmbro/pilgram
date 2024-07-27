@@ -1,11 +1,16 @@
 import unittest
 from random import choice
-from typing import List
 
-from minigames.generics import PilgramMinigame
-from minigames.utils import get_random_word, get_word_letters, generate_maze, print_maze, get_direction_plus_90_degrees
-from pilgram.classes import Player
 from minigames.games import HandsMinigame
+from minigames.generics import PilgramMinigame
+from minigames.utils import (
+    generate_maze,
+    get_direction_plus_90_degrees,
+    get_random_word,
+    get_word_letters,
+    print_maze,
+)
+from pilgram.classes import Player
 
 
 class TestMinigames(unittest.TestCase):
@@ -24,8 +29,8 @@ class TestMinigames(unittest.TestCase):
     def __play_minigame(
             self,
             minigame: PilgramMinigame,
-            setup_commands: List[str],
-            game_commands: List[str]
+            setup_commands: list[str],
+            game_commands: list[str]
     ) -> bool:
         for command in setup_commands:
             result = minigame.setup_game(command)

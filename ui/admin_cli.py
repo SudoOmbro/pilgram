@@ -1,21 +1,24 @@
 import json
 import re
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from random import randint
-from typing import Dict, Union, Tuple, Callable, Any
+from typing import Any
 
-from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
+from AI.chatgpt import ChatGPTAPI, ChatGPTGenerator
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Zone, Quest, ZoneEvent, Artifact, EnemyMeta
+from pilgram.classes import Artifact, EnemyMeta, Quest, Zone, ZoneEvent
 from pilgram.combat_classes import Damage
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase
-from pilgram.globals import PLAYER_NAME_REGEX as PNR, POSITIVE_INTEGER_REGEX as PIR, ContentMeta, YES_NO_REGEX, \
-    GlobalSettings
-from ui.interpreter import CLIInterpreter
+from pilgram.globals import PLAYER_NAME_REGEX as PNR
+from pilgram.globals import POSITIVE_INTEGER_REGEX as PIR
+from pilgram.globals import YES_NO_REGEX, ContentMeta, GlobalSettings
 from pilgram.strings import Strings
-from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
-
+from ui.interpreter import CLIInterpreter
+from ui.utils import InterpreterFunctionWrapper as IFW
+from ui.utils import RegexWithErrorMessage as RWE
+from ui.utils import UserContext
 
 MONEY = ContentMeta.get("money.name")
 
@@ -59,7 +62,7 @@ def __generate_int_op_command(target_attr: str, target: str, action: str) -> IFW
     func: Callable = {
         "player": operate_on_player,
         "guild": operate_on_guild
-    }.get(target, None)
+    }.get(target)
     assert func is not None
     return IFW([
             RWE(f"{target} name", PNR, Strings.player_name_validation_error),
@@ -322,7 +325,7 @@ def give_random_item_to_player(context: UserContext, player_name: str) -> str:
     return f"Added '{item.name}' to player '{player_name}'."
 
 
-ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
+ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
     "add": {
         "player": {
             "money": __generate_int_op_command("money", "player", "add"),
@@ -330,7 +333,7 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "gear": __generate_int_op_command("gear_level", "player", "add"),
             "home": __generate_int_op_command("home_level", "player", "add"),
             "pieces": __generate_int_op_command("artifact_pieces", "player", "add"),
-            "item": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], give_random_item_to_player, "Add a random item to the player's inventory")
+            "item": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], give_random_item_to_player, "Add a random item to the player's inventory")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),
@@ -379,18 +382,18 @@ ADMIN_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "enemies": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_enemy_metas, "Generate new enemies")
     },
     "recharge": {
-        "power": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], give_player_eldritch_power, "recharge players eldritch power")
+        "power": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], give_player_eldritch_power, "recharge players eldritch power")
     },
     "force": {
-        "update": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_update, "Force update for the given player"),
+        "update": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], force_update, "Force update for the given player"),
         "quest": {
-            "complete": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player"),
-            "time": IFW([RWE(f"player name", PNR, Strings.player_name_validation_error), RWE("hours", PIR, "Invalid integer id")], force_quest_end_time, "Force quest finish time in [hours] for the given player")
+            "complete": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player"),
+            "time": IFW([RWE("player name", PNR, Strings.player_name_validation_error), RWE("hours", PIR, "Invalid integer id")], force_quest_end_time, "Force quest finish time in [hours] for the given player")
         }
     }
 }
 
-ADMIN_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
+ADMIN_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     "add zone": (
         ("Write Zone name", ProcessGetObjStrAttr("zone_name")),
         ("Write Zone level", ProcessGetObjIntAttr("level")),
