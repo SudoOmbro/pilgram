@@ -31,7 +31,10 @@ PRIVACY_STRING = read_text_file("privacy.txt")
 
 async def notify_with_id(bot: Bot, player_id: int, text: str):
     try:
-        await bot.send_message(player_id, text, parse_mode=ParseMode.MARKDOWN)
+        if not len(text) > 4096:
+            await bot.send_message(player_id, text, parse_mode=ParseMode.MARKDOWN)
+            return
+        await bot.send_document(player_id, document=text.encode(), caption="You message was too long, here it is in message form:")
     except TelegramError as e:
         log.error(f"An error occurred while trying to notify user {player_id}: {e}")
 

@@ -117,8 +117,8 @@ class EnemyTypeModel(BaseModel):
 class AuctionModel(BaseModel):
     id = AutoField(primary_key=True)
     auctioneer_id = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
-    item_id = ForeignKeyField(ArtifactModel, null=False)
-    best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=False)
+    item_id = ForeignKeyField(EquipmentModel, null=False)
+    best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=True, default=None)
     best_bid = IntegerField(null=False, default=0)
     creation_date = DateTimeField(default=datetime.now)
 

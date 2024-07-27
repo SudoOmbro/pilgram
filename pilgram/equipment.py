@@ -161,6 +161,9 @@ class Equipment:
             return self.equipment_id == other.equipment_id
         return False
 
+    def __hash__(self):
+        return hash(self.equipment_id)
+
     @staticmethod
     def generate_name(
             equipment_type: EquipmentType,

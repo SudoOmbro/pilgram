@@ -9,7 +9,7 @@ from typing import Tuple, Dict, Union, Callable, Type, List
 from minigames.generics import PilgramMinigame, MINIGAMES
 from minigames.games import AAA
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult
+from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult, Auction
 from pilgram.equipment import Equipment, EquipmentType, Slots
 from pilgram.flags import ForcedCombat
 from pilgram.generics import PilgramDatabase, AlreadyExists
@@ -807,6 +807,8 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
         if not __item_id_is_valid(item_pos, items):
             return Strings.invalid_item
         item = items[item_pos - 1]
+        if db().get_auction_from_item(item):
+            return Strings.cannot_equip_auctioned_item
         player.equip_item(item)
         db().update_player_data(player)
         return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
@@ -853,6 +855,8 @@ def enchant_item(context: UserContext, item_pos_str: str) -> str:
         item = items[item_pos - 1]
         if item.get_rarity() >= 4:
             return Strings.max_enchants_reached
+        if db().get_auction_from_item(item):
+            return Strings.cannot_enchant_auctioned_item
         item.enchant()
         player.artifact_pieces -= 1
         if item in player.equipped_items.values():
@@ -876,7 +880,8 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
         item = items[item_pos - 1]
         if item in player.equipped_items.values():
             return Strings.cannot_sell_equipped_item
-        # TODO check if the item isn't being auctioned
+        if db().get_auction_from_item(item):
+            return Strings.cannot_sell_auctioned_item
         mult = 1 if player.guild_level() < 6 else 2
         money = int(item.get_value() * mult)
         player.add_money(money)
@@ -977,6 +982,27 @@ def force_combat(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
+def check_auctions(context: UserContext) -> str:
+    try:
+        auctions = db().get_auctions()
+        if not auctions:
+            return Strings.no_auctions_yet
+        return "Here are all auctions:\n\n" + "\n".join(str(x) for x in auctions)
+    except KeyError:
+        return Strings.no_auctions_yet
+
+
+def check_my_auctions(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        auctions = db().get_player_auctions(player)
+        if not auctions:
+            return Strings.no_auctions_yet
+        return "Here are all your auctions:\n\n" + "\n".join(str(x) for x in auctions)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 def create_auction(context: UserContext, item_pos_str: str, starting_bid_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
@@ -988,7 +1014,10 @@ def create_auction(context: UserContext, item_pos_str: str, starting_bid_str: st
         if item in player.equipped_items.values():
             return Strings.cannot_sell_equipped_item
         starting_bid = int(starting_bid_str)
-        # TODO actually create auction
+        if db().get_auction_from_item(item):
+            return Strings.auction_already_exists
+        auction = Auction.create_default(player, item, starting_bid)
+        db().add_auction(auction)
         return Strings.auction_created.format(item=item.name)
     except KeyError:
         return Strings.no_character_yet
@@ -999,7 +1028,19 @@ def bid_on_auction(context: UserContext, auction_id_str: str, bid_str: str) -> s
         player = db().get_player_data(context.get("id"))
         auction_id = int(auction_id_str)
         bid = int(bid_str)
-        # TODO actually get auction & place bid
+        if player.money < bid:
+            return Strings.not_enough_money.format(amount=bid - player.money)
+        try:
+            auction = db().get_auction_from_id(auction_id)
+        except KeyError:
+            return Strings.obj_does_not_exist.format(obj="Auction")
+        if auction.auctioneer == player:
+            return Strings.cant_bid_on_own_auction
+        if auction.is_expired():
+            return Strings.auction_is_expired
+        if not auction.place_bid(player, bid):
+            return Strings.bid_too_low + str(auction.best_bid + 1)
+        db().update_auction(auction)
         return Strings.bid_placed.format(amount=bid, item="TODO")
     except KeyError:
         return Strings.no_character_yet
@@ -1018,7 +1059,9 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
+            "auctions": IFW(None, check_my_auctions, "Shows your auctions."),
         },
+        "auctions": IFW(None, check_auctions, "Shows all auctions."),
         "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
         "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild"),
         "item": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], check_item, "Shows the specified item stats"),

@@ -220,8 +220,18 @@ class Strings:
     item_enchanted = "You used 1 artifact piece to enchant:"
     no_ap_to_enchant = "You don't have any artifact pieces to enchant with."
     max_enchants_reached = "You have reached the maximum amount of perks on this item."
+
+    # auctions
+    no_auctions_yet = "No auctions yet"
     auction_created = "Auction for item {item} created successfully."
     bid_placed = f"You placed a bid of {{amount}} {MONEY} on item {{item}}."
+    auction_already_exists = "Auction for item {item} exists."
+    cannot_equip_auctioned_item = "You cannot equip an auctioned item."
+    cannot_sell_auctioned_item = "You cannot sell an auctioned item."
+    cannot_enchant_auctioned_item = "You cannot enchant an auctioned item."
+    bid_too_low = "You bid is too low! the minimum is "
+    auction_is_expired = "You can't bid anymore, the auction is expired."
+    cant_bid_on_own_auction = "You cannot bid on your own auction."
 
     # tourney
     tourney_ends_in_x_days = "The tourney ends in {x} days"

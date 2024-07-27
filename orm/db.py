@@ -13,9 +13,9 @@ from peewee import fn, JOIN
 
 from orm.migration import migrate_older_dbs
 from orm.models import db, PlayerModel, GuildModel, ZoneModel, create_tables, ZoneEventModel, QuestModel, \
-    QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel
+    QuestProgressModel, ArtifactModel, EquipmentModel, EnemyTypeModel, AuctionModel
 from pilgram.classes import Player, Progress, Guild, Zone, ZoneEvent, Quest, AdventureContainer, Artifact, Cult, \
-    Tourney, EnemyMeta
+    Tourney, EnemyMeta, Auction
 from pilgram.combat_classes import Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import PilgramDatabase, AlreadyExists
@@ -842,3 +842,82 @@ class PilgramORMDatabase(PilgramDatabase):
     @cache_ttl_single_value(ttl=3600)
     def get_smithy_items(self) -> List[EquipmentType]:
         return EquipmentType.get_random_selection(_get_daily_seed(), 10)
+
+    # auctions ----
+
+    def __build_auction(self, ass: AuctionModel):
+        player = self.get_player_data(ass.auctioneer_id)
+        best_bidder = self.get_player_data(ass.best_bidder_id) if ass.best_bidder_id else None
+        item = self.get_item(ass.item_id)
+        return Auction(
+            ass.id,
+            player,
+            item,
+            best_bidder,
+            ass.best_bid,
+            ass.creation_date
+        )
+
+    @cache_sized_ttl_quick()
+    def get_auction_from_id(self, auction_id: int) -> Auction:
+        try:
+            ass = AuctionModel.get(AuctionModel.id == auction_id)  # ASS = Auction SelectionS :)
+            return self.__build_auction(ass)
+        except AuctionModel.DoesNotExist:
+            raise KeyError(f"Could not find auction with id {auction_id}")
+
+    @cache_sized_ttl_quick()
+    def get_auction_id_from_item(self, item: Equipment) -> int:
+        try:
+            ass = AuctionModel.get(AuctionModel.item_id == item.equipment_id)
+            return int(ass.id)
+        except AuctionModel.DoesNotExist:
+            raise KeyError(f"Could not find auction id associated with item {item.equipment_id}")
+
+    @cache_ttl_single_value(ttl=600)
+    def get_auctions(self) -> List[Auction]:
+        try:
+            ass = AuctionModel.select()
+            return [self.__build_auction(x) for x in ass]
+        except AuctionModel.DoesNotExist:
+            return []
+
+    @cache_sized_ttl_quick()
+    def get_player_auctions(self, player: Player) -> List[Auction]:
+        try:
+            ass = PlayerModel.get(PlayerModel.id == player.player_id).auctions
+            return [self.__build_auction(x) for x in ass]
+        except AuctionModel.DoesNotExist:
+            return []
+
+    def get_expired_auctions(self):
+        try:
+            ass = AuctionModel.select().where(AuctionModel.creation_date < (datetime.now() - Auction.DURATION))
+            return [self.__build_auction(x) for x in ass]
+        except AuctionModel.DoesNotExist:
+            return []
+
+    @_thread_safe()
+    def update_auction(self, auction: Auction):
+        try:
+            with db.atomic():
+                ass: AuctionModel = AuctionModel.get(AuctionModel.id == auction.auction_id)
+                ass.best_bid = auction.best_bid
+                ass.best_bidder_id = auction.best_bidder.player_id
+                ass.save()
+        except AuctionModel.DoesNotExist:
+            raise KeyError("Could not find auction to update")
+
+    @_thread_safe()
+    def add_auction(self, auction: Auction):
+        with db.atomic():
+            AuctionModel.create(
+                auctioneer_id=auction.auctioneer.player_id,
+                best_bid=auction.best_bid,
+                item_id=auction.item.equipment_id
+            )
+
+    @_thread_safe()
+    def delete_auction(self, auction: Auction):
+        with db.atomic():
+            AuctionModel.get(AuctionModel.id == auction.auction_id).delete_instance()

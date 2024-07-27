@@ -164,13 +164,13 @@ def __migrate_v5_to_v6():
 
 @__add_to_migration_list("pilgram_v6.db")
 def __migrate_v6_to_v7():
-    from ._models_v6 import db as previous_db, BaseModel, PlayerModel, ArtifactModel
+    from ._models_v6 import db as previous_db, BaseModel, PlayerModel, EquipmentModel
 
     class AuctionModel(BaseModel):
         id = AutoField(primary_key=True)
         auctioneer_id = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
-        item_id = ForeignKeyField(ArtifactModel, null=False)
-        best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=False)
+        item_id = ForeignKeyField(EquipmentModel, null=False)
+        best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=True, default=None)
         best_bid = IntegerField(null=False, default=0)
         creation_date = DateTimeField(default=datetime.now)
 

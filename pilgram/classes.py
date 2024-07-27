@@ -1219,6 +1219,7 @@ class Enemy(CombatActor):
 
 
 class Auction:
+    DURATION = timedelta(weeks=1)
 
     def __init__(
             self,
@@ -1242,6 +1243,19 @@ class Auction:
         self.best_bid = bid
         self.best_bidder = bidder
         return True
+
+    def is_expired(self):
+        return datetime.now() > (self.creation_date + self.DURATION)
+
+    def _get_expires_string(self):
+        if self.is_expired():
+            "Expired!"
+        time_left = (self.creation_date + self.DURATION) - datetime.now()
+        hours_left = int(time_left.seconds / 3600)
+        return f"Expires in {time_left.days} days & {hours_left} hours"
+
+    def __str__(self):
+        return f"(id: {self.auction_id}) - *{self.item.name}*, Best bid: {self.best_bid}. _{self._get_expires_string()}_"
 
     @classmethod
     def create_default(cls, auctioneer: Player, item: Equipment, starting_bid: int) -> "Auction":

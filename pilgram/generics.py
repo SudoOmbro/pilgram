@@ -337,8 +337,31 @@ class PilgramDatabase(ABC):
 
     # auctions ----------------------------------
 
-    def get_auctions(self, page: int) -> List[Auction]:
-        """ gets auctions (paged) """
+    def get_auctions(self) -> List[Auction]:
+        """ gets all auctions """
+        raise NotImplementedError
+
+    def get_auction_from_id(self, auction_id: int) -> Auction:
+        """ get the auction that has the given id """
+        raise NotImplementedError
+
+    def get_auction_id_from_item(self, item: Equipment) -> int:
+        """ get the auction for the given item """
+        raise NotImplementedError
+
+    def get_auction_from_item(self, item: Equipment) -> Union[Auction, None]:
+        try:
+            auction_id = self.get_auction_id_from_item(item)
+            return self.get_auction_from_id(auction_id)
+        except KeyError:
+            return None
+
+    def get_player_auctions(self, player: Player) -> List[Auction]:
+        """ gets auctions started by the given player """
+        raise NotImplementedError
+
+    def get_expired_auctions(self):
+        """ gets all expired auctions """
         raise NotImplementedError
 
     def update_auction(self, auction: Auction):

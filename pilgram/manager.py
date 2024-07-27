@@ -7,7 +7,8 @@ from time import sleep
 from datetime import timedelta, datetime
 from typing import List, Dict, Tuple, Union
 
-from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult, Enemy
+from pilgram.classes import Quest, Player, AdventureContainer, Zone, QuickTimeEvent, QTE_CACHE, TOWN_ZONE, Cult, Enemy, \
+    Auction
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat
@@ -173,7 +174,10 @@ class QuestManager:
         player.add_xp(xp)
         money_am = player.add_money(money)  # am = after modifiers
         ac.player = player
-        regeneration_text = self.__player_regenerate_hp(ac, player)
+        if player.hp_percent < 1.0:
+            regeneration_text = self.__player_regenerate_hp(ac, player)
+        else:
+            regeneration_text = ""
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
@@ -472,9 +476,43 @@ class TimedUpdatesManager:
         return self.database.acquire()
 
     def run(self):
-        # update members
+        # update cult members
         Cult.update_number_of_members(self.db().get_cults_members_number())
         # update randomized stats
         for cult in Cult.LIST:
             if cult.can_randomize():
                 cult.randomize()
+        # update auctions
+        expired_auctions: List[Auction] = self.db().get_expired_auctions()
+        log.info(f"{len(expired_auctions)} expired auctions to process")
+        for auction in expired_auctions:
+            if not auction.best_bidder:
+                self.notifier.notify(
+                    auction.auctioneer,
+                    f"No one bid on your auctioned item ({auction.item.name}) and it expired!"
+                )
+                sleep(1)
+            else:
+                self.notifier.notify(
+                    auction.auctioneer,
+                    f"Your auctioned item '{auction.item.name}' has been bought by {auction.best_bidder} for {auction.best_bid} {MONEY}."
+                )
+                self.notifier.notify(
+                    auction.best_bidder,
+                    f"You won the auction for item '{auction.item.name}', you paid {auction.best_bid} {MONEY}."
+                )
+                # handle money transfer
+                auction.best_bidder.money -= auction.best_bid
+                auction.auctioneer.add_money(auction.best_bid)
+                self.db().update_player_data(auction.auctioneer)
+                self.db().update_player_data(auction.best_bidder)
+                # handle item transfer
+                self.db().update_item(auction.item, auction.best_bidder)
+                auctioneer_items = self.db().get_player_items(auction.auctioneer.player_id)
+                winner_items = self.db().get_player_items(auction.best_bidder.player_id)
+                auctioneer_items.remove(auction.item)
+                winner_items.append(auction.item)
+                # wait a couple of seconds since you just sent 2 messages
+                sleep(2)
+            # delete the auction from the database
+            self.db().delete_auction(auction)
