@@ -930,6 +930,16 @@
       "freeze": 1
     },
     "value": 8
+  }, {
+    "id": 45,
+    "name": "War hammer",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "blunt": 10
+    },
+    "value": 10
   }],
   "consumables": [{
     "id": 0,
