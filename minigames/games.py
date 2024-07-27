@@ -44,7 +44,7 @@ class HandsMinigame(GamblingMinigame, game="hands"):
             for j, y in enumerate(rolls):
                 if i == j:
                     continue
-                if (x + y) == result:
+                if (x + y) == bet:
                     return True
         return False
 
