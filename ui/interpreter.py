@@ -1,15 +1,21 @@
+from collections.abc import Callable
 from functools import cache
-from typing import List, Dict, Union, Tuple, Callable
 
-from ui.utils import InterpreterFunctionWrapper as IFW, CommandParsingResult as CPS, UserContext, \
-    reconstruct_delimited_arguments, TooFewArgumentsError, ArgumentValidationError
+from ui.utils import (
+    ArgumentValidationError,
+    TooFewArgumentsError,
+    UserContext,
+    reconstruct_delimited_arguments,
+)
+from ui.utils import CommandParsingResult as CPS
+from ui.utils import InterpreterFunctionWrapper as IFW
 
 
 def command_not_found_error_function(context: UserContext, command: str, suggestion: str) -> str:
     return f"command '{command}' invalid, did you mean '`{suggestion}`'? Type '`help`' for a list of commands."
 
 
-def _help_dfs(dictionary: Dict[str, Union[dict, IFW]], previous_command: str, formatting: str) -> str:
+def _help_dfs(dictionary: dict[str, dict | IFW], previous_command: str, formatting: str) -> str:
     result_string: str = ""
     for key, value in dictionary.items():
         command = f"{previous_command}{key} "
@@ -20,7 +26,7 @@ def _help_dfs(dictionary: Dict[str, Union[dict, IFW]], previous_command: str, fo
     return result_string
 
 
-def populate_sc_commands_list(commands_list: List[Tuple[str, int, str]], commands_dict: Dict[str, Union[dict, IFW]], string: str):
+def populate_sc_commands_list(commands_list: list[tuple[str, int, str]], commands_dict: dict[str, dict | IFW], string: str):
     """ populate a list with all the commands written in snake case + their number of arguments"""
     for key, value in commands_dict.items():
         if isinstance(value, dict):
@@ -34,9 +40,9 @@ class CLIInterpreter:
 
     def __init__(
             self,
-            commands_dict: Dict[str, Union[str, IFW]],
-            processes: Dict[str, Tuple[Tuple[str, Callable], ...]],
-            help_formatting: Union[str, None] = None
+            commands_dict: dict[str, str | IFW],
+            processes: dict[str, tuple[tuple[str, Callable], ...]],
+            help_formatting: str | None = None
     ):
         self.commands_dict = commands_dict
         self.processes = processes
@@ -50,13 +56,13 @@ class CLIInterpreter:
                 "Shows and describes all commands",
                 default_args={"formatting": help_formatting}
             )
-        self.commands_list: List[Tuple[str, int, str]] = []
+        self.commands_list: list[tuple[str, int, str]] = []
         populate_sc_commands_list(self.commands_list, self.commands_dict, "")
 
     @cache
     def __help(self, formatting: str) -> str:
         """  does the dfs & caches the result for later use, slightly speeds up execution """
-        return f"here's a list of all commands:\n\n" + _help_dfs(self.commands_dict, "", formatting)
+        return "here's a list of all commands:\n\n" + _help_dfs(self.commands_dict, "", formatting)
 
     def help_function(self, context: UserContext, formatting: str = "{c}{a}- {d}\n") -> str:
         """ basically do a depth first search on the COMMANDS dictionary and print what you find """
@@ -64,7 +70,7 @@ class CLIInterpreter:
 
     def parse_command(self, command: str) -> CPS:
         """ parses the given command and returns a CommandParsingResult object."""
-        split_command: List[str] = reconstruct_delimited_arguments(command.split())
+        split_command: list[str] = reconstruct_delimited_arguments(command.split())
         parser = self.commands_dict
         indentation_levels: int = 0
         full_command: str = ""
@@ -73,7 +79,7 @@ class CLIInterpreter:
             if ctlw in parser:
                 if isinstance(parser[ctlw], IFW):
                     ifw: IFW = parser[ctlw]
-                    args: List[str] = split_command[indentation_levels + 1:]
+                    args: list[str] = split_command[indentation_levels + 1:]
                     if ifw.number_of_args > len(args):
                         raise TooFewArgumentsError(full_command + command_token, ifw.number_of_args, len(args))
                     return CPS(ifw, args)

@@ -1,12 +1,19 @@
 import time
 import unittest
 from random import randint
-from typing import List
 
-from pilgram.classes import Quest, Zone, Player, ZoneEvent, QuickTimeEvent, Enemy, EnemyMeta
-from pilgram.combat_classes import Damage, CombatContainer
-from pilgram.equipment import Equipment, EquipmentType, ConsumableItem
-from pilgram.modifiers import print_all_modifiers, Modifier
+from pilgram.classes import (
+    Enemy,
+    EnemyMeta,
+    Player,
+    Quest,
+    QuickTimeEvent,
+    Zone,
+    ZoneEvent,
+)
+from pilgram.combat_classes import CombatContainer, Damage
+from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
+from pilgram.modifiers import Modifier, print_all_modifiers
 
 
 def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 100) -> float:
@@ -23,7 +30,7 @@ def _print_quest_fail_rate(fail_rate: float, quest: Quest, player: Player):
     print(f"player  (lv {player.level}, gear {player.gear_level}) | quest (lv {quest.zone.level}, num {quest.number}) fail rate: {fail_rate:.2f}")
 
 
-def _generate_equipment(player: Player, equipment_type: EquipmentType, modifiers: List[Modifier]) -> Equipment:
+def _generate_equipment(player: Player, equipment_type: EquipmentType, modifiers: list[Modifier]) -> Equipment:
     _, damage, resist = Equipment.get_dmg_and_resist_values(player.level, time.time(), equipment_type.is_weapon)
     Damage.generate_from_seed(time.time(), player.level)
     return Equipment(

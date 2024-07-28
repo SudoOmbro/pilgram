@@ -1,19 +1,17 @@
 import logging
 import re
 from abc import ABC
-from typing import Tuple, Type, Dict
 
 from pilgram.classes import Player
-from pilgram.globals import ContentMeta, POSITIVE_INTEGER_REGEX
-from pilgram.utils import has_recently_accessed_cache
+from pilgram.globals import POSITIVE_INTEGER_REGEX, ContentMeta
 from pilgram.strings import Strings
-
+from pilgram.utils import has_recently_accessed_cache
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 
-MINIGAMES: Dict[str, Type["PilgramMinigame"]] = {}
+MINIGAMES: dict[str, type["PilgramMinigame"]] = {}
 
 
 class PilgramMinigame(ABC):
@@ -28,7 +26,7 @@ class PilgramMinigame(ABC):
             cls.EXPLANATION = ContentMeta.get(f"minigames.{game}.explanation")
             cls.COOLDOWN = ContentMeta.get(f"minigames.{game}.cooldown", default=60)
             cls.RENOWN = ContentMeta.get(f"minigames.{game}.renown", default=0)
-            cls.STORAGE: Dict[int, float] = {}  # player id --> cooldown expire timestamp map
+            cls.STORAGE: dict[int, float] = {}  # player id --> cooldown expire timestamp map
             print(f"minigame {game} registered")
             MINIGAMES[game] = cls
 
@@ -53,7 +51,7 @@ class PilgramMinigame(ABC):
         return has_recently_accessed_cache(cls.STORAGE, user_id, cls.COOLDOWN)
 
     @classmethod
-    def can_play(cls, player: Player) -> Tuple[bool, str]:
+    def can_play(cls, player: Player) -> tuple[bool, str]:
         """
         returns True & empty string if the player can play the minigame, otherwise returns False & error string.
         By default, it returns True & empty string.
@@ -76,11 +74,11 @@ class PilgramMinigame(ABC):
         """ Play a turn of a minigame """
         raise NotImplementedError
 
-    def get_rewards(self) -> Tuple[int, int]:
+    def get_rewards(self) -> tuple[int, int]:
         """ return xp & money gained """
         raise NotImplementedError
 
-    def get_rewards_apply_bonuses(self) -> Tuple[int, int]:
+    def get_rewards_apply_bonuses(self) -> tuple[int, int]:
         """ return xp & money gained and apply player related bonuses """
         xp, money = self.get_rewards()
         return int(xp * self.player.cult.minigame_xp_mult), int(money * self.player.cult.minigame_money_mult)
@@ -113,12 +111,12 @@ class GamblingMinigame(PilgramMinigame):
         return Strings.money_pot_ok.format(amount=amount)
 
     @classmethod
-    def can_play(cls, player: Player) -> Tuple[bool, str]:
+    def can_play(cls, player: Player) -> tuple[bool, str]:
         if player.money >= cls.MIN_BUY_IN:
             return True, ""
         return False, Strings.not_enough_money.format(amount=cls.MIN_BUY_IN - player.money)
 
-    def get_rewards(self) -> Tuple[int, int]:
+    def get_rewards(self) -> tuple[int, int]:
         return self.XP_REWARD, int(self.money_pot * self.PAYOUT)
 
     def setup_text(self) -> str:

@@ -1,15 +1,20 @@
 import logging
 import random
 import re
-from typing import Tuple, List, Union
 
 from minigames.generics import GamblingMinigame, PilgramMinigame
-from minigames.utils import get_positive_integer_from_string, roll, get_random_word, generate_maze, \
-    print_maze, TILE_REPRESENTATIONS as TR, MAZE
+from minigames.utils import (
+    MAZE,
+    generate_maze,
+    get_positive_integer_from_string,
+    get_random_word,
+    print_maze,
+    roll,
+)
+from minigames.utils import TILE_REPRESENTATIONS as TR
 from pilgram.classes import Player
 from pilgram.globals import POSITIVE_INTEGER_REGEX
 from pilgram.strings import Strings
-
 
 AAA = ""
 
@@ -27,17 +32,17 @@ class HandsMinigame(GamblingMinigame, game="hands"):
         self.state: int = 0
 
     @staticmethod
-    def __get_rolls() -> Tuple[List[int], int]:
+    def __get_rolls() -> tuple[list[int], int]:
         """ returns the 3 rolls and the sum of all the rolls  """
         rolls = [roll(6) for _ in range(3)]
         return rolls, sum(rolls)
 
     @staticmethod
-    def __generate_message(subject: str, rolls: List[int], result: int) -> str:
+    def __generate_message(subject: str, rolls: list[int], result: int) -> str:
         return f"{subject} Rolls: " + " + ".join(str(x) for x in rolls) + f" = {result}"
 
     @staticmethod
-    def __check_win(bet: int, rolls: List[int], result: int) -> bool:
+    def __check_win(bet: int, rolls: list[int], result: int) -> bool:
         if result == bet:
             return True
         for i, x in enumerate(rolls):
@@ -60,7 +65,7 @@ class HandsMinigame(GamblingMinigame, game="hands"):
         for i in range(40):
             your_rolls, your_result = self.__get_rolls()
             enemy_rolls, enemy_result = self.__get_rolls()
-            message += f"Turn {i+1}\n"
+            message += f"Turn {i + 1}\n"
             your_message = self.__generate_message("Your", your_rolls, your_result)
             enemy_message = self.__generate_message("The stranger", enemy_rolls, enemy_result)
             message += f"{your_message}\n{enemy_message}\n\n"
@@ -101,7 +106,7 @@ class FateMinigame(GamblingMinigame, game="fate"):
             return 0
         return roll(self.DICE_FACES)
 
-    def __check_win(self, message: str) -> Union[str, None]:
+    def __check_win(self, message: str) -> str | None:
         if self.score > self.MAX_SCORE:
             return self.lose(message + Strings.fate_minigame_lose)
         if self.pilgrim_score > self.MAX_SCORE:
@@ -182,7 +187,7 @@ class HangmanMinigame(PilgramMinigame, game="open"):
             return self.lose(f"The word was '{self.word}'. The door remains closed. It whimpers.")
         return self.turn_text()
 
-    def get_rewards(self) -> Tuple[int, int]:
+    def get_rewards(self) -> tuple[int, int]:
         multiplier = ((len(self.word) // 2) * self.remaining_tries) + 1
         return ((self.XP_REWARD * multiplier) + self.__get_guessed_letters_number()), (self.MONEY_REWARD * multiplier)
 
@@ -202,11 +207,11 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
     def __init__(self, player: Player):
         super().__init__(player)
         self.hp: int = 0
-        self.maze: List[List[int]] = []
+        self.maze: list[list[int]] = []
         self.remaining_turns: int = 10
         self.difficulty: int = 1
 
-    def __update_maze(self, player_direction: Tuple[int, int]) -> int:
+    def __update_maze(self, player_direction: tuple[int, int]) -> int:
         """
         updates the maze by switching traps on & off and moving the player.
 
@@ -264,7 +269,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         direction_command = split_command[0].lower()
         direction = self.DIRECTIONS.get(direction_command, None)
         if not direction:
-            return f"Invalid command. Example of 2 valid commands:\n`n`\n`n 2`\n\n" + self.turn_text()
+            return "Invalid command. Example of 2 valid commands:\n`n`\n`n 2`\n\n" + self.turn_text()
         steps: int = -1
         if len(split_command) > 1:
             steps_string = split_command[1]
@@ -288,7 +293,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
             return self.lose("The illusion has become too unstable. You are ejected empty-handed.")
         return f"{message}\n\n{self.turn_text()}"
 
-    def get_rewards(self) -> Tuple[int, int]:
+    def get_rewards(self) -> tuple[int, int]:
         multiplier = self.difficulty + self.hp
         bonus = self.remaining_turns
         # return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)

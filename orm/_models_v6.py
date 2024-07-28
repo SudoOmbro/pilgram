@@ -1,9 +1,18 @@
 import logging
 from datetime import datetime, timedelta
 
-from peewee import SqliteDatabase, Model, IntegerField, CharField, ForeignKeyField, DateTimeField, DeferredForeignKey, \
-    AutoField, FloatField, FixedCharField
-
+from peewee import (
+    AutoField,
+    CharField,
+    DateTimeField,
+    DeferredForeignKey,
+    FixedCharField,
+    FloatField,
+    ForeignKeyField,
+    IntegerField,
+    Model,
+    SqliteDatabase,
+)
 
 DB_FILENAME: str = "pilgram_v6.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 

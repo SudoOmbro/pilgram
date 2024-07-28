@@ -1,6 +1,6 @@
 import logging
 import time
-from typing import Dict, Any, Tuple
+from typing import Any
 
 __VALUE, __TTL = (0, 1)
 
@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 def cache_ttl_quick(ttl=3600):
     def decorator(func):
-        storage: Dict[Any, Tuple[Any, float]] = {}
+        storage: dict[Any, tuple[Any, float]] = {}
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
@@ -48,7 +48,7 @@ def __get_oldest_key(storage: dict, ttl: float):
 
 def cache_sized_ttl_quick(size_limit=256, ttl=3600):
     def decorator(func):
-        storage: Dict[Any, Tuple[Any, float]] = {}
+        storage: dict[Any, tuple[Any, float]] = {}
 
         def wrapper(*args, **kwargs):
             # Generate a key based on arguments being passed
@@ -83,8 +83,7 @@ def cache_ttl_single_value(ttl=3600):
         time_to_live = time.time()
 
         def wrapper(*args, **kwargs):
-            nonlocal value
-            nonlocal time_to_live
+            nonlocal value, time_to_live
             if time_to_live > time.time():
                 return value
             value = func(*args, **kwargs)

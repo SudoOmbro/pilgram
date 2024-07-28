@@ -3,11 +3,16 @@ import logging
 import sys
 import threading
 
-from AI.chatgpt import ChatGPTGenerator, ChatGPTAPI
+from AI.chatgpt import ChatGPTAPI, ChatGPTGenerator
 from orm.db import PilgramORMDatabase
 from pilgram.generics import PilgramDatabase, PilgramNotifier
 from pilgram.globals import GlobalSettings
-from pilgram.manager import QuestManager, GeneratorManager, TourneyManager, TimedUpdatesManager
+from pilgram.manager import (
+    GeneratorManager,
+    QuestManager,
+    TimedUpdatesManager,
+    TourneyManager,
+)
 from pilgram.utils import read_update_interval
 from ui.admin_cli import ADMIN_INTERPRETER
 from ui.telegram_bot import PilgramBot

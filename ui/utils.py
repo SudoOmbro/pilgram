@@ -1,5 +1,6 @@
 import re
-from typing import Union, Tuple, Callable, List, Any, Dict
+from collections.abc import Callable
+from typing import Any
 
 from pilgram.utils import PathDict
 
@@ -24,7 +25,7 @@ class TooFewArgumentsError(Exception):
 
 class CommandParsingResult:
 
-    def __init__(self, function: Callable, args: Union[List[str], None]):
+    def __init__(self, function: Callable, args: list[str] | None):
         self.function = function
         self.args = args
 
@@ -41,9 +42,9 @@ class UserContext:
         The first argument of all ui functions must be the context.
     """
 
-    def __init__(self, dictionary: Union[Dict, None] = None):
+    def __init__(self, dictionary: dict | None = None):
         self.__dictionary: PathDict = PathDict(dictionary) if dictionary else PathDict()
-        self.__process: Union[str, None] = None  # controls whether the user is in a sequential process
+        self.__process: str | None = None  # controls whether the user is in a sequential process
         self.__process_step: int = 0
 
     def get(self, path: str, separator: str = ".") -> Any:
@@ -76,14 +77,14 @@ class UserContext:
         self.set("event", event_data)
         self.set("event.type", event_type)
 
-    def get_event_data(self) -> Union[dict, None]:
+    def get_event_data(self) -> dict | None:
         """ get data contained in 'event' if an event has happened"""
         try:
             return self.get("event")
         except KeyError:
             return None
 
-    def get_process_prompt(self, processes_container: Dict[str, Tuple[Tuple[str, Callable], ...]]):
+    def get_process_prompt(self, processes_container: dict[str, tuple[tuple[str, Callable], ...]]):
         return processes_container[self.get_process_name()][self.get_process_step()][0]
 
     def __str__(self):
@@ -93,7 +94,7 @@ class UserContext:
 class RegexWithErrorMessage:
     """ convenience class that stores the regex to check + the error message to give the user if the regex isn't met """
 
-    def __init__(self, arg_name: str, regex: Union[str, None], error_message: Union[str, None]):
+    def __init__(self, arg_name: str, regex: str | None, error_message: str | None):
         self.argument_name = arg_name
         self.regex = regex
         self.error_message = error_message
@@ -107,14 +108,14 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
 
     def __init__(
             self,
-            args: Union[List[RegexWithErrorMessage], None],
+            args: list[RegexWithErrorMessage] | None,
             function: Callable[..., str],
             description: str,
-            default_args: Union[Dict[str, Any], None] = None,
+            default_args: dict[str, Any] | None = None,
             optional_args: int = 0
     ):
         self.number_of_args = (len(args) + optional_args) if (args or (optional_args != 0)) else 0
-        self.args_container: Union[Tuple[RegexWithErrorMessage, ...], None] = tuple(args) if args else None
+        self.args_container: tuple[RegexWithErrorMessage, ...] | None = tuple(args) if args else None
         self.function = function
         self.description = description
         self.default_args = default_args
@@ -148,7 +149,7 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
         return result
 
     def __check_args(self, args):
-        for (index, arg), arg_container in zip(enumerate(args), self.args_container):
+        for (index, arg), arg_container in zip(enumerate(args), self.args_container, strict=False):
             if arg_container.regex and (not arg_container.check(arg)):
                 raise ArgumentValidationError(arg, arg_container.argument_name, index, arg_container.error_message)
 
@@ -186,9 +187,9 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
         return self.run(context, *args)
 
 
-def reconstruct_delimited_arguments(separated_strings: List[str], delimiter: str = "\"") -> List[str]:
+def reconstruct_delimited_arguments(separated_strings: list[str], delimiter: str = "\"") -> list[str]:
     """ restores spaces in arguments delimited by delimiter """
-    result: List[str] = []
+    result: list[str] = []
     built_string = ""
     building: bool = False
     for string in separated_strings:

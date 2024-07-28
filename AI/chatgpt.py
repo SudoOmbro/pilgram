@@ -1,16 +1,18 @@
 import logging
 import re
 from functools import cache
-from typing import Union, List
 
 import requests
 
-from AI.utils import filter_string_list_remove_empty, get_string_list_from_tuple_list, remove_leading_numbers, \
-    filter_strings_list_remove_too_short
-from pilgram.classes import Zone, Quest, ZoneEvent, Artifact, EnemyMeta
+from AI.utils import (
+    filter_string_list_remove_empty,
+    filter_strings_list_remove_too_short,
+    get_string_list_from_tuple_list,
+    remove_leading_numbers,
+)
+from pilgram.classes import Artifact, EnemyMeta, Quest, Zone, ZoneEvent
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
-
 
 log = logging.getLogger(__name__)
 
@@ -47,11 +49,11 @@ EVENT_REGEX: str = r"^([\d]+\.\s)?(.*)$"
 ARTIFACT_REGEX: str = r"^([\d]+\.\s)?\**(.*)[:\-]{1}\s(.*)$"
 
 
-def build_messages(role: str, *messages: str) -> List[dict]:
+def build_messages(role: str, *messages: str) -> list[dict]:
     return [{"role": role, "content": x} for x in messages]
 
 
-def get_quests_system_prompt(zone: Zone) -> List[dict]:
+def get_quests_system_prompt(zone: Zone) -> list[dict]:
     return build_messages(
         "system",
         WORLD_PROMPT,
@@ -61,7 +63,7 @@ def get_quests_system_prompt(zone: Zone) -> List[dict]:
     )
 
 
-def get_events_system_prompt(zone: Zone) -> List[dict]:
+def get_events_system_prompt(zone: Zone) -> list[dict]:
     return build_messages(
         "system",
         WORLD_PROMPT,
@@ -70,7 +72,7 @@ def get_events_system_prompt(zone: Zone) -> List[dict]:
     )
 
 
-def get_artifacts_system_prompt() -> List[dict]:
+def get_artifacts_system_prompt() -> list[dict]:
     return build_messages(
         "system",
         WORLD_PROMPT,
@@ -79,7 +81,7 @@ def get_artifacts_system_prompt() -> List[dict]:
     )
 
 
-def get_enemies_system_prompt(zone: Zone) -> List[dict]:
+def get_enemies_system_prompt(zone: Zone) -> list[dict]:
     return build_messages(
         "system",
         WORLD_PROMPT,
@@ -112,13 +114,13 @@ class ChatGPTAPI:
             token: str,
             model: str,
             api_version: int = 1,
-            project: Union[str, None] = None,
-            organization: Union[str, None] = None
+            project: str | None = None,
+            organization: str | None = None
     ):
         self.token = token
         self.model = model
         self.api_version = api_version
-        self.project = project if project else "default project"
+        self.project = project or "default project"
         self.organization = organization
         self.headers = {
             "Authorization": f"Bearer {token}",
@@ -134,7 +136,7 @@ class ChatGPTAPI:
     def _build_request_url(self, endpoint: str) -> str:
         return f"{self.BASE_URL}/v{self.api_version}/{endpoint}"
 
-    def create_completion(self, messages: List[dict], temperature: int = 1) -> str:
+    def create_completion(self, messages: list[dict], temperature: int = 1) -> str:
         response = requests.post(
             self._build_request_url("chat/completions"),
             None,
@@ -154,7 +156,7 @@ class ChatGPTAPI:
         log.error(f"could not create completion, response: {response.text}")
         raise GPTAPIError(response)
 
-    def create_batch_line(self, messages: List[dict]) -> str:
+    def create_batch_line(self, messages: list[dict]) -> str:
         # TODO (?) adding batches would half the cost of API calls
         pass
 
@@ -165,13 +167,13 @@ class ChatGPTGenerator(PilgramGenerator):
         self.api_wrapper = api_wrapper
 
     @staticmethod
-    def __get_regex_match(regex: str, text: str, attr_name: str) -> List[str]:
+    def __get_regex_match(regex: str, text: str, attr_name: str) -> list[str]:
         result = re.findall(regex, text, re.MULTILINE)
         if result:
             return result
         raise GPTMisbehaveError(f"Could not find {attr_name} in generated text:\n\n{text}")
 
-    def _get_quests_from_generated_text(self, input_text: str, zone: Zone, starting_number: int) -> List[Quest]:
+    def _get_quests_from_generated_text(self, input_text: str, zone: Zone, starting_number: int) -> list[Quest]:
         result = []
         titles = self.__get_regex_match(QUEST_NAME_REGEX, input_text, "quest name")
         descriptions = self.__get_regex_match(QUEST_DESCRIPTION_REGEX, input_text, "description")
@@ -181,7 +183,7 @@ class ChatGPTGenerator(PilgramGenerator):
             raise GPTMisbehaveError(f"AI generated quests in an unrecognized format:\n\n{input_text}")
         if len(titles) != QUESTS_PER_BATCH:
             raise GPTMisbehaveError(f"AI did not generate {QUESTS_PER_BATCH} quests. AI output:\n\n{input_text}")
-        for title, descr, success, failure in zip(titles, descriptions, successes, failures):
+        for title, descr, success, failure in zip(titles, descriptions, successes, failures, strict=False):
             new_quest = Quest.create_default(
                 zone,
                 starting_number,
@@ -194,7 +196,7 @@ class ChatGPTGenerator(PilgramGenerator):
             result.append(new_quest)
         return result
 
-    def _get_events_from_generated_text(self, input_text: str, zone: Zone) -> List[ZoneEvent]:
+    def _get_events_from_generated_text(self, input_text: str, zone: Zone) -> list[ZoneEvent]:
         result = []
         matches = re.findall(EVENT_REGEX, input_text.replace("\n\n", "\n"), re.MULTILINE)
         if not matches:
@@ -208,7 +210,7 @@ class ChatGPTGenerator(PilgramGenerator):
             result.append(new_event)
         return result
 
-    def _get_artifacts_from_generated_text(self, input_text: str) -> List[Artifact]:
+    def _get_artifacts_from_generated_text(self, input_text: str) -> list[Artifact]:
         result = []
         matches = re.findall(ARTIFACT_REGEX, input_text.replace("\n\n", "\n"), re.MULTILINE)
         if not matches:
@@ -219,7 +221,7 @@ class ChatGPTGenerator(PilgramGenerator):
         artifact_descriptions = filter_strings_list_remove_too_short(artifact_descriptions, 5)
         if len(artifact_names) != EVENTS_PER_BATCH:
             raise GPTMisbehaveError(f"AI did not generate {EVENTS_PER_BATCH} events. AI output:\n\n{input_text}")
-        for name, description in zip(artifact_names, artifact_descriptions):
+        for name, description in zip(artifact_names, artifact_descriptions, strict=False):
             new_artifact = Artifact(
                 0,
                 name.replace("*", "").replace("\"", "").replace(":", "").replace("Name", "").replace("Description", ""),
@@ -229,7 +231,7 @@ class ChatGPTGenerator(PilgramGenerator):
             result.append(new_artifact)
         return result
 
-    def _get_enemies_from_generated_text(self, input_text: str, zone: Zone) -> List[EnemyMeta]:
+    def _get_enemies_from_generated_text(self, input_text: str, zone: Zone) -> list[EnemyMeta]:
         result = []
         names = self.__get_regex_match(ENEMY_NAME_REGEX, input_text, "enemy name")
         descriptions = self.__get_regex_match(ENEMY_DESCRIPTION_REGEX, input_text, "description")
@@ -241,7 +243,7 @@ class ChatGPTGenerator(PilgramGenerator):
         loss_texts = [x[-1] if type(x) is tuple else x for x in loss_texts_raw]
         if len(names) != MONSTERS_PER_BATCH:
             raise GPTMisbehaveError(f"AI did not generate {MONSTERS_PER_BATCH} enemies. AI output:\n\n{input_text}")
-        for name, description, win_text, loss_text in zip(names, descriptions, win_texts, loss_texts):
+        for name, description, win_text, loss_text in zip(names, descriptions, win_texts, loss_texts, strict=False):
             enemy_meta = EnemyMeta(
                 0,
                 zone,
@@ -253,23 +255,23 @@ class ChatGPTGenerator(PilgramGenerator):
             result.append(enemy_meta)
         return result
 
-    def generate_quests(self, zone: Zone, quest_numbers: List[int]) -> List[Quest]:
+    def generate_quests(self, zone: Zone, quest_numbers: list[int]) -> list[Quest]:
         messages = get_quests_system_prompt(zone) + build_messages("user", QUESTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         starting_number = quest_numbers[zone.zone_id - 1]
         return self._get_quests_from_generated_text(generated_text, zone, starting_number)
 
-    def generate_zone_events(self, zone: Zone) -> List[ZoneEvent]:
+    def generate_zone_events(self, zone: Zone) -> list[ZoneEvent]:
         messages = get_quests_system_prompt(zone) + build_messages("user", EVENTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         return self._get_events_from_generated_text(generated_text, zone)
 
-    def generate_artifacts(self) -> List[Artifact]:
+    def generate_artifacts(self) -> list[Artifact]:
         messages = get_artifacts_system_prompt() + build_messages("user", ARTIFACTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         return self._get_artifacts_from_generated_text(generated_text)
 
-    def generate_enemy_metas(self, zone: Zone) -> List[EnemyMeta]:
+    def generate_enemy_metas(self, zone: Zone) -> list[EnemyMeta]:
         messages = get_enemies_system_prompt(zone) + build_messages("user", ENEMIES_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         return self._get_enemies_from_generated_text(generated_text, zone)

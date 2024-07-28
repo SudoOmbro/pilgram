@@ -3,14 +3,13 @@ from datetime import timedelta
 
 import numpy as np
 
-from pilgram.utils import PathDict, read_update_interval, generate_random_eldritch_name
 from pilgram.flags import LuckFlag, MoneyFlag, XpFlag
+from pilgram.utils import PathDict, generate_random_eldritch_name, read_update_interval
 
 
 class TestUtils(unittest.TestCase):
-
     def test_pathdict(self):
-        pd = PathDict({'a': 1, 'b': 2, 'c': 3, "d": {"e": 4}})
+        pd = PathDict({"a": 1, "b": 2, "c": 3, "d": {"e": 4}})
         self.assertEqual(pd.path_get("a"), 1)
         self.assertEqual(pd.path_get("b"), 2)
         self.assertEqual(pd.path_get("c"), 3)

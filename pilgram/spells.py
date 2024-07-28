@@ -1,15 +1,24 @@
+from __future__ import annotations
+
+from collections.abc import Callable
 from datetime import timedelta
-from typing import Dict, List, Callable
 
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Spell, SpellError, Player
-from pilgram.flags import HexedFlag, CursedFlag, AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3, LuckFlag1, \
-    LuckFlag2
+from pilgram.classes import Player, Spell, SpellError
+from pilgram.flags import (
+    AlloyGlitchFlag1,
+    AlloyGlitchFlag2,
+    AlloyGlitchFlag3,
+    CursedFlag,
+    HexedFlag,
+    LuckFlag1,
+    LuckFlag2,
+)
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta
 
 MONEY = ContentMeta.get("money.name")
-SPELLS: Dict[str, Spell] = {}
+SPELLS: dict[str, Spell] = {}
 
 
 def _db() -> PilgramDatabase:
@@ -23,28 +32,31 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
             ContentMeta.get(f"spells.{spell_short_name}.description"),
             ContentMeta.get(f"spells.{spell_short_name}.power"),
             ContentMeta.get(f"spells.{spell_short_name}.args", default=0),
-            func
+            func,
         )
         return func
+
     return decorator
 
 
 @__add_to_spell_list("mida")
-def __midas_touch(caster: Player, args: List[str]) -> str:
+def __midas_touch(caster: Player, args: list[str]) -> str:
     amount = 50 * caster.get_spell_charge()
-    caster.add_money(amount)  # we don't need to save the player data, it will be done automatically later
+    # we don't need to save the player data, it will be done automatically later
+    caster.add_money(amount)
     return f"{amount} {MONEY} materialize in the air."
 
 
 @__add_to_spell_list("bones")
-def __bone_recall(caster: Player, args: List[str]) -> str:
+def __bone_recall(caster: Player, args: list[str]) -> str:
     amount = 50 * caster.get_spell_charge()
-    caster.add_xp(amount)  # we don't need to save the player data, it will be done automatically later
+    # we don't need to save the player data, it will be done automatically later
+    caster.add_xp(amount)
     return f"You gain {amount} xp from the wisdom of the dead."
 
 
 @__add_to_spell_list("displacement")
-def __eldritch_displacement(caster: Player, args: List[str]) -> str:
+def __eldritch_displacement(caster: Player, args: list[str]) -> str:
     ac = _db().get_player_adventure_container(caster)
     if not ac.quest:
         raise SpellError("You are not on a quest!")
@@ -55,10 +67,14 @@ def __eldritch_displacement(caster: Player, args: List[str]) -> str:
 
 
 @__add_to_spell_list("glitch")
-def __alloy_glitch(caster: Player, args: List[str]) -> str:
+def __alloy_glitch(caster: Player, args: list[str]) -> str:
     power_used = caster.get_spell_charge()
     multiplier = 1
-    for power, flag in zip((30, 60, 90), (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3)):
+    for power, flag in zip(
+        (30, 60, 90),
+        (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3),
+        strict=False,
+    ):
         if power_used >= power:
             caster.flags = flag.set(caster.flags)
             multiplier *= 1.5
@@ -66,12 +82,12 @@ def __alloy_glitch(caster: Player, args: List[str]) -> str:
 
 
 @__add_to_spell_list("hex")
-def __hex(caster: Player, args: List[str]) -> str:
+def __hex(caster: Player, args: list[str]) -> str:
     target = _db().get_player_from_name(args[0])
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
     if target.cult.eldritch_resist:
-        raise "The target is immune to spells."
+        raise SpellError("The target is immune to spells.")
     power_used = caster.get_spell_charge()
     if (power_used < 100) and HexedFlag.is_set(target.flags):
         raise SpellError(f"{args[0]} is already hexed!")
@@ -88,12 +104,12 @@ def __hex(caster: Player, args: List[str]) -> str:
 
 
 @__add_to_spell_list("bless")
-def __bless(caster: Player, args: List[str]) -> str:
+def __bless(caster: Player, args: list[str]) -> str:
     target = _db().get_player_from_name(args[0])
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
     if target.cult.eldritch_resist:
-        raise "The target is immune to spells."
+        raise SpellError("The target is immune to spells.")
     power_used = caster.get_spell_charge()
     if (power_used < 100) and LuckFlag1.is_set(target.flags):
         raise SpellError(f"{args[0]} is already blessed (1)!")

@@ -1,26 +1,44 @@
 import logging
 import random
 import re
+from collections.abc import Callable
 from copy import copy
 from datetime import datetime, timedelta
 from functools import cache
 from random import choice
-from typing import Tuple, Dict, Union, Callable, Type, List
 
-from minigames.generics import PilgramMinigame, MINIGAMES
 from minigames.games import AAA
+from minigames.generics import MINIGAMES, PilgramMinigame
 from orm.db import PilgramORMDatabase
-from pilgram.classes import Player, Guild, Zone, SpellError, QTE_CACHE, TOWN_ZONE, Cult, Auction
+from pilgram.classes import (
+    QTE_CACHE,
+    TOWN_ZONE,
+    Auction,
+    Cult,
+    Guild,
+    Player,
+    SpellError,
+    Zone,
+)
 from pilgram.equipment import Equipment, EquipmentType, Slots
 from pilgram.flags import ForcedCombat
-from pilgram.generics import PilgramDatabase, AlreadyExists
-from pilgram.globals import ContentMeta, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, POSITIVE_INTEGER_REGEX, DESCRIPTION_REGEX, \
-    MINIGAME_NAME_REGEX, YES_NO_REGEX, SPELL_NAME_REGEX
+from pilgram.generics import AlreadyExists, PilgramDatabase
+from pilgram.globals import (
+    DESCRIPTION_REGEX,
+    GUILD_NAME_REGEX,
+    MINIGAME_NAME_REGEX,
+    PLAYER_NAME_REGEX,
+    POSITIVE_INTEGER_REGEX,
+    SPELL_NAME_REGEX,
+    YES_NO_REGEX,
+    ContentMeta,
+)
 from pilgram.spells import SPELLS
+from pilgram.strings import MONEY, Strings
 from pilgram.utils import read_text_file
-from pilgram.strings import Strings, MONEY
-from ui.utils import UserContext, InterpreterFunctionWrapper as IFW, RegexWithErrorMessage as RWE
-
+from ui.utils import InterpreterFunctionWrapper as IFW
+from ui.utils import RegexWithErrorMessage as RWE
+from ui.utils import UserContext
 
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
@@ -156,7 +174,7 @@ def check_guild_members(context: UserContext, guild_name: str) -> str:
         if guild is None:
             return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
         members = db().get_guild_members_data(guild)
-        return Strings.show_guild_members.format(name=guild.name,num=len(members)) + Guild.print_members(members)
+        return Strings.show_guild_members.format(name=guild.name, num=len(members)) + Guild.print_members(members)
     except KeyError:
         return Strings.no_character_yet
 
@@ -185,7 +203,7 @@ def process_get_character_cult(context: UserContext, user_input) -> str:
         return Strings.positive_integer_error
     cult_id = int(user_input)
     if cult_id >= len(Cult.LIST):
-        return Strings.cult_does_not_exist.format(start=0, end=len(Cult.LIST)-1)
+        return Strings.cult_does_not_exist.format(start=0, end=len(Cult.LIST) - 1)
     context.set("cult", cult_id)
     context.progress_process()
     return context.get_process_prompt(USER_PROCESSES)
@@ -311,7 +329,7 @@ def upgrade(context: UserContext, obj: str = "gear") -> str:
             "home": player.get_home_upgrade_required_money,
         }.get(obj)()
         if player.money < price:
-            return Strings.not_enough_money.format(amount=price-player.money)
+            return Strings.not_enough_money.format(amount=price - player.money)
         func = {
             "gear": player.upgrade_gear,
             "home": player.upgrade_home
@@ -336,7 +354,7 @@ def upgrade_guild(context: UserContext) -> str:
             return Strings.obj_reached_max_level.format(obj="guild")
         price = guild.get_upgrade_required_money()
         if player.money < price:
-            return Strings.not_enough_money.format(amount=price-player.money)
+            return Strings.not_enough_money.format(amount=price - player.money)
         context.start_process("upgrade confirm")
         context.set("price", price)
         context.set("obj", "guild")
@@ -372,7 +390,7 @@ def modify_player(context: UserContext) -> str:
         if db().is_player_on_a_quest(player):
             return Strings.cannot_modify_on_quest
         if player.money < MODIFY_COST:
-            return Strings.not_enough_money.format(amount=MODIFY_COST-player.money)
+            return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
         context.start_process("character creation")
         context.set("operation", "edit")
         return f"name: `{player.name}`\n\ndescr: `{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
@@ -388,7 +406,7 @@ def modify_guild(context: UserContext) -> str:
         if not guild:
             return Strings.guild_not_owned
         if player.money < MODIFY_COST:
-            return Strings.not_enough_money.format(amount=MODIFY_COST-player.money)
+            return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
         # set the attribute
         context.start_process("guild creation")
         context.set("operation", "edit")
@@ -519,7 +537,7 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
 def rank_guilds(context: UserContext) -> str:
     result = Strings.rank_guilds + "\n"
     guilds = db().rank_top_guilds()
-    for guild, position in zip(guilds, range(len(guilds))):
+    for guild, position in zip(guilds, range(len(guilds)), strict=False):
         result += f"{position + 1}. {guild[0]} | {guild[1]}\n"
     return result
 
@@ -527,7 +545,7 @@ def rank_guilds(context: UserContext) -> str:
 def rank_players(context: UserContext) -> str:
     result = Strings.rank_players + "\n"
     players = db().rank_top_players()
-    for player, position in zip(players, range(len(players))):
+    for player, position in zip(players, range(len(players)), strict=False):
         result += f"{position + 1}. {player[0]} | {player[1]}\n"
     return result
 
@@ -535,7 +553,7 @@ def rank_players(context: UserContext) -> str:
 def rank_tourney(context: UserContext) -> str:
     result = Strings.rank_tourney + "\n"
     guilds = db().get_top_n_guilds_by_score(10)
-    for guild, position in zip(guilds, range(len(guilds))):
+    for guild, position in zip(guilds, range(len(guilds)), strict=False):
         result += f"{position + 1}. {guild.name} | {guild.tourney_score}\n"
     days_left = db().get_tourney().get_days_left()
     if days_left > 1:
@@ -556,7 +574,7 @@ def send_message_to_player(context: UserContext, player_name: str) -> str:
         if not target:
             return Strings.named_object_not_exist.format(obj="Player", name=player_name)
         context.set("targets", [target.player_id])
-        context.set("text", f"{{name}} sent you a message:\n\n")
+        context.set("text", "{name} sent you a message:\n\n")
         context.start_process("message")
         return Strings.write_your_message
     except KeyError:
@@ -569,7 +587,7 @@ def send_message_to_owned_guild(context: UserContext) -> str:
         owned_guild = db().get_owned_guild(player)
         if not owned_guild:
             return Strings.no_guild_yet
-        members: List[Tuple[int, str, int]] = db().get_guild_members_data(owned_guild)
+        members: list[tuple[int, str, int]] = db().get_guild_members_data(owned_guild)
         context.set("targets", [member[0] for member in members])
         context.set("text", f"{{name}} sent a message to the guild ({owned_guild.name}):\n\n")
         context.start_process("message")
@@ -585,11 +603,11 @@ def send_message_process(context: UserContext, message: str):
     return Strings.message_sent
 
 
-def set_last_update(context: UserContext, delta: Union[timedelta, None] = None, msg: str = "default", cost: Union[int, None] = None) -> str:
+def set_last_update(context: UserContext, delta: timedelta | None = None, msg: str = "default", cost: int | None = None) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         if cost and player.money < cost:
-            return Strings.not_enough_money.format(amount=cost-player.money)
+            return Strings.not_enough_money.format(amount=cost - player.money)
         try:
             adventure_container = db().get_player_adventure_container(player)
             db().update_quest_progress(adventure_container, last_update=(datetime.now() + timedelta(days=365)) if delta else datetime.now())
@@ -669,7 +687,7 @@ def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
 
 def start_minigame(context: UserContext, minigame_name: str) -> str:
     try:
-        minigame: Union[Type[PilgramMinigame], None] = MINIGAMES.get(minigame_name, None)
+        minigame: type[PilgramMinigame] | None = MINIGAMES.get(minigame_name, None)
         if not minigame:
             return Strings.named_object_not_exist.format(obj="minigame", name=minigame_name) + f"\n\n{__list_minigames()}"
         if minigame.has_played_too_recently(context.get("id")):
@@ -754,7 +772,7 @@ def switch_stance(context: UserContext, stance: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         stance_byte = stance[0].lower()
-        if not (stance_byte in Strings.stances):
+        if stance_byte not in Strings.stances:
             return Strings.invalid_stance + "\n".join([f"*{stance}*: _{descr}_" for stance, descr in list(Strings.stances.values())])
         player.stance = stance_byte
         db().update_player_data(player)
@@ -794,12 +812,12 @@ def inventory(context: UserContext) -> str:
         items = db().get_player_items(player.player_id)
         if not items:
             return Strings.no_items_yet
-        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i+1} - {__get_item_icon(x)} | *{x.name}*' for i, x in enumerate(items)])}"
+        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {__get_item_icon(x)} | *{x.name}*' for i, x in enumerate(items)])}"
     except KeyError:
         return Strings.no_character_yet
 
 
-def __item_id_is_valid(item_id: int, items: List[Equipment]) -> bool:
+def __item_id_is_valid(item_id: int, items: list[Equipment]) -> bool:
     return (item_id > 0) and (item_id <= len(items))
 
 
@@ -918,7 +936,7 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
 
 def show_market(context: UserContext) -> str:
     items = db().get_market_items()
-    text = "Here are today's market items:\n\n" + "\n".join(f"{i+1}. " + str(x) for i, x in enumerate(items))
+    text = "Here are today's market items:\n\n" + "\n".join(f"{i + 1}. " + str(x) for i, x in enumerate(items))
     return text
 
 
@@ -930,7 +948,7 @@ def show_smithy(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         item_types = db().get_smithy_items()
-        return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i+1}. {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
+        return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i + 1}. {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
     except KeyError:
         return Strings.no_character_yet
 
@@ -1079,7 +1097,7 @@ def check_auction(context: UserContext, auction_id_str: str) -> str:
         return Strings.obj_does_not_exist.format(obj="Auction")
 
 
-USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
+USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
         "board": IFW(None, check_board, "Shows the quest board."),
@@ -1115,7 +1133,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     },
     "edit": {
         "character": IFW(None, modify_player, "Modify your character (for a price).",),
-        "guild": IFW(None, modify_guild, f"Modify your guild (for a price).",)
+        "guild": IFW(None, modify_guild, "Modify your guild (for a price).",)
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
     "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], embark_on_quest, "Starts quest in specified zone."),
@@ -1162,7 +1180,7 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "man": IFW([RWE("page", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Page"))], manual, "Shows the specified manual page.")
 }
 
-USER_PROCESSES: Dict[str, Tuple[Tuple[str, Callable], ...]] = {
+USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     "character creation": (
         (Strings.character_creation_get_name, process_get_character_name),
         (Strings.choose_cult + "\n" + list_cults(UserContext()), process_get_character_cult),

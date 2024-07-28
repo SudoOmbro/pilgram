@@ -1,11 +1,10 @@
 import unittest
 from timeit import timeit
 
+from pilgram.strings import Strings
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
-from pilgram.strings import Strings
 from ui.utils import UserContext, reconstruct_delimited_arguments
-
 
 interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
 
