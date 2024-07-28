@@ -271,7 +271,7 @@ class PilgramBot(PilgramNotifier):
 
     def notify(
         self, player: Player, text: str, notification_type: str = "notification"
-    ) -> None:
+    ) -> dict:
         if len(text) > 4096:
             log.info(f"Text too long, seding notification to {player.name} as file")
             return self.send_file(

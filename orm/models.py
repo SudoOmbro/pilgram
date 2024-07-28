@@ -111,7 +111,7 @@ class EquipmentModel(BaseModel):
     equipment_type = IntegerField(null=False)
     owner = ForeignKeyField(PlayerModel, backref="items", index=True)
     damage_seed = FloatField(null=False)  # used to generate the damage value at load time
-    modifiers = CharField(null=False, default="")  # modifiers are stored as a 16bit int for the modifier id + a 32bit in for the strength of the modifier
+    modifiers = CharField(null=False, default="")  # modifiers are stored as a 16bit int for the modifier id + a 32bit int for the strength of the modifier
 
 
 class EnemyTypeModel(BaseModel):

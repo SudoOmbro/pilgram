@@ -914,7 +914,7 @@ class AdventureContainer:
         quest: Quest | None,
         finish_time: datetime | None,
         last_update: datetime,
-    ) -> int:
+    ):
         """
         :param player:
             the player questing
@@ -1021,7 +1021,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         self.options = options
         self.rewards = rewards
 
-    def __get_reward(self, index: int) -> Callable[[Player], List[Any]]:
+    def __get_reward(self, index: int) -> Callable[[Player], list[Any]]:
         reward_functions = self.rewards[index]
 
         def execute_funcs(player: Player):

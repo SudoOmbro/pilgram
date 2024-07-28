@@ -527,7 +527,7 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
 
         def function(self, context: ModifierContext) -> Any:
             target: cc.CombatActor = context.get("other")
-            target.modify_hp(-(self.strength))
+            target.modify_hp(-self.strength)
             self.write_to_log(
                 context,
                 f"{target.get_name()} takes {self.strength} poison dmg. ({target.get_hp_string()})",
