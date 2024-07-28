@@ -1,4 +1,5 @@
 import logging
+import random
 import re
 from copy import copy
 from datetime import datetime, timedelta
@@ -646,7 +647,14 @@ def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
             return Strings.invalid_option
         func, string = qte.resolve(option_chosen)
         if func:
-            func(player)
+            results = func(player)
+            for result in results:
+                if isinstance(result, Equipment):
+                    items = db().get_player_items(player.player_id)
+                    item = result
+                    item_id = db().add_item(item, player)
+                    item.equipment_id = item_id
+                    items.append(item)
             player.renown += 5
             if player.guild:
                 guild = db().get_guild(player.guild.guild_id)
@@ -693,15 +701,27 @@ def minigame_process(context: UserContext, user_input: str) -> str:
         player: Player = minigame.player
         xp, money = minigame.get_rewards_apply_bonuses()
         if minigame.won:
-            player.add_xp(xp),
             player.add_money(money)
+            if xp > 0:
+                player.add_xp(xp),
+                message += f"\n\nYou gain {xp} xp & {money} {MONEY}."
+            else:
+                items = db().get_player_items(player.player_id)
+                item = Equipment.generate(player.level, EquipmentType.get_random(), random.randint(0, 3))
+                message += f"\n\nYou gain {money} {MONEY} & find *{item.name}*."
+                if len(items) >= player.get_inventory_size():
+                    message += " You leave the item there since you don't have space in your inventory."
+                else:
+                    item_id = db().add_item(item, player)
+                    item.equipment_id = item_id
+                    items.append(item)
             player.renown += minigame.RENOWN
             db().update_player_data(minigame.player)
             if (minigame.RENOWN != 0) and player.guild:
                 guild = db().get_guild(player.guild.guild_id)
                 guild.tourney_score += minigame.RENOWN
                 db().update_guild(guild)
-            return message + f"\n\nYou gain {xp} xp & {money} {MONEY}." + ("" if minigame.RENOWN == 0 else f"\nYou gain {minigame.RENOWN} renown.")
+            return message + ("" if minigame.RENOWN == 0 else f"\n\nYou gain {minigame.RENOWN} renown.")
         player.add_xp(xp)
         db().update_player_data(minigame.player)
         return message + f"\n\n{Strings.xp_gain.format(xp=xp)}"
@@ -887,7 +907,10 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
         player.add_money(money)
         items.pop(item_pos - 1)
         db().update_player_data(player)
-        db().delete_item(item)
+        try:
+            db().delete_item(item)
+        except KeyError as e:
+            return f"Error: {e}"
         return Strings.item_sold.format(item=item.name, money=money)
     except KeyError:
         return Strings.no_character_yet
@@ -951,8 +974,9 @@ def smithy_craft(context: UserContext, item_pos_str: str) -> str:
             return Strings.not_enough_money.format(amount=price - player.money)
         rarity: int = choice((0, 0, 0, 0, 1)) if player.guild_level() < 7 else 1
         item = Equipment.generate(player.level, item_type, rarity)
+        item_id = db().add_item(item, player)
+        item.equipment_id = item_id
         items.append(item)
-        db().add_item(item, player)
         player.money -= price
         db().update_player_data(player)
         return Strings.item_bought.format(item=item.name, money=price)

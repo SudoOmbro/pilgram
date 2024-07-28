@@ -905,16 +905,18 @@ class QuickTimeEvent(Listable, meta_name="quick time events"):
         self.options = options
         self.rewards = rewards
 
-    def __get_reward(self, index: int) -> Callable[[Player], None]:
+    def __get_reward(self, index: int) -> Callable[[Player], List[Any]]:
         reward_functions = self.rewards[index]
 
         def execute_funcs(player: Player):
+            result = []
             for func in reward_functions:
-                func(player)
+                result.append(func(player))
+            return result
 
         return execute_funcs
 
-    def resolve(self, chosen_option: int) -> Tuple[Union[Callable[[Player], None], None], str]:
+    def resolve(self, chosen_option: int) -> Tuple[Union[Callable[[Player], List[Any]], None], str]:
         """ return if the qte succeeded and the string associated """
         option = self.options[chosen_option]
         roll = random.randint(1, 100)
@@ -925,14 +927,17 @@ class QuickTimeEvent(Listable, meta_name="quick time events"):
     @staticmethod
     def _add_money(player: Player, amount: int):
         player.add_money(amount)
+        return None
 
     @staticmethod
     def _add_xp(player: Player, amount: int):
         player.add_xp(amount)
+        return None
 
     @staticmethod
     def _add_artifact_pieces(player: Player, amount: int):
         player.add_artifact_pieces(amount)
+        return None
 
     @staticmethod
     def _add_item(player: Player, rarity_str: str):

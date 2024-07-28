@@ -817,9 +817,9 @@ class PilgramORMDatabase(PilgramDatabase):
             raise KeyError(f"Could not find item with id {item.equipment_id}")
 
     @_thread_safe()
-    def add_item(self, item: Equipment, owner: Player):
+    def add_item(self, item: Equipment, owner: Player) -> int:
         with db.atomic():
-            EquipmentModel.create(
+            item = EquipmentModel.create(
                 name=item.name,
                 owner=owner.player_id,
                 level=item.level,
@@ -827,11 +827,15 @@ class PilgramORMDatabase(PilgramDatabase):
                 damage_seed=item.seed,
                 modifiers=encode_modifiers(item.modifiers)
             )
+            return item.id
 
     @_thread_safe()
     def delete_item(self, item: Equipment):
-        with db.atomic():
-            EquipmentModel.get(EquipmentModel.id == item.equipment_id).delete_instance()
+        try:
+            with db.atomic():
+                EquipmentModel.get(EquipmentModel.id == item.equipment_id).delete_instance()
+        except EquipmentModel.DoesNotExist:
+            raise KeyError(f"Could not find item with id {item.equipment_id}")
 
     # shops ----
 
@@ -919,5 +923,8 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @_thread_safe()
     def delete_auction(self, auction: Auction):
-        with db.atomic():
-            AuctionModel.get(AuctionModel.id == auction.auction_id).delete_instance()
+        try:
+            with db.atomic():
+                AuctionModel.get(AuctionModel.id == auction.auction_id).delete_instance()
+        except AuctionModel.DoesNotExist:
+            raise KeyError(f"Could not find auction with id {auction.auction_id} to delete")

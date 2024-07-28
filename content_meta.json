@@ -57,16 +57,9 @@
     "illusion": {
       "xp_reward": 10,
       "money_reward": 10,
-      "cooldown": 300,
+      "cooldown": 7200,
       "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nNavigate a maze by typing 'n'(north), 's'(south), 'e'(east) & 'w'(west), or 'i'(idle) for a tick. Moving in a direction moves you until you hit a wall, the exit or an active trap.\n\nYou can optionally define the amount of steps you want to take, for example:\n`n 2` will walk 2 steps to the north.\n`n` will walk north until you hit a wall.\n\nNote that both the previous commands will consume a single turn.\n\nBeware of spike traps that activate & deactivate each tick.\n\nFinish the maze in the given number of turns",
       "renown": 1
-    },
-    "boss": {
-      "xp_reward": 50,
-      "money_reward": 50,
-      "cooldown": 300,
-      "explanation": "WIP. Do not play",
-      "renown": 4
     }
   },
   "meeting events": {
