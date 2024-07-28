@@ -56,7 +56,7 @@ class HandsMinigame(GamblingMinigame, game="hands"):
         if not bet:
             return Strings.invalid_bet
         enemy_bet = random.choice(self.BET_BIASED)
-        message = f"You bet {bet}, the stranger bet {enemy_bet}\n\n"
+        message = f"You bet {bet}, the stranger bets {enemy_bet}\n\n"
         for i in range(40):
             your_rolls, your_result = self.__get_rolls()
             enemy_rolls, enemy_result = self.__get_rolls()
@@ -114,7 +114,7 @@ class FateMinigame(GamblingMinigame, game="fate"):
         return None
 
     def turn_text(self) -> str:
-        return f"{self.print_game_state()}\n\nWhat do you want to do? (r)oll D13 or (s)tay?"
+        return f"{self.print_game_state()}\n\nWhat do you want to do? (r)oll d13 or (s)tay?"
 
     def play_turn(self, command: str) -> str:
         action = command[0].lower()
@@ -124,7 +124,7 @@ class FateMinigame(GamblingMinigame, game="fate"):
             self.score += your_roll
             message += f"You rolled {your_roll}.\n"
         elif action != "s":
-            return "Invliad input send either 'r' or 's'"
+            return "Invalid input. Send either 'r' or 's'"
         else:
             message += "You stayed.\n\n"
         pilgrim_roll = self.__pilgrim_turn()
@@ -141,7 +141,7 @@ class FateMinigame(GamblingMinigame, game="fate"):
 
 
 class HangmanMinigame(PilgramMinigame, game="open"):
-    INTRO_TEXT = "You stumble upon a door that won't open. It whispers _Say the word and i'll finally be free..._"
+    INTRO_TEXT = "You stumble upon a door that won't open. It whispers _Say the word and I'll finally be free..._"
 
     def __init__(self, player: Player):
         super().__init__(player)
@@ -188,7 +188,7 @@ class HangmanMinigame(PilgramMinigame, game="open"):
 
 
 class MazeMinigame(PilgramMinigame, game="illusion"):
-    INTRO_TEXT = "You spot a wall that looks transparent, upon closer inspection it turns out that is is indeed an illusion.\nAn illusion you want to explore."
+    INTRO_TEXT = "You spot a wall that looks transparent. Upon closer inspection it turns out that is is indeed an illusion.\nAn illusion you want to explore."
     REFERENCE = f"{TR[0]}: Empty space\n{TR[1]}: Wall\n{TR[2]}: You\n{TR[3]}: Active trap\n{TR[4]}: Deactivated trap\n{TR[5]}: Treasure\n{TR[-1]}: Visited tiles"
     DIRECTIONS = {
         "n": (-1, 0),
@@ -197,7 +197,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         "w": (0, -1),
         "i": (0, 0)
     }
-    INSTRUCTIONS = "Where do you want to go? write n/w/e/s/i \\[steps (optional)]"
+    INSTRUCTIONS = "Where do you want to go? Write n/w/e/s/i \\[steps (optional)]"
 
     def __init__(self, player: Player):
         super().__init__(player)
@@ -240,7 +240,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         return return_code
 
     def setup_text(self) -> str:
-        return "How brave are you feeling? send a number from 1 to 5\n\n(note that numbers greater than 2 might not render correctly on android limitations on emojis, while 4 & 5 might be too wide for some phones)"
+        return "How brave are you feeling? send a number from 1 to 5\n\n(note that numbers greater than 2 might not render correctly on android due to limitations on emojis, while 4 & 5 might be too wide for some phones)"
 
     def turn_text(self) -> str:
         return "*Illusion*:\n\n" + print_maze(self.maze) + f"\nHP: {self.hp}, turns left: {self.remaining_turns}\n\n{self.INSTRUCTIONS}"
@@ -285,7 +285,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
             return self.win(print_maze(self.maze) + "\n\nYou manage to find the treasure hidden in the illusion.")
         self.remaining_turns -= 1
         if self.remaining_turns == 0:
-            return self.lose("The illusion has become too unstable, you are ejected empty handed.")
+            return self.lose("The illusion has become too unstable. You are ejected empty-handed.")
         return f"{message}\n\n{self.turn_text()}"
 
     def get_rewards(self) -> Tuple[int, int]:
