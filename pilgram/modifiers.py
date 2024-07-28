@@ -20,6 +20,7 @@ class ModifierType:
     POST_DEFEND = 6
     REWARDS = 7
     MODIFY_MAX_HP = 8
+    TURN_START = 9
 
 
 class Rarity:
@@ -525,7 +526,7 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
         TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            target: cc.CombatActor = context.get("supplier")
+            target: cc.CombatActor = context.get("other")
             target.modify_hp(-(self.strength))
             self.write_to_log(
                 context,
@@ -662,7 +663,7 @@ class Bashing(Modifier, rarity=Rarity.LEGENDARY):
     SCALING = 2
 
     NAME = "Bashing"
-    DESCRIPTION = "Deal {str}% more damage if you are using a shield"
+    DESCRIPTION = "Deal {str}% more damage if a shield is equipped in the secondary slot"
 
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
@@ -779,6 +780,40 @@ class Brutal(Modifier, rarity=Rarity.UNCOMMON):
             context,
             f"{target.get_name()} is brutalized for {self.strength} dmg. ({target.get_hp_string()})",
         )
+
+
+class Ferocity(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 10
+    MIN_STRENGTH = 1
+    SCALING = 10
+
+    NAME = "Ferocity"
+    DESCRIPTION = "Deal {str}0% more damage but also take {str} damage when attacking"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        attacker: cc.CombatActor = context.get("supplier")
+        attacker.modify_hp(-self.strength)
+        self.write_to_log(context, f"{attacker.get_name()} loses {self.strength} HP from the ferocity of the attack. ({attacker.get_hp_string()})")
+        return damage.scale(1 + (self.strength / 10))
+
+
+class LambEmbrace(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.TURN_START
+
+    MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
+    SCALING = 3
+
+    NAME = "Lamb's Embrace"
+    DESCRIPTION = "Regenerate {str} HP at the start of the turn"
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        entity.modify_hp(self.strength)
+        self.write_to_log(context, f"{entity.get_name()} regenerates {self.strength} HP. ({entity.get_hp_string()})")
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end

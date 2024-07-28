@@ -370,6 +370,7 @@ class CombatContainer:
         self.damage_scale: dict[CombatActor, float] = {}
         self.resist_scale: dict[CombatActor, float] = {}
         self._reset_damage_and_resist_scales()
+        self.turn = 0
 
     def _reset_damage_and_resist_scales(self) -> None:
         for actor in self.participants:
@@ -467,6 +468,7 @@ class CombatContainer:
         is_fight_over: bool = False
         self._start_combat()
         while not is_fight_over:
+            self.turn += 1
             self.write_to_log("")
             # sort participants based on what they rolled on initiative
             self.participants.sort(key=lambda a: a.get_initiative())
@@ -478,6 +480,8 @@ class CombatContainer:
                 if actor.is_dead():
                     if not self._try_revive(actor):
                         continue
+                for modifier in actor.get_modifiers(m.ModifierType.TURN_START):
+                    modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponents[i], "turn": self.turn}))
                 action_id = actor.choose_action(opponents[i])
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])

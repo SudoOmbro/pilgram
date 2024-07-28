@@ -1021,18 +1021,20 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         self.options = options
         self.rewards = rewards
 
-    def __get_reward(self, index: int) -> Callable[[Player], None]:
+    def __get_reward(self, index: int) -> Callable[[Player], List[Any]]:
         reward_functions = self.rewards[index]
 
         def execute_funcs(player: Player):
+            result = []
             for func in reward_functions:
-                func(player)
+                result.append(func(player))
+            return result
 
         return execute_funcs
 
     def resolve(
         self, chosen_option: int
-    ) -> tuple[Callable[[Player], None] | None, str]:
+    ) -> tuple[Callable[[Player], list] | None, str]:
         """return if the qte succeeded and the string associated"""
         option = self.options[chosen_option]
         roll = random.randint(1, 100)
@@ -1043,14 +1045,17 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
     @staticmethod
     def _add_money(player: Player, amount: int) -> None:
         player.add_money(amount)
+        return None
 
     @staticmethod
     def _add_xp(player: Player, amount: int) -> None:
         player.add_xp(amount)
+        return None
 
     @staticmethod
     def _add_artifact_pieces(player: Player, amount: int) -> None:
         player.add_artifact_pieces(amount)
+        return None
 
     @staticmethod
     def _add_item(player: Player, rarity_str: str) -> Equipment:
@@ -1417,8 +1422,11 @@ class Auction:
         hours_left = int(time_left.seconds / 3600)
         return f"Expires in {time_left.days} days & {hours_left} hours"
 
+    def verbose_string(self) -> str:
+        return f"Seller: {self.auctioneer.name}\nBest bid: {self.best_bid} ({self.best_bidder.name if self.best_bidder else 'Starting Bid'})\n\nItem:\n{self.item}"
+
     def __str__(self) -> str:
-        return f"(id: {self.auction_id}) - *{self.item.name}*, Best bid: {self.best_bid}. _{self._get_expires_string()}_"
+        return f"(id: {self.auction_id}) - *{self.item.name}* (lv. {self.item.level}), Best bid: {self.best_bid}. _{self._get_expires_string()}_"
 
     @classmethod
     def create_default(
