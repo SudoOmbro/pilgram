@@ -349,7 +349,7 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
         TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            target: cc.CombatActor = context.get("supplier")
+            target: cc.CombatActor = context.get("other")
             target.modify_hp(-(self.strength))
             self.write_to_log(context, f"{target.get_name()} takes {self.strength} poison dmg. ({target.get_hp_string()})")
 
@@ -470,7 +470,7 @@ class Bashing(Modifier, rarity=Rarity.LEGENDARY):
     SCALING = 2
 
     NAME = "Bashing"
-    DESCRIPTION = "Deal {str}% more damage if you are using a shield"
+    DESCRIPTION = "Deal {str}% more damage if a shield is equipped in the secondary slot"
 
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
@@ -564,6 +564,23 @@ class Brutal(Modifier, rarity=Rarity.UNCOMMON):
         target: cc.CombatActor = context.get("other")
         target.modify_hp(-self.strength)
         self.write_to_log(context, f"{target.get_name()} is brutalized for {self.strength} dmg. ({target.get_hp_string()})")
+
+
+class Ferocity(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 10
+    SCALING = 10
+
+    NAME = "Ferocity"
+    DESCRIPTION = "Deal {str}0% more damage but also take {str} damage when attacking"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        attacker: cc.CombatActor = context.get("supplier")
+        attacker.modify_hp(-self.strength)
+        self.write_to_log(context, f"{attacker.get_name()} loses {self.strength} HP from the ferocity of the attack.")
+        return damage.scale(1 + (self.strength / 10))
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
