@@ -1070,6 +1070,15 @@ def bid_on_auction(context: UserContext, auction_id_str: str, bid_str: str) -> s
         return Strings.no_character_yet
 
 
+def check_auction(context: UserContext, auction_id_str: str) -> str:
+    try:
+        auction_id = int(auction_id_str)
+        auction = db().get_auction_from_id(auction_id)
+        return auction.verbose_string()
+    except KeyError:
+        return Strings.obj_does_not_exist.format(obj="Auction")
+
+
 USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -1085,7 +1094,8 @@ USER_COMMANDS: Dict[str, Union[str, IFW, dict]] = {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
             "auctions": IFW(None, check_my_auctions, "Shows your auctions."),
         },
-        "auctions": IFW(None, check_auctions, "Shows all auctions."),
+        "auctions": IFW(None, check_auctions, "Show a specific auction."),
+        "auction": IFW([RWE("auction id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Auction"))], check_auction, "Shows all auctions."),
         "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
         "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild"),
         "item": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], check_item, "Shows the specified item stats"),

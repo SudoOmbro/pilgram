@@ -346,16 +346,17 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.save()
 
     @_thread_safe()
-    def add_guild(self, guild: Guild):
+    def add_guild(self, guild: Guild) -> int:
         try:
             with db.atomic():
-                GuildModel.create(
+                guild_model: GuildModel = GuildModel.create(
                     name=guild.name,
                     description=guild.description,
                     founder_id=guild.founder.player_id,
                     creation_date=guild.creation_date,
                     tax=guild.tax
                 )
+                return guild_model.id
         except Exception as e:
             log.error(e)
             raise AlreadyExists(f"Guild with name {guild.name} already exists")

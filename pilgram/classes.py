@@ -1259,8 +1259,11 @@ class Auction:
         hours_left = int(time_left.seconds / 3600)
         return f"Expires in {time_left.days} days & {hours_left} hours"
 
+    def verbose_string(self) -> str:
+        return f"Seller: {self.auctioneer.name}\nBest bid: {self.best_bid} ({self.best_bidder.name if self.best_bidder else 'Starting Bid'})\n\nItem:\n{self.item}"
+
     def __str__(self):
-        return f"(id: {self.auction_id}) - *{self.item.name}*, Best bid: {self.best_bid}. _{self._get_expires_string()}_"
+        return f"(id: {self.auction_id}) - *{self.item.name}* (lv. {self.item.level}), Best bid: {self.best_bid}. _{self._get_expires_string()}_"
 
     @classmethod
     def create_default(cls, auctioneer: Player, item: Equipment, starting_bid: int) -> "Auction":

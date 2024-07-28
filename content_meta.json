@@ -933,6 +933,46 @@
       "blunt": 10
     },
     "value": 10
+  }, {
+    "id": 46,
+    "name": "Pike",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 9,
+    "damage": {
+      "pierce": 9
+    },
+    "value": 9
+  }, {
+    "id": 47,
+    "name": "Fingerless gloves",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "blunt": 1
+    },
+    "value": 5
+  }, {
+    "id": 48,
+    "name": "Claws",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 3
+    },
+    "value": 15
+  }, {
+    "id": 49,
+    "name": "Pure Gold bracelets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "occult": 2
+    },
+    "value": 50
   }],
   "consumables": [{
     "id": 0,
