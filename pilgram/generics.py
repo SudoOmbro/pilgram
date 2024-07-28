@@ -109,9 +109,10 @@ class PilgramDatabase(ABC):
         """ update guild information. Players will trigger this function """
         raise NotImplementedError
 
-    def add_guild(self, guild: Guild):
+    def add_guild(self, guild: Guild) -> int:
         """
-        create a new guild. Check if a player already has a guild before letting them create a new guild
+        create a new guild. Check if a player already has a guild before letting them create a new guild.
+        Returns the id of the new guild.
 
         :raises AlreadyExists: if guild already exists
         """
@@ -317,8 +318,8 @@ class PilgramDatabase(ABC):
         """ update an item on the database """
         raise NotImplementedError
 
-    def add_item(self, item: Equipment, owner: Player):
-        """ add a new item on the database """
+    def add_item(self, item: Equipment, owner: Player) -> int:
+        """ add a new item on the database & returns the id """
         raise NotImplementedError
 
     def delete_item(self, item: Equipment):

@@ -317,8 +317,11 @@ def force_quest_end_time(context: UserContext, player_name: str, hours: str) -> 
 
 def give_random_item_to_player(context: UserContext, player_name: str) -> str:
     player = db().get_player_from_name(player_name)
+    items = db().get_player_items(player.player_id)
     item = Equipment.generate(player.level, EquipmentType.get_random(), randint(0, 3))
-    db().add_item(item, player)
+    item_id = db().add_item(item, player)
+    item.equipment_id = item_id
+    items.append(item)
     return f"Added '{item.name}' to player '{player_name}'."
 
 

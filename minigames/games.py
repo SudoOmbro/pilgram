@@ -240,7 +240,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         return return_code
 
     def setup_text(self) -> str:
-        return "How brave are you feeling? Send a number from 1 to 4\n\n(note that numbers greater than 2 might not render correctly on Android phones due to limitations of the app, while 4 might be too wide for some phones)"
+        return "How brave are you feeling? send a number from 1 to 5\n\n(note that numbers greater than 2 might not render correctly on android due to limitations on emojis, while 4 & 5 might be too wide for some phones)"
 
     def turn_text(self) -> str:
         return "*Illusion*:\n\n" + print_maze(self.maze) + f"\nHP: {self.hp}, turns left: {self.remaining_turns}\n\n{self.INSTRUCTIONS}"
@@ -249,8 +249,8 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         if not re.match(POSITIVE_INTEGER_REGEX, command):
             return "Not a number"
         number = int(command)
-        if number not in range(1, 5):
-            return "send a number ONLY from 1 to 4"
+        if number not in range(1, 6):
+            return "send a number ONLY from 1 to 5"
         self.difficulty = number
         size = 7 + 2 * (number - 1)
         self.maze = generate_maze(size, size, 7)
@@ -291,10 +291,5 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
     def get_rewards(self) -> Tuple[int, int]:
         multiplier = self.difficulty + self.hp
         bonus = self.remaining_turns
-        return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
-
-
-# class BossFightMinigame(PilgramMinigame, game="boss"):
-#
-#     def __init__(self, player: Player):
-#         super().__init__(player)
+        # return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
+        return -1, (self.MONEY_REWARD * multiplier + bonus)

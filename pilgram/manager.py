@@ -195,8 +195,9 @@ class QuestManager:
                 if len(items) < player.get_inventory_size():
                     item = Equipment.generate(player.level + random.randint(0, 5), EquipmentType.get_random(), random.randint(0, 3))
                     # log.info(f"Player '{player.name}' found item: '{item.name}'.")
+                    item_id = self.db().add_item(item, player)
+                    item.equipment_id = item_id
                     items.append(item)
-                    self.db().add_item(item, player)
                     text += f"You found an item:\n*{item.name}*\n\n"
             text += regeneration_text
         self.notifier.notify(ac.player, text)
