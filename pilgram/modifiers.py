@@ -20,6 +20,7 @@ class ModifierType:
     POST_DEFEND = 6
     REWARDS = 7
     MODIFY_MAX_HP = 8
+    TURN_START = 9
 
 
 class Rarity:
@@ -570,6 +571,7 @@ class Ferocity(Modifier, rarity=Rarity.RARE):
     TYPE = ModifierType.PRE_ATTACK
 
     MAX_STRENGTH = 10
+    MIN_STRENGTH = 1
     SCALING = 10
 
     NAME = "Ferocity"
@@ -579,8 +581,24 @@ class Ferocity(Modifier, rarity=Rarity.RARE):
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
         attacker.modify_hp(-self.strength)
-        self.write_to_log(context, f"{attacker.get_name()} loses {self.strength} HP from the ferocity of the attack.")
+        self.write_to_log(context, f"{attacker.get_name()} loses {self.strength} HP from the ferocity of the attack. ({attacker.get_hp_string()})")
         return damage.scale(1 + (self.strength / 10))
+
+
+class LambEmbrace(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.TURN_START
+
+    MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
+    SCALING = 3
+
+    NAME = "Lamb's Embrace"
+    DESCRIPTION = "Regenerate {str} HP at the start of the turn"
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        entity.modify_hp(self.strength)
+        self.write_to_log(context, f"{entity.get_name()} regenerates {self.strength} HP. ({entity.get_hp_string()})")
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
