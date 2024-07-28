@@ -632,7 +632,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestProgressModel.DoesNotExist:
             raise KeyError(f"Could not find quest progress for player with id {adventure_container.player_id()}")
 
-    @cache_sized_ttl_quick(size_limit=200, ttl=86400)
+    @cache_sized_ttl_quick(size_limit=200, ttl=300)
     def get_artifact(self, artifact_id: int) -> Artifact:
         try:
             arse = ArtifactModel.get(ArtifactModel.id == artifact_id)

@@ -816,4 +816,23 @@ class LambEmbrace(Modifier, rarity=Rarity.RARE):
         self.write_to_log(context, f"{entity.get_name()} regenerates {self.strength} HP. ({entity.get_hp_string()})")
 
 
+class EldritchSynergy(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
+    SCALING = 4
+
+    NAME = "Eldritch Synergy"
+    DESCRIPTION = "Deal {str}% more damage for each owned artifact"
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("supplier")
+        damage: cc.Damage = context.get("damage")
+        if isinstance(entity, classes.Player):
+            if entity.artifacts:
+                return damage.scale(1 + ((self.strength / 100) * len(entity.artifacts)))
+        return damage
+
+
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
