@@ -1,5 +1,7 @@
 # Project-specific files
 settings.json
+questprogressdata.json
+tourney.json
 *.db
 *.db-shm
 *.db-wal
