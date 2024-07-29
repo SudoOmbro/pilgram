@@ -38,7 +38,7 @@
       "payout": 1.5,
       "xp_reward": 2,
       "cooldown": 120,
-      "explanation": "_\"Do not hold the pilgrim's hands for he is blinded by faith\"_\n\n2 player game played with *3 d6 each*.\n\nBoth you & the other player choose a *target number between 3 and 18*, then you roll until someone wins.\n\nIf a player gets either *5 or 10 they lose*. If a player gets their *target number* with either *all 3 or just 2 of their dices* they win.\n\nPays 150% of the pot."
+      "explanation": "_\"Do not hold the pilgrim's hands for he is blinded by faith\"_\n\n2 player game played with *3 d6 each*.\n\nBoth you & the other player choose a *target number between 3 and 18*, then you roll until someone wins.\n\nIf a player gets either *5 or 10 they lose*. If a player gets their *target number* with either *all 3 or just 2 of their dice* they win.\n\nPays 150% of the pot."
     },
     "fate": {
       "min_buy_in": 50,
@@ -46,7 +46,7 @@
       "payout": 2,
       "xp_reward": 7,
       "cooldown": 300,
-      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\n2 player dice game. Roll a D13 3 times.\n\nIf a player exceeds 27 they lose.\n\nWins who gets the highest score without exceeding 27."
+      "explanation": "_\"The pilgrim's fate is to perpetually walk the mortal plane, undying in a dying world... Lucky, some might say...\"_\n\n2 player dice game. Roll a d13 3 times.\n\nIf a player exceeds 27 they lose.\n\nWins who gets the highest score without exceeding 27."
     },
     "open": {
       "xp_reward": 5,
@@ -57,16 +57,16 @@
     "illusion": {
       "xp_reward": 10,
       "money_reward": 10,
-      "cooldown": 300,
-      "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nNavigate a maze by typing 'n'(north), 's'(south), 'e'(east) & 'w'(west), or 'i'(idle) for a tick. Moving in a direction moves you until you hit a wall, the exit or an active trap.\n\nYou can optionally define the amount of steps you want to take, for example:\n`n 2` will walk 2 steps to the north.\n`n` will walk north until you hit a wall.\n\nNote that both the previous commands will consume a single turn.\n\nBeware of spike traps that activate & deactivate each tick.\n\nFinish the maze in the given number of turns",
+      "cooldown": 7200,
+      "explanation": "_\"Some walls are mere illusions, but beware of dispelling them, you might not like what they hide...\"_\n\nNavigate a maze by typing 'n'(north), 's'(south), 'e'(east) & 'w'(west), or 'i'(idle) for a tick. Moving in a direction moves you until you hit a wall, the exit or an active trap.\n\nYou can optionally define the amount of steps you want to take, for example:\n`n 2` will walk 2 steps to the north.\n`n` will walk north until you hit a wall.\n\nNote that both the previous commands will consume a single turn.\n\nBeware of spike traps that activate & deactivate each turn.\n\nFinish the maze in the given number of turns",
       "renown": 1
     },
-    "boss": {
-      "xp_reward": 50,
-      "money_reward": 50,
+    "war": {
+      "xp_reward": 10,
+      "money_reward": 10,
       "cooldown": 300,
-      "explanation": "WIP. Do not play",
-      "renown": 4
+      "explanation": "_\"If you know the enemy and know yourself you need not fear the results of a hundred battles.\"_\n\nChoose what troop to deploy at the same time as your opponent.\n\nCavalry beats Archers\nArchers beat Spears\nSpears beats Cavalry",
+      "renown": 1
     }
   },
   "meeting events": {
@@ -77,9 +77,9 @@
       "play a couple games of the royal game of Ur.",
       "walk on the town walls together, taking in the view.",
       "hunt plague rats with flaming bolts.",
-      "visit the smithy together to perform maintenance your equipment",
+      "visit the smithy together to perform maintenance on your equipment",
       "exchange trinkets you collected during your adventures",
-      "spend some time together, enjoying each-other's company.",
+      "spend some time together, enjoying each other's company.",
       "accompany them to the cemetery to mourn your loved ones.",
       "talk about conspiracy theories for an hour. You are convinced they are all true.",
       "greet them tiredly, then you immediately go home where you take an invigorating nap.",
@@ -90,13 +90,13 @@
     "zones": [
       "spend some time around a campfire roasting some freshly hunted small game.",
       "walk together for a bit, sharing knowledge about the area.",
-      "silently nod to each-other, for there are monsters nearby.",
-      "clear the way ahead together, protecting each-other from danger.",
+      "silently nod to each other, for there are monsters nearby.",
+      "clear the way ahead together, protecting each other from danger.",
       "gather supplies to prepare for the dangers ahead.",
-      "polish your equipment in silence, watching each-others back",
+      "polish your equipment in silence, each other's backs",
       "play a couple of games of 'Hands', as it is a traditional game most played by adventurers on a quest.",
       "help them open a particularly stubborn chest. It turns out it was a mimic, so you kill it together.",
-      "help each-other climb a particularly tall wall.",
+      "help each other climb a particularly tall wall.",
       "throw rocks at some monsters below you. They can't reach you and they make funny noises when hit.",
       "share a pemmican & hardtack meal since lighting a fire was not an option.",
       "hide from them until they leave. You are not feeling too sociable right now.",
@@ -104,7 +104,7 @@
       "do the secret adventurer salute. They reciprocate.",
       "trade some supplies.",
       "hide together from a pack of monsters approaching your position",
-      "help each-other move some debris from a blocked passageway.",
+      "help each other move some debris from a blocked passageway.",
       "carve your names into a wall, as way to leave a mark on this cruel world.",
       "Gossip about other adventurers."
     ]
@@ -148,19 +148,19 @@
     "choices": [{
       "option": "Smash it open",
       "chance": 90,
-      "success": "The chest lays at your feet, destroyed, some it's contents still intact.",
-      "failure": "You completely destroyed the chest & it's contents.",
+      "success": "The chest lays at your feet, destroyed, some of its contents still intact.",
+      "failure": "You completely destroyed the chest and its contents.",
       "rewards": "xp 20, mn 20"
     }, {
       "option": "Lockpick it",
       "chance": 50,
-      "success": "You manage to lockpick the chest, preserving it's contents.",
+      "success": "You manage to lockpick the chest, preserving its contents.",
       "failure": "You fail in your lock picking attempt. The chest remains closed.",
       "rewards": "xp 100, item (Odd)"
     }, {
       "option": "Kick it open",
       "chance": 10,
-      "success": "miraculously the chest opens with a single kick. You feel very good about yourself.",
+      "success": "Miraculously the chest opens with a single kick. You feel very good about yourself.",
       "failure": "The kick does nothing. Your foot hurts.",
       "rewards": "xp 1000, item (Odd)"
     }]
@@ -175,7 +175,7 @@
     }, {
       "option": "Investigate",
       "chance": 50,
-      "success": "It turns out the crying was a tied up woman. You untie her and she rewards you with some Alloy.",
+      "success": "It turns out the crying was coming from a tied-up woman. You untie her and she rewards you with some Alloy.",
       "failure": "It turns out the crying was just an hallucination.",
       "rewards": "xp 100, mn 50"
     }]
@@ -185,7 +185,7 @@
       "option": "Throw a rock at it",
       "chance": 90,
       "success": "The rock hits the piece, shattering it in the process. You don't know why you did that but you are satisfied with your shot.",
-      "failure": "You miss your shot. You leave, defeated.",
+      "failure": "You miss your shot. You leave, feeling defeated.",
       "rewards": "xp 20"
     }, {
       "option": "Descend with the help of a rope",
@@ -242,7 +242,7 @@
       "option": "Touch her",
       "chance": 90,
       "success": "You touch her & you suddenly feel stronger. She slowly fades away, as if she was a dream all along",
-      "failure": "You try yto touch her but it turns out she was an hallucination all along.",
+      "failure": "You try to touch her but it turns out she was an hallucination all along.",
       "rewards": "xp 100"
     }, {
       "option": "Steal her squid.",
@@ -930,6 +930,56 @@
       "freeze": 1
     },
     "value": 8
+  }, {
+    "id": 45,
+    "name": "War hammer",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "blunt": 10
+    },
+    "value": 10
+  }, {
+    "id": 46,
+    "name": "Pike",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 9,
+    "damage": {
+      "pierce": 9
+    },
+    "value": 9
+  }, {
+    "id": 47,
+    "name": "Fingerless gloves",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "blunt": 1
+    },
+    "value": 5
+  }, {
+    "id": 48,
+    "name": "Claws",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 3
+    },
+    "value": 15
+  }, {
+    "id": 49,
+    "name": "Pure Gold bracelets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "occult": 2
+    },
+    "value": 50
   }],
   "consumables": [{
     "id": 0,

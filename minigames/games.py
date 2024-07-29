@@ -298,3 +298,58 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         bonus = self.remaining_turns
         # return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
         return -1, (self.MONEY_REWARD * multiplier + bonus)
+
+
+class RockPaperScissors(PilgramMinigame, game="war"):
+    INTRO_TEXT = "You meet a strange looking guy holding a box of minis that wants to play 'War'"
+
+    TROOPS: dict[str, str] = {
+        "c": "Cavalry",
+        "a": "Archers",
+        "s": "Spears"
+    }
+
+    BEATS: dict[str, str] = {
+        "c": "a",
+        "a": "s",
+        "s": "c"
+    }
+
+    def __init__(self, player: Player):
+        super().__init__(player)
+        self.has_started = True  # skip active setup, not needed
+        self.player_supply = 5
+        self.opponent_supply = 5
+
+    def turn_text(self) -> str:
+        return f"Your supply: {self.player_supply}\nOpponent supply: {self.opponent_supply}\n\nWhich troop do you want to deploy?\nCavalry \[c]\nSpears \[s]\nArchers \[a]"
+
+    def play_turn(self, command: str) -> str:
+        # choose troops
+        chosen_troop = command.lower()[0]
+        if chosen_troop not in self.TROOPS:
+            return "The selected troop is not valid."
+        enemy_troop = random.choice(("c", "a", "s"))
+        text = f"You deploy {self.TROOPS[chosen_troop]}\nThe enemy deploys {self.TROOPS[enemy_troop]}\n\n"
+        # calculate counters
+        if chosen_troop == enemy_troop:
+            self.opponent_supply -= 1
+            self.player_supply -= 1
+            text += "Your troops destroy each-other!\n\n"
+        elif self.BEATS[chosen_troop] == enemy_troop:
+            self.opponent_supply -= 1
+            text += "Your opponent loses their troops!\n\n"
+        elif self.BEATS[enemy_troop] == chosen_troop:
+            self.player_supply -= 1
+            text += "You lose your troops!\n\n"
+        # check win
+        if self.player_supply == 0:
+            return text + self.lose("You ran out of supply!")
+        elif self.opponent_supply == 0:
+            return text + self.win("Your opponent ran out of supply!")
+        return text + self.turn_text()
+
+    def get_rewards(self) -> tuple[int, int]:
+        multiplier = self.player_supply + 15
+        return multiplier * self.XP_REWARD, multiplier + self.MONEY_REWARD
+
