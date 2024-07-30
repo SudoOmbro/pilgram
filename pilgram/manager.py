@@ -18,7 +18,7 @@ from pilgram.classes import (
     Player,
     Quest,
     QuickTimeEvent,
-    Zone,
+    Zone, Notification,
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
@@ -623,14 +623,34 @@ class TimedUpdatesManager(Manager):
 
 class NotificationsManager(Manager):
     """class that is tasked with sending all the notifications"""
+    _PENDING_NOTIFICATIONS = "pending_notifications.json"
 
     def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase) -> None:
         self.notifier = notifier
         super().__init__(database)
 
-    def run(self):
+    def run(self) -> None:
         notifications = self.db().get_pending_notifications()
         for notification in notifications:
             self.notifier.notify(notification)
             sleep(1)
+
+    def load_pending_notifications(self) -> None:
+        if not os.path.isfile("pending_notifications.json"):
+            return
+        with open(self._PENDING_NOTIFICATIONS, "r") as f:
+            notifications = json.load(f)["notifications"]
+            for notification_dict in notifications:
+                self.db().create_and_add_notification(
+                    Player.create_default(notification_dict["id"], str(notification_dict["id"]), ""),
+                    notification_dict["text"]
+                )
+        os.remove(self._PENDING_NOTIFICATIONS)
+
+    def save_pending_notifications(self) -> None:
+        notifications = self.db().get_pending_notifications()
+        if not notifications:
+            return
+        with open(self._PENDING_NOTIFICATIONS, "w") as f:
+            json.dump({"notifications": [{"id": n.target.player_id, "text": n.text} for n in notifications]}, f)
 

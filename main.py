@@ -114,16 +114,20 @@ def run_updates_manager(database: PilgramDatabase):
 def run_notifications_manager(database: PilgramDatabase, notifier: PilgramNotifier):
     log.info("Running notifications manager")
     notifications_manager = NotificationsManager(notifier, database)
+    notifications_manager.load_pending_notifications()
     if is_killed(5):
+        notifications_manager.save_pending_notifications()
         return
     while True:
         try:
             notifications_manager.run()
             if is_killed(5):
+                notifications_manager.save_pending_notifications()
                 return
         except Exception as e:
             log.exception(f"error in updates manager thread: {e}")
             if is_killed(30):
+                notifications_manager.save_pending_notifications()
                 return
 
 
