@@ -1384,8 +1384,8 @@ class Enemy(CombatActor):
     def get_rewards(self, player: Player) -> tuple[int, int]:
         level = self.get_level()
         multiplier = 40
-        if player.level < level:
-            multiplier += 5 * (player.level - level)
+        if level > player.level:
+            multiplier += 5 * (level - player.level)
         return multiplier * level, multiplier * level
 
     def __str__(self) -> str:
