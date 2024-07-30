@@ -15,7 +15,7 @@ from pilgram.classes import (
     Quest,
     Tourney,
     Zone,
-    ZoneEvent,
+    ZoneEvent, Notification,
 )
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 
@@ -399,6 +399,29 @@ class PilgramDatabase(ABC):
         """removes the auction db row"""
         raise NotImplementedError
 
+    # notifications ----------------------------------
+
+    def get_pending_notifications(self) -> list[Notification]:
+        """get all pending notifications, clear the pending notifications list"""
+        raise NotImplementedError
+
+    def add_notification(self, notification: Notification) -> None:
+        """add a new notification"""
+        raise NotImplementedError
+
+    def create_and_add_notification(
+            self,
+            player: Player,
+            text: str,
+            notification_type: str = "notification"
+    ) -> None:
+        self.add_notification(
+            Notification(
+                player,
+                text,
+                notification_type=notification_type)
+        )
+
 
 class PilgramGenerator(ABC):
     def generate_quests(self, zone: Zone, quest_data: Any) -> list[Quest]:
@@ -415,7 +438,5 @@ class PilgramGenerator(ABC):
 
 
 class PilgramNotifier(ABC):
-    def notify(
-        self, player: Player, text: str, notification_type: str = "notification"
-    ) -> None:
+    def notify(self, notification: Notification) -> None:
         raise NotImplementedError

@@ -427,7 +427,12 @@ def join_guild(context: UserContext, guild_name: str) -> str:
         player.guild = guild
         player.last_guild_switch = datetime.now()
         db().update_player_data(player)
-        context.set_event("guild joined", {"player": player, "guild": guild})
+        db().create_and_add_notification(
+            guild.founder,
+            Strings.player_joined_your_guild.format(
+                player=player.print_username(), guild=guild.name
+            )
+        )
         return Strings.guild_join_success.format(guild=guild_name)
     except KeyError:
         return Strings.no_character_yet
@@ -484,7 +489,7 @@ def kick(context: UserContext, player_name: str) -> str:
             return Strings.player_not_in_own_guild.format(name=player_name)
         target.guild = None
         db().update_player_data(target)
-        context.set_event("player kicked", {"player": target, "guild": guild})
+        db().create_and_add_notification(target, Strings.you_have_been_kicked.format(guild=guild.name))
         return Strings.player_kicked_successfully.format(name=player_name, guild=guild.name)
     except KeyError:
         return Strings.no_character_yet
@@ -526,8 +531,12 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
         db().update_player_data(recipient)
         player.money -= amount
         db().update_player_data(player)
-        # use context to communicate to the external interface that a notification should be sent to the recipient
-        context.set_event("donation", {"amount": amount, "donor": player, "recipient": recipient})
+        db().create_and_add_notification(
+            recipient,
+            Strings.donation_received.format(
+                donor=player.print_username(), amm=amount
+            ),
+        )
         log.info(f"player '{player.name}' donated {amount} to '{recipient_name}'")
         return Strings.donation_successful.format(amm=amount_str, rec=recipient_name)
     except KeyError:
@@ -589,7 +598,7 @@ def send_message_to_owned_guild(context: UserContext) -> str:
             return Strings.no_guild_yet
         members: list[tuple[int, str, int]] = db().get_guild_members_data(owned_guild)
         context.set("targets", [member[0] for member in members])
-        context.set("text", f"{{name}} sent a message to the guild ({owned_guild.name}):\n\n")
+        context.set("text", f"{player.name} sent a message to the guild ({owned_guild.name}):\n\n")
         context.start_process("message")
         return Strings.write_your_message
     except KeyError:
@@ -597,8 +606,11 @@ def send_message_to_owned_guild(context: UserContext) -> str:
 
 
 def send_message_process(context: UserContext, message: str):
-    player = db().get_player_data(context.get("id"))
-    context.set_event("message", {"sender": player, "targets": context.get("targets"), "text": context.get("text") + message})
+    for target in context.get("targets"):
+        db().create_and_add_notification(
+            Player.create_default(target, str(target), ""),
+            context.get("text") + message
+        )
     context.end_process()
     return Strings.message_sent
 

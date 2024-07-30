@@ -11,7 +11,7 @@ from pilgram.manager import (
     GeneratorManager,
     QuestManager,
     TimedUpdatesManager,
-    TourneyManager,
+    TourneyManager, NotificationsManager,
 )
 from pilgram.utils import read_update_interval
 from ui.admin_cli import ADMIN_INTERPRETER
@@ -37,9 +37,9 @@ def kill_all_threads():
     kill_signal.set()
 
 
-def run_quest_manager(database: PilgramDatabase, notifier: PilgramNotifier):
+def run_quest_manager(database: PilgramDatabase):
     log.info("Running quest manager")
-    quest_manager = QuestManager(database, notifier, UPDATE_INTERVAL)
+    quest_manager = QuestManager(database, UPDATE_INTERVAL)
     # offset the starting of the process by half the interval so that the threads don't run at the same time.
     if is_killed(INTERVAL / 2):
         return
@@ -76,9 +76,9 @@ def run_generator_manager(database: PilgramDatabase):
                 return
 
 
-def run_tourney_manager(database: PilgramDatabase, notifier: PilgramNotifier):
+def run_tourney_manager(database: PilgramDatabase):
     log.info("Running tourney manager")
-    tourney_manager = TourneyManager(notifier, database, 1)
+    tourney_manager = TourneyManager(database, 1)
     interval = INTERVAL * 4
     if is_killed(INTERVAL / 8):
         return
@@ -94,20 +94,36 @@ def run_tourney_manager(database: PilgramDatabase, notifier: PilgramNotifier):
                 return
 
 
-def run_updates_manager(database: PilgramDatabase, notifier: PilgramNotifier):
+def run_updates_manager(database: PilgramDatabase):
     log.info("Running updates manager")
-    tourney_manager = TimedUpdatesManager(notifier, database)
+    updates_manager = TimedUpdatesManager(database)
     if is_killed(INTERVAL / 6):
         return
     while True:
         try:
             log.info("updates manager update")
-            tourney_manager.run()
+            updates_manager.run()
             if is_killed(INTERVAL):
                 return
         except Exception as e:
             log.exception(f"error in updates manager thread: {e}")
             if is_killed(INTERVAL):
+                return
+
+
+def run_notifications_manager(database: PilgramDatabase, notifier: PilgramNotifier):
+    log.info("Running notifications manager")
+    notifications_manager = NotificationsManager(notifier, database)
+    if is_killed(5):
+        return
+    while True:
+        try:
+            notifications_manager.run()
+            if is_killed(5):
+                return
+        except Exception as e:
+            log.exception(f"error in updates manager thread: {e}")
+            if is_killed(30):
                 return
 
 
@@ -136,10 +152,11 @@ def main():
     asyncio.run_coroutine_threadsafe(bot.set_bot_commands(), asyncio.get_event_loop())  # this seems to work, even if it's being deprecated, so whatever, it's fine
     database = PilgramORMDatabase
     threads = [
-        threading.Thread(target=lambda: run_quest_manager(database, bot), name="quest-manager"),
+        threading.Thread(target=lambda: run_quest_manager(database), name="quest-manager"),
         threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager"),
-        threading.Thread(target=lambda: run_tourney_manager(database, bot), name="tourney-manager"),
-        threading.Thread(target=lambda: run_updates_manager(database, bot), name="updates-manager")
+        threading.Thread(target=lambda: run_tourney_manager(database), name="tourney-manager"),
+        threading.Thread(target=lambda: run_updates_manager(database), name="updates-manager"),
+        threading.Thread(target=lambda: run_notifications_manager(database, bot), name="notifications-manager")
     ]
     cli_thread = threading.Thread(target=run_admin_cli, name="admin-CLI", daemon=True)
     for thread in threads:

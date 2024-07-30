@@ -1433,3 +1433,17 @@ class Auction:
         cls, auctioneer: Player, item: Equipment, starting_bid: int
     ) -> Auction:
         return cls(0, auctioneer, item, None, starting_bid, datetime.now())
+
+
+class Notification:
+
+    def __init__(
+            self,
+            target: Player,
+            text: str,
+            notification_type: str = "notification",
+    ) -> None:
+        self.target = target
+        self.text = text
+        self.notification_type = notification_type
+

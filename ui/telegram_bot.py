@@ -14,7 +14,7 @@ from telegram.ext import (
     filters,
 )
 
-from pilgram.classes import Player
+from pilgram.classes import Player, Notification
 from pilgram.generics import PilgramNotifier
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.strings import Strings
@@ -59,31 +59,6 @@ async def notify(bot: Bot, player: Player, text: str):
         )
 
 
-def get_event_notification_string_and_targets(event: dict) -> tuple[str, Player]:
-    return {
-        "donation": lambda: (
-            Strings.donation_received.format(
-                donor=event["donor"].print_username(), amm=event["amount"]
-            ),
-            event["recipient"],
-        ),
-        "player kicked": lambda: (
-            Strings.you_have_been_kicked.format(guild=event["guild"].name),
-            event["player"],
-        ),
-        "guild joined": lambda: (
-            Strings.player_joined_your_guild.format(
-                player=event["player"].print_username(), guild=event["guild"].name
-            ),
-            event["guild"].founder,
-        ),
-        "message": lambda: (
-            event["text"].format(name=event["sender"].print_username()),
-            None,
-        ),
-    }.get(event["type"])()
-
-
 async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE):
     log.error("Telegram unhandled exception encountered:", exc_info=context.error)
 
@@ -117,7 +92,7 @@ async def privacy(update: Update, c: ContextTypes.DEFAULT_TYPE):
 
 def _delimit_markdown_entities(text: str) -> str:
     result = text
-    for char in ["_", "*", "~"]:
+    for char in ("_", "*", "~"):
         result = result.replace(char, f"\\{char}")
     return result
 
@@ -213,23 +188,6 @@ class PilgramBot(PilgramNotifier):
             result = self.interpreter.context_aware_execute(user_context, command)
             if (result is None) or (result == ""):
                 result = f"The dev forgot to put a message here, report to {DEV_NAME}"
-            event = user_context.get_event_data()
-            if event:
-                # if an event happened notify the target
-                string, target = get_event_notification_string_and_targets(event)
-                if not target:
-                    cooldown = (2 + len(event["targets"])) * 2
-                    if self.has_sent_a_message_too_recently(
-                        update.effective_chat.id, cooldown
-                    ):
-                        result = "You sent too many messages recently! Wait a few minutes then try again."  # override positive result
-                    else:
-                        await asyncio.create_task(
-                            self.notify_group(event["targets"], string)
-                        )
-                        await asyncio.sleep(0)
-                else:
-                    await notify(c.bot, target, string)
             if user_context.is_in_a_process():
                 # if user is in a process then save the context to use later
                 self.process_cache.set(update.effective_user.id, user_context)
@@ -269,20 +227,18 @@ class PilgramBot(PilgramNotifier):
             await notify_with_id(self.get_bot(), player_id, text)
             await asyncio.sleep(timeout)
 
-    def notify(
-        self, player: Player, text: str, notification_type: str = "notification"
-    ) -> dict:
-        if len(text) > 4096:
-            log.info(f"Text too long, seding notification to {player.name} as file")
+    def notify(self, notification: Notification) -> dict:
+        if len(notification.text) > 4096:
+            log.info(f"Text too long, seding notification to {notification.target.name} as file")
             return self.send_file(
-                player,
-                f"{notification_type}.txt",
-                text.encode("utf-8"),
-                f"Your {notification_type} was too long for a message, here's a text file containing it.",
+                notification.target,
+                f"{notification.notification_type}.txt",
+                notification.text.encode("utf-8"),
+                f"Your {notification.notification_type} was too long for a message, here's a text file containing it.",
             )
         try:
-            chat_id = player.player_id
-            url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={quote(text)}"
+            chat_id = notification.target.player_id
+            url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={quote(notification.text)}"
             result = requests.get(url)
             if result.ok:
                 return result.json()
@@ -293,7 +249,7 @@ class PilgramBot(PilgramNotifier):
             raise Exception(result.text)
         except Exception as e:
             log.error(
-                f"An error occurred while trying to notify user {player.player_id} ({player.name}): {e}\nMessage ({len(text)} chars): {text}"
+                f"An error occurred while trying to notify user {notification.target.player_id} ({notification.target.name}): {e}\nMessage ({len(notification.text)} chars): {notification.text}"
             )
 
     def send_file(

@@ -2,6 +2,7 @@ import json
 import logging
 import random
 import threading
+from copy import copy
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Any
@@ -37,7 +38,7 @@ from pilgram.classes import (
     Quest,
     Tourney,
     Zone,
-    ZoneEvent,
+    ZoneEvent, Notification,
 )
 from pilgram.combat_classes import Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
@@ -51,6 +52,8 @@ _LOCK = threading.Lock()
 ENCODING = "cp437"  # we use this encoding since we are working with raw bytes & peewee doesn't seem to like raw bytes
 
 NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # stands for 'numpy modifiers data'
+
+_NOTIFICATIONS_LIST: list[Notification] = []
 
 
 def decode_progress(data: str | None) -> dict[int, int]:
@@ -950,3 +953,15 @@ class PilgramORMDatabase(PilgramDatabase):
                 AuctionModel.get(AuctionModel.id == auction.auction_id).delete_instance()
         except AuctionModel.DoesNotExist:
             raise KeyError(f"Could not find auction with id {auction.auction_id} to delete")
+
+    # notifications ----
+
+    @_thread_safe()
+    def get_pending_notifications(self) -> list[Notification]:
+        notifications = copy(_NOTIFICATIONS_LIST)
+        _NOTIFICATIONS_LIST.clear()
+        return notifications
+
+    @_thread_safe()
+    def add_notification(self, notification: Notification) -> None:
+        _NOTIFICATIONS_LIST.append(notification)

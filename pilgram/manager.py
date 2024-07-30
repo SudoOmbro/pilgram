@@ -3,6 +3,7 @@ import logging
 import os
 import random
 import time
+from abc import ABC
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Self
@@ -38,7 +39,7 @@ ARTIFACTS_THRESHOLD = 15
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
-NUM_MULT_LUT = {4: 4, 8: 3, 12: 2, 16: 1, 20: 0.5}
+NUM_MULT_LUT = {4: 2.5, 8: 2, 12: 1.5, 16: 1, 20: 0.75}
 
 
 def _gain(xp: int, money: int, renown: int, tax: float = 0) -> str:
@@ -96,31 +97,35 @@ def add_to_zones_players_map(
     zones_player_map[zone_id].append(adventure_container.player)
 
 
-class QuestManager:
+class Manager(ABC):
+    """generic manager object"""
+
+    def __init__(self, database: PilgramDatabase):
+        self.database = database
+
+    def db(self) -> PilgramDatabase:
+        """wrapper around the acquire method to make calling it less verbose"""
+        return self.database.acquire()
+
+
+class QuestManager(Manager):
     """helper class to neatly manage zone events & quests"""
 
     def __init__(
         self,
         database: PilgramDatabase,
-        notifier: PilgramNotifier,
         update_interval: timedelta,
         updates_per_second: int = 10,
     ) -> None:
         """
         :param database: database adapter to use to get & set data
-        :param notifier: notifier adapter to use to send notifications
         :param update_interval: the amount of time that has to pass since the last update before another update
         :param updates_per_second: the amount of time in seconds between notifications
         """
-        self.database = database
-        self.notifier = notifier
+        super().__init__(database)
         self.update_interval = update_interval
         self.highest_quests = _HighestQuests.load_from_file()
         self.updates_per_second = 1 / updates_per_second
-
-    def db(self) -> PilgramDatabase:
-        """wrapper around the acquire method to make calling it less verbose"""
-        return self.database.acquire()
 
     def _complete_quest(self, ac: AdventureContainer) -> None:
         quest: Quest = ac.quest
@@ -136,7 +141,7 @@ class QuestManager:
             if player.guild:
                 guild = self.db().get_guild(
                     player.guild.guild_id
-                )  # get the most up to date object
+                )  # get the most up-to-date object
                 guild.prestige += quest.get_prestige()
                 guild_members = len(self.db().get_guild_members_data(guild))
                 mult = _get_tourney_score_multiplier(guild_members)
@@ -146,12 +151,12 @@ class QuestManager:
                 if guild.founder != player:  # check if winnings should be taxed
                     founder = self.db().get_player_data(
                         guild.founder.player_id
-                    )  # get most up to date object
+                    )  # get most up-to-date object
                     tax = guild.tax / 100
                     amount = int(money * tax)
                     amount_am = founder.add_money(amount)  # am = after modifiers
                     self.db().update_player_data(founder)
-                    self.notifier.notify(
+                    self.db().create_and_add_notification(
                         founder,
                         Strings.tax_gain.format(amount=amount_am, name=player.name),
                     )
@@ -166,7 +171,7 @@ class QuestManager:
             ):  # 30% base chance to gain a piece of an artifact
                 player.artifact_pieces += 1
                 piece = True
-            self.notifier.notify(
+            self.db().create_and_add_notification(
                 player,
                 quest.success_text
                 + Strings.quest_success.format(name=quest.name)
@@ -175,7 +180,7 @@ class QuestManager:
                 + (Strings.piece_found if piece else ""),
             )
         else:
-            self.notifier.notify(
+            self.db().create_and_add_notification(
                 player,
                 quest.failure_text
                 + Strings.quest_fail.format(name=quest.name)
@@ -204,7 +209,7 @@ class QuestManager:
         event = self.db().get_random_zone_event(zone)
         player: Player = self.db().get_player_data(
             ac.player.player_id
-        )  # get the most up to date object
+        )  # get the most up-to-date object
         xp, money = event.get_rewards(ac.player)
         player.add_xp(xp)
         money_am = player.add_money(money)  # am = after modifiers
@@ -243,7 +248,7 @@ class QuestManager:
                     items.append(item)
                     text += f"You found an item:\n*{item.name}*\n\n"
             text += regeneration_text
-        self.notifier.notify(ac.player, text)
+        self.db().create_and_add_notification(ac.player, text)
 
     def _process_combat(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
@@ -312,7 +317,7 @@ class QuestManager:
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
         # notify player
-        self.notifier.notify(ac.player, text, notification_type="Combat Log")
+        self.db().create_and_add_notification(ac.player, text, notification_type="Combat Log")
 
     def process_update(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
@@ -374,8 +379,8 @@ class QuestManager:
             player2.add_xp(xp)
             self.db().update_player_data(player1)
             self.db().update_player_data(player2)
-            self.notifier.notify(player1, text.format(name=player2.name))
-            self.notifier.notify(player2, text.format(name=player1.name))
+            self.db().create_and_add_notification(player1, text.format(name=player2.name))
+            self.db().create_and_add_notification(player2, text.format(name=player1.name))
             log.info(f"Players {player1.name} & {player2.name} have met")
             sleep(self.updates_per_second * 2)
 
@@ -390,7 +395,7 @@ class QuestManager:
         self.handle_players_meeting(zones_players_map)
 
 
-class GeneratorManager:
+class GeneratorManager(Manager):
     """helper class to manage the quest & zone event generator"""
 
     def __init__(self, database: PilgramDatabase, generator: PilgramGenerator) -> None:
@@ -398,12 +403,8 @@ class GeneratorManager:
         :param database: database adapter to use to get & set data
         :param generator: generator adapter to used to generate quests & events
         """
-        self.database = database
+        super().__init__(database)
         self.generator = generator
-
-    def db(self) -> PilgramDatabase:
-        """wrapper around the acquire method to make calling it less verbose"""
-        return self.database.acquire()
 
     def __get_zones_to_generate(
         self, biases: dict[int, int]
@@ -508,15 +509,13 @@ class GeneratorManager:
                 log.error(f"Encountered an error while generating artifacts: {e}")
 
 
-class TourneyManager:
+class TourneyManager(Manager):
     def __init__(
         self,
-        notifier: PilgramNotifier,
         database: PilgramDatabase,
         notification_delay: int,
     ) -> None:
-        self.notifier = notifier
-        self.database = database
+        super().__init__(database)
         self.notification_delay = notification_delay
 
     def db(self) -> PilgramDatabase:
@@ -533,7 +532,7 @@ class TourneyManager:
         first_guild = top_guilds[0]
         winner = self.db().get_player_data(first_guild.founder.player_id)
         winner.artifact_pieces += 1
-        self.notifier.notify(
+        self.db().create_and_add_notification(
             winner,
             f"Your guild won the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nyou are awarded an artifact piece!",
         )
@@ -551,7 +550,7 @@ class TourneyManager:
                     continue
                 reward_am = player.add_money(reward)  # am = after modifiers
                 self.db().update_player_data(player)
-                self.notifier.notify(
+                self.db().create_and_add_notification(
                     player,
                     f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!",
                 )
@@ -566,16 +565,12 @@ class TourneyManager:
         self.db().update_tourney(tourney)
 
 
-class TimedUpdatesManager:
+class TimedUpdatesManager(Manager):
     """helper class to encapsulate all the small updates needed for the game to function"""
 
-    def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase) -> None:
-        self.notifier = notifier
-        self.database = database
+    def __init__(self, database: PilgramDatabase) -> None:
+        super().__init__(database)
 
-    def db(self) -> PilgramDatabase:
-        """wrapper around the acquire method to make calling it less verbose"""
-        return self.database.acquire()
 
     def run(self) -> None:
         # update cult members
@@ -589,17 +584,17 @@ class TimedUpdatesManager:
         log.info(f"{len(expired_auctions)} expired auctions to process")
         for auction in expired_auctions:
             if not auction.best_bidder:
-                self.notifier.notify(
+                self.db().create_and_add_notification(
                     auction.auctioneer,
                     f"No one bid on your auctioned item ({auction.item.name}) and it expired!",
                 )
                 sleep(1)
             else:
-                self.notifier.notify(
+                self.db().create_and_add_notification(
                     auction.auctioneer,
                     f"Your auctioned item '{auction.item.name}' has been bought by {auction.best_bidder} for {auction.best_bid} {MONEY}.",
                 )
-                self.notifier.notify(
+                self.db().create_and_add_notification(
                     auction.best_bidder,
                     f"You won the auction for item '{auction.item.name}', you paid {auction.best_bid} {MONEY}.",
                 )
@@ -620,3 +615,18 @@ class TimedUpdatesManager:
                 sleep(2)
             # delete the auction from the database
             self.db().delete_auction(auction)
+
+
+class NotificationsManager(Manager):
+    """class that is tasked with sending all the notifications"""
+
+    def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase) -> None:
+        self.notifier = notifier
+        super().__init__(database)
+
+    def run(self):
+        notifications = self.db().get_pending_notifications()
+        for notification in notifications:
+            self.notifier.notify(notification)
+            sleep(1)
+
