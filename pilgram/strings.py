@@ -1,5 +1,5 @@
 
-from pilgram.globals import ContentMeta
+from pilgram.globals import ContentMeta, Slots
 
 WORLD = ContentMeta.get('world.name')
 MONEY = ContentMeta.get("money.name")
@@ -269,3 +269,14 @@ class Strings:
     positive_integer_error = "You must enter a positive integer (>= 0)."
     obj_reached_max_level = "Your {obj} is already at max level."
     invalid_page = "The specified manual page does not exist. Only pages 1 to {pl} exist."
+
+    @classmethod
+    def get_item_icon(cls, item_slot) -> str:
+        return {
+            Slots.PRIMARY: "🗡️",
+            Slots.SECONDARY: "🛡️",
+            Slots.HEAD: "🪖",
+            Slots.CHEST: "🧥",
+            Slots.ARMS: "🧤",
+            Slots.LEGS: "👖"
+        }.get(item_slot, "❓")

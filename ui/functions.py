@@ -20,7 +20,7 @@ from pilgram.classes import (
     SpellError,
     Zone,
 )
-from pilgram.equipment import Equipment, EquipmentType, Slots
+from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
@@ -795,24 +795,13 @@ def bestiary(context: UserContext, zone_id_str: str):
         return Strings.obj_does_not_exist.format(obj="zone")
 
 
-def __get_item_icon(item: Equipment) -> str:
-    return {
-        Slots.PRIMARY: "🗡️",
-        Slots.SECONDARY: "🛡️",
-        Slots.HEAD: "🪖",
-        Slots.CHEST: "🧥",
-        Slots.ARMS: "🧤",
-        Slots.LEGS: "👖"
-    }.get(item.equipment_type.slot, "❓")
-
-
 def inventory(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         items = db().get_player_items(player.player_id)
         if not items:
             return Strings.no_items_yet
-        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {__get_item_icon(x)} | *{x.name}*' for i, x in enumerate(items)])}"
+        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)} | *{x.name}*' for i, x in enumerate(items)])}"
     except KeyError:
         return Strings.no_character_yet
 
@@ -1029,7 +1018,7 @@ def check_auctions(context: UserContext) -> str:
         auctions = db().get_auctions()
         if not auctions:
             return Strings.no_auctions_yet
-        return "Here are all auctions:\n\n" + "\n".join(str(x) for x in auctions)
+        return "Here are all auctions:\n\n" + "\n\n".join(str(x) for x in auctions)
     except KeyError:
         return Strings.no_auctions_yet
 

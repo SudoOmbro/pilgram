@@ -15,30 +15,11 @@ from pilgram.flags import (
     OccultBuff,
     StrengthBuff,
 )
-from pilgram.globals import ContentMeta
+from pilgram.globals import ContentMeta, Slots
 from pilgram.listables import Listable
 from pilgram.strings import Strings
 
 MONEY = ContentMeta.get("money.name")
-
-
-class Slots:
-    HEAD = 0
-    CHEST = 1
-    LEGS = 2
-    ARMS = 3
-    PRIMARY = 4
-    SECONDARY = 5
-
-    NUMBER = 6
-
-    ARMOR = (HEAD, CHEST, LEGS, ARMS)
-    WEAPONS = (PRIMARY, SECONDARY)
-
-    @classmethod
-    def get_from_string(cls, string: str) -> int:
-        class_vars = {key: value for key, value in vars(cls).items() if not key.startswith('_')}
-        return class_vars[string.upper()]
 
 
 def _get_slot(value: str | int) -> int:
@@ -85,6 +66,9 @@ class EquipmentType(Listable, meta_name="equipment types"):
         self.value = value
         self.equipment_class = equipment_class
 
+    def __str__(self) -> str:
+        return f"Type: {self.equipment_class}\nSlot: {Strings.slots[self.slot]} {Strings.get_item_icon(self.slot)}"
+
     @classmethod
     def create_from_json(cls, equipment_type_json: dict[str, Any]) -> EquipmentType:
         return cls(
@@ -97,7 +81,7 @@ class EquipmentType(Listable, meta_name="equipment types"):
             equipment_type_json["delay"],
             _get_slot(equipment_type_json["slot"]),
             equipment_type_json["value"],
-            equipment_type_json.get("equipment_class", "weapon" if equipment_type_json["weapon"] else "armor"),
+            equipment_type_json.get("class", "weapon" if equipment_type_json["weapon"] else "armor"),
         )
 
 
@@ -152,7 +136,7 @@ class Equipment:
         self.modifiers.append(self._get_random_modifier(self.level))
 
     def __str__(self) -> str:
-        string = f"*{self.name}* | lv. {self.level}\n- {Strings.slots[self.equipment_type.slot]} -\nWeight: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}"
+        string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type}\nWeight: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}_"
         if self.equipment_type.description:
             string += f"\n_{self.equipment_type.description}_"
         if self.damage:

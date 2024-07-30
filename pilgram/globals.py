@@ -19,6 +19,25 @@ YES_NO_REGEX = r"^(?:y|n)$"
 SPELL_NAME_REGEX = r"^[A-Za-z]+$"
 
 
+class Slots:
+    HEAD = 0
+    CHEST = 1
+    LEGS = 2
+    ARMS = 3
+    PRIMARY = 4
+    SECONDARY = 5
+
+    NUMBER = 6
+
+    ARMOR = (HEAD, CHEST, LEGS, ARMS)
+    WEAPONS = (PRIMARY, SECONDARY)
+
+    @classmethod
+    def get_from_string(cls, string: str) -> int:
+        class_vars = {key: value for key, value in vars(cls).items() if not key.startswith('_')}
+        return class_vars[string.upper()]
+
+
 class __GenericGlobalSettings(ABC):
     """read only singleton that holds global variables"""
 
