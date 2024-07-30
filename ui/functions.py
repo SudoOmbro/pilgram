@@ -398,8 +398,6 @@ def modify_player(context: UserContext) -> str:
             return Strings.cannot_modify_on_quest
         if player.money < MODIFY_COST:
             return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
-        if player.get_number_of_tried_quests() < 3:
-            return Strings.less_than_3_quests
         context.start_process("character editing")
         context.set("operation", "edit")
         return f"name: `{player.name}`\n\ndescr: `{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)

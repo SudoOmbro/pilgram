@@ -162,7 +162,7 @@ class Strings:
         "lick_wounds": "Animal instincts",
         "passive_regeneration": "Passive HP regeneration",
     }
-    you_can_choose_a_cult = "You tried 3 quests so you unlocked character editing, you can now edit your character and join a cult if you want."
+    you_can_choose_a_cult = "You tried some quests at this point, how about you join a cult now? Use the `cults` commands to see them all and then if you want edit your character to choose one."
 
     # items
     enchant_symbol = "⭐"

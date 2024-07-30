@@ -193,12 +193,12 @@ class QuestManager(Manager):
         self.db().update_quest_progress(ac)
         player.progress.set_zone_progress(quest.zone, quest.number + 1)
         player.hp_percent = 1.0
-        if player.get_number_of_tried_quests() == 3:
+        self.db().update_player_data(player)
+        if player.get_number_of_tried_quests() == 4:
             self.db().create_and_add_notification(
                 player,
                 Strings.you_can_choose_a_cult
             )
-        self.db().update_player_data(player)
 
     @staticmethod
     def __player_regenerate_hp(ac: AdventureContainer, player: Player) -> str:
