@@ -29,6 +29,8 @@ class TestUi(unittest.TestCase):
         print(result)
         result = interpreter.context_aware_execute(context, "Really cool guy")
         print(result)
+        result = interpreter.context_aware_execute(context, "check self")
+        print(result)
 
     def test_check_command(self):
         context = UserContext({"id": 0})

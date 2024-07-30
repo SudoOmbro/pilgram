@@ -193,6 +193,11 @@ class QuestManager(Manager):
         self.db().update_quest_progress(ac)
         player.progress.set_zone_progress(quest.zone, quest.number + 1)
         player.hp_percent = 1.0
+        if player.get_number_of_tried_quests() == 3:
+            self.db().create_and_add_notification(
+                player,
+                Strings.you_can_choose_a_cult
+            )
         self.db().update_player_data(player)
 
     @staticmethod
@@ -570,7 +575,6 @@ class TimedUpdatesManager(Manager):
 
     def __init__(self, database: PilgramDatabase) -> None:
         super().__init__(database)
-
 
     def run(self) -> None:
         # update cult members

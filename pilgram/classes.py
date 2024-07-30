@@ -1364,12 +1364,14 @@ class Enemy(CombatActor):
                 (
                     CombatActions.attack,
                     CombatActions.attack,
+                    CombatActions.attack,
                     CombatActions.charge_attack,
                     CombatActions.dodge,
                 )
             )
         return random.choice(
             (
+                CombatActions.attack,
                 CombatActions.attack,
                 CombatActions.attack,
                 CombatActions.charge_attack,
@@ -1380,7 +1382,11 @@ class Enemy(CombatActor):
         )
 
     def get_rewards(self, player: Player) -> tuple[int, int]:
-        return 40 * self.get_level(), 40 * self.get_level()
+        level = self.get_level()
+        multiplier = 40
+        if player.level < level:
+            multiplier += 5 * (player.level - level)
+        return multiplier * level, multiplier * level
 
     def __str__(self) -> str:
         return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"

@@ -5,10 +5,12 @@ Gain wealth ({mn}) and experience, join cults, meet friendly faces during your t
 
 You can do all that & more in Pilgram, you just have to create a character with the `create character` command!
 
-The first thing you should do is crafting something to defend yourself with at the smithy, use `check smithy` & `craft [number]` to craft the item you want.
-To then equip your new item use the `equip 1` command (check inventory with the `inventory` command)
-
 Then after that, use the `embark 1` command to begin your first quest!
+
+Wait a day or two and you'll be notified if you managed to finish the quest. In the meantime you'll get updates on what your character is doing.
+
+While you wait i highly suggest you check out the manual for the game. Bring it up with the `man 1` command.
+
 Enjoy!
 
 Use the `help` command to see all the commands you can use.

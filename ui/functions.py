@@ -20,6 +20,7 @@ from pilgram.classes import (
     SpellError,
     Zone,
 )
+from pilgram.combat_classes import Damage
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat
 from pilgram.generics import AlreadyExists, PilgramDatabase
@@ -186,6 +187,7 @@ def start_character_creation(context: UserContext) -> str:
     except KeyError:
         context.start_process("character creation")
         context.set("operation", "create")
+        context.set("cult", 0)
         log.info(f"User {context.get('id')} is creating a character")
         return context.get_process_prompt(USER_PROCESSES)
 
@@ -234,7 +236,12 @@ def process_get_character_description(context: UserContext, user_input) -> str:
                 context.get("id"), context.get("name"), user_input
             )
             player.cult = Cult.LIST[context.get("cult")]
+            starting_weapon = Equipment.generate(1, EquipmentType.get(0), 0)
             db().add_player(player)
+            item_id = db().add_item(starting_weapon, player)
+            starting_weapon.equipment_id = item_id
+            player.equip_item(starting_weapon)
+            db().update_player_data(player)
             context.end_process()
             log.info(f"User {context.get('id')} created character {player.name}")
             return Strings.welcome_to_the_world
@@ -391,7 +398,9 @@ def modify_player(context: UserContext) -> str:
             return Strings.cannot_modify_on_quest
         if player.money < MODIFY_COST:
             return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
-        context.start_process("character creation")
+        if player.get_number_of_tried_quests() < 3:
+            return Strings.less_than_3_quests
+        context.start_process("character editing")
         context.set("operation", "edit")
         return f"name: `{player.name}`\n\ndescr: `{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
     except KeyError:
@@ -1183,6 +1192,10 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
 
 USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     "character creation": (
+        (Strings.character_creation_get_name, process_get_character_name),
+        (Strings.character_creation_get_description, process_get_character_description)
+    ),
+    "character editing": (
         (Strings.character_creation_get_name, process_get_character_name),
         (Strings.choose_cult + "\n" + list_cults(UserContext()), process_get_character_cult),
         (Strings.character_creation_get_description, process_get_character_description)

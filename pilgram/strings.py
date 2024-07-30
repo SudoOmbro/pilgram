@@ -162,6 +162,7 @@ class Strings:
         "lick_wounds": "Animal instincts",
         "passive_regeneration": "Passive HP regeneration",
     }
+    you_can_choose_a_cult = "You tried 3 quests so you unlocked character editing, you can now edit your character and join a cult if you want."
 
     # items
     enchant_symbol = "⭐"
@@ -269,6 +270,7 @@ class Strings:
     positive_integer_error = "You must enter a positive integer (>= 0)."
     obj_reached_max_level = "Your {obj} is already at max level."
     invalid_page = "The specified manual page does not exist. Only pages 1 to {pl} exist."
+    less_than_3_quests = "You tried less than 3 quests, you can't modify your character yet."
 
     @classmethod
     def get_item_icon(cls, item_slot) -> str:

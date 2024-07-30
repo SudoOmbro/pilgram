@@ -350,6 +350,6 @@ class RockPaperScissors(PilgramMinigame, game="war"):
         return text + self.turn_text()
 
     def get_rewards(self) -> tuple[int, int]:
-        multiplier = self.player_supply + 15
+        multiplier = self.player_supply + 1
         return multiplier * self.XP_REWARD, multiplier + self.MONEY_REWARD
 

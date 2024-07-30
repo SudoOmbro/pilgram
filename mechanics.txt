@@ -29,7 +29,8 @@ Upgrading your home costs money, the *upgrade cost* is calculated with the *form
 - Safe: More dodges than attacks, very few heavy attacks.
 - Reckless: All in on offence.
 
-🔷 *Cult*: The cult you are part of. Cults give you bonuses & maluses, choose the one that is more fitting to your play style.
+🔷 *Cult*: The cult you are part of. Cults give you bonuses & maluses, choose the one that is more fitting to your play style (You can only choose a cult after you tried at least 3 quests).
+Changing your cult requires editing your character.
 
 🔷 *Artifact pieces*: Used to assemble artifacts, explained later.
 
