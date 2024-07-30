@@ -18,7 +18,7 @@ from pilgram.classes import (
     Player,
     Quest,
     QuickTimeEvent,
-    Zone, Notification,
+    Zone,
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
