@@ -1426,7 +1426,7 @@ class Auction:
         return f"Seller: {self.auctioneer.name}\nBest bid: {self.best_bid} ({self.best_bidder.name if self.best_bidder else 'Starting Bid'})\n\nItem:\n{self.item}"
 
     def __str__(self) -> str:
-        return f"(id: {self.auction_id}) - *{self.item.name}* (lv. {self.item.level}), Best bid: {self.best_bid}. _{self._get_expires_string()}_"
+        return f"(id: {self.auction_id}) - {Strings.get_item_icon(self.item.equipment_type.slot)} *{self.item.name}* (lv. {self.item.level}), Best bid: {self.best_bid}. _{self._get_expires_string()}_"
 
     @classmethod
     def create_default(
