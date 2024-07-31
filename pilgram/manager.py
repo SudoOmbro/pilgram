@@ -204,7 +204,7 @@ class QuestManager(Manager):
     def __player_regenerate_hp(ac: AdventureContainer, player: Player) -> str:
         hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
         regenerated_hp: int = (
-            1 + int(player.gear_level * hours_passed) + player.cult.passive_regeneration
+            int((player.gear_level * 0.75) * hours_passed) + player.cult.passive_regeneration
         )
         player.modify_hp(regenerated_hp)
         return f"You regenerate {regenerated_hp} HP ({player.get_hp_string()})."
