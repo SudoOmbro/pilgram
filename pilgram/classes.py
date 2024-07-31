@@ -584,7 +584,7 @@ class Player(CombatActor):
         return base_resistance
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
-        result = []
+        result: list[m.Modifier] = []
         for _, item in self.equipped_items.items():
             result.extend(item.get_modifiers(type_filters))
         return result
@@ -600,7 +600,7 @@ class Player(CombatActor):
         if not self.satchel:
             return "No items in satchel!", False
         if position_in_satchel > len(self.satchel):
-            return Strings.satchel_position_out_of_range.format(num=len(self.satchel))
+            return Strings.satchel_position_out_of_range.format(num=len(self.satchel)), False
         if position_in_satchel > 0:
             position_in_satchel -= 1
         item = self.satchel.pop(position_in_satchel)
@@ -1345,7 +1345,9 @@ class Enemy(CombatActor):
         return self.meta.zone.resist_modifiers.scale(self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
-        result = []
+        if not type_filters:
+            return self.modifiers
+        result: list[m.Modifier] = []
         for modifier in self.modifiers:
             if modifier.TYPE in type_filters:
                 result.append(modifier)

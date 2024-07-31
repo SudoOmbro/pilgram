@@ -20,7 +20,6 @@ from pilgram.classes import (
     SpellError,
     Zone,
 )
-from pilgram.combat_classes import Damage
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat
 from pilgram.generics import AlreadyExists, PilgramDatabase
