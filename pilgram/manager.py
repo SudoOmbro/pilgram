@@ -25,7 +25,7 @@ from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
-from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers
+from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, get_modifier
 from pilgram.strings import Strings
 from pilgram.utils import generate_random_eldritch_name
 
@@ -286,9 +286,9 @@ class QuestManager(Manager):
             enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
             for _ in range(2):
                 choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
-                modifiers.append(random.choice(choice_list))
+                modifiers.append(get_modifier(random.choice(choice_list), ac.quest.zone.level + enemy_level_modifier))
         elif random.randint(1, 100) < 20:  # 20% chance of randomly getting a monster with a modifier
-            modifiers.append(random.choice(get_all_modifiers()))
+            modifiers.append(get_modifier(random.choice(get_all_modifiers()), ac.quest.zone.level + enemy_level_modifier))
         enemy = Enemy(
             self.db().get_random_enemy_meta(ac.quest.zone), modifiers, enemy_level_modifier
         )
