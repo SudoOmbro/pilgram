@@ -40,11 +40,17 @@ class ModifierContext:
 
 _LIST: list[type[Modifier]] = []
 _RARITY_INDEX: dict[int, list[type[Modifier]]] = {0: [], 1: [], 2: [], 3: []}
+_NAME_LUT: dict[str, type[Modifier]] = {}
 
 
 def get_modifier(modifier_id: int, strength: int) -> Modifier:
-    """returns a new modifier with its strength value"""
+    """returns a new modifier with its strength value, given its id"""
     return _LIST[modifier_id](strength)
+
+
+def get_modifier_from_name(modifier_name: str, strength: int) -> Modifier:
+    """returns a new modifier with its strength value, given its name"""
+    return _NAME_LUT[modifier_name](strength)
 
 
 def get_modifiers_by_rarity(rarity: int) -> list[type[Modifier]]:
@@ -98,6 +104,7 @@ class Modifier(ABC):
             cls.RARITY = rarity
             _LIST.append(cls)
             _RARITY_INDEX[rarity].append(cls)
+            _NAME_LUT[cls.NAME] = cls
 
     def get_fstrength(self) -> float:
         """returns the strength divided by 100"""
@@ -151,13 +158,13 @@ class _GenericDamageMult(Modifier):
     ) -> None:
         if dmg_type is None:
             raise ValueError("dmg_type cannot be None")
+        cls.NAME = f"{dmg_type.capitalize()} {'Affinity' if mod_type == ModifierType.PRE_ATTACK else 'Resistant'}"
         super().__init_subclass__(rarity=Rarity.COMMON)
         cls.DAMAGE_TYPE = dmg_type
         cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
         cls.DESCRIPTION = cls.DESCRIPTION.replace(
             "WHAT", "damage" if mod_type == ModifierType.PRE_ATTACK else "resistance"
         )
-        cls.NAME = f"{dmg_type.capitalize()} {'Affinity' if mod_type == ModifierType.PRE_ATTACK else 'Resistant'}"
         cls.TYPE = mod_type
 
     def function(self, context: ModifierContext) -> cc.Damage:
@@ -179,13 +186,13 @@ class _GenericDamageBonus(Modifier):
     ) -> None:
         if dmg_type is None:
             raise ValueError("dmg_type cannot be None")
+        cls.NAME = f"{dmg_type.capitalize()} {'Optimized' if mod_type == ModifierType.PRE_ATTACK else 'shielded'}"
         super().__init_subclass__(rarity=Rarity.COMMON)
         cls.DAMAGE_TYPE = dmg_type
         cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
         cls.DESCRIPTION = cls.DESCRIPTION.replace(
             "WHAT", "damage" if mod_type == ModifierType.PRE_ATTACK else "resistance"
         )
-        cls.NAME = f"{dmg_type.capitalize()} {'Optimized' if mod_type == ModifierType.PRE_ATTACK else 'shielded'}"
         cls.TYPE = mod_type
 
     def function(self, context: ModifierContext) -> cc.Damage:
@@ -207,10 +214,10 @@ class _GenericDamageAbsorb(Modifier):
     def __init_subclass__(cls, dmg_type: str = None, **kwargs) -> None:
         if dmg_type is None:
             raise ValueError("dmg_type cannot be None")
+        cls.NAME = f"{dmg_type.capitalize()} absorption"
         super().__init_subclass__(rarity=Rarity.UNCOMMON)
         cls.DAMAGE_TYPE = dmg_type
         cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
-        cls.NAME = f"{dmg_type.capitalize()} absorption"
 
     def function(self, context: ModifierContext) -> None:
         # scales in the same way for attack & defence
@@ -581,7 +588,8 @@ class EldritchShield(Modifier, rarity=Rarity.RARE):
 class Vampiric(Modifier, rarity=Rarity.LEGENDARY):
     TYPE = ModifierType.POST_ATTACK
 
-    MAX_STRENGTH = 5
+    MAX_STRENGTH = 10
+    MIN_STRENGTH = 1
     SCALING = 20
 
     NAME = "Vampiric"
@@ -591,6 +599,8 @@ class Vampiric(Modifier, rarity=Rarity.LEGENDARY):
         damage: cc.Damage = context.get("damage")
         attacker: cc.CombatActor = context.get("supplier")
         healing = int(damage.get_total_damage() * self.get_fstrength())
+        if healing == 0:
+            healing = 1
         attacker.modify_hp(healing)
         self.write_to_log(
             context,
@@ -676,6 +686,8 @@ class Bashing(Modifier, rarity=Rarity.LEGENDARY):
                 and (secondary.equipment_type.equipment_class == "shield")
             ):
                 return damage.scale(1 + (self.get_fstrength()))
+        else:
+            return damage.scale(1.2)
         return damage
 
 
@@ -832,6 +844,8 @@ class EldritchSynergy(Modifier, rarity=Rarity.LEGENDARY):
         if isinstance(entity, classes.Player):
             if entity.artifacts:
                 return damage.scale(1 + ((self.strength / 100) * len(entity.artifacts)))
+        else:
+            return damage.scale(1.5)
         return damage
 
 

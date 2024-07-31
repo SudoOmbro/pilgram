@@ -13,7 +13,7 @@ from pilgram.classes import (
 )
 from pilgram.combat_classes import CombatContainer, Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
-from pilgram.modifiers import Modifier, print_all_modifiers
+from pilgram.modifiers import Modifier, print_all_modifiers, get_modifier_from_name
 
 
 def _get_quest_fail_rate(quest: Quest, player: Player, tests: int = 100) -> float:
@@ -94,34 +94,53 @@ class TestClasses(unittest.TestCase):
             print(str(equipment))
 
     def test_combat(self):
+        # setup player
         player = Player.create_default(0, "Ombro", "")
-        player.level = 2
-        player.gear_level = 2
+        player.level = 14
+        player.gear_level = 13
+        # setup zone
         zone = Zone(
             1,
             "zone name",
-            8,
+            15,
             "AAAA",
-            Damage(0, 0, 1, 0, 0, 0, 0, 0),
-            Damage(0, 0, 0, 0, 0, 0, 0, 0),
+            Damage(2, 2, 1, 0, 0, 0, 0, 0),
+            Damage(2, 2, 0, 0, 0, 0, 0, 0),
             {}
         )
+        # setup equipment
         player.equip_item(_generate_equipment(
             player,
             EquipmentType.get(0),  # longsword
-            []
+            [get_modifier_from_name("Vampiric", 1)]
         ))
         player.equip_item(_generate_equipment(
             player,
             EquipmentType.get(21),  # Lorica segmentata
+            [get_modifier_from_name("Thorns", 3)]
+        ))
+        player.equip_item(_generate_equipment(
+            player,
+            EquipmentType.get(48),  # Claws
+            []
+        )),
+        player.equip_item(_generate_equipment(
+            player,
+            EquipmentType.get(44),  # Hood
             []
         ))
+        # setup player satchel
         player.satchel = [ConsumableItem.get(15), ConsumableItem.get(7), ConsumableItem.get(6), ConsumableItem.get(5), ConsumableItem.get(13)]
+        # setup enemy
         enemy = Enemy(
             EnemyMeta(0, zone, "Cock monger", "AAAAA", "WIN", "LOSS"),
-            [],
-            0
+            [
+                get_modifier_from_name("Idiot God Blessing", 3),
+                get_modifier_from_name("Brutality", 6)
+            ],
+            2
         )
+        # create & do fight
         combat = CombatContainer([player, enemy], {player: None, enemy: None})
         result = combat.fight()
         print(result)
