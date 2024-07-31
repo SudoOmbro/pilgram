@@ -243,16 +243,16 @@ class PilgramBot(PilgramNotifier):
             url = f"https://api.telegram.org/bot{self.__token}/sendMessage?chat_id={chat_id}&parse_mode=Markdown&text={quote(notification.text)}"
             result = requests.get(url)
             if result.ok:
-                return result.json()
+                return {"ok": True}
             if result.status_code == 403:
                 # ignore unauthorized requests
-                # TODO maybe delete characters of people who blocked the Bot
-                return {}
+                return {"ok": False, "reason": "blocked"}
             raise Exception(result.text)
         except Exception as e:
             log.error(
                 f"An error occurred while trying to notify user {notification.target.player_id} ({notification.target.name}): {e}\nMessage ({len(notification.text)} chars): {notification.text}"
             )
+            return {"ok": False, "reason": str(e)}
 
     def send_file(
         self, player: Player, file_name: str, file_bytes: bytes, caption: str
@@ -264,10 +264,14 @@ class PilgramBot(PilgramNotifier):
                 url, data=payload, files={"document": (file_name, file_bytes)}
             )
             if result.ok:
-                return result.json()
+                return {"ok": True}
+            if result.status_code == 403:
+                # ignore unauthorized requests
+                return {"ok": False, "reason": "blocked"}
             raise Exception(result.text)
         except Exception as e:
             log.error(f"Error while sending file to player {player.name}: {e}")
+            return {"ok": False, "reason": str(e)}
 
     def has_sent_a_message_too_recently(self, user_id: int, cooldown: int) -> bool:
         return has_recently_accessed_cache(self.storage, user_id, cooldown)

@@ -639,11 +639,20 @@ class NotificationsManager(Manager):
     def __init__(self, notifier: PilgramNotifier, database: PilgramDatabase) -> None:
         self.notifier = notifier
         super().__init__(database)
+        self._tmp_blocked_users: list[int] = []
 
     def run(self) -> None:
         notifications = self.db().get_pending_notifications()
         for notification in notifications:
-            self.notifier.notify(notification)
+            if notification.target.player_id in self._tmp_blocked_users:
+                # TODO make this more permanent
+                continue
+            result = self.notifier.notify(notification)
+            if not result.get("ok", False):
+                reason = result.get("reason", "")
+                if reason == "blocked":
+                    log.info(f"User {notification.target.player_id} ({notification.target.name}) blocked the bot, adding to blocked list...")
+                    self._tmp_blocked_users.append(notification.target.player_id)
             sleep(1)
 
     def load_pending_notifications(self) -> None:

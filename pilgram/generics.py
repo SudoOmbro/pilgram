@@ -438,5 +438,5 @@ class PilgramGenerator(ABC):
 
 
 class PilgramNotifier(ABC):
-    def notify(self, notification: Notification) -> None:
+    def notify(self, notification: Notification) -> dict:
         raise NotImplementedError
