@@ -651,7 +651,7 @@ class NotificationsManager(Manager):
             if not result.get("ok", False):
                 reason = result.get("reason", "")
                 if reason == "blocked":
-                    log.info(f"User {notification.target.player_id} ({notification.target.name}) blocked the bot, adding to blocked list...")
+                    # log.info(f"User {notification.target.player_id} ({notification.target.name}) blocked the bot, adding to blocked list...")
                     self._tmp_blocked_users.append(notification.target.player_id)
             sleep(1)
 
