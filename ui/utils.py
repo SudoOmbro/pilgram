@@ -2,6 +2,8 @@ import re
 from collections.abc import Callable
 from typing import Any
 
+from pilgram.globals import POSITIVE_INTEGER_REGEX
+from pilgram.strings import Strings
 from pilgram.utils import PathDict
 
 
@@ -101,6 +103,10 @@ class RegexWithErrorMessage:
 
     def check(self, string_to_check: str) -> bool:
         return re.match(self.regex, string_to_check) is not None
+
+
+def integer_arg(arg_name: str) -> RegexWithErrorMessage:
+    return RegexWithErrorMessage(arg_name, POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj=arg_name))
 
 
 class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too long

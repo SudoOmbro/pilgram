@@ -36,7 +36,7 @@ from pilgram.globals import (
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings
 from pilgram.utils import read_text_file
-from ui.utils import InterpreterFunctionWrapper as IFW
+from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
 
@@ -1109,30 +1109,30 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "self": IFW(None, check_self, "Shows your own stats."),
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
-        "zone": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_zone, "Describes a Zone."),
-        "enemy": IFW([RWE("Enemy id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], check_enemy, "Describes an Enemy."),
+        "zone": IFW([integer_arg("Zone number")], check_zone, "Describes a Zone."),
+        "enemy": IFW([integer_arg("Zone number")], check_enemy, "Describes an Enemy."),
         "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows guild."),
         "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
-        "artifact": IFW([RWE("Artifact number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Artifact number"))], check_artifact, "Describes an Artifact."),
+        "artifact": IFW([integer_arg("Artifact number")], check_artifact, "Describes an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
             "auctions": IFW(None, check_my_auctions, "Shows your auctions."),
         },
         "auctions": IFW(None, check_auctions, "Shows all auctions."),
-        "auction": IFW([RWE("auction id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Auction"))], check_auction, "Show a specific auction."),
+        "auction": IFW([integer_arg("Auction")], check_auction, "Show a specific auction."),
         "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
         "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild"),
-        "item": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], check_item, "Shows the specified item stats"),
+        "item": IFW([integer_arg("Item")], check_item, "Shows the specified item stats"),
         "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
         "guild": IFW(None, start_guild_creation, f"Create your own Guild (cost: {ContentMeta.get('guilds.creation_cost')} {MONEY})."),
-        "auction": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="item")), RWE("starting bid", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], create_auction, "auctions the selected item."),
+        "auction": IFW([integer_arg("item"), integer_arg("Starting bid")], create_auction, "auctions the selected item."),
     },
-    "bid": IFW([RWE("auction id", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="item")), RWE("bid", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], bid_on_auction, "bid on the selected auction."),
+    "bid": IFW([integer_arg("Item"), integer_arg("Bid")], bid_on_auction, "bid on the selected auction."),
     "upgrade": {
         "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
         "home": IFW(None, upgrade, "Upgrade your home.", default_args={"obj": "home"}),
@@ -1143,7 +1143,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "guild": IFW(None, modify_guild, "Modify your guild (for a price).",)
     },
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
-    "embark": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], embark_on_quest, "Starts quest in specified zone."),
+    "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
     "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=1),
@@ -1161,13 +1161,13 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "artifact": IFW(None, assemble_artifact, f"Assemble an artifact using {REQUIRED_PIECES} artifact pieces")
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
-    "equip": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], equip_item, "Equip an item from your inventory"),
-    "sell": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], sell_item, "Sell an item from your inventory."),
-    "buy": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], market_buy, "Buy something from the market."),
-    "craft": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], smithy_craft, "Craft something at the smithy."),
-    "reroll": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], reroll_item, "Reroll an item from your inventory"),
-    "enchant": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], enchant_item, "Add a perk to an item from your inventory"),
-    "consume": IFW([RWE("item", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Item"))], use_consumable, "Use an item in your satchel"),
+    "equip": IFW([integer_arg("Item")], equip_item, "Equip an item from your inventory"),
+    "sell": IFW([integer_arg("Item")], sell_item, "Sell an item from your inventory."),
+    "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),
+    "craft": IFW([integer_arg("Item")], smithy_craft, "Craft something at the smithy."),
+    "reroll": IFW([integer_arg("Item")], reroll_item, "Reroll an item from your inventory"),
+    "enchant": IFW([integer_arg("Item")], enchant_item, "Add a perk to an item from your inventory"),
+    "consume": IFW([integer_arg("Item")], use_consumable, "Use an item in your satchel"),
     "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
     "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
@@ -1183,8 +1183,8 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
     },
-    "bestiary": IFW([RWE("zone number", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Zone number"))], bestiary, "shows all enemies that can be found in the given zone."),
-    "man": IFW([RWE("page", POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj="Page"))], manual, "Shows the specified manual page.")
+    "bestiary": IFW([integer_arg("Zone number")], bestiary, "shows all enemies that can be found in the given zone."),
+    "man": IFW([integer_arg("Page")], manual, "Shows the specified manual page.")
 }
 
 USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
