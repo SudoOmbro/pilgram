@@ -956,7 +956,7 @@ def show_smithy(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         item_types = db().get_smithy_items()
-        return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i + 1}. {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
+        return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i + 1}. {Strings.get_item_icon(x.slot)}| {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
     except KeyError:
         return Strings.no_character_yet
 
