@@ -251,7 +251,67 @@
       "failure": "The moment you think of stealing her squid she disappears, as if she was a dream all along.",
       "rewards": "xp 200, ap 3"
     }]
-  }],
+  }, {
+    "description": "Suddenly, everything becomes silent. You are immersed in an endless sea of darkness & silence. A female voice speaks softly: \"I AM BOROM. I AM THE PLANET. I AM AFRAID\"",
+    "choices": [{
+      "option": "Run",
+      "chance": 90,
+      "success": "Whatever this thing is it's freaking you out, you try running but you can't move. You try waking up instead. It works.",
+      "failure": "You can't run. You can't even move. The voice falls silent but the darkness remains. You wake some time later, covered in sweat.",
+      "rewards": "xp 100"
+    }, {
+      "option": "Ask what she is afraid of",
+      "chance": 38,
+      "success": "\"DEATH. I NEED YOU TO PROTECT ME FROM DEATH. A PRESENCE INSIDE MY CORE KILLING ME. I NEED YOU. I LOVE YOU.\" You wake up a few moments later, light headed.",
+      "failure": "You are terrified and cannot speak. You wake some time later, covered in sweat.",
+      "rewards": "xp 3800"
+    }]
+  }, {
+    "description": "A talking crow lands on your shoulder and offers to tell you a secret for a piece of bread.",
+    "choices": [{
+      "option": "Give the crow bread",
+      "chance": 50,
+      "success": "The crow reveals a hidden path that leads to a some treasure.",
+      "failure": "The crow eats the bread and flies away, leaving you with nothing.",
+      "rewards": "xp 100"
+    }, {
+      "option": "Shoo the crow away",
+      "chance": 15,
+      "success": "The crow flies off, and you find a shiny trinket where it was standing.",
+      "failure": "The crow angrily caws and summons a flock to harass you.",
+      "rewards": "xp 150, ap 1"
+    }]
+}, {
+    "description": "You encounter a ghost offering to show you a hidden treasure in exchange for your help in finding peace.",
+    "choices": [{
+      "option": "Help the ghost",
+      "chance": 75,
+      "success": "You help the ghost resolve its unfinished business and it leads you to a hidden room filled with treasure.",
+      "failure": "Despite your efforts, the ghost remains restless and vanishes, leaving you with nothing but a chill.",
+      "rewards": "xp 200, mn 200"
+    }, {
+      "option": "Ignore the ghost",
+      "chance": 90,
+      "success": "You ignore the ghost and continue your quest.",
+      "failure": "The ghost becomes angry and lets out a blood curling scream.",
+      "rewards": "xp 20"
+    }]
+}, {
+    "description": "You encounter a creepy guy who offers advice for a small fee of one of your toenails.",
+    "choices": [{
+      "option": "Rip off a toe nail",
+      "chance": 50,
+      "success": "You rip off one of your toe nails & the guy, looking hungrily at it, gives you valuable advice that helps you avoid a future danger.",
+      "failure": "The guy is vague and unhelpful. You decide to cut his tongue.",
+      "rewards": "xp 300"
+    }, {
+      "option": "Refuse the offer",
+      "chance": 90,
+      "success": "You rightfully decide to ignore him.",
+      "failure": "He lunges at you, scratching you. He runs off on all fours, never to be seen again.",
+      "rewards": "xp 20"
+    }]
+}],
   "cults": [{
     "id": 0,
     "name": "Not in a cult",
