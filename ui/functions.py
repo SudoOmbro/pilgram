@@ -1091,7 +1091,7 @@ def bid_on_auction(context: UserContext, auction_id_str: str, bid_str: str) -> s
         if not auction.place_bid(player, bid):
             return Strings.bid_too_low + str(auction.best_bid + 1)
         db().update_auction(auction)
-        return Strings.bid_placed.format(amount=bid, item="TODO")
+        return Strings.bid_placed.format(amount=bid, item=auction.item.name)
     except KeyError:
         return Strings.no_character_yet
 
