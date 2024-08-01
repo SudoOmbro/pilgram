@@ -817,9 +817,10 @@ def inventory(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
         items = db().get_player_items(player.player_id)
+        equipped_items = list(player.equipped_items.values())
         if not items:
             return Strings.no_items_yet
-        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)} | *{x.name}*' for i, x in enumerate(items)])}"
+        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if x in equipped_items else ''}| *{x.name}*' for i, x in enumerate(items)])}"
     except KeyError:
         return Strings.no_character_yet
 
