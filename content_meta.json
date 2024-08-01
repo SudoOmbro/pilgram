@@ -980,6 +980,135 @@
       "occult": 2
     },
     "value": 50
+  }, {
+    "id": 50,
+    "name": "Sabatons",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 7,
+    "resist": {
+      "slash": 4,
+      "pierce": 3
+    },
+    "value": 15
+  }, {
+    "id": 51,
+    "name": "Kettle Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 2,
+      "pierce": 2,
+      "blunt": 1
+    },
+    "value": 22
+  }, {
+    "id": 52,
+    "name": "Sallet Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 10,
+    "resist": {
+      "slash": 2,
+      "pierce": 2,
+      "blunt": 2
+    },
+    "value": 30
+  }, {
+    "id": 53,
+    "name": "Pot Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 1
+    },
+    "value": 15
+  }, {
+    "id": 54,
+    "name": "Spangenhelm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 2,
+      "pierce": 1
+    },
+    "value": 15
+  }, {
+    "id": 55,
+    "name": "Pistil",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 3,
+    "damage": {
+      "pierce": 3
+    },
+    "value": 8
+  }, {
+    "id": 56,
+    "name": "Chakrams",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 1
+    },
+    "value": 8
+  }, {
+    "id": 57,
+    "name": "Franciscas",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "slash": 2
+    },
+    "value": 8
+  }, {
+    "id": 58,
+    "name": "Kunais",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "pierce": 2
+    },
+    "value": 8
+  }, {
+    "id": 59,
+    "name": "Javelins",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "pierce": 4
+    },
+    "value": 10
+  }, {
+    "id": 60,
+    "name": "Ribauldequin",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 80,
+    "damage": {
+      "pierce": 50,
+      "blunt": 30
+    },
+    "value": 150
+  }, {
+    "id": 61,
+    "name": "Flamethrower",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 40,
+    "damage": {
+      "fire": 35
+    },
+    "value": 150
   }],
   "consumables": [{
     "id": 0,

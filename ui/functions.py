@@ -1146,7 +1146,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
     "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
-    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), RWE("amount", POSITIVE_INTEGER_REGEX, Strings.invalid_money_amount)], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
+    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=1),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {

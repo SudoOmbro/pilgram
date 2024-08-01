@@ -136,7 +136,7 @@ class Equipment:
         self.modifiers.append(self._get_random_modifier(self.level))
 
     def __str__(self) -> str:
-        string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type}\nWeight: {self.equipment_type.delay}\nValue: {self.get_value()} {MONEY}_"
+        string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type}\nWeight: {self.equipment_type.delay} Kg\nValue: {self.get_value()} {MONEY}_"
         if self.equipment_type.description:
             string += f"\n_{self.equipment_type.description}_"
         if self.damage:
