@@ -202,7 +202,7 @@ class _GenericDamageBonus(Modifier):
 
 
 class _GenericDamageAbsorb(Modifier):
-    TYPE = ModifierType.POST_DEFEND
+    TYPE = ModifierType.MID_DEFEND
 
     MAX_STRENGTH = 100
     MIN_STRENGTH = 1
@@ -214,7 +214,7 @@ class _GenericDamageAbsorb(Modifier):
     def __init_subclass__(cls, dmg_type: str = None, **kwargs) -> None:
         if dmg_type is None:
             raise ValueError("dmg_type cannot be None")
-        cls.NAME = f"{dmg_type.capitalize()} absorption"
+        cls.NAME = f"{dmg_type.capitalize()} Absorption"
         super().__init_subclass__(rarity=Rarity.UNCOMMON)
         cls.DAMAGE_TYPE = dmg_type
         cls.DESCRIPTION = cls.DESCRIPTION.replace("DAMAGE", dmg_type)
@@ -222,14 +222,16 @@ class _GenericDamageAbsorb(Modifier):
     def function(self, context: ModifierContext) -> None:
         # scales in the same way for attack & defence
         damage: cc.Damage = context.get("damage")
-        defender: cc.CombatActor = context.get("other")
+        defender: cc.CombatActor = context.get("target")
         element_damage: int = damage.__dict__[self.DAMAGE_TYPE]
         if element_damage > 0:
             hp = int(element_damage * self.get_fstrength())
+            if hp == 0:
+                hp = 1
             defender.modify_hp(hp, overheal=True)
             self.write_to_log(
                 context,
-                f"{defender.get_name()} heals {hp} HP from {self.DAMAGE_TYPE} damage.",
+                f"{defender.get_name()} heals {hp} HP from {self.DAMAGE_TYPE} damage. ({defender.get_hp_string()})",
             )
 
 
@@ -530,10 +532,10 @@ class PoisonTipped(Modifier, rarity=Rarity.RARE):
     )
 
     class PoisonProc(Modifier):
-        TYPE = ModifierType.POST_DEFEND
+        TYPE = ModifierType.TURN_START
 
         def function(self, context: ModifierContext) -> Any:
-            target: cc.CombatActor = context.get("other")
+            target: cc.CombatActor = context.get("entity")
             target.modify_hp(-self.strength)
             self.write_to_log(
                 context,

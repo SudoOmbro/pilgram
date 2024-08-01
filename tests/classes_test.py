@@ -112,7 +112,10 @@ class TestClasses(unittest.TestCase):
         player.equip_item(_generate_equipment(
             player,
             EquipmentType.get(0),  # longsword
-            [get_modifier_from_name("Vampiric", 1)]
+            [
+                get_modifier_from_name("Vampiric", 1),
+                get_modifier_from_name("Poison Tipped", 1)
+            ]
         ))
         player.equip_item(_generate_equipment(
             player,
@@ -135,7 +138,10 @@ class TestClasses(unittest.TestCase):
         enemy = Enemy(
             EnemyMeta(0, zone, "Cock monger", "AAAAA", "WIN", "LOSS"),
             [
-                get_modifier_from_name("Idiot God Blessing", 3),
+                get_modifier_from_name("Fire Absorption", 4),
+                get_modifier_from_name("Acid Absorption", 4),
+                get_modifier_from_name("Electric Absorption", 4),
+                get_modifier_from_name("Freeze Absorption", 4),
                 get_modifier_from_name("Brutality", 6)
             ],
             2

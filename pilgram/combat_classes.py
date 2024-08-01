@@ -406,13 +406,16 @@ class CombatContainer:
 
     def _attack(self, attacker: CombatActor, target: CombatActor) -> None:
         self.write_to_log(f"{attacker.get_name()} attacks.")
+        # get total damage inflicted
         damage = (
             attacker.attack(target, self)
             .scale(self.resist_scale[target])
             .scale(self.damage_scale[attacker])
         )
+        # reset damage & resist scales
         self.damage_scale[attacker] = 1.0
         self.resist_scale[target] = 1.0
+        # apply mid attack & defend modifiers (before inflicting the damage)
         for modifier in attacker.get_modifiers(m.ModifierType.MID_ATTACK):
             new_damage = modifier.apply(
                 self.get_mod_context(
@@ -429,11 +432,13 @@ class CombatContainer:
             )
             if new_damage is not None:
                 damage = new_damage
+        # actually inflict the damage
         total_damage = damage.get_total_damage()
         target.modify_hp(-total_damage)
         self.write_to_log(
             f"{target.get_name()} takes {total_damage} dmg ({target.get_hp_string()})."
         )
+        # apply post attack & defend modifiers (after the damage was inflicted)
         for modifier in attacker.get_modifiers(m.ModifierType.POST_ATTACK):
             modifier.apply(
                 self.get_mod_context(
@@ -482,6 +487,10 @@ class CombatContainer:
                         continue
                 for modifier in actor.get_modifiers(m.ModifierType.TURN_START):
                     modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponents[i], "turn": self.turn}))
+                if actor.is_dead():
+                    # the actor may also die here since poison might be applied
+                    if not self._try_revive(actor):
+                        continue
                 action_id = actor.choose_action(opponents[i])
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])
