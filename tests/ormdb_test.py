@@ -15,7 +15,7 @@ from orm.db import (
     encode_progress,
     encode_satchel,
 )
-from pilgram.classes import Player
+from pilgram.classes import Player, Guild
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.modifiers import get_modifier
 
@@ -102,13 +102,18 @@ class TestORMDB(unittest.TestCase):
         db = PilgramORMDatabase.instance()
         db.get_all_pending_updates(timedelta(minutes=1))
 
+    def _get_or_create_player(self, player_id: int, name: str):
+        db = PilgramORMDatabase.instance()
+        player = db.get_player_from_name(name)
+        if not player:
+            player = Player.create_default(player_id, name, "AAAAAAAA")
+            db.add_player(player)
+        return player
+
     def test_save_items_to_db(self):
         # delete db in tests folder before running this test!
         db = PilgramORMDatabase.instance()
-        player = db.get_player_from_name("Ombro")
-        if not player:
-            player = Player.create_default(1234, "Ombro", "AAAAAAAA")
-            db.add_player(player)
+        player = self._get_or_create_player(69, "Ombro")
         generated_items: list[Equipment] = []
         for i in range(100):
             item = Equipment.generate(i, EquipmentType.get_random(), randint(0, 3))
@@ -123,10 +128,7 @@ class TestORMDB(unittest.TestCase):
     def test_equip(self):
         # disable get_player_data cache before running this test!
         db = PilgramORMDatabase.instance()
-        player = db.get_player_from_name("Ombro")
-        if not player:
-            player = Player.create_default(1234, "Ombro", "AAAAAAAA")
-            db.add_player(player)
+        player = self._get_or_create_player(69, "Ombro")
         for i in range(500):
             item = Equipment.generate(i, EquipmentType.get_random(), randint(0, 3))
             db.add_item(item, player)
@@ -147,3 +149,15 @@ class TestORMDB(unittest.TestCase):
             equipment_ids = [x.equipment_id for x in player.equipped_items.values()]
             for item_id in equipment_ids:
                 self.assertTrue(item_id in chosen_items, msg=f"{item_id} not in {chosen_items}. equipment: {equipment_ids}")
+
+    def test_get_guild_ids_from_name_case_insensitive(self):
+        # delete pilgram db in test before running this test
+        db = PilgramORMDatabase.instance()
+        player = self._get_or_create_player(69, "Ombro")
+        db.add_guild(Guild.create_default(player, "TurOn", "AAAA"))
+        db.add_guild(Guild.create_default(player, "TURON", "AAAA"))
+        db.add_guild(Guild.create_default(player, "cock", "AAAA"))
+        result = db.get_guild_ids_from_name_case_insensitive("TurOn")
+        self.assertTrue(len(result) == 2)
+        self.assertTrue(1 in result)
+        self.assertTrue(2 in result)

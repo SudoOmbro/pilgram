@@ -271,6 +271,7 @@ class Strings:
     obj_reached_max_level = "Your {obj} is already at max level."
     invalid_page = "The specified manual page does not exist. Only pages 1 to {pl} exist."
     less_than_3_quests = "You tried less than 3 quests, you can't modify your character yet."
+    multiple_matches_found = "Multiple {obj}s found for your input, use correct casing."
 
     @classmethod
     def get_item_icon(cls, item_slot) -> str:

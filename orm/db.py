@@ -238,6 +238,14 @@ class PilgramORMDatabase(PilgramDatabase):
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with name {name} not found')
 
+    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
+    def get_player_ids_from_name_case_insensitive(self, player_name: str) -> list[int]:
+        try:
+            ps = PlayerModel.select(PlayerModel.id).filter(PlayerModel.name.ilike(player_name))
+            return [x.id for x in ps]
+        except PlayerModel.DoesNotExist:
+            raise KeyError(f'Player with name {player_name} not found')
+
     @_thread_safe()
     def update_player_data(self, player: Player):
         try:
@@ -332,6 +340,14 @@ class PilgramORMDatabase(PilgramDatabase):
     def get_guild_id_from_name(self, guild_name: str) -> int:
         try:
             return GuildModel.get(GuildModel.name == guild_name).id
+        except GuildModel.DoesNotExist:
+            raise KeyError(f'Guild with name {guild_name} not found')
+
+    @cache_sized_ttl_quick(size_limit=200, ttl=3600)
+    def get_guild_ids_from_name_case_insensitive(self, guild_name: str) -> list[int]:
+        try:
+            gs = GuildModel.select(GuildModel.id).filter(GuildModel.name.ilike(guild_name))
+            return [x.id for x in gs]
         except GuildModel.DoesNotExist:
             raise KeyError(f'Guild with name {guild_name} not found')
 

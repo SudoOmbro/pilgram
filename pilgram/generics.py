@@ -48,6 +48,10 @@ class PilgramDatabase(ABC):
     def get_player_id_from_name(self, player_name) -> int:
         raise NotImplementedError
 
+    def get_player_ids_from_name_case_insensitive(self, player_name: str) -> list[int]:
+        """get player ids with matching names (case insensitive)"""
+        raise NotImplementedError
+
     def get_player_from_name(self, player_name: str) -> Player | None:
         try:
             return self.get_player_data(self.get_player_id_from_name(player_name))
@@ -83,6 +87,10 @@ class PilgramDatabase(ABC):
 
     def get_guild_id_from_name(self, guild_name: str) -> int:
         """get a guild id given its name"""
+        raise NotImplementedError
+
+    def get_guild_ids_from_name_case_insensitive(self, guild_name: str) -> list[int]:
+        """get guild ids with matching guild names (case insensitive)"""
         raise NotImplementedError
 
     def get_guild_id_from_founder(self, founder: Player) -> int:

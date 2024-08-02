@@ -108,9 +108,43 @@ def check_self(context: UserContext) -> str:
         return Strings.no_character_yet
 
 
+def __get_player_from_name(player_name: str) -> tuple[str | None, Player | None]:
+    player_ids: list[int] = db().get_player_ids_from_name_case_insensitive(player_name)
+    if len(player_ids) == 0:
+        return Strings.named_object_not_exist.format(obj="player", name=player_name)
+    players = [db().get_player_data(player_id) for player_id in player_ids]
+    if len(players) == 1:
+        return None, players[0]
+    player = None
+    for p in players:
+        if p.name == player_name:
+            player = p
+    if player is None:
+        return Strings.multiple_matches_found.format(obj="player") + "\n\n" + "\n".join(x.name for x in players), None
+    return None, player
+
+
+def __get_guild_from_name(guild_name: str) -> tuple[str | None, Guild | None]:
+    guild_ids: list[int] = db().get_guild_ids_from_name_case_insensitive(guild_name)
+    if len(guild_ids) == 0:
+        return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+    guilds = [db().get_guild(guild_id) for guild_id in guild_ids]
+    if len(guilds) == 1:
+        return None, guilds[0]
+    guild = None
+    for g in guilds:
+        if g.name == guild_name:
+            player = g
+    if guild is None:
+        return Strings.multiple_matches_found.format(obj="guild") + "\n\n" + "\n".join(x.name for x in guilds), None
+    return None, guild
+
+
 def check_player(context: UserContext, player_name: str) -> str:
     try:
-        player = db().get_player_data(db().get_player_id_from_name(player_name))
+        message, player = __get_player_from_name(player_name)
+        if message:
+            return message
         return str(player)
     except KeyError:
         return Strings.named_object_not_exist.format(obj="player", name=player_name)
@@ -127,7 +161,9 @@ def check_artifact(context: UserContext, artifact_id_str: str) -> str:
 
 def check_guild(context: UserContext, guild_name: str) -> str:
     try:
-        guild = db().get_guild(db().get_guild_id_from_name(guild_name))
+        message, guild = __get_guild_from_name(guild_name)
+        if message:
+            return message
         return str(guild)
     except KeyError:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
@@ -170,7 +206,9 @@ def check_guild_mates(context: UserContext) -> str:
 
 def check_guild_members(context: UserContext, guild_name: str) -> str:
     try:
-        guild = db().get_guild(db().get_guild_id_from_name(guild_name))
+        message, guild = __get_guild_from_name(guild_name)
+        if message:
+            return message
         if guild is None:
             return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
         members = db().get_guild_members_data(guild)
@@ -424,7 +462,9 @@ def modify_guild(context: UserContext) -> str:
 def join_guild(context: UserContext, guild_name: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        guild = db().get_guild_from_name(guild_name)
+        message, guild = __get_guild_from_name(guild_name)
+        if message:
+            return message
         if not guild:
             return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
         members: int = db().get_guild_members_number(guild)
@@ -529,7 +569,9 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
             return Strings.invalid_money_amount
         if player.money < amount:
             return Strings.not_enough_money
-        recipient = db().get_player_from_name(recipient_name)
+        message, recipient = __get_player_from_name(recipient_name)
+        if message:
+            return message
         if not recipient:
             return Strings.named_object_not_exist.format(obj="Player", name=recipient_name)
         # update money for both player and save data to the database
@@ -582,7 +624,9 @@ def rank_tourney(context: UserContext) -> str:
 
 def send_message_to_player(context: UserContext, player_name: str) -> str:
     try:
-        player = db().get_player_data(context.get("id"))
+        message, player = __get_player_from_name(player_name)
+        if message:
+            return message
         if player.name == player_name:
             return Strings.no_self_message
         target = db().get_player_from_name(player_name)
