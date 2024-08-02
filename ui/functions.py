@@ -111,7 +111,7 @@ def check_self(context: UserContext) -> str:
 def __get_player_from_name(player_name: str) -> tuple[str | None, Player | None]:
     player_ids: list[int] = db().get_player_ids_from_name_case_insensitive(player_name)
     if len(player_ids) == 0:
-        return Strings.named_object_not_exist.format(obj="player", name=player_name)
+        return Strings.named_object_not_exist.format(obj="player", name=player_name), None
     players = [db().get_player_data(player_id) for player_id in player_ids]
     if len(players) == 1:
         return None, players[0]
@@ -127,7 +127,7 @@ def __get_player_from_name(player_name: str) -> tuple[str | None, Player | None]
 def __get_guild_from_name(guild_name: str) -> tuple[str | None, Guild | None]:
     guild_ids: list[int] = db().get_guild_ids_from_name_case_insensitive(guild_name)
     if len(guild_ids) == 0:
-        return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+        return Strings.named_object_not_exist.format(obj="guild", name=guild_name), None
     guilds = [db().get_guild(guild_id) for guild_id in guild_ids]
     if len(guilds) == 1:
         return None, guilds[0]
