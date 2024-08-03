@@ -90,6 +90,15 @@ async def privacy(update: Update, c: ContextTypes.DEFAULT_TYPE):
     )
 
 
+async def menu(update: Update, c: ContextTypes.DEFAULT_TYPE):
+    await c.bot.send_message(
+        chat_id=update.effective_chat.id,
+        text="TODO",
+        parse_mode=ParseMode.MARKDOWN,
+        disable_web_page_preview=True,
+    )
+
+
 def _delimit_markdown_entities(text: str) -> str:
     result = text
     for char in ("_", "*", "~"):
@@ -106,6 +115,7 @@ class PilgramBot(PilgramNotifier):
         self.__app = ApplicationBuilder().token(bot_token).build()
         self.__app.add_handler(CommandHandler("start", start))
         self.__app.add_handler(CommandHandler("info", info))
+        # self.__app.add_handler(CommandHandler("menu", menu))
         self.__app.add_handler(CommandHandler("privacy", privacy))
         self.__app.add_handler(CommandHandler("quit", self.quit))
         for command, args, _ in self.interpreter.commands_list:
@@ -123,6 +133,8 @@ class PilgramBot(PilgramNotifier):
             BotCommand("start", "start your adventure and show world lore"),
             BotCommand("info", "shows info about the bot & developer + useful links"),
             BotCommand("quit", "quits any ongoing process / minigame"),
+            BotCommand("privacy", "shows privacy & data handling information"),
+            # BotCommand("menu", "opens button menu"),
         ]
         commands.extend(
             [
