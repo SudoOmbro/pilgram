@@ -17,7 +17,6 @@ from telegram.ext import (
 from pilgram.classes import Player, Notification
 from pilgram.generics import PilgramNotifier
 from pilgram.globals import ContentMeta, GlobalSettings
-from pilgram.strings import Strings
 from pilgram.utils import TempIntCache, has_recently_accessed_cache, read_text_file
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter

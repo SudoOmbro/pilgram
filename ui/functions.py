@@ -624,14 +624,12 @@ def rank_tourney(context: UserContext) -> str:
 
 def send_message_to_player(context: UserContext, player_name: str) -> str:
     try:
-        message, player = __get_player_from_name(player_name)
-        if message:
-            return message
+        player = db().get_player_data(context.get("id"))
         if player.name == player_name:
             return Strings.no_self_message
-        target = db().get_player_from_name(player_name)
-        if not target:
-            return Strings.named_object_not_exist.format(obj="Player", name=player_name)
+        message, target = __get_player_from_name(player_name)
+        if message:
+            return message
         context.set("targets", [target.player_id])
         context.set("text", "{name} sent you a message:\n\n")
         context.start_process("message")
