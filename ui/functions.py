@@ -36,7 +36,7 @@ from pilgram.globals import (
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings
 from pilgram.utils import read_text_file
-from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg
+from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
 
@@ -1149,6 +1149,42 @@ def check_auction(context: UserContext, auction_id_str: str) -> str:
         return Strings.obj_does_not_exist.format(obj="Auction")
 
 
+def send_gift_to_player(context: UserContext, player_name: str, item_pos_str: str) -> str:
+    try:
+        # get player
+        player = db().get_player_data(context.get("id"))
+        # get recipient
+        message, recipient = __get_player_from_name(player_name)
+        if message:
+            return message
+        if recipient.name == player.name:
+            return Strings.no_self_gift
+        # get specified item
+        items = db().get_player_items(player.player_id)
+        item_pos = int(item_pos_str)
+        if item_pos > len(items):
+            return Strings.invalid_item
+        item = items[item_pos - 1]
+        if item in player.equipped_items.values():
+            return Strings.cannot_gift_equipped_item
+        # check if there is enough space
+        recipient_items = db().get_player_items(recipient.player_id)
+        if len(recipient_items) >= recipient.get_inventory_size():
+            return f"{recipient.name} does not have enough space for your item!"
+        # transfer item
+        db().update_item(item, recipient)
+        recipient_items.append(item)
+        items.pop(item_pos - 1)
+        # notify
+        db().create_and_add_notification(
+            recipient,
+            f"{player.name} gifted you a *{item.name}*!"
+        )
+        return f"successfully gifted *{item.name}* to {recipient.name}."
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -1156,8 +1192,8 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
         "zone": IFW([integer_arg("Zone number")], check_zone, "Describes a Zone."),
         "enemy": IFW([integer_arg("Zone number")], check_enemy, "Describes an Enemy."),
-        "guild": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild, "Shows guild."),
-        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], check_player, "Shows player stats."),
+        "guild": IFW([guild_arg("Guild")], check_guild, "Shows guild."),
+        "player": IFW([player_arg("player")], check_player, "Shows player stats."),
         "artifact": IFW([integer_arg("Artifact number")], check_artifact, "Describes an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
@@ -1167,7 +1203,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "auctions": IFW(None, check_auctions, "Shows all auctions."),
         "auction": IFW([integer_arg("Auction")], check_auction, "Show a specific auction."),
         "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
-        "members": IFW([RWE("Guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], check_guild_members, "Shows the members of the given guild"),
+        "members": IFW([guild_arg("Guild")], check_guild_members, "Shows the members of the given guild"),
         "item": IFW([integer_arg("Item")], check_item, "Shows the specified item stats"),
         "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
@@ -1177,7 +1213,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "guild": IFW(None, start_guild_creation, f"Create your own Guild (cost: {ContentMeta.get('guilds.creation_cost')} {MONEY})."),
         "auction": IFW([integer_arg("item"), integer_arg("Starting bid")], create_auction, "auctions the selected item."),
     },
-    "bid": IFW([integer_arg("Item"), integer_arg("Bid")], bid_on_auction, "bid on the selected auction."),
+    "bid": IFW([integer_arg("Auction id"), integer_arg("Bid")], bid_on_auction, "bid on the selected auction."),
     "upgrade": {
         "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
         "home": IFW(None, upgrade, "Upgrade your home.", default_args={"obj": "home"}),
@@ -1187,10 +1223,11 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "character": IFW(None, modify_player, "Modify your character (for a price).",),
         "guild": IFW(None, modify_guild, "Modify your guild (for a price).",)
     },
-    "join": IFW([RWE("guild name", GUILD_NAME_REGEX, Strings.guild_name_validation_error)], join_guild, "Join guild with the given name."),
+    "join": IFW([guild_arg("Guild")], join_guild, "Join guild with the given name."),
     "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
-    "kick": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], kick, "Kicks player from your own guild."),
-    "donate": IFW([RWE("recipient", PLAYER_NAME_REGEX, Strings.player_name_validation_error), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
+    "kick": IFW([player_arg("player")], kick, "Kicks player from your own guild."),
+    "donate": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
+    "gift": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player."),
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=1),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
@@ -1214,7 +1251,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "enchant": IFW([integer_arg("Item")], enchant_item, "Add a perk to an item from your inventory"),
     "consume": IFW([integer_arg("Item")], use_consumable, "Use an item in your satchel"),
     "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
-    "qte": IFW([RWE("Option number", POSITIVE_INTEGER_REGEX, "QTE options must be positive integers")], do_quick_time_event, "Do a quick time event"),
+    "qte": IFW([integer_arg("Option")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {
         "to": {

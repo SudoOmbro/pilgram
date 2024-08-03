@@ -40,7 +40,13 @@ ARTIFACTS_THRESHOLD = 15
 MAX_QUESTS_FOR_EVENTS = 600  # * 25 = 3000
 MAX_QUESTS_FOR_TOWN_EVENTS = MAX_QUESTS_FOR_EVENTS * 2
 
-NUM_MULT_LUT = {4: 2.5, 8: 2, 12: 1.5, 16: 1, 20: 0.75}
+NUM_MULT_LUT = {
+    4: 2,
+    8: 1.75,
+    12: 1.5,
+    16: 1.25,
+    20: 1
+}
 
 
 def _gain(xp: int, money: int, renown: int, tax: float = 0) -> str:

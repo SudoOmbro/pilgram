@@ -61,6 +61,7 @@ class Strings:
     write_your_message = "Write the message you want to send"
     message_sent = "Your message has been sent."
     no_self_message = "You can't send a message to yourself. Weirdo."
+    no_self_gift = "You can't send a gift to yourself. Weirdo."
 
     # upgrade
     you_paid = f"you paid {{paid}} {MONEY}."
@@ -214,6 +215,7 @@ class Strings:
     item_bought = f"You bought '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
     cannot_sell_equipped_item = "You can't sell an equipped item!"
+    cannot_gift_equipped_item = "You can't gift an equipped item!"
     cannot_shop_on_a_quest = "You cannot shop while on a quest!"
     item_rerolled = F"You paid {{amount}} {MONEY} to reroll {{old_name}} into:"
     item_enchanted = "You used 1 artifact piece to enchant:"
@@ -274,7 +276,7 @@ class Strings:
     multiple_matches_found = "Multiple {obj}s found for your input, use correct casing."
 
     @classmethod
-    def get_item_icon(cls, item_slot) -> str:
+    def get_item_icon(cls, item_slot: int) -> str:
         return {
             Slots.PRIMARY: "🗡️",
             Slots.SECONDARY: "🛡️",

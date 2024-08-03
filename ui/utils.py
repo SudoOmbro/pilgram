@@ -2,7 +2,7 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from pilgram.globals import POSITIVE_INTEGER_REGEX
+from pilgram.globals import POSITIVE_INTEGER_REGEX, PLAYER_NAME_REGEX, GUILD_NAME_REGEX
 from pilgram.strings import Strings
 from pilgram.utils import PathDict
 
@@ -107,6 +107,14 @@ class RegexWithErrorMessage:
 
 def integer_arg(arg_name: str) -> RegexWithErrorMessage:
     return RegexWithErrorMessage(arg_name, POSITIVE_INTEGER_REGEX, Strings.obj_number_error.format(obj=arg_name))
+
+
+def player_arg(arg_name: str) -> RegexWithErrorMessage:
+    return RegexWithErrorMessage(arg_name, PLAYER_NAME_REGEX, Strings.player_name_validation_error)
+
+
+def guild_arg(arg_name: str) -> RegexWithErrorMessage:
+    return RegexWithErrorMessage(arg_name, GUILD_NAME_REGEX, Strings.guild_name_validation_error)
 
 
 class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too long
