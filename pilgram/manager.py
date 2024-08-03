@@ -611,14 +611,6 @@ class TimedUpdatesManager(Manager):
                 )
                 sleep(1)
             else:
-                self.db().create_and_add_notification(
-                    auction.auctioneer,
-                    f"Your auctioned item '{auction.item.name}' has been bought by {auction.best_bidder} for {auction.best_bid} {MONEY}.",
-                )
-                self.db().create_and_add_notification(
-                    auction.best_bidder,
-                    f"You won the auction for item '{auction.item.name}', you paid {auction.best_bid} {MONEY}.",
-                )
                 # handle money transfer
                 auction.best_bidder.money -= auction.best_bid
                 auction.auctioneer.add_money(auction.best_bid)
@@ -630,8 +622,18 @@ class TimedUpdatesManager(Manager):
                     auction.auctioneer.player_id
                 )
                 winner_items = self.db().get_player_items(auction.best_bidder.player_id)
-                auctioneer_items.remove(auction.item)
+                if auction.item in auctioneer_items:
+                    auctioneer_items.remove(auction.item)
                 winner_items.append(auction.item)
+                # notify
+                self.db().create_and_add_notification(
+                    auction.auctioneer,
+                    f"Your auctioned item '{auction.item.name}' has been bought by {auction.best_bidder.name} for {auction.best_bid} {MONEY}.",
+                )
+                self.db().create_and_add_notification(
+                    auction.best_bidder,
+                    f"You won the auction for item '{auction.item.name}', you paid {auction.best_bid} {MONEY}.",
+                )
                 # wait a couple of seconds since you just sent 2 messages
                 sleep(2)
             # delete the auction from the database
