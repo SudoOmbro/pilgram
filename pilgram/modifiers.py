@@ -650,7 +650,7 @@ class BloodThirst(Modifier, rarity=Rarity.RARE):
         entity.modify_hp(self.strength, overheal=True)
         self.write_to_log(
             context,
-            f"{entity.get_name()}'s blood thirst heals them for {entity.hp} HP ({entity.get_hp_string()}).",
+            f"{entity.get_name()}'s blood thirst heals them for {self.strength} HP ({entity.get_hp_string()}).",
         )
 
 
