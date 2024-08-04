@@ -1204,6 +1204,47 @@
       "fire": 35
     },
     "value": 150
+  }, {
+    "id": 62,
+    "name": "Knife",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 1
+    },
+    "value": 4
+  }, {
+    "id": 63,
+    "name": "Brass Knuckles",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 0,
+    "damage": {
+      "blunt": 1
+    },
+    "value": 3
+  }, {
+    "id": 64,
+    "name": "Fire bombs",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 6,
+    "damage": {
+      "blunt": 1,
+      "fire": 5
+    },
+    "value": 10
+  }, {
+    "id": 65,
+    "name": "Cane",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "blunt": 2
+    },
+    "value": 6
   }],
   "consumables": [{
     "id": 0,
