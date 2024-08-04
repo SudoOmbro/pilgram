@@ -1356,7 +1356,7 @@ class Enemy(CombatActor):
 
     def get_level(self) -> int:
         value = self.meta.zone.level + self.level_modifier
-        return max(0, value)
+        return max(1, value)
 
     def get_base_max_hp(self) -> int:
         return (20 + self.level_modifier) * self.meta.zone.level
