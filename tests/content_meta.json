@@ -141,6 +141,21 @@
       "description": "Bless someone of your choosing, they will have an advantage finishing their next quest. Send the name after 'bless'. Triple the effect if you use 100 power.",
       "power": 50,
       "args": 1
+    },
+    "heal": {
+      "name": "Eldritch Healing",
+      "description": "Heal yourself for [power used]% HP.",
+      "power": 10
+    },
+    "might": {
+      "name": "Eldritch Might",
+      "description": "Be much stronger in the next combat.\nEffect scales with amount of power used (30 for 1.5x, 60 for 2x, 90 for 2.5x).",
+      "power": 30
+    },
+    "swift": {
+      "name": "Eldritch Swiftness",
+      "description": "Be much faster in the next combat, ignore weight.\nEffect scales with amount of power used (30 for -15 kg, 60 for -30 kg, 90 for -45 kg).",
+      "power": 30
     }
   },
   "quick time events": [{
@@ -324,7 +339,7 @@
     "modifiers": {
       "can_meet_players": false,
       "power_bonus": 10,
-      "passive_regeneration": 2,
+      "passive_regeneration": 5,
       "damage": {
         "occult": 5
       },
@@ -436,7 +451,8 @@
         "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2],
         "qte_frequency_bonus": [-2, -1, 0, 1, 2],
         "hp_bonus": [-6, -3, 0, 3, 6],
-        "discovery_bonus": [-1, 0, 1]
+        "discovery_bonus": [-1, 0, 1],
+        "combat_rewards_multiplier": [0.5, 1.0, 1.5]
       }
     }
   }, {
@@ -480,6 +496,25 @@
       "passive_regeneration": -1,
       "damage": {
         "pierce": 1,
+        "occult": 1
+      }
+    }
+  }, {
+    "id": 13,
+    "name": "Church of Purity",
+    "description": "Members believe in the purity of the human race and are hellbent on eradicating all manners of monsters & abominations.",
+    "modifiers": {
+      "quest_time_multiplier": 1.2,
+      "hp_mult": 1.2,
+      "combat_rewards_multiplier": 1.5,
+      "event_money_mult": 0.5,
+      "quest_money_mult": 0.5,
+      "event_xp_mult": 0.5,
+      "quest_xp_mult": 0.5,
+      "damage": {
+        "fire": 1
+      },
+      "resistance": {
         "occult": 1
       }
     }
