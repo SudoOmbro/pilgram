@@ -428,7 +428,7 @@ class ElectricDefendBonus(
 
 
 class FirstHitBonus(Modifier, rarity=Rarity.UNCOMMON):
-    TYPE = ModifierType.PRE_ATTACK
+    TYPE = ModifierType.MID_ATTACK
 
     MAX_STRENGTH = 0
     SCALING = 0.5
@@ -845,10 +845,54 @@ class EldritchSynergy(Modifier, rarity=Rarity.LEGENDARY):
         damage: cc.Damage = context.get("damage")
         if isinstance(entity, classes.Player):
             if entity.artifacts:
-                return damage.scale(1 + ((self.strength / 100) * len(entity.artifacts)))
+                return damage.scale(1 + (self.get_fstrength() * len(entity.artifacts)))
         else:
             return damage.scale(1.5)
         return damage
+
+
+class Dread(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.TURN_START
+
+    MAX_STRENGTH = 0
+    MIN_STRENGTH = 1
+    SCALING = 1.5
+
+    NAME = "Dread Aura"
+    DESCRIPTION = "Deal {str} damage at the start of your turn"
+
+    def function(self, context: ModifierContext) -> Any:
+        opponent: cc.CombatActor = context.get("opponent")
+        opponent.modify_hp(-self.strength)
+        self.write_to_log(context, f"{opponent.get_name()} takes {self.strength} Dread damage. ({opponent.get_hp_string()})")
+
+
+class Akimbo(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 50
+    SCALING = 2
+
+    NAME = "Akimbo"
+    DESCRIPTION = "Deal {str}% more damage if you have weapons in both primary & secondary slots"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        attacker: cc.CombatActor = context.get("supplier")
+        if isinstance(attacker, classes.Player):
+            secondary = attacker.equipped_items.get(equipment.Slots.SECONDARY, None)
+            if (
+                (secondary is not None)
+                and secondary.equipment_type.is_weapon
+            ):
+                return damage.scale(1 + (self.get_fstrength()))
+        else:
+            return damage.scale(1.2)
+        return damage
+
+
+class OccultAbsorb(_GenericDamageAbsorb, dmg_type="occult"):
+    pass
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end

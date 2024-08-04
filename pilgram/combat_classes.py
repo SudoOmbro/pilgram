@@ -495,13 +495,18 @@ class CombatContainer:
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])
                 elif action_id == CombatActions.dodge:
-                    factor = actor.get_delay() / 100
-                    if factor > 0.9:
-                        factor = 0.9
-                    self.resist_scale[actor] = factor
-                    self.write_to_log(
-                        f"{actor.get_name()} dodges (next dmg taken -{100 - int(factor * 100)}%)."
-                    )
+                    if self.resist_scale[actor] < 1.0:
+                        # if actor is already dodging then attack
+                        self._attack(actor, opponents[i])
+                    else:
+                        # if actor isn't already dodging then dodge
+                        factor = actor.get_delay() / 100
+                        if factor > 0.9:
+                            factor = 0.9
+                        self.resist_scale[actor] = factor
+                        self.write_to_log(
+                            f"{actor.get_name()} dodges (next dmg taken -{100 - int(factor * 100)}%)."
+                        )
                 elif action_id == CombatActions.charge_attack:
                     self.damage_scale[actor] *= 1.5
                     self.write_to_log(
