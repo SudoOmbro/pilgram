@@ -134,10 +134,10 @@ def __bless(caster: Player, args: list[str]) -> str:
 
 @__add_to_spell_list("heal")
 def __eldritch_healing(caster: Player, args: list[str]) -> str:
-    amount = caster.get_spell_charge()
+    amount = int(caster.get_max_hp() * (caster.get_spell_charge() / 100))
     # we don't need to save the player data, it will be done automatically later
     caster.modify_hp(amount)
-    return f"You gain {amount * caster.get_max_hp()} HP ({caster.get_hp_string()})."
+    return f"You gain {amount} HP ({caster.get_hp_string()})."
 
 
 @__add_to_spell_list("might")
