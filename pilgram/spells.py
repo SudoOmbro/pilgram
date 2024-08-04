@@ -13,6 +13,12 @@ from pilgram.flags import (
     HexedFlag,
     LuckFlag1,
     LuckFlag2,
+    MightBuff1,
+    MightBuff2,
+    MightBuff3,
+    SwiftBuff1,
+    SwiftBuff2,
+    SwiftBuff3,
 )
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta
@@ -34,6 +40,7 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
             ContentMeta.get(f"spells.{spell_short_name}.args", default=0),
             func,
         )
+        print(f"spell {spell_short_name} registered")
         return func
 
     return decorator
@@ -123,3 +130,37 @@ def __bless(caster: Player, args: list[str]) -> str:
     target.set_flag(LuckFlag1)
     _db().update_player_data(target)
     return f"You blessed (1) {target.name}."
+
+
+@__add_to_spell_list("heal")
+def __eldritch_healing(caster: Player, args: list[str]) -> str:
+    amount = caster.get_spell_charge()
+    # we don't need to save the player data, it will be done automatically later
+    caster.modify_hp(amount)
+    return f"You gain {amount * caster.get_max_hp()} HP ({caster.get_hp_string()})."
+
+
+@__add_to_spell_list("might")
+def __eldritch_might(caster: Player, args: list[str]) -> str:
+    amount = caster.get_spell_charge()
+    if amount >= 30:
+        caster.set_flag(MightBuff1)
+    if amount >= 60:
+        caster.set_flag(MightBuff2)
+    if amount >= 90:
+        caster.set_flag(MightBuff3)
+    # we don't need to save the player data, it will be done automatically later
+    return f"You feel stronger ({int(amount / 30)}x)."
+
+
+@__add_to_spell_list("swift")
+def __eldritch_swiftness(caster: Player, args: list[str]) -> str:
+    amount = caster.get_spell_charge()
+    if amount >= 30:
+        caster.set_flag(SwiftBuff1)
+    if amount >= 60:
+        caster.set_flag(SwiftBuff2)
+    if amount >= 90:
+        caster.set_flag(SwiftBuff3)
+    # we don't need to save the player data, it will be done automatically later
+    return f"You feel faster ({int(amount / 30)}x)."

@@ -186,4 +186,7 @@ Note that forcing combat gives you increasingly strong enemies the closer you ge
 Consumable items are important for restoring your HP during quests, boosting your damage or even reviving you.
 You can check out the dailiy items on sale at the market & buy them there. Note that you can hold a maximum of 10 consumables.
 
-Remember to bring plenty of healing items on quests as HP does NOT automatically regenerate until you get back to Town!
+Remember to bring plenty of healing items on quests as HP automatically regenerates very slowly!
+
+♦️♦️*Auctions*♦️♦️
+The auctions house is available in town, use it to auction your powerful items or bid on other player's powerful items.

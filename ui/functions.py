@@ -711,7 +711,7 @@ def __list_spells() -> str:
 
 
 def list_cults(context: UserContext) -> str:
-    return Strings.list_cults + "\n\n".join(str(x) for x in Cult.LIST)
+    return "\n".join(str(x) for x in Cult.LIST[1:])
 
 
 def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:

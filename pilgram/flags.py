@@ -94,6 +94,30 @@ class ForcedCombat(Flag):
     pass
 
 
+class MightBuff1(Flag):
+    pass
+
+
+class MightBuff2(Flag):
+    pass
+
+
+class MightBuff3(Flag):
+    pass
+
+
+class SwiftBuff1(Flag):
+    pass
+
+
+class SwiftBuff2(Flag):
+    pass
+
+
+class SwiftBuff3(Flag):
+    pass
+
+
 BUFF_FLAGS: tuple[type[Flag], ...] = (
     StrengthBuff,
     OccultBuff,
@@ -101,4 +125,10 @@ BUFF_FLAGS: tuple[type[Flag], ...] = (
     IceBuff,
     AcidBuff,
     ElectricBuff,
+    MightBuff1,
+    MightBuff2,
+    MightBuff3,
+    SwiftBuff1,
+    SwiftBuff2,
+    SwiftBuff3,
 )

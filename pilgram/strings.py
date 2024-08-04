@@ -130,7 +130,7 @@ class Strings:
     qte_failed = "You failed the QTE!"
 
     # cults
-    choose_cult = "Send the number of the cult you want to join."
+    choose_cult = "Send the number of the cult you want to join. Send 0 to stay of of cults.\n"
     cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist."
     list_cults = "Here are all the existing cults:\n\n"
     modifier_names: dict[str, str] = {
@@ -162,6 +162,7 @@ class Strings:
         "discovery_bonus": "Item discovery bonus",
         "lick_wounds": "Animal instincts",
         "passive_regeneration": "Passive HP regeneration",
+        "combat_rewards_multiplier": "Combat rewards"
     }
     you_can_choose_a_cult = "You tried some quests at this point, how about you join a cult now? Use the `cults` commands to see them all and then if you want edit your character to choose one."
 

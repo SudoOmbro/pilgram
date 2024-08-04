@@ -29,6 +29,12 @@ from pilgram.flags import (
     LuckFlag2,
     OccultBuff,
     StrengthBuff,
+    MightBuff1,
+    MightBuff2,
+    MightBuff3,
+    SwiftBuff1,
+    SwiftBuff2,
+    SwiftBuff3,
 )
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
@@ -529,6 +535,10 @@ class Player(CombatActor):
         return charge
 
     def set_flag(self, flag: type[Flag]) -> None:
+        """
+
+        :rtype: object
+        """
         self.flags = flag.set(self.flags)
 
     def unset_flag(self, flag: type[Flag]) -> None:
@@ -575,6 +585,12 @@ class Player(CombatActor):
             base_damage = base_damage.scale_single_value("freeze", 2)
         if ElectricBuff.is_set(self.flags):
             base_damage = base_damage.scale_single_value("electric", 2)
+        spell_buff = (
+            int(MightBuff1.is_set(self.flags)) +
+            int(MightBuff2.is_set(self.flags)) +
+            int(MightBuff3.is_set(self.flags))
+        )
+        base_damage = base_damage.scale(1 + (0.5 * spell_buff))
         return base_damage
 
     def get_base_attack_resistance(self) -> Damage:
@@ -647,7 +663,13 @@ class Player(CombatActor):
         value = 0
         for item in self.equipped_items.values():
             value += item.equipment_type.delay
-        return value
+        spell_buff = (
+            int(SwiftBuff1.is_set(self.flags)) +
+            int(SwiftBuff2.is_set(self.flags)) +
+            int(SwiftBuff3.is_set(self.flags))
+        )
+        value -= (spell_buff * 15)
+        return value if value > 0 else 0
 
     STANCE_POOL = {
         "b": (
@@ -1171,6 +1193,7 @@ class Cult(Listable["Cult"], meta_name="cults"):
         self.discovery_bonus: int = modifiers.get("discovery_bonus", 0)
         self.lick_wounds: bool = modifiers.get("lick_wounds", False)
         self.passive_regeneration: int = modifiers.get("passive_regeneration", 0)
+        self.combat_rewards_multiplier: float = modifiers.get("combat_rewards_multiplier", 1.0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:
@@ -1385,7 +1408,7 @@ class Enemy(CombatActor):
 
     def get_rewards(self, player: Player) -> tuple[int, int]:
         level = self.get_level()
-        multiplier = 40
+        multiplier = int(40 * player.cult.combat_rewards_multiplier)
         if level > player.level:
             multiplier += 5 * (level - player.level)
         return multiplier * level, multiplier * level

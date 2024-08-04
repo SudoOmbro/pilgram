@@ -9,7 +9,7 @@ from pilgram.classes import (
     Quest,
     QuickTimeEvent,
     Zone,
-    ZoneEvent,
+    ZoneEvent, Cult,
 )
 from pilgram.combat_classes import CombatContainer, Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
@@ -66,6 +66,18 @@ class TestClasses(unittest.TestCase):
         zone = Zone(0, "test", 5, "test", Damage.get_empty(), Damage.get_empty(), {})
         quest = Quest(0, zone, 0, "test", "", "", "")
         self.assertEqual(quest.get_rewards(player), (4250, 3000))
+
+    def test_quest_duration(self):
+        player = Player.create_default(0, "test", "")
+        zone = Zone(0, "test", 1, "test", Damage.get_empty(), Damage.get_empty(), {})
+        quest = Quest(0, zone, 3, "test", "", "", "")
+        player.cult = Cult.get(0)
+        duration_long = quest.get_duration(player)
+        print(duration_long)
+        player.cult = Cult.get(11)
+        duration_short = quest.get_duration(player)
+        print(duration_short)
+        self.assertTrue(duration_long > duration_short)
 
     def test_zone_events(self):
         player = Player.create_default(0, "test", "")

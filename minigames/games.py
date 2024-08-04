@@ -285,7 +285,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         if code == 2:
             message = "You hit a trap!"
             if self.hp < 1:
-                return self.lose("You hit too many traps. Just as you feel your life slipping away you are ejected from the illusion, bruised and bleeding but in one piece.")
+                return self.lose("You hit too many traps. Just as you feel your life slipping away you are ejected from the illusion, bruised but in one piece.")
         elif code == 3:
             return self.win(print_maze(self.maze) + "\n\nYou manage to find the treasure hidden in the illusion.")
         self.remaining_turns -= 1
@@ -294,7 +294,7 @@ class MazeMinigame(PilgramMinigame, game="illusion"):
         return f"{message}\n\n{self.turn_text()}"
 
     def get_rewards(self) -> tuple[int, int]:
-        multiplier = self.difficulty + self.hp
+        multiplier = (2 * self.difficulty) + self.hp
         bonus = self.remaining_turns
         # return (self.XP_REWARD * multiplier + bonus), (self.MONEY_REWARD * multiplier + bonus)
         return -1, (self.MONEY_REWARD * multiplier + bonus)
