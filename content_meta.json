@@ -1245,6 +1245,33 @@
       "blunt": 2
     },
     "value": 6
+  }, {
+    "id": 66,
+    "name": "Buckler",
+    "slot": "secondary",
+    "class": "shield",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1
+    },
+    "value": 12
+  }, {
+    "id": 66,
+    "name": "Dueling shield",
+    "slot": "secondary",
+    "class": "shield",
+    "weapon": false,
+    "delay": 15,
+    "resist": {
+      "slash": 3,
+      "pierce": 3
+    },
+    "damage": {
+      "pierce": 5,
+      "blunt": 1
+    },
+    "value": 30
   }],
   "consumables": [{
     "id": 0,

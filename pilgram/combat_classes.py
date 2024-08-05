@@ -55,14 +55,14 @@ class Damage:
             new_result = modifier.apply(
                 m.ModifierContext(
                     {
-                        "damage": self,
+                        "damage": result,
                         "supplier": supplier,
                         "other": other,
                         "context": combat_context,
                     }
                 )
             )
-            if new_result:
+            if new_result is not None:
                 result = new_result
         return result
 

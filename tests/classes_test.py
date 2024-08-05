@@ -110,6 +110,7 @@ class TestClasses(unittest.TestCase):
         player = Player.create_default(0, "Ombro", "")
         player.level = 14
         player.gear_level = 13
+        player.stance = "a"
         # setup zone
         zone = Zone(
             1,
@@ -117,32 +118,36 @@ class TestClasses(unittest.TestCase):
             15,
             "AAAA",
             Damage(2, 2, 1, 0, 0, 0, 0, 0),
-            Damage(2, 2, 0, 0, 0, 0, 0, 0),
+            Damage(0, 2, 0, 0, 0, 0, 0, 0),
             {}
         )
         # setup equipment
-        player.equip_item(_generate_equipment(
+        weapon = _generate_equipment(
             player,
             EquipmentType.get(0),  # longsword
             [
-                get_modifier_from_name("Vampiric", 1),
-                get_modifier_from_name("Poison Tipped", 1)
+                get_modifier_from_name("Vampiric", 2),
             ]
-        ))
+        )
+        weapon.damage = Damage.load_from_json({"slash": 50})
+        player.equip_item(weapon)
         player.equip_item(_generate_equipment(
             player,
             EquipmentType.get(21),  # Lorica segmentata
-            [get_modifier_from_name("Thorns", 3)]
+            []
         ))
         player.equip_item(_generate_equipment(
             player,
-            EquipmentType.get(48),  # Claws
-            []
+            EquipmentType.get(66),  # Buckler
+            [
+                get_modifier_from_name("Slash Optimized", 25),
+                get_modifier_from_name("Slash Affinity", 50)
+            ]
         )),
         player.equip_item(_generate_equipment(
             player,
             EquipmentType.get(44),  # Hood
-            []
+            [get_modifier_from_name("Slash Optimized", 25)]
         ))
         # setup player satchel
         player.satchel = [ConsumableItem.get(15), ConsumableItem.get(7), ConsumableItem.get(6), ConsumableItem.get(5), ConsumableItem.get(13)]

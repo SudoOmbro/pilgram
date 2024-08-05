@@ -178,6 +178,8 @@ class _GenericDamageBonus(Modifier):
     MIN_STRENGTH = 1
     SCALING = 2
 
+    OP_ORDERING = 1
+
     DESCRIPTION = "DAMAGE WHAT +{str}"
     DAMAGE_TYPE: str
 
@@ -428,7 +430,8 @@ class ElectricDefendBonus(
 
 
 class FirstHitBonus(Modifier, rarity=Rarity.UNCOMMON):
-    TYPE = ModifierType.MID_ATTACK
+    TYPE = ModifierType.PRE_ATTACK
+    OP_ORDERING = 1
 
     MAX_STRENGTH = 0
     SCALING = 0.5
