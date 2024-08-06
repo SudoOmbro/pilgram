@@ -1359,13 +1359,13 @@ class Enemy(CombatActor):
         return max(1, value)
 
     def get_base_max_hp(self) -> int:
-        return (20 + self.level_modifier) * self.meta.zone.level
+        return (24 + self.level_modifier) * self.meta.zone.level
 
     def get_base_attack_damage(self) -> Damage:
-        return self.meta.zone.damage_modifiers.scale(self.get_level()).apply_bonus(self.meta.zone.level)
+        return self.meta.zone.damage_modifiers.scale(1 + self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_base_attack_resistance(self) -> Damage:
-        return self.meta.zone.resist_modifiers.scale(self.get_level()).apply_bonus(self.meta.zone.level)
+        return self.meta.zone.resist_modifiers.scale(1 + self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
         if not type_filters:

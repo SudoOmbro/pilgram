@@ -139,6 +139,7 @@ class QuestManager(Manager):
     def create_shade(self, player: Player, zone: Zone | None) -> None:
         if zone is None:
             return
+        log.info(f"creating shade of player {player.name} in {zone.zone_name}")
         if self.player_shades.get(zone.zone_id, None) is None:
             self.player_shades[zone.zone_id] = []
         shade: Player = deepcopy(player)
@@ -329,9 +330,9 @@ class QuestManager(Manager):
                 text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(name=ac.quest.name)
             else:
                 text += f"\n\n{Strings.shade_loss}" + Strings.quest_fail.format(name=ac.quest.name)
+            self.create_shade(player, ac.zone())
             ac.quest = None
             player.hp_percent = 1.0
-            self.create_shade(player, ac.zone())
         else:
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
             xp, money = enemy.get_rewards(player)
