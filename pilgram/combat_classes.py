@@ -357,6 +357,13 @@ class CombatActor(ABC):
     def is_dead(self) -> bool:
         return self.hp <= 0
 
+    def get_rewards(self, player: c.Player) -> tuple[int, int]:
+        level = self.get_level()
+        multiplier = int(40 * player.cult.combat_rewards_multiplier)
+        if level > player.level:
+            multiplier += 5 * (level - player.level)
+        return multiplier * level, multiplier * level
+
 
 class CombatContainer:
     def __init__(

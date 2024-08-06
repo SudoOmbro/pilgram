@@ -1406,13 +1406,6 @@ class Enemy(CombatActor):
             )
         )
 
-    def get_rewards(self, player: Player) -> tuple[int, int]:
-        level = self.get_level()
-        multiplier = int(40 * player.cult.combat_rewards_multiplier)
-        if level > player.level:
-            multiplier += 5 * (level - player.level)
-        return multiplier * level, multiplier * level
-
     def __str__(self) -> str:
         return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"
 

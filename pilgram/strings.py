@@ -255,6 +255,8 @@ class Strings:
     }
     stance_switch = "Stance switched to "
     force_combat = "You hunt for something strong to kill..."
+    shade_win = "The shade crumbles and dissolves into nothingness."
+    shade_loss = "The shade absorbs you into it's mass."
 
     # artifacts
     max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."

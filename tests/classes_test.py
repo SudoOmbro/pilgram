@@ -1,5 +1,6 @@
 import time
 import unittest
+from copy import deepcopy
 from random import randint
 
 from pilgram.classes import (
@@ -127,6 +128,7 @@ class TestClasses(unittest.TestCase):
             EquipmentType.get(0),  # longsword
             [
                 get_modifier_from_name("Vampiric", 2),
+                get_modifier_from_name("Sneak attack", 5)
             ]
         )
         weapon.damage = Damage.load_from_json({"slash": 50})
@@ -163,6 +165,9 @@ class TestClasses(unittest.TestCase):
             ],
             2
         )
+        # use to test PvP
+        enemy_player = deepcopy(player)
+        enemy_player.name = "Liquid Ombro"
         # create & do fight
         combat = CombatContainer([player, enemy], {player: None, enemy: None})
         result = combat.fight()

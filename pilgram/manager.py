@@ -4,6 +4,7 @@ import os
 import random
 import time
 from abc import ABC
+from copy import deepcopy
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Self
@@ -133,6 +134,16 @@ class QuestManager(Manager):
         self.update_interval = update_interval
         self.highest_quests = _HighestQuests.load_from_file()
         self.updates_per_second = 1 / updates_per_second
+        self.player_shades: dict[int, list[Player]] = {}
+
+    def create_shade(self, player: Player, zone: Zone | None) -> None:
+        if zone is None:
+            return
+        if self.player_shades.get(zone.zone_id, None) is None:
+            self.player_shades[zone.zone_id] = []
+        shade: Player = deepcopy(player)
+        shade.name = player.name + "'s Shade"
+        self.player_shades[zone.zone_id].append(shade)
 
     def _complete_quest(self, ac: AdventureContainer) -> None:
         quest: Quest = ac.quest
@@ -187,6 +198,7 @@ class QuestManager(Manager):
                 + (Strings.piece_found if piece else ""),
             )
         else:
+            self.create_shade(player, ac.zone())
             self.db().create_and_add_notification(
                 player,
                 quest.failure_text
@@ -285,42 +297,52 @@ class QuestManager(Manager):
             ):
                 helper = update.player
                 break
-        modifiers: list[Modifier] = []
-        enemy_level_modifier: int = ac.quest.number
-        if ForcedCombat.is_set(player.flags):
-            days_left = (ac.finish_time - datetime.now()).days
-            enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
-            for _ in range(2):
-                choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
-                modifier_type: type[Modifier] = random.choice(choice_list)
+        if not self.player_shades.get(ac.zone().zone_id, None):
+            # if there are no shades to fight then generate an enemy
+            modifiers: list[Modifier] = []
+            enemy_level_modifier: int = ac.quest.number
+            if ForcedCombat.is_set(player.flags):
+                days_left = (ac.finish_time - datetime.now()).days
+                enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
+                for _ in range(2):
+                    choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
+                    modifier_type: type[Modifier] = random.choice(choice_list)
+                    modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))
+            elif random.randint(1, 100) < 20:  # 20% chance of randomly getting a monster with a modifier
+                modifier_type: type[Modifier] = random.choice(get_all_modifiers())
                 modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))
-        elif random.randint(1, 100) < 20:  # 20% chance of randomly getting a monster with a modifier
-            modifier_type: type[Modifier] = random.choice(get_all_modifiers())
-            modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))
-        enemy = Enemy(
-            self.db().get_random_enemy_meta(ac.quest.zone),
-            modifiers,
-            enemy_level_modifier
-        )
+            enemy = Enemy(
+                self.db().get_random_enemy_meta(ac.quest.zone),
+                modifiers,
+                enemy_level_modifier
+            )
+        else:
+            # fight a shade
+            enemy = self.player_shades[ac.zone().zone_id].pop(0)
         combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = "Combat starts!\n\n" + combat.fight()
         if player.is_dead():
             log.info(
                 f"Player '{player.name}' died in combat against a {enemy.meta.name}"
             )
-            text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(
-                name=ac.quest.name
-            )
+            if isinstance(enemy, Enemy):
+                text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(name=ac.quest.name)
+            else:
+                text += f"\n\n{Strings.shade_loss}" + Strings.quest_fail.format(name=ac.quest.name)
             ac.quest = None
             player.hp_percent = 1.0
+            self.create_shade(player, ac.zone())
         else:
-            log.info(f"Player '{player.name}' won against a {enemy.meta.name}")
+            log.info(f"Player '{player.name}' won against {enemy.get_name()}")
             xp, money = enemy.get_rewards(player)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             player.add_xp(xp)
             player.renown += renown
             money_am = player.add_money(money)
-            text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
+            if isinstance(enemy, Enemy):
+                text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
+            else:
+                text += f"\n\n{Strings.shade_win}{_gain(xp, money_am, renown)}"
             # more rewards if combat was forced
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5
