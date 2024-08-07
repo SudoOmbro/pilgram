@@ -323,13 +323,12 @@ class QuestManager(Manager):
         combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = "Combat starts!\n\n" + combat.fight()
         if player.is_dead():
-            log.info(
-                f"Player '{player.name}' died in combat against a {enemy.meta.name}"
-            )
             if isinstance(enemy, Enemy):
                 text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(name=ac.quest.name)
+                log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
             else:
                 text += f"\n\n{Strings.shade_loss}" + Strings.quest_fail.format(name=ac.quest.name)
+                log.info(f"Player '{player.name}' died in combat against a shade of {enemy.name}")
             self.create_shade(player, ac.zone())
             ac.quest = None
             player.hp_percent = 1.0
