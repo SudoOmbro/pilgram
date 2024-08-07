@@ -981,3 +981,29 @@ class PilgramORMDatabase(PilgramDatabase):
     @_thread_safe()
     def add_notification(self, notification: Notification) -> None:
         _NOTIFICATIONS_LIST.append(notification)
+
+    _DUEL_INVITES: dict[int, list[int]] = {}
+    # I can't be bothered to make these persistent, if the bot is turned off they disappear. Just invite again :)
+
+    # duels ----
+
+    def add_duel_invite(self, sender: Player, target: Player):
+        if self._DUEL_INVITES.get(sender.player_id, None) is None:
+            self._DUEL_INVITES[sender.player_id] = []
+        if target.player_id not in self._DUEL_INVITES[sender.player_id]:
+            self._DUEL_INVITES[sender.player_id].append(target.player_id)
+
+    def delete_duel_invite(self, sender: Player, target: Player):
+        if self._DUEL_INVITES.get(sender.player_id, None) is None:
+            return
+        if target.player_id in self._DUEL_INVITES[sender.player_id]:
+            self._DUEL_INVITES[sender.player_id].remove(target.player_id)
+        if len(self._DUEL_INVITES[sender.player_id]) == 0:
+            del self._DUEL_INVITES[sender.player_id]  # save memory
+
+    def duel_invite_exists(self, sender: Player, target: Player) -> bool:
+        if self._DUEL_INVITES.get(sender.player_id, None) is None:
+            return False
+        if target.player_id in self._DUEL_INVITES[sender.player_id]:
+            return True
+        return False

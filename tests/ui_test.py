@@ -9,6 +9,13 @@ from ui.utils import UserContext, reconstruct_delimited_arguments
 interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
 
 
+def create_character(character_id: int, name: str):
+    context = UserContext({"id": character_id})
+    interpreter.context_aware_execute(context, "create character")
+    interpreter.context_aware_execute(context, name)
+    interpreter.context_aware_execute(context, "Really cool guy")
+
+
 class TestUi(unittest.TestCase):
 
     def test_reconstruct_delimited_arguments(self):
@@ -55,3 +62,18 @@ class TestUi(unittest.TestCase):
         time1 = timeit(lambda: interpreter.context_aware_execute(user_context, "help"))
         time2 = timeit(lambda: interpreter.context_aware_execute(user_context, "help"))
         self.assertTrue(time1 > time2)
+
+    def test_duels(self):
+        p1_context = UserContext({"id": 1})
+        p2_context = UserContext({"id": 2})
+        create_character(1, "Ombro")
+        create_character(2, "Cremino")
+        result = interpreter.context_aware_execute(p1_context, "duel reject cremino")
+        print(result)
+        result = interpreter.context_aware_execute(p1_context, "duel invite aaa")
+        print(result)
+        result = interpreter.context_aware_execute(p1_context, "duel invite cremino")
+        print(result)
+        result = interpreter.context_aware_execute(p2_context, "duel accept ombro")
+        print(result)
+

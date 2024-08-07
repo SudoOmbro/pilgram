@@ -20,6 +20,7 @@ from pilgram.classes import (
     SpellError,
     Zone,
 )
+from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat
 from pilgram.generics import AlreadyExists, PilgramDatabase
@@ -785,7 +786,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
                 message += f"\n\nYou gain {xp} xp & {money} {MONEY}."
             else:
                 items = db().get_player_items(player.player_id)
-                item = Equipment.generate(player.level, EquipmentType.get_random(), random.randint(0, 3))
+                item = Equipment.generate(player.level, EquipmentType.get_random(), random.choice((0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3)))
                 message += f"\n\nYou gain {money} {MONEY} & find *{item.name}*."
                 if len(items) >= player.get_inventory_size():
                     message += " You leave the item there since you don't have space in your inventory."
@@ -1183,6 +1184,89 @@ def send_gift_to_player(context: UserContext, player_name: str, item_pos_str: st
         return Strings.no_character_yet
 
 
+def duel_invite(context: UserContext, player_name: str) -> str:
+    try:
+        # get player
+        player = db().get_player_data(context.get("id"))
+        # get target
+        message, target = __get_player_from_name(player_name)
+        if message:
+            return message
+        if target.name == player.name:
+            return Strings.no_self_duel
+        db().add_duel_invite(player, target)
+        return Strings.duel_invite_sent.format(name=target.name)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def duel_accept(context: UserContext, player_name: str) -> str:
+    try:
+        # get player
+        player = db().get_player_data(context.get("id"))
+        # get challenger
+        message, challenger = __get_player_from_name(player_name)
+        if message:
+            return message
+        # check if the duel invite exists
+        if not db().duel_invite_exists(challenger, player):
+            return Strings.not_invited_to_duel.format(name=challenger.name)
+        # check that both player are in town
+        player_ac = db().get_player_adventure_container(player)
+        challenger_ac = db().get_player_adventure_container(challenger)
+        if player_ac.quest is not None:
+            return Strings.you_must_be_in_town
+        if challenger_ac.quest is not None:
+            return Strings.opponent_must_be_in_town
+        # do combat
+        players = [player, challenger]
+        db().delete_duel_invite(challenger, player)
+        combat = CombatContainer(players, helpers={player: None, challenger: None})
+        combat_log = combat.fight()
+        # get lower rewards
+        rewards = player.get_rewards(player)
+        for p in players:
+            _rewards = p.get_rewards(p)
+            if _rewards[0] < rewards[0]:
+                rewards = _rewards
+        # give xp to both players, money to the winner + restore health
+        for p in players:
+            p.add_xp(rewards[0])
+            if not p.is_dead():
+                p.add_money(rewards[1])
+            p.hp_percent = 1.0
+            db().update_player_data(p)
+        # notify participants
+        text = "Duel!\n\n" + combat_log
+        db().create_and_add_notification(challenger, text, "Duel log")
+        return text
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def duel_reject(context: UserContext, player_name: str) -> str:
+    try:
+        # get player
+        player = db().get_player_data(context.get("id"))
+        # get challenger
+        message, challenger = __get_player_from_name(player_name)
+        if message:
+            return message
+        # check if the duel invite exists
+        if not db().duel_invite_exists(challenger, player):
+            return Strings.not_invited_to_duel.format(name=challenger.name)
+        # reject & notify
+        db().delete_duel_invite(challenger, player)
+        db().create_and_add_notification(
+            challenger,
+            Strings.duel_invite_reject_notification.format(player.name),
+            "Duel log"
+        )
+        return Strings.duel_invite_reject.format(name=challenger.name)
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -1234,8 +1318,13 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "tourney": IFW(None, rank_tourney, "Shows the top 10 guilds competing in the tourney. Only the top 3 will win."),
     },
     "message": {
-        "player": IFW([RWE("player name", PLAYER_NAME_REGEX, Strings.player_name_validation_error)], send_message_to_player, "Send message to a single player."),
+        "player": IFW([player_arg("player name")], send_message_to_player, "Send message to a single player."),
         "guild": IFW(None, send_message_to_owned_guild, "Send message to every member of your owned guild.")
+    },
+    "duel": {
+        "invite": IFW([player_arg("player name")], duel_invite, "Send duel invite to a player."),
+        "accept": IFW([player_arg("player name")], duel_accept, "Accept a duel invite."),
+        "reject": IFW([player_arg("player name")], duel_reject, "Reject a duel invite.")
     },
     "assemble": {
         "artifact": IFW(None, assemble_artifact, f"Assemble an artifact using {REQUIRED_PIECES} artifact pieces")

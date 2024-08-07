@@ -335,6 +335,8 @@ class QuestManager(Manager):
             player.hp_percent = 1.0
         else:
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
+            if player.hp_percent <= 0.5:
+                self.create_shade(player, ac.zone())
             xp, money = enemy.get_rewards(player)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             player.add_xp(xp)
@@ -704,4 +706,3 @@ class NotificationsManager(Manager):
             return
         with open(self._PENDING_NOTIFICATIONS, "w") as f:
             json.dump({"notifications": [{"id": n.target.player_id, "text": n.text} for n in notifications]}, f)
-

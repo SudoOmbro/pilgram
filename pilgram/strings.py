@@ -258,6 +258,15 @@ class Strings:
     shade_win = "The shade crumbles and dissolves into nothingness."
     shade_loss = "The shade absorbs you into it's mass."
 
+    # duels
+    no_self_duel = "You can't duel yourself. Weirdo."
+    duel_invite_sent = "You have successfully sent a duel invite to {name}."
+    you_must_be_in_town = "You must be in town to duel!"
+    opponent_must_be_in_town = "Your opponent must be in town to duel!"
+    not_invited_to_duel = "You were not invited to duel by {name}"
+    duel_invite_reject_notification = "{name} rejected your duel invite."
+    duel_invite_reject = "You rejected {name}'s duel invite."
+
     # artifacts
     max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."
 

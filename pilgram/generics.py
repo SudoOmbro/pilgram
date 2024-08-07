@@ -430,6 +430,20 @@ class PilgramDatabase(ABC):
                 notification_type=notification_type)
         )
 
+    # duels ----------------------------------
+
+    def add_duel_invite(self, sender: Player, target: Player):
+        """Add a duel invite"""
+        raise NotImplementedError
+
+    def delete_duel_invite(self, sender: Player, target: Player):
+        """Delete a duel invite"""
+        raise NotImplementedError
+
+    def duel_invite_exists(self, sender: Player, target: Player) -> bool:
+        """returns whether the specified duel invite exists"""
+        raise NotImplementedError
+
 
 class PilgramGenerator(ABC):
     def generate_quests(self, zone: Zone, quest_data: Any) -> list[Quest]:
