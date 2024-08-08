@@ -1195,6 +1195,7 @@ def duel_invite(context: UserContext, player_name: str) -> str:
         if target.name == player.name:
             return Strings.no_self_duel
         db().add_duel_invite(player, target)
+        log.info(f"{player.name} sent a duel invite to {target.name}")
         return Strings.duel_invite_sent.format(name=target.name)
     except KeyError:
         return Strings.no_character_yet
@@ -1223,17 +1224,12 @@ def duel_accept(context: UserContext, player_name: str) -> str:
         db().delete_duel_invite(challenger, player)
         combat = CombatContainer(players, helpers={player: None, challenger: None})
         combat_log = combat.fight()
-        # get lower rewards
-        rewards = player.get_rewards(player)
-        for p in players:
-            _rewards = p.get_rewards(p)
-            if _rewards[0] < rewards[0]:
-                rewards = _rewards
+        log.info(f"{player.name} & {challenger.name} dueled.")
         # give xp to both players, money to the winner + restore health
         for p in players:
-            p.add_xp(rewards[0])
+            p.add_xp(100)
             if not p.is_dead():
-                p.add_money(rewards[1])
+                p.add_money(100)
             p.hp_percent = 1.0
             db().update_player_data(p)
         # notify participants

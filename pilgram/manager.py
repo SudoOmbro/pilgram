@@ -144,6 +144,11 @@ class QuestManager(Manager):
             self.player_shades[zone.zone_id] = []
         shade: Player = deepcopy(player)
         shade.name = player.name + "'s Shade"
+        # limit the amount of items a shade can have to 3 + No consumables
+        while len(list(shade.equipped_items.values())) > 3:
+            key = random.choice(list(shade.equipped_items.keys()))
+            del shade.equipped_items[key]
+        shade.satchel = []
         self.player_shades[zone.zone_id].append(shade)
 
     def _complete_quest(self, ac: AdventureContainer) -> None:
@@ -304,7 +309,7 @@ class QuestManager(Manager):
             enemy_level_modifier: int = ac.quest.number
             if ForcedCombat.is_set(player.flags):
                 days_left = (ac.finish_time - datetime.now()).days
-                enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
+                enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1) + 20
                 for _ in range(2):
                     choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
                     modifier_type: type[Modifier] = random.choice(choice_list)
@@ -328,14 +333,12 @@ class QuestManager(Manager):
                 log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
             else:
                 text += f"\n\n{Strings.shade_loss}" + Strings.quest_fail.format(name=ac.quest.name)
-                log.info(f"Player '{player.name}' died in combat against a shade of {enemy.name}")
+                log.info(f"Player '{player.name}' died in combat against {enemy.name}")
             self.create_shade(player, ac.zone())
             ac.quest = None
             player.hp_percent = 1.0
         else:
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
-            if player.hp_percent <= 0.5:
-                self.create_shade(player, ac.zone())
             xp, money = enemy.get_rewards(player)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             player.add_xp(xp)
@@ -348,8 +351,8 @@ class QuestManager(Manager):
             # more rewards if combat was forced
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5
-            ):  # 50% change to get an artifact piece if combat was forced
-                if (player.level - ac.quest.zone.level) < 6:
+            ):  # 40% change to get an artifact piece if combat was forced
+                if (player.level - ac.quest.zone.level) < 5:
                     log.info(f"Artifact piece drop for {player.name}")
                     player.add_artifact_pieces(1)
                     text += Strings.piece_found
