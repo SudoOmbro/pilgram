@@ -729,6 +729,13 @@ class Player(CombatActor):
         selection = random.choice(selected_pool)
         return selection
 
+    def get_profession_limit(self) -> int:
+        if self.level < 5:
+            return 0
+        if self.level < 20:
+            return 1
+        return 2
+
     # utility
 
     def __str__(self) -> str:
@@ -1150,6 +1157,7 @@ class Cult(Listable["Cult"], meta_name="cults"):
     def __init__(
         self, faction_id: int, name: str, description: str, modifiers: dict
     ) -> None:
+        # TODO Some bonuses & features should be removed
         # generic vars
         self.faction_id = faction_id
         self.name = name
@@ -1186,7 +1194,7 @@ class Cult(Listable["Cult"], meta_name="cults"):
         self.qte_frequency_bonus = modifiers.get("qte_frequency_bonus", 0)
         self.minigame_xp_mult = modifiers.get("minigame_xp_mult", 1)
         self.minigame_money_mult = modifiers.get("minigame_money_mult", 1)
-        self.hp_mult = modifiers.get("hp_mult", 1)
+        self.hp_mult = modifiers.get("hp_mult", 1.0)
         self.hp_bonus = modifiers.get("hp_bonus", 0)
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
         self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
@@ -1220,6 +1228,33 @@ class Cult(Listable["Cult"], meta_name="cults"):
     def randomize(self) -> None:
         for stat_name, choices in self.stats_to_randomize.items():
             self.__dict__[stat_name] = random.choice(choices)
+
+    def __add__(self, other: Cult) -> Cult:
+        result = Cult(-1, f"{self.name} {other.name}", "", {})
+        result.general_xp_mult = self.general_xp_mult + other.general_xp_mult
+        result.general_money_mult = self.general_money_mult
+        result.quest_xp_mult = self.quest_xp_mult + other.quest_xp_mult
+        result.quest_money_mult = self.quest_money_mult
+        result.event_xp_mult = self.event_xp_mult + other.event_xp_mult
+        result.event_money_mult = self.event_money_mult
+        result.can_meet_players = self.can_meet_players or other.can_meet_players
+        result.power_bonus = self.power_bonus + other.power_bonus
+        result.roll_bonus = self.roll_bonus + other.roll_bonus
+        result.quest_time_multiplier = self.quest_time_multiplier * other.quest_time_multiplier
+        result.eldritch_resist = self.eldritch_resist * other.eldritch_resist
+        result.artifact_drop_bonus = self.artifact_drop_bonus + other.artifact_drop_bonus
+        result.upgrade_cost_multiplier = self.upgrade_cost_multiplier * other.upgrade_cost_multiplier
+        result.power_bonus_per_zone_visited = self.power_bonus_per_zone_visited + other.power_bonus_per_zone_visited
+        result.qte_frequency_bonus = self.qte_frequency_bonus + other.qte_frequency_bonus
+        result.minigame_xp_mult = self.minigame_xp_mult * other.minigame_xp_mult
+        result.minigame_money_mult = self.minigame_money_mult * other.minigame_money_mult
+        result.hp_mult = self.hp_mult * other.hp_mult
+        result.hp_bonus = self.hp_bonus * other.hp_bonus
+        result.discovery_bonus = self.discovery_bonus + other.discovery_bonus
+        result.passive_regeneration = self.passive_regeneration * other.passive_regeneration
+        result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier
+        result.lick_wounds = self.lick_wounds or other.lick_wounds
+        return result
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Cult):
