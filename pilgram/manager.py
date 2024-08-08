@@ -163,9 +163,7 @@ class QuestManager(Manager):
             xp, money = quest.get_rewards(player)
             renown = quest.get_prestige() * 200
             if player.guild:
-                guild = self.db().get_guild(
-                    player.guild.guild_id
-                )  # get the most up-to-date object
+                guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
                 guild.prestige += quest.get_prestige()
                 guild_members = len(self.db().get_guild_members_data(guild))
                 mult = _get_tourney_score_multiplier(guild_members)
@@ -309,7 +307,7 @@ class QuestManager(Manager):
             enemy_level_modifier: int = ac.quest.number
             if ForcedCombat.is_set(player.flags):
                 days_left = (ac.finish_time - datetime.now()).days
-                enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1) + 20
+                enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
                 for _ in range(2):
                     choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
                     modifier_type: type[Modifier] = random.choice(choice_list)
@@ -339,11 +337,14 @@ class QuestManager(Manager):
             player.hp_percent = 1.0
         else:
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
+            # get rewards
             xp, money = enemy.get_rewards(player)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
+            # add rewards
             player.add_xp(xp)
             player.renown += renown
             money_am = player.add_money(money)
+            # create notification text
             if isinstance(enemy, Enemy):
                 text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
             else:
@@ -356,6 +357,13 @@ class QuestManager(Manager):
                     log.info(f"Artifact piece drop for {player.name}")
                     player.add_artifact_pieces(1)
                     text += Strings.piece_found
+            # add to guild tourney score & prestige
+            if player.guild:
+                guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
+                guild.tourney_score += enemy.get_level()
+                prestige = enemy.get_level() - ac.quest.zone.level
+                guild.prestige += max(1, prestige)
+                self.db().update_guild(guild)
         # unset player flags
         for flag in BUFF_FLAGS:
             if flag.is_set(player.flags):
