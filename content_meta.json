@@ -1257,7 +1257,7 @@
     },
     "value": 12
   }, {
-    "id": 66,
+    "id": 67,
     "name": "Dueling shield",
     "slot": "secondary",
     "class": "shield",
@@ -1272,6 +1272,33 @@
       "blunt": 1
     },
     "value": 30
+  }, {
+    "id": 68,
+    "name": "Pavise",
+    "slot": "secondary",
+    "weapon": false,
+    "class": "shield",
+    "delay": 6,
+    "damage": {
+      "blunt": 1
+    },
+    "resist": {
+      "slash": 3,
+      "pierce": 1
+    },
+    "value": 6
+  }, {
+    "id": 69,
+    "name": "Scutum",
+    "slot": "secondary",
+    "weapon": false,
+    "class": "shield",
+    "delay": 8,
+    "resist": {
+      "slash": 4,
+      "pierce": 4
+    },
+    "value": 10
   }],
   "consumables": [{
     "id": 0,
