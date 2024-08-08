@@ -361,7 +361,7 @@ class QuestManager(Manager):
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
                 guild.tourney_score += enemy.get_level()
-                prestige = enemy.get_level() - ac.quest.zone.level
+                prestige = int((enemy.get_level() - ac.quest.zone.level) / 2)
                 guild.prestige += max(1, prestige)
                 self.db().update_guild(guild)
         # unset player flags
