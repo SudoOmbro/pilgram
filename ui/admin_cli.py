@@ -328,6 +328,12 @@ def give_random_item_to_player(context: UserContext, player_name: str) -> str:
     return f"Added '{item.name}' to player '{player_name}'."
 
 
+def reset_guild_tourney(context: UserContext) -> str:
+    """manually reset guild tourney scores"""
+    db().reset_all_guild_scores()
+    return "Successfully reset all guild tourney scores."
+
+
 ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
     "add": {
         "player": {
@@ -393,6 +399,9 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "complete": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player"),
             "time": IFW([RWE("player name", PNR, Strings.player_name_validation_error), RWE("hours", PIR, "Invalid integer id")], force_quest_end_time, "Force quest finish time in [hours] for the given player")
         }
+    },
+    "tourney": {
+        "reset": IFW(None, reset_guild_tourney, "Reset all guild scores")
     }
 }
 
