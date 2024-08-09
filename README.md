@@ -1,7 +1,15 @@
 # Pilgram
 a texting based idle MMO-RPG powered by AI.
 
+<div>
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img1.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img2.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img3.png" style=" width:200px ; height:200px" >
+</div>
+
 Embark on quests, join guilds, play minigames, cast spells... All by texting!
+
+The "main" version of pilgram is running on `@pilgram_bot` on Telegram if you want to try it out.
 
 ## License
 
