@@ -143,7 +143,8 @@ class TestClasses(unittest.TestCase):
             EquipmentType.get(66),  # Buckler
             [
                 get_modifier_from_name("Slash Optimized", 25),
-                get_modifier_from_name("Slash Affinity", 50)
+                get_modifier_from_name("Slash Affinity", 50),
+                get_modifier_from_name("Shade Helper", 50)
             ]
         )),
         player.equip_item(_generate_equipment(
@@ -163,7 +164,7 @@ class TestClasses(unittest.TestCase):
                 get_modifier_from_name("Freeze Absorption", 4),
                 get_modifier_from_name("Brutality", 6)
             ],
-            2
+            10
         )
         # use to test PvP
         enemy_player = deepcopy(player)

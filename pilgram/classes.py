@@ -555,7 +555,7 @@ class Player(CombatActor):
 
     def get_base_max_hp(self) -> int:
         return int(
-            ((self.level + self.gear_level) * 10) * self.cult.hp_mult
+            ((self.level + (self.gear_level * 1.5)) * 10) * self.cult.hp_mult
         ) + self.cult.hp_bonus
 
     def get_base_attack_damage(self) -> Damage:

@@ -898,4 +898,49 @@ class OccultAbsorb(_GenericDamageAbsorb, dmg_type="occult"):
     pass
 
 
+class PlayerDamageMult(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 100
+    MIN_STRENGTH = 1
+    SCALING = 2
+
+    NAME = "Hearth-breaker"
+    DESCRIPTION = "Deal {str}% more damage if the target of the attack is a Player/Shade"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        target: cc.CombatActor = context.get("entity")
+        if isinstance(target, classes.Player):
+            return damage.scale(1 + (self.get_fstrength()))
+        return damage
+
+
+class AdditionalHelper(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.COMBAT_START
+
+    SCALING = 0.3
+
+    NAME = "Shade Helper"
+    DESCRIPTION = "Grants a Shade helper that has a 40% chance of dealing {str} unblockable damage."
+
+    class Helper(Modifier):
+        TYPE = ModifierType.TURN_START
+
+        def function(self, context: ModifierContext) -> Any:
+            if random.randint(1, 100) < 40:
+                entity: cc.CombatActor = context.get("entity")
+                target: cc.CombatActor = context.get("opponent")
+                target.modify_hp(-self.strength)
+                self.write_to_log(context, f"{entity.get_name()}'s Shade Helper attacks {target.get_name()} for {self.strength} damage ({target.get_hp_string()}).")
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        entity.timed_modifiers.append(self.Helper(self.strength))
+        self.write_to_log(
+            context, f"A Sahde Helper spawns for {entity.get_name()}"
+        )
+        return 0
+
+
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
