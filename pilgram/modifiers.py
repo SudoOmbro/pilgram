@@ -910,7 +910,7 @@ class PlayerDamageMult(Modifier, rarity=Rarity.RARE):
 
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
-        target: cc.CombatActor = context.get("entity")
+        target: cc.CombatActor = context.get("other")
         if isinstance(target, classes.Player):
             return damage.scale(1 + (self.get_fstrength()))
         return damage
