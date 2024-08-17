@@ -1376,7 +1376,7 @@ class Enemy(CombatActor):
         self.meta = meta
         self.modifiers = modifiers
         self.level_modifier = level_modifier + random.randint(-5, 2)
-        self.delay = 15 + meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
+        self.delay = 7 + meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
         self.stance = self.meta.zone.extra_data.get("stance", "r")
         super().__init__(1.0)
 
