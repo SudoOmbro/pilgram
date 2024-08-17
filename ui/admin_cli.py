@@ -346,7 +346,7 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),
-            "prestige": __generate_int_op_command("home", "guild", "add"),
+            "prestige": __generate_int_op_command("prestige", "guild", "add"),
         },
         "zone": IFW(None, start_add_obj_process, "Create a new zone", {"obj_type": "zone"}),
         "quest": IFW(None, start_add_obj_process, "Create a new quest", {"obj_type": "quest"}),
@@ -364,7 +364,7 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "set"),
-            "prestige": __generate_int_op_command("home", "guild", "set"),
+            "prestige": __generate_int_op_command("prestige", "guild", "set"),
         }
     },
     "sub": {
@@ -377,7 +377,7 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "sub"),
-            "prestige": __generate_int_op_command("home", "guild", "sub"),
+            "prestige": __generate_int_op_command("prestige", "guild", "sub"),
         }
     },
     "edit": {

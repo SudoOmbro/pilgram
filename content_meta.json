@@ -587,10 +587,10 @@
     "slot": "secondary",
     "weapon": true,
     "class": "firearm",
-    "delay": 8,
+    "delay": 11,
     "damage": {
       "pierce": 5,
-      "blunt": 3
+      "blunt": 2
     },
     "value": 6
   }, {
@@ -723,7 +723,7 @@
     "class": "firearm",
     "delay": 16,
     "damage": {
-      "blunt": 7,
+      "blunt": 4,
       "pierce": 7
     },
     "value": 20
@@ -826,7 +826,7 @@
     "class": "crossbow",
     "delay": 30,
     "damage": {
-      "pierce": 30
+      "pierce": 20
     },
     "value": 40
   }, {
@@ -1190,8 +1190,8 @@
     "weapon": true,
     "delay": 80,
     "damage": {
-      "pierce": 50,
-      "blunt": 30
+      "pierce": 30,
+      "blunt": 10
     },
     "value": 150
   }, {

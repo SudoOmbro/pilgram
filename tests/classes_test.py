@@ -125,7 +125,7 @@ class TestClasses(unittest.TestCase):
         # setup equipment
         weapon = _generate_equipment(
             player,
-            EquipmentType.get(0),  # longsword
+            EquipmentType.get(60),  # Ribaldequin
             [
                 get_modifier_from_name("Vampiric", 2),
                 get_modifier_from_name("Sneak attack", 5)

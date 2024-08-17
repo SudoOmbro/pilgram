@@ -16,6 +16,7 @@ class CombatActions:
     charge_attack = 2
     use_consumable = 3
     lick_wounds = 4
+    catch_breath = 5
 
 
 class Damage:
@@ -364,6 +365,12 @@ class CombatActor(ABC):
             multiplier += 5 * (level - player.level)
         return multiplier * level, multiplier * level
 
+    def get_stamina_regeneration(self) -> float:
+        value = self.get_delay()
+        if value > 100:
+            value = 100
+        return 1.1 - (value / 100)
+
 
 class CombatContainer:
     def __init__(
@@ -376,6 +383,7 @@ class CombatContainer:
         self.combat_log: str = ""
         self.damage_scale: dict[CombatActor, float] = {}
         self.resist_scale: dict[CombatActor, float] = {}
+        self.stamina: dict[CombatActor, float] = {}
         self._reset_damage_and_resist_scales()
         self.turn = 0
 
@@ -383,6 +391,7 @@ class CombatContainer:
         for actor in self.participants:
             self.damage_scale[actor] = 1.0
             self.resist_scale[actor] = 1.0
+            self.stamina[actor] = 1.0
 
     def write_to_log(self, text: str) -> None:
         self.combat_log += f"\n{text}"
@@ -411,8 +420,15 @@ class CombatContainer:
             ):
                 modifier.apply(self.get_mod_context({"entity": participant}))
 
+    def regenerate_stamina(self, actor: CombatActor) -> None:
+        self.stamina[actor] += actor.get_stamina_regeneration()
+        if self.stamina[actor] > 1.0:
+            self.stamina[actor] = 1.0
+
     def _attack(self, attacker: CombatActor, target: CombatActor) -> None:
         self.write_to_log(f"{attacker.get_name()} attacks.")
+        # deplete stamina
+        self.stamina[attacker] = 0.0
         # get total damage inflicted
         damage = (
             attacker.attack(target, self)
@@ -498,7 +514,13 @@ class CombatContainer:
                     # the actor may also die here since poison might be applied
                     if not self._try_revive(actor):
                         continue
-                action_id = actor.choose_action(opponents[i])
+                # only do something if the actor has full stamina
+                if not self.stamina[actor] >= 1.0:
+                    self.regenerate_stamina(actor)
+                    action_id = CombatActions.catch_breath
+                else:
+                    action_id = actor.choose_action(opponents[i])
+                # actually do stuff
                 if action_id == CombatActions.attack:
                     self._attack(actor, opponents[i])
                 elif action_id == CombatActions.dodge:
@@ -534,6 +556,8 @@ class CombatContainer:
                     self.write_to_log(
                         f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()})."
                     )
+                elif action_id == CombatActions.catch_breath:
+                    self.write_to_log(f"{actor.get_name()} is recovering ({int(self.stamina[actor] * 100)}%)")
                 # use helpers
                 if self.helpers[actor] and (
                     random.randint(1, 5) == 1
