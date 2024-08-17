@@ -436,11 +436,9 @@ class Player(CombatActor):
         return self.home_level < self.MAX_HOME_LEVEL
 
     def upgrade_gear(self) -> None:
-        self.money -= self.get_gear_upgrade_required_money()
         self.gear_level += 1
 
     def upgrade_home(self) -> None:
-        self.money -= self.get_home_upgrade_required_money()
         self.home_level += 1
 
     def level_up(self) -> None:
@@ -556,7 +554,7 @@ class Player(CombatActor):
     # combat stats
 
     def get_base_max_hp(self) -> int:
-        return (
+        return int(
             ((self.level + self.gear_level) * 10) * self.cult.hp_mult
         ) + self.cult.hp_bonus
 
@@ -853,14 +851,13 @@ class Guild:
         return current_members < self.get_max_members()
 
     def can_upgrade(self) -> bool:
-        return self.level > self.MAX_LEVEL
+        return self.level >= self.MAX_LEVEL
 
     def get_upgrade_required_money(self) -> int:
         lv = self.level
         return (10000 * (lv * lv)) + (1000 * lv)
 
     def upgrade(self) -> None:
-        self.founder.money -= self.get_upgrade_required_money()
         self.level += 1
 
     def __eq__(self, other: Any) -> bool:

@@ -421,6 +421,7 @@ def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
     price = context.get("price")
     func = context.get("func")
     func()
+    player.money -= price
     db().update_player_data(player)
     if obj == "guild":
         guild = db().get_owned_guild(player)
@@ -575,11 +576,13 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
             return message
         if not recipient:
             return Strings.named_object_not_exist.format(obj="Player", name=recipient_name)
-        # update money for both player and save data to the database
-        recipient.add_money(amount)
+        # update money for recipient
+        recipient.money += amount
         db().update_player_data(recipient)
+        # update money for donor
         player.money -= amount
         db().update_player_data(player)
+        # notify
         db().create_and_add_notification(
             recipient,
             Strings.donation_received.format(
