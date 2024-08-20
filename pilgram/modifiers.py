@@ -938,7 +938,7 @@ class AdditionalHelper(Modifier, rarity=Rarity.LEGENDARY):
         entity: cc.CombatActor = context.get("entity")
         entity.timed_modifiers.append(self.Helper(self.strength))
         self.write_to_log(
-            context, f"A Sahde Helper spawns for {entity.get_name()}"
+            context, f"A Shade Helper spawns for {entity.get_name()}"
         )
         return 0
 
