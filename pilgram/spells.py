@@ -58,8 +58,8 @@ def __midas_touch(caster: Player, args: list[str]) -> str:
 def __bone_recall(caster: Player, args: list[str]) -> str:
     amount = 50 * caster.get_spell_charge()
     # we don't need to save the player data, it will be done automatically later
-    caster.add_xp(amount)
-    return f"You gain {amount} xp from the wisdom of the dead."
+    xp_am = caster.add_xp(amount)
+    return f"You gain {xp_am} xp from the wisdom of the dead."
 
 
 @__add_to_spell_list("displacement")

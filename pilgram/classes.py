@@ -448,16 +448,15 @@ class Player(CombatActor):
             self.xp -= req_xp
             req_xp = self.get_required_xp()
 
-    def add_xp(self, amount: float) -> bool:
-        """adds xp to the player and returns true if the player leveled up"""
+    def add_xp(self, amount: float) -> int:
+        """adds xp to the player & returns how much was actually added to the player"""
         amount *= self.cult.general_xp_mult
         if self.cult.xp_mult_per_player_in_cult != 1.0:
             amount *= self.cult.xp_mult_per_player_in_cult**self.cult.number_of_members
         self.xp += int(amount)
         if self.xp >= self.get_required_xp():
             self.level_up()
-            return True
-        return False
+        return int(amount)
 
     def add_money(self, amount: float) -> int:
         """adds money to the player & returns how much was actually added to the player"""
