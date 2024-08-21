@@ -50,8 +50,8 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
 def __midas_touch(caster: Player, args: list[str]) -> str:
     amount = 50 * caster.get_spell_charge()
     # we don't need to save the player data, it will be done automatically later
-    caster.add_money(amount)
-    return f"{amount} {MONEY} materialize in the air."
+    money_am = caster.add_money(amount)
+    return f"{money_am} {MONEY} materialize in the air."
 
 
 @__add_to_spell_list("bones")
