@@ -184,7 +184,7 @@ class QuestManager(Manager):
                         Strings.tax_gain.format(amount=amount_am, name=player.name),
                     )
                     money -= amount
-            player.add_xp(xp)
+            xp_am = player.add_xp(xp)  # am = after modifiers
             money_am = player.add_money(money)  # am = after modifiers
             player.completed_quests += 1
             player.renown += renown
@@ -199,7 +199,7 @@ class QuestManager(Manager):
                 quest.success_text
                 + Strings.quest_success.format(name=quest.name)
                 + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}"
-                + _gain(xp, money_am, renown, tax=tax)
+                + _gain(xp_am, money_am, renown, tax=tax)
                 + (Strings.piece_found if piece else ""),
             )
         else:
@@ -240,7 +240,7 @@ class QuestManager(Manager):
             ac.player.player_id
         )  # get the most up-to-date object
         xp, money = event.get_rewards(ac.player)
-        player.add_xp(xp)
+        xp_am = player.add_xp(xp)  # am = after modifiers
         money_am = player.add_money(money)  # am = after modifiers
         ac.player = player
         if player.hp_percent < 1.0:
@@ -249,7 +249,7 @@ class QuestManager(Manager):
             regeneration_text = ""
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
-        text = f"*{event.event_text}*{_gain(xp, money_am, 0)}"
+        text = f"*{event.event_text}*{_gain(xp_am, money_am, 0)}"
         if ac.is_on_a_quest():
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
@@ -349,14 +349,14 @@ class QuestManager(Manager):
             xp, money = enemy.get_rewards(player)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             # add rewards
-            player.add_xp(xp)
+            xp_am = player.add_xp(xp)
             player.renown += renown
             money_am = player.add_money(money)
             # create notification text
             if isinstance(enemy, Enemy):
-                text += f"\n\n{enemy.meta.win_text}{_gain(xp, money_am, renown)}"
+                text += f"\n\n{enemy.meta.win_text}{_gain(xp_am, money_am, renown)}"
             else:
-                text += f"\n\n{Strings.shade_win}{_gain(xp, money_am, renown)}"
+                text += f"\n\n{Strings.shade_win}{_gain(xp_am, money_am, renown)}"
             # more rewards if combat was forced
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5
