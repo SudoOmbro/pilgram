@@ -785,7 +785,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
         if minigame.won:
             money_am = player.add_money(money)
             if xp > 0:
-                xp_am = player.add_xp(xp),
+                xp_am = player.add_xp(xp)
                 message += f"\n\nYou gain {xp_am} xp & {money_am} {MONEY}."
             else:
                 items = db().get_player_items(player.player_id)
