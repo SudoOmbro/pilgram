@@ -18,7 +18,7 @@ from pilgram.flags import (
     MightBuff3,
     SwiftBuff1,
     SwiftBuff2,
-    SwiftBuff3,
+    SwiftBuff3, Ritual1, Ritual2,
 )
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta
@@ -164,3 +164,13 @@ def __eldritch_swiftness(caster: Player, args: list[str]) -> str:
         caster.set_flag(SwiftBuff3)
     # we don't need to save the player data, it will be done automatically later
     return f"You feel faster ({int(amount / 30)}x)."
+
+
+@__add_to_spell_list("ritual")
+def __summoning_ritual(caster: Player, args: list[str]) -> str:
+    amount = caster.get_spell_charge()
+    if amount >= 40:
+        caster.set_flag(Ritual1)
+    if amount >= 80:
+        caster.set_flag(Ritual2)
+    return f"You feel a sense of dread ({int(amount / 40)}x)"

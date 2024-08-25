@@ -156,6 +156,11 @@
       "name": "Eldritch Swiftness",
       "description": "Be much faster in the next combat, ignore weight.\nEffect scales with amount of power used (30 for -15 kg, 60 for -30 kg, 90 for -45 kg).",
       "power": 30
+    },
+    "ritual": {
+      "name": "Summoning Ritual",
+      "description": "Enemy in the next encounter is going to be much stronger.\nEffect scales with amount of power used (40 for +5 levels, 80 for +10 levels).",
+      "power": 30
     }
   },
   "quick time events": [{

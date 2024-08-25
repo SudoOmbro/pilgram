@@ -23,7 +23,7 @@ from pilgram.classes import (
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.flags import BUFF_FLAGS, ForcedCombat
+from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -324,8 +324,15 @@ class QuestManager(Manager):
         else:
             # fight a shade
             enemy = self.player_shades[ac.zone().zone_id].pop(0)
+        # buff enemy with ritual
+        if Ritual1.is_set(player.flags):
+            enemy.level += 5
+        if Ritual2.is_set(player.flags):
+            enemy.level += 5
+        # do combat
         combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = "Combat starts!\n\n" + combat.fight()
+        # finish combat
         if player.is_dead():
             if isinstance(enemy, Enemy):
                 text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(name=ac.quest.name)
@@ -354,7 +361,7 @@ class QuestManager(Manager):
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5
             ):  # 40% change to get an artifact piece if combat was forced
-                if (player.level - ac.quest.zone.level) < 5:
+                if (player.level - enemy.level) < 5:
                     log.info(f"Artifact piece drop for {player.name}")
                     player.add_artifact_pieces(1)
                     text += Strings.piece_found

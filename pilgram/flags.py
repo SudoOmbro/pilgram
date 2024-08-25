@@ -118,6 +118,14 @@ class SwiftBuff3(Flag):
     pass
 
 
+class Ritual1(Flag):
+    pass
+
+
+class Ritual2(Flag):
+    pass
+
+
 BUFF_FLAGS: tuple[type[Flag], ...] = (
     StrengthBuff,
     OccultBuff,
@@ -131,4 +139,6 @@ BUFF_FLAGS: tuple[type[Flag], ...] = (
     SwiftBuff1,
     SwiftBuff2,
     SwiftBuff3,
+    Ritual1,
+    Ritual2
 )
