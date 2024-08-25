@@ -365,11 +365,9 @@ class CombatActor(ABC):
             multiplier += 5 * (level - player.level)
         return multiplier * level, multiplier * level
 
-    def get_stamina_regeneration(self) -> float:
-        value = self.get_delay()
-        if value > 100:
-            value = 100
-        return 1.1 - (value / 100)
+    @staticmethod
+    def get_stamina_regeneration() -> float:
+        return 0.2 + random.choice((-0.02, -0.01, 0.0, 0.01, 0.02))
 
 
 class CombatContainer:
@@ -420,15 +418,20 @@ class CombatContainer:
             ):
                 modifier.apply(self.get_mod_context({"entity": participant}))
 
-    def regenerate_stamina(self, actor: CombatActor) -> None:
-        self.stamina[actor] += actor.get_stamina_regeneration()
+    def regenerate_stamina(self, actor: CombatActor, opponent: CombatActor) -> None:
+        amount = actor.get_stamina_regeneration()
+        for modifier in actor.get_modifiers(m.ModifierType.STAMINA_REGEN):
+            amount *= modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponent, "turn": self.turn}))
+        self.stamina[actor] += amount
         if self.stamina[actor] > 1.0:
             self.stamina[actor] = 1.0
 
     def _attack(self, attacker: CombatActor, target: CombatActor) -> None:
         self.write_to_log(f"{attacker.get_name()} attacks.")
         # deplete stamina
-        self.stamina[attacker] = 0.0
+        self.stamina[attacker] -= (attacker.get_delay() / 100)
+        if self.stamina[attacker] < 0.0:
+            self.stamina[attacker] = 0.0
         # get total damage inflicted
         damage = (
             attacker.attack(target, self)
@@ -515,8 +518,8 @@ class CombatContainer:
                     if not self._try_revive(actor):
                         continue
                 # only do something if the actor has full stamina
+                self.regenerate_stamina(actor, opponents[i])
                 if not self.stamina[actor] >= 1.0:
-                    self.regenerate_stamina(actor)
                     action_id = CombatActions.catch_breath
                 else:
                     action_id = actor.choose_action(opponents[i])

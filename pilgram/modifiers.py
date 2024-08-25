@@ -21,6 +21,7 @@ class ModifierType:
     REWARDS = 7
     MODIFY_MAX_HP = 8
     TURN_START = 9
+    STAMINA_REGEN = 10
 
 
 class Rarity:
@@ -941,6 +942,40 @@ class AdditionalHelper(Modifier, rarity=Rarity.LEGENDARY):
             context, f"A Sahde Helper spawns for {entity.get_name()}"
         )
         return 0
+
+
+class StaminaRegenLowHP(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.STAMINA_REGEN
+
+    MAX_STRENGTH = 2
+    MIN_STRENGTH = 1.1
+    SCALING = 0.05
+
+    NAME = "Adrenaline"
+    DESCRIPTION = "Regenerate {str}% more stamina if you have less than 25% HP."
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        if entity.hp_percent <= 0.25:
+            return self.strength
+        return 1.0
+
+
+class StaminaRegenHighHP(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.STAMINA_REGEN
+
+    MAX_STRENGTH = 1.5
+    MIN_STRENGTH = 1.1
+    SCALING = 0.01
+
+    NAME = "Momentum"
+    DESCRIPTION = "Regenerate {str}% more stamina if you have more than 75% HP."
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        if entity.hp_percent >= 0.75:
+            return self.strength
+        return 1.0
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end

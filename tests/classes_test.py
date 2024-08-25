@@ -162,7 +162,8 @@ class TestClasses(unittest.TestCase):
                 get_modifier_from_name("Acid Absorption", 4),
                 get_modifier_from_name("Electric Absorption", 4),
                 get_modifier_from_name("Freeze Absorption", 4),
-                get_modifier_from_name("Brutality", 6)
+                get_modifier_from_name("Brutality", 6),
+                get_modifier_from_name("Adrenaline", 2)
             ],
             10
         )
