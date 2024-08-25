@@ -326,9 +326,15 @@ class QuestManager(Manager):
             enemy = self.player_shades[ac.zone().zone_id].pop(0)
         # buff enemy with ritual
         if Ritual1.is_set(player.flags):
-            enemy.level += 5
+            if isinstance(enemy, Player):
+                enemy.level += 5
+            else:
+                enemy.level_modifier += 5
         if Ritual2.is_set(player.flags):
-            enemy.level += 5
+            if isinstance(enemy, Player):
+                enemy.level += 5
+            else:
+                enemy.level_modifier += 5
         # do combat
         combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = "Combat starts!\n\n" + combat.fight()
@@ -361,7 +367,7 @@ class QuestManager(Manager):
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5
             ):  # 40% change to get an artifact piece if combat was forced
-                if (player.level - enemy.level) < 5:
+                if (player.level - enemy.get_level()) < 5:
                     log.info(f"Artifact piece drop for {player.name}")
                     player.add_artifact_pieces(1)
                     text += Strings.piece_found
