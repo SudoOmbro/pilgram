@@ -1266,6 +1266,33 @@ def duel_reject(context: UserContext, player_name: str) -> str:
         return Strings.no_character_yet
 
 
+def __get_player_perks_string(player: Player) -> str:
+    perks = player.get_modifiers()
+    if not perks:
+        return f"{player.name} does not have any Perks."
+    return f"\n\n*{player.name}'s Perks*:\n\n{'\n\n'.join(str(x) for x in perks)}"
+
+
+def check_my_perks(context: UserContext):
+    try:
+        # get player
+        player = db().get_player_data(context.get("id"))
+        return __get_player_perks_string(player)
+    except KeyError:
+        return Strings.no_character_yet
+
+
+def check_player_perks(context: UserContext, player_name: str) -> str:
+    try:
+        message, player = __get_player_from_name(player_name)
+        if message:
+            return message
+        return __get_player_perks_string(player)
+    except KeyError:
+        return Strings.named_object_not_exist.format(obj="player", name=player_name)
+
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -1275,10 +1302,12 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "enemy": IFW([integer_arg("Zone number")], check_enemy, "Describes an Enemy."),
         "guild": IFW([guild_arg("Guild")], check_guild, "Shows guild."),
         "player": IFW([player_arg("player")], check_player, "Shows player stats."),
+        "perks": IFW([player_arg("player")], check_player_perks, "Shows player perks."),
         "artifact": IFW([integer_arg("Artifact number")], check_artifact, "Describes an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
+            "perks": IFW(None, check_my_perks, "Shows your own perks."),
             "auctions": IFW(None, check_my_auctions, "Shows your auctions."),
         },
         "auctions": IFW(None, check_auctions, "Shows all auctions."),
