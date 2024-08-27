@@ -30,7 +30,7 @@ from pilgram.classes import (
     AdventureContainer,
     Artifact,
     Auction,
-    Cult,
+    Vocation,
     EnemyMeta,
     Guild,
     Player,
@@ -51,7 +51,8 @@ _LOCK = threading.Lock()
 
 ENCODING = "cp437"  # we use this encoding since we are working with raw bytes & peewee doesn't seem to like raw bytes
 
-NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # stands for 'numpy modifiers data'
+NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # 'NumPy Modifiers Data'
+NP_VP = np.dtype([('id', np.uint8), ('progress', np.uint8)])  # 'NumPy Vocations Progress'
 
 _NOTIFICATIONS_LIST: list[Notification] = []
 
@@ -120,6 +121,8 @@ def encode_equipped_items(equipped_items: dict[int, Equipment]) -> str:
 
 
 def decode_modifiers(data: str | None) -> list[Modifier]:
+    if not data:
+        return []
     encoded_data = bytes(data, ENCODING)
     modifiers_list: list[Modifier] = []
     for item in np.frombuffer(encoded_data, dtype=NP_MD):
@@ -132,6 +135,40 @@ def encode_modifiers(modifiers: list[Modifier]) -> str:
     for i, modifier in enumerate(modifiers):
         packed_array[i]["id"] = modifier.ID
         packed_array[i]["strength"] = modifier.strength
+    return packed_array.tobytes().decode(encoding=ENCODING)
+
+
+def decode_vocation_ids(data: int) -> list[int]:
+    result: list[int] = []
+    array = np.frombuffer(data.to_bytes(4), dtype=np.uint8)
+    for i in range(4):
+        result.append(array[i].item())
+    return result
+
+
+def encode_vocation_ids(vocation_ids: list[int]) -> int:
+    packed_array = np.empty(4, np.uint8)
+    for i, vocation_id in enumerate(vocation_ids):
+        packed_array[i] = vocation_id
+    return int.from_bytes(packed_array.tobytes())
+
+
+def decode_vocation_progress(data: str | None) -> dict[int, int]:
+    if not data:
+        return {}
+    encoded_data = bytes(data, ENCODING)
+    vocations_progress: dict[int, int] = {}
+    for item in np.frombuffer(encoded_data, dtype=NP_VP):
+        vocations_progress[item["id"].item()] = item["progress"].item()
+    return vocations_progress
+
+
+def encode_vocation_progress(vocation_progress: dict[int, int]) -> str:
+    progress_list = list(vocation_progress.items())
+    packed_array = np.empty(len(progress_list), NP_VP)
+    for i, (vocation_id, progress) in enumerate(progress_list):
+        packed_array[i]["id"] = vocation_id
+        packed_array[i]["progress"] = progress
     return packed_array.tobytes().decode(encoding=ENCODING)
 
 
@@ -191,15 +228,21 @@ class PilgramORMDatabase(PilgramDatabase):
         # function is structured the cache will store the Player objects which will always be updated in memory along
         # with their database record; Thus making it always valid.
         try:
-            pls = PlayerModel.get(PlayerModel.id == player_id)
+            pls: PlayerModel = PlayerModel.get(PlayerModel.id == player_id)
             guild = self.get_guild(pls.guild.id, calling_player_id=pls.id) if pls.guild else None
             artifacts = self.get_player_artifacts(player_id)
             items = self.get_player_items(player_id)
             equipped_items_ids: list[int] = decode_equipped_items_ids(pls.equipped_items)
             equipped_items = {}
+            # vocations
+            vocation_ids = decode_vocation_ids(pls.vocations)
+            vocations_progress = decode_vocation_progress(pls.vocation_progress)
+            vocations = [Vocation.get(vid) for vid in vocation_ids]
+            # items
             for item in items:
                 if item.equipment_id in equipped_items_ids:
                     equipped_items[item.equipment_type.slot] = item
+            # create actual object
             player = Player(
                 pls.id,
                 pls.name,
@@ -216,13 +259,14 @@ class PilgramORMDatabase(PilgramDatabase):
                 artifacts,
                 pls.flags,
                 pls.renown,
-                Cult.get(pls.cult_id),
+                vocations,
                 decode_satchel(pls.satchel),
                 equipped_items,
                 pls.hp_percent,
                 pls.stance,
                 pls.completed_quests,
-                pls.last_guild_switch
+                pls.last_guild_switch,
+                vocations_progress,
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -250,7 +294,7 @@ class PilgramORMDatabase(PilgramDatabase):
     def update_player_data(self, player: Player):
         try:
             with db.atomic():
-                pls = PlayerModel.get(PlayerModel.id == player.player_id)
+                pls: PlayerModel = PlayerModel.get(PlayerModel.id == player.player_id)
                 pls.name = player.name
                 pls.description = player.description
                 pls.guild = player.guild.guild_id if player.guild else None
@@ -264,13 +308,14 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.artifact_pieces = player.artifact_pieces
                 pls.flags = player.flags
                 pls.renown = player.renown
-                pls.cult_id = player.cult.faction_id
+                pls.vocations = player.cult.faction_ids
                 pls.satchel = encode_satchel(player.satchel)
                 pls.equipped_items = encode_equipped_items(player.equipped_items)
                 pls.hp_percent = player.hp_percent
                 pls.stance = player.stance
                 pls.completed_quests = player.completed_quests
                 pls.last_guild_switch = player.last_guild_switch
+                pls.vocation_progress = encode_vocation_progress(player.vocations_progress)
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

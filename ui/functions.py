@@ -14,7 +14,7 @@ from pilgram.classes import (
     QTE_CACHE,
     TOWN_ZONE,
     Auction,
-    Cult,
+    Vocation,
     Guild,
     Player,
     SpellError,
@@ -242,8 +242,8 @@ def process_get_character_cult(context: UserContext, user_input) -> str:
     if not re.match(POSITIVE_INTEGER_REGEX, user_input):
         return Strings.positive_integer_error
     cult_id = int(user_input)
-    if cult_id >= len(Cult.LIST):
-        return Strings.cult_does_not_exist.format(start=0, end=len(Cult.LIST) - 1)
+    if cult_id >= len(Vocation.LIST):
+        return Strings.cult_does_not_exist.format(start=0, end=len(Vocation.LIST) - 1)
     context.set("cult", cult_id)
     context.progress_process()
     return context.get_process_prompt(USER_PROCESSES)
@@ -258,7 +258,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             # make a copy of the original player (to avoid cases in which we set a name that isn't valid in the object
             player_copy = copy(player)
             player_copy.name = context.get("name")
-            player_copy.cult = Cult.LIST[context.get("cult")]
+            player_copy.cult = Vocation.LIST[context.get("cult")]
             player_copy.description = user_input
             player_copy.money -= MODIFY_COST
             db().update_player_data(player_copy)
@@ -273,7 +273,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             player = Player.create_default(
                 context.get("id"), context.get("name"), user_input
             )
-            player.cult = Cult.LIST[context.get("cult")]
+            player.cult = Vocation.LIST[context.get("cult")]
             starting_weapon = Equipment.generate(1, EquipmentType.get(0), 0)
             db().add_player(player)
             item_id = db().add_item(starting_weapon, player)
@@ -715,7 +715,7 @@ def __list_spells() -> str:
 
 
 def list_cults(context: UserContext) -> str:
-    return "\n".join(str(x) for x in Cult.LIST[1:])
+    return "\n".join(str(x) for x in Vocation.LIST[1:])
 
 
 def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
@@ -1374,7 +1374,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         }
     },
     "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
-    "cults": IFW(None, list_cults, "Shows all cults"),
+    "vocations": IFW(None, list_cults, "Shows all vocations"),
     "hunt": IFW(None, force_combat, "Hunt for a strong enemy"),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {

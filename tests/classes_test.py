@@ -10,7 +10,7 @@ from pilgram.classes import (
     Quest,
     QuickTimeEvent,
     Zone,
-    ZoneEvent, Cult,
+    ZoneEvent, Vocation,
 )
 from pilgram.combat_classes import CombatContainer, Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
@@ -72,10 +72,10 @@ class TestClasses(unittest.TestCase):
         player = Player.create_default(0, "test", "")
         zone = Zone(0, "test", 1, "test", Damage.get_empty(), Damage.get_empty(), {})
         quest = Quest(0, zone, 3, "test", "", "", "")
-        player.cult = Cult.get(0)
+        player.cult = Vocation.get(0)
         duration_long = quest.get_duration(player)
         print(duration_long)
-        player.cult = Cult.get(11)
+        player.cult = Vocation.get(11)
         duration_short = quest.get_duration(player)
         print(duration_short)
         self.assertTrue(duration_long > duration_short)

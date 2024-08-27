@@ -162,7 +162,8 @@ class Strings:
         "discovery_bonus": "Item discovery bonus",
         "lick_wounds": "Animal instincts",
         "passive_regeneration": "Passive HP regeneration",
-        "combat_rewards_multiplier": "Combat rewards"
+        "combat_rewards_multiplier": "Combat rewards",
+        "quest_fail_rewards_multiplier": "Quest failure rewards"
     }
     you_can_choose_a_cult = "You tried some quests at this point, how about you join a cult now? Use the `cults` commands to see them all and then if you want edit your character to choose one."
 

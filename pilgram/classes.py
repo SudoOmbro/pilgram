@@ -349,13 +349,14 @@ class Player(CombatActor):
         artifacts: list[Artifact],
         flags: np.uint32,
         renown: int,
-        cult: Cult,
+        vocations: list[Vocation],
         satchel: list[ConsumableItem],
         equipped_items: dict[int, Equipment],
         hp_percent: float,
         stance: str,
         completed_quests: int,
         last_guild_switch: datetime,
+        vocations_progress: dict[int, int]
     ) -> None:
         """
         :param player_id (int): unique id of the player
@@ -372,13 +373,14 @@ class Player(CombatActor):
         :param last_cast (datetime): last spell cast datetime.
         :param flags (np.uint32): flags of the player, can be used for anything
         :param renown (int): renown of the player, used for ranking
-        :param cult: the player's cult
+        :param vocations: the player's vocations
         :param satchel: the player's satchel which holds consumable items
         :param equipped_items: the player's equipped items
         :param hp_percent: the player's hp percentage
         :param stance: the player's stance
         :param completed_quests: the player's completed quests
         :param last_guild_switch: The time in which the player last changed guild
+        :param vocations_progress: the player's vocations progress'
         """
         self.player_id = player_id
         self.name = name
@@ -395,13 +397,16 @@ class Player(CombatActor):
         self.artifacts = artifacts
         self.flags = flags
         self.renown = renown
-        self.cult = cult
+        self.cult: Vocation = Vocation.empty()
+        for vocation in vocations:
+            self.cult += vocation
         self.satchel = satchel
         self.equipped_items = equipped_items
         super().__init__(hp_percent)
         self.stance = stance
         self.completed_quests = completed_quests
         self.last_guild_switch = last_guild_switch
+        self.vocations_progress = vocations_progress
 
     def get_name(self) -> str:
         return self.name
@@ -451,8 +456,6 @@ class Player(CombatActor):
     def add_xp(self, amount: float) -> int:
         """adds xp to the player & returns how much was actually added to the player"""
         amount *= self.cult.general_xp_mult
-        if self.cult.xp_mult_per_player_in_cult != 1.0:
-            amount *= self.cult.xp_mult_per_player_in_cult**self.cult.number_of_members
         self.xp += int(amount)
         if self.xp >= self.get_required_xp():
             self.level_up()
@@ -461,10 +464,6 @@ class Player(CombatActor):
     def add_money(self, amount: float) -> int:
         """adds money to the player & returns how much was actually added to the player"""
         amount *= self.cult.general_money_mult
-        if self.cult.money_mult_per_player_in_cult != 1.0:
-            amount *= (
-                self.cult.money_mult_per_player_in_cult**self.cult.number_of_members
-            )
         for flag in (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3):
             if flag.is_set(self.flags):
                 amount = int(amount * 1.5)
@@ -506,16 +505,12 @@ class Player(CombatActor):
         return self.name
 
     def get_max_charge(self) -> int:
-        if self.cult.power_bonus == -100:
-            return 0
         max_charge = (len(self.artifacts) * 10) + self.cult.power_bonus
         if self.cult.power_bonus_per_zone_visited:
             max_charge += (
                 len(self.progress.zone_progress)
                 * self.cult.power_bonus_per_zone_visited
             )
-        if max_charge >= self.MAXIMUM_POWER:
-            max_charge = self.MAXIMUM_POWER
         return max_charge
 
     def get_spell_charge(self) -> int:
@@ -726,7 +721,7 @@ class Player(CombatActor):
         selection = random.choice(selected_pool)
         return selection
 
-    def get_profession_limit(self) -> int:
+    def get_vocation_limit(self) -> int:
         if self.level < 5:
             return 0
         if self.level < 20:
@@ -790,13 +785,14 @@ class Player(CombatActor):
             [],
             np.uint32(0),
             0,
-            Cult.LIST[0],
+            [],
             [],
             {},
             1.0,
             "b",
             0,
             datetime.now() - timedelta(days=1),
+            {}
         )
 
 
@@ -1147,15 +1143,33 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         return f"{self.description}\n{'\n'.join(f'{i + 1}. {s} ({p}% chance)' for i, (s, p) in enumerate(self.options))}"
 
 
-class Cult(Listable["Cult"], meta_name="cults"):
+class Vocation(Listable["Vocation"], meta_name="vocations"):
     """a horrible way to implement modifiers but it works"""
 
+    MAX_LEVEL = 5
+
     def __init__(
-        self, faction_id: int, name: str, description: str, modifiers: dict
+        self,
+        vocation_id: int,
+        unique_id: int,
+        name: str,
+        description: str,
+        modifiers: dict,
+        level: int
     ) -> None:
-        # TODO Some bonuses & features should be removed
+        """
+        :param vocation_id: the general vocation id, it stays the same for every level of the vocation
+        :param unique_id: the actual unique id of the vocation object.
+        :param name: the name of the vocation
+        :param description:
+        :param modifiers:
+        :param level:
+        """
         # generic vars
-        self.faction_id = faction_id
+        self.vocation_id = vocation_id
+        self.unique_id = unique_id
+        self.original_cults: list[Vocation] = []
+        self.level = level
         self.name = name
         self.description = description
         # stats modifiers
@@ -1174,13 +1188,6 @@ class Cult(Listable["Cult"], meta_name="cults"):
         self.upgrade_cost_multiplier: float = modifiers.get(
             "upgrade_cost_multiplier", 1.0
         )
-        self.xp_mult_per_player_in_cult: float = modifiers.get(
-            "xp_mult_per_player_in_cult", 1.0
-        )
-        self.money_mult_per_player_in_cult: float = modifiers.get(
-            "money_mult_per_player_in_cult", 1.0
-        )
-        self.randomizer_delay: int = modifiers.get("randomizer_delay", 0)
         self.stats_to_randomize: dict[str, list] = modifiers.get(
             "stats_to_randomize", {}
         )
@@ -1198,6 +1205,7 @@ class Cult(Listable["Cult"], meta_name="cults"):
         self.lick_wounds: bool = modifiers.get("lick_wounds", False)
         self.passive_regeneration: int = modifiers.get("passive_regeneration", 0)
         self.combat_rewards_multiplier: float = modifiers.get("combat_rewards_multiplier", 1.0)
+        self.quest_fail_rewards_multiplier: float = modifiers.get("quest_fail_rewards_multiplier", 0.0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         if self.stats_to_randomize:
@@ -1206,27 +1214,17 @@ class Cult(Listable["Cult"], meta_name="cults"):
             "damage": list(modifiers.get("damage", {}).keys()),
             "resistance": list(modifiers.get("resistance", {}).keys()),
         }
-        self.last_update: datetime = datetime.now() - timedelta(days=2)
-        self.number_of_members: int = (
-            0  # has to be set every hour by the timed updates manager
-        )
-
-    def can_randomize(self) -> bool:
-        return (
-            (self.randomizer_delay != 0)
-            and self.stats_to_randomize
-            and (
-                (datetime.now() - self.last_update)
-                >= timedelta(hours=self.randomizer_delay)
-            )
-        )
 
     def randomize(self) -> None:
         for stat_name, choices in self.stats_to_randomize.items():
             self.__dict__[stat_name] = random.choice(choices)
 
-    def __add__(self, other: Cult) -> Cult:
-        result = Cult(-1, f"{self.name} {other.name}", "", {})
+    def __add__(self, other: Vocation) -> Vocation:
+        result = Vocation(-1, -1, f"{self.name} {other.name}", "", {}, 1)
+        if self.unique_id != 0:
+            result.original_cults.append(self)
+        if other.unique_id != 0:
+            result.original_cults.append(other)
         result.general_xp_mult = self.general_xp_mult + other.general_xp_mult
         result.general_money_mult = self.general_money_mult
         result.quest_xp_mult = self.quest_xp_mult + other.quest_xp_mult
@@ -1250,15 +1248,25 @@ class Cult(Listable["Cult"], meta_name="cults"):
         result.passive_regeneration = self.passive_regeneration * other.passive_regeneration
         result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier
         result.lick_wounds = self.lick_wounds or other.lick_wounds
+        result.quest_fail_rewards_multiplier = self.quest_fail_rewards_multiplier + other.quest_fail_rewards_multiplier
         return result
 
     def __eq__(self, other: Any) -> bool:
-        if isinstance(other, Cult):
-            return self.faction_id == other.faction_id
+        if isinstance(other, Vocation):
+            return self.unique_id == other.unique_id
         return False
 
+    def __get_rank_string(self) -> str:
+        return {
+            1: "Novice",
+            2: "Journeyman",
+            3: "Expert",
+            4: "Master",
+            5: "Legendary"
+        }.get(self.level, "")
+
     def __str__(self) -> str:
-        string = f"{self.faction_id} - *{self.name}* ({self.number_of_members} members)\n_{self.description}_\n"
+        string = f"{self.__get_rank_string()} *{self.name.capitalize()}*\n_{self.description}_\n"
         if self.modifiers_applied:
             for modifier in self.modifiers_applied:
                 name = Strings.modifier_names[modifier]
@@ -1279,18 +1287,34 @@ class Cult(Listable["Cult"], meta_name="cults"):
         return string
 
     @classmethod
-    def create_from_json(cls, cults_json: dict[str, Any]) -> Cult:
+    def create_from_json(cls, cults_json: dict[str, Any]) -> Vocation:
         return cls(
+            cults_json.get("vocation_id"),
             cults_json.get("id"),
             cults_json.get("name"),
             cults_json.get("description"),
             cults_json.get("modifiers"),
+            cults_json.get("level")
         )
 
     @classmethod
-    def update_number_of_members(cls, members_number: list[tuple[int, int]]) -> None:
-        for cult_id, number in members_number:
-            cls.LIST[cult_id].number_of_members = number
+    def empty(cls):
+        return cls(0, 0, "", "", {}, 0)
+
+    def get_upgrade_cost(self) -> int:
+        value = {
+            1: 50000,
+            2: 250000,
+            3: 500000,
+            4: 1000000
+        }.get(self.level, 999999999999)
+        return int(value)
+
+    def can_upgrade(self):
+        return not (self.level == self.MAX_LEVEL)
+
+    def get_next_rank(self) -> Vocation:
+        return Vocation.get(self.unique_id + 1)
 
 
 class Tourney:

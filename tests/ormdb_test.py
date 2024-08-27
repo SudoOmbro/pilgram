@@ -13,7 +13,7 @@ from orm.db import (
     encode_equipped_items,
     encode_modifiers,
     encode_progress,
-    encode_satchel,
+    encode_satchel, decode_vocation_ids, encode_vocation_ids, decode_vocation_progress, encode_vocation_progress,
 )
 from pilgram.classes import Player, Guild
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
@@ -161,3 +161,24 @@ class TestORMDB(unittest.TestCase):
         self.assertTrue(len(result) == 2)
         self.assertTrue(1 in result)
         self.assertTrue(2 in result)
+
+    def test_decode_vocation_ids(self):
+        result = decode_vocation_ids(4294967295)  # 32 bit unsigned integer limit
+        for item in result:
+            self.assertEqual(item, 255)
+
+    def test_encode_vocation_ids(self):
+        result = encode_vocation_ids([0, 0, 0, 1])
+        self.assertEqual(result, 1)
+        result = encode_vocation_ids([255, 0, 0, 1])
+        self.assertEqual(result, 4278190081)
+
+    def test_decode_vocation_progress(self):
+        result = decode_vocation_progress(b"\x01\x01\x02\x04\x04\x0F".decode(ENCODING))
+        self.assertEqual(result[1], 1)
+        self.assertEqual(result[2], 4)
+        self.assertEqual(result[4], 15)
+
+    def test_encode_vocation_progress(self):
+        result = encode_vocation_progress({2: 4, 6: 8})
+        self.assertEqual(result.encode(ENCODING), b'\x02\x04\x06\x08')

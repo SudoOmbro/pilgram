@@ -332,196 +332,129 @@
       "rewards": "xp 20"
     }]
 }],
-  "cults": [{
+  "vocations": [{
+    "vocation_id": 0,
     "id": 0,
-    "name": "Not in a cult",
-    "description": "Not really a cult. 'Members' don't have any quirks, they are just standard adventurers.",
+    "name": "",
+    "level": 0,
+    "description": "No Vocation",
     "modifiers": {}
   }, {
+    "vocation_id": 1,
     "id": 1,
-    "name": "Cult of the Amygdala",
-    "description": "Members are shunned by society, part of their rituals involves eating parts of human brains. The rituals and drugs they take let them access their latent eldritch powers, even without the aid of artifacts.",
+    "name": "adventurer",
+    "level": 1,
+    "description": "Luck alone won't get you anywhere, but it will certainly help.",
     "modifiers": {
-      "can_meet_players": false,
-      "power_bonus": 10,
-      "passive_regeneration": 5,
-      "damage": {
-        "occult": 5
-      },
-      "resistance": {
-        "occult": -1
-      }
+      "roll_bonus": 2,
+      "quest_time_multiplier": 0.9
     }
   }, {
+    "vocation_id": 1,
     "id": 2,
-    "name": "Inquisition Remnants",
-    "description": "Remnants of the old Royal Inquisition sect. Even though the God emperor died long ago, the sacred talismans they hold still work, blocking the eldritch influences of old Gods.",
+    "name": "adventurer",
+    "level": 2,
+    "description": "It’s not the years, honey, it’s the mileage.",
     "modifiers": {
-      "eldritch_resist": true,
-      "power_bonus": -100,
-      "passive_regeneration": 2,
-      "damage":{
-        "occult": -1
-      },
-      "resistance": {
-        "occult": 5
-      }
+      "roll_bonus": 2,
+      "quest_time_multiplier": 0.85,
+      "quest_xp_mult": 1.1,
+      "quest_money_mult": 1.1
     }
   }, {
+    "vocation_id": 1,
     "id": 3,
-    "name": "Order of the Alloy",
-    "description": "Worshippers of all things made of Boromian Alloy. They really love treasure, and they will spend a long time searching for it.",
+    "name": "adventurer",
+    "level": 3,
+    "description": "The greatest adventure is what lies ahead.",
     "modifiers": {
-      "event_money_mult": 2.0,
-      "quest_money_mult": 2.0,
-      "quest_time_multiplier": 2.0,
-      "discovery_bonus": 2
+      "roll_bonus": 3,
+      "quest_time_multiplier": 0.8,
+      "quest_xp_mult": 1.3,
+      "quest_money_mult": 1.3
     }
   }, {
+    "vocation_id": 1,
     "id": 4,
-    "name": "Arditi",
-    "description": "Promises are sacred to the members of this cult. They will complete missions at any cost, even if it means losing possible treasure.",
+    "name": "adventurer",
+    "level": 4,
+    "description": "X never, ever marks the spot.",
     "modifiers": {
-      "event_money_mult": 0.2,
-      "quest_money_mult": 0.2,
-      "roll_bonus": 5,
-      "hp_mult": 1.2,
-      "resistance": {
-        "slash": 1,
-        "pierce": 1
-      }
+      "roll_bonus": 4,
+      "quest_time_multiplier": 0.75,
+      "quest_xp_mult": 1.4,
+      "quest_money_mult": 1.4,
+      "quest_fail_rewards_multiplier": 0.25,
+      "power_bonus_per_zone_visited": 2
     }
   }, {
+    "vocation_id": 1,
     "id": 5,
-    "name": "Fingers of Atlas",
-    "description": "These cultists worship the free market, studying it obsessively. They always seem to manage to earn a bit more money than others by taking shortcuts & cost saving measures.",
+    "name": "adventurer",
+    "level": 5,
+    "description": "I am not the same, having seen the moon shine on the other side of the world.",
     "modifiers": {
-      "general_money_mult": 1.5,
-      "general_xp_mult": 0.7,
-      "quest_time_multiplier": 0.65,
-      "discovery_bonus": -1
+      "roll_bonus": 4,
+      "quest_time_multiplier": 0.7,
+      "quest_xp_mult": 1.5,
+      "quest_money_mult": 1.5,
+      "quest_fail_rewards_multiplier": 0.5,
+      "power_bonus_per_zone_visited": 5
     }
   }, {
-    "id": 6,
-    "name": "Esoteric Order of the Serpent",
-    "description": "Worshippers of the dead titan resting in Serpentbarrow. They perform daily animal sacrifices to commune with the Serpent, which grants them forbidden knowledge.",
+    "vocation_id": 2,
+    "id": 101,
+    "name": "arcanist",
+    "level": 1,
+    "description": "Do not call up any that you can not put down.",
     "modifiers": {
-      "general_xp_mult": 1.25,
-      "general_money_mult": 0.75,
-      "quest_time_multiplier": 1.25,
-      "damage": {
-        "pierce": 2,
-        "occult": 2
-      }
+      "general_xp_mult": 1.1,
+      "power_bonus": 10
     }
   }, {
-    "id": 7,
-    "name": "Heresy remnants",
-    "description": "Remnants of the old heretics that killed the God Empreror. They are trying to reclaim their power by restoring artifacts that were lost during the final battle.",
+    "vocation_id": 2,
+    "id": 102,
+    "name": "arcanist",
+    "level": 2,
+    "description": "The world is indeed comic, but the joke is on mankind.",
     "modifiers": {
-      "artifact_drop_bonus": 4,
-      "upgrade_cost_multiplier": 2.0,
-      "quest_time_multiplier": 1.6,
-      "damage": {
-        "occult": 3
-      },
-      "resistance": {
-        "fire": -1
-      }
-    }
-  }, {
-    "id": 8,
-    "name": "The Convergence",
-    "description": "We are one. We are many.",
-    "modifiers": {
-      "xp_mult_per_player_in_cult": 1.01,
-      "money_mult_per_player_in_cult": 0.99
-    }
-  }, {
-    "id": 9,
-    "name": "Children of Chaos",
-    "description": "Worshippers of the primordial chaos from whence the universe was birthed.",
-    "modifiers": {
-      "damage": {
-        "fire": 3
-      },
-      "randomizer_delay": 24,
-      "stats_to_randomize": {
-        "can_meet_players": [true, false],
-        "power_bonus":  [-30, -20, -10, 0, 10, 20, 30],
-        "artifact_drop_bonus": [-1, 0, 1],
-        "general_xp_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
-        "general_money_mult": [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5],
-        "roll_bonus": [-2, -1, 0, 1, 2],
-        "upgrade_cost_multiplier": [0.8, 0.9, 1.0, 1.1, 1.2],
-        "qte_frequency_bonus": [-2, -1, 0, 1, 2],
-        "hp_bonus": [-6, -3, 0, 3, 6],
-        "discovery_bonus": [-1, 0, 1],
-        "combat_rewards_multiplier": [0.5, 1.0, 1.5]
-      }
-    }
-  }, {
-    "id": 10,
-    "name": "Followers of the Pilgrims",
-    "description": "Followers of the ever wandering Pilgrims, they gain deep insights and forbidden knowledge from following the mysterious mute figures walking Borom.",
-    "modifiers": {
-      "power_bonus_per_zone_visited": 2,
       "general_xp_mult": 1.2,
-      "quest_time_multiplier": 1.4,
-      "resistance": {
-        "fire": 1,
-        "freeze": 1,
-        "acid": 1
-      }
+      "power_bonus": 20
     }
   }, {
-    "id": 11,
-    "name": "Order of the Red Nose",
-    "description": "The gods give their silliest battles to their funniest clowns.",
+    "vocation_id": 2,
+    "id": 103,
+    "name": "arcanist",
+    "level": 3,
+    "description": "Only poetry or madness could do justice to the noises.",
     "modifiers": {
-      "qte_frequency_bonus": 3,
-      "quest_time_multiplier": 0.65,
-      "roll_bonus": -2,
-      "minigame_xp_mult": 2.0,
-      "minigame_money_mult": 2.0,
-      "resistance": {
-        "blunt": 1,
-        "electric": 1
-      }
+      "general_xp_mult": 1.3,
+      "power_bonus": 30,
+      "artifact_drop_bonus": 1
     }
   }, {
-    "id": 12,
-    "name": "Flesh Moon Acolytes",
-    "description": "Worshippers of Rubedo, these cultists kill for pleasure & gain unnatural strength from drinking the blood of their victims.",
+    "vocation_id": 2,
+    "id": 104,
+    "name": "arcanist",
+    "level": 4,
+    "description": "That is not dead which can eternal lie...",
     "modifiers": {
-      "can_meet_players": false,
-      "quest_time_multiplier": 2.5,
-      "lick_wounds": true,
-      "hp_mult": 1.5,
-      "passive_regeneration": -1,
-      "damage": {
-        "pierce": 1,
-        "occult": 1
-      }
+      "general_xp_mult": 1.4,
+      "power_bonus": 40,
+      "discovery_bonus": 1,
+      "artifact_drop_bonus": 1
     }
   }, {
-    "id": 13,
-    "name": "Church of Purity",
-    "description": "Members believe in the purity of the human race and are hellbent on eradicating all manners of monsters & abominations.",
+    "vocation_id": 2,
+    "id": 105,
+    "name": "arcanist",
+    "level": 5,
+    "description": "... And with strange aeons even death may die.",
     "modifiers": {
-      "quest_time_multiplier": 1.2,
-      "hp_mult": 1.2,
-      "combat_rewards_multiplier": 1.5,
-      "event_money_mult": 0.5,
-      "quest_money_mult": 0.5,
-      "event_xp_mult": 0.5,
-      "quest_xp_mult": 0.5,
-      "damage": {
-        "fire": 1
-      },
-      "resistance": {
-        "occult": 1
-      }
+      "general_xp_mult": 1.5,
+      "power_bonus": 50,
+      "discovery_bonus": 2,
+      "artifact_drop_bonus": 2
     }
   }],
   "equipment types": [{

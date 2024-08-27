@@ -14,7 +14,6 @@ from pilgram.classes import (
     TOWN_ZONE,
     AdventureContainer,
     Auction,
-    Cult,
     Enemy,
     Player,
     Quest,
@@ -218,11 +217,6 @@ class QuestManager(Manager):
         player.progress.set_zone_progress(quest.zone, quest.number + 1)
         player.hp_percent = 1.0
         self.db().update_player_data(player)
-        if player.get_number_of_tried_quests() == 4:
-            self.db().create_and_add_notification(
-                player,
-                Strings.you_can_choose_a_cult
-            )
 
     @staticmethod
     def __player_regenerate_hp(ac: AdventureContainer, player: Player) -> str:
@@ -452,7 +446,7 @@ class QuestManager(Manager):
             self.db().update_player_data(player2)
             self.db().create_and_add_notification(player1, text.format(name=player2.name))
             self.db().create_and_add_notification(player2, text.format(name=player1.name))
-            log.info(f"Players {player1.name} & {player2.name} have met")
+            # log.info(f"Players {player1.name} & {player2.name} have met")
             sleep(self.updates_per_second * 2)
 
     def run(self) -> None:
@@ -643,12 +637,6 @@ class TimedUpdatesManager(Manager):
         super().__init__(database)
 
     def run(self) -> None:
-        # update cult members
-        Cult.update_number_of_members(self.db().get_cults_members_number())
-        # update randomized stats
-        for cult in Cult.LIST:
-            if cult.can_randomize():
-                cult.randomize()
         # update auctions
         expired_auctions: list[Auction] = self.db().get_expired_auctions()
         log.info(f"{len(expired_auctions)} expired auctions to process")

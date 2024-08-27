@@ -198,17 +198,22 @@ def __migrate_v6_to_v7():
     os.rename("pilgram_v6.db", "pilgram_v7.db")
 
 
-# @__add_to_migration_list("pilgram_v7.db")
-# def __migrate_v7_to_v8():
-#     from playhouse.migrate import SqliteMigrator, migrate
-#     from ._models_v7 import db as previous_db
-#
-#     log.info("Migrating v7 to v8...")
-#     previous_db.connect()
-#     migrator = SqliteMigrator(previous_db)
-#     migrate(
-#         migrator.add_column('playermodel', 'vocation_progress', CharField(null=False, default=""))
-#     )
-#     previous_db.commit()
-#     previous_db.close()
-#     os.rename("pilgram_v7.db", "pilgram_v8.db")
+@__add_to_migration_list("pilgram_v7.db")
+def __migrate_v7_to_v8():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v7 import PlayerModel
+    from ._models_v7 import db as previous_db
+    log.info("Migrating v7 to v8...")
+    previous_db.connect()
+    with previous_db.atomic():
+        for ps in PlayerModel.select():
+            ps.cult_id = 0
+            ps.save()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('playermodel', 'vocation_progress', CharField(null=False, default="")),
+        migrator.rename_column('playermodel', 'cult_id', 'vocations')
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v7.db", "pilgram_v8.db")
