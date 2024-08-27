@@ -62,14 +62,13 @@ class PlayerModel(BaseModel):
     artifact_pieces = IntegerField(default=0)
     flags = IntegerField(default=0)
     renown = IntegerField(default=0)
-    cult_id = IntegerField(default=0)  # this becomes what stores the vocations, considering we use 1 byte per vocation we can have a maximum of 4 vocations per player
+    cult_id = IntegerField(default=0)
     hp_percent = FloatField(null=False, default=1.0)
     satchel = CharField(null=False, default="")  # consumable items are stored as a char string (a byte per item)
     equipped_items = CharField(null=False, default="")  # equipped items are stored as char string, 32 + 8 bits per item (only store the id of the item & where the item is equipped)
     stance = FixedCharField(max_length=1, default="b")  # stance saved as a char
     completed_quests = IntegerField(default=0)
     last_guild_switch = DateTimeField(default=datetime.now() - timedelta(days=1))
-    # vocation_progress = CharField(null=False, default="")  # vocation progress is stored as a byte for profession id & a byte for progress
 
 
 class GuildModel(BaseModel):

@@ -842,9 +842,9 @@ class Guild:
 
     def get_max_members(self) -> int:
         value = self.level * self.PLAYERS_PER_LEVEL
-        if value <= self.MAX_PLAYERS:
-            return value
-        return self.MAX_LEVEL
+        if value > self.MAX_PLAYERS:
+            return self.MAX_PLAYERS
+        return value
 
     def can_add_member(self, current_members: int) -> bool:
         return current_members < self.get_max_members()

@@ -135,7 +135,7 @@ def __get_guild_from_name(guild_name: str) -> tuple[str | None, Guild | None]:
     guild = None
     for g in guilds:
         if g.name == guild_name:
-            player = g
+            guild = g
     if guild is None:
         return Strings.multiple_matches_found.format(obj="guild") + "\n\n" + "\n".join(x.name for x in guilds), None
     return None, guild
