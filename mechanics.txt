@@ -181,6 +181,8 @@ If you die during combat and you have a revive in your inventory, the revive wil
 If you win you get `40 x enemy level` XP & BA plus you have a chance to get an artifact piece if you force the combat.
 Note that forcing combat gives you increasingly strong enemies the closer you get to finishing a quest.
 
+Weight is quite important during combat, infact it determines how much stamina you use when attacking. The more weight you have on you, the more it will take for you to recover.
+
 ♦️♦️*Consumables*♦️♦️
 Consumable items are important for restoring your HP during quests, boosting your damage or even reviving you.
 You can check out the dailiy items on sale at the market & buy them there. Note that you can hold a maximum of 10 consumables.
