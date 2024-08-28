@@ -628,7 +628,7 @@ class Player(CombatActor):
         return base_damage
 
     def get_base_attack_resistance(self) -> Damage:
-        base_resistance = self.vocation.resistance.scale(self.level)
+        base_resistance = self.vocation.resist.scale(self.level)
         for _, item in self.equipped_items.items():
             base_resistance += item.resist
         return base_resistance
@@ -1244,7 +1244,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.hp_mult = modifiers.get("hp_mult", 1.0)
         self.hp_bonus = modifiers.get("hp_bonus", 0)
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
-        self.resistance = Damage.load_from_json(modifiers.get("resist", {}))
+        self.resist = Damage.load_from_json(modifiers.get("resist", {}))
         self.discovery_bonus: int = modifiers.get("discovery_bonus", 0)
         self.lick_wounds: bool = modifiers.get("lick_wounds", False)
         self.passive_regeneration: int = modifiers.get("passive_regeneration", 0)
@@ -1254,7 +1254,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
             "damage": list(modifiers.get("damage", {}).keys()),
-            "resistance": list(modifiers.get("resistance", {}).keys()),
+            "resist": list(modifiers.get("resist", {}).keys()),
         }
 
     def __add__(self, other: Vocation) -> Vocation:
@@ -1285,7 +1285,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.hp_mult = self.hp_mult * other.hp_mult
         result.hp_bonus = self.hp_bonus * other.hp_bonus
         result.damage = self.damage + other.damage
-        result.resistance = self.resistance + other.resistance
+        result.resist = self.resist + other.resist
         result.discovery_bonus = self.discovery_bonus + other.discovery_bonus
         result.passive_regeneration = self.passive_regeneration * other.passive_regeneration
         result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier

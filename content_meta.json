@@ -419,7 +419,10 @@
     "description": "The world is indeed comic, but the joke is on mankind.",
     "modifiers": {
       "general_xp_mult": 1.2,
-      "power_bonus": 20
+      "power_bonus": 20,
+      "damage": {
+        "occult": 1
+      }
     }
   }, {
     "vocation_id": 2,
@@ -430,7 +433,10 @@
     "modifiers": {
       "general_xp_mult": 1.3,
       "power_bonus": 30,
-      "artifact_drop_bonus": 1
+      "artifact_drop_bonus": 1,
+      "damage": {
+        "occult": 1
+      }
     }
   }, {
     "vocation_id": 2,
@@ -442,7 +448,10 @@
       "general_xp_mult": 1.4,
       "power_bonus": 40,
       "discovery_bonus": 1,
-      "artifact_drop_bonus": 1
+      "artifact_drop_bonus": 1,
+      "damage": {
+        "occult": 2
+      }
     }
   }, {
     "vocation_id": 2,
@@ -454,7 +463,10 @@
       "general_xp_mult": 1.5,
       "power_bonus": 50,
       "discovery_bonus": 2,
-      "artifact_drop_bonus": 2
+      "artifact_drop_bonus": 2,
+      "damage": {
+        "occult": 3
+      }
     }
   }, {
     "vocation_id": 3,
@@ -477,8 +489,8 @@
     "modifiers": {
       "combat_rewards_multiplier": 1.2,
       "damage": {
-        "slash": 2,
-        "fire": 2
+        "slash": 1,
+        "pierce": 1
       }
     }
   }, {
@@ -493,8 +505,8 @@
       "passive_regeneration": 2,
       "qte_frequency_bonus": 1,
       "damage": {
-        "slash": 3,
-        "fire": 3
+        "slash": 2,
+        "pierce": 1
       }
     }
   }, {
@@ -509,9 +521,8 @@
       "passive_regeneration": 10,
       "qte_frequency_bonus": 2,
       "damage": {
-        "slash": 3,
-        "pierce": 3,
-        "fire": 3
+        "slash": 2,
+        "pierce": 2
       }
     }
   }, {
@@ -527,9 +538,8 @@
       "qte_frequency_bonus": 2,
       "lick_wounds": true,
       "damage": {
-        "slash": 5,
-        "pierce": 5,
-        "fire": 5
+        "slash": 3,
+        "pierce": 3
       }
     }
   }, {
@@ -602,6 +612,79 @@
       "damage": {
         "blunt": 6,
         "electric": 6
+      }
+    }
+  }, {
+    "vocation_id": 5,
+    "id": 21,
+    "name": "Inquisitor",
+    "level": 1,
+    "description": "You shall be a bulwark against heresy.",
+    "modifiers": {
+      "hp_mult": 1.1,
+      "eldritch_resist": true
+    }
+  }, {
+    "vocation_id": 5,
+    "id": 22,
+    "name": "Inquisitor",
+    "level": 2,
+    "description": "A mind without purpose will wander in dark places.",
+    "modifiers": {
+      "hp_mult": 1.2,
+      "eldritch_resist": true,
+      "resist": {
+        "occult": 1
+      }
+    }
+  }, {
+    "vocation_id": 5,
+    "id": 23,
+    "name": "Inquisitor",
+    "level": 3,
+    "description": "Put a heretic to the flame and he'll be loyal for the rest of his life.",
+    "modifiers": {
+      "hp_mult": 1.3,
+      "eldritch_resist": true,
+      "damage": {
+        "fire": 1
+      },
+      "resist": {
+        "occult": 2
+      }
+    }
+  }, {
+    "vocation_id": 5,
+    "id": 24,
+    "name": "Inquisitor",
+    "level": 4,
+    "description": "The zealous martyr is praised for his valour.",
+    "modifiers": {
+      "hp_mult": 1.4,
+      "hp_bonus": 50,
+      "eldritch_resist": true,
+      "damage": {
+        "fire": 2
+      },
+      "resist": {
+        "occult": 3
+      }
+    }
+  }, {
+    "vocation_id": 5,
+    "id": 25,
+    "name": "Inquisitor",
+    "level": 5,
+    "description": "In the midst of battle you shall have no fear.",
+    "modifiers": {
+      "hp_mult": 1.6,
+      "hp_bonus": 100,
+      "eldritch_resist": true,
+      "damage": {
+        "fire": 4
+      },
+      "resist": {
+        "occult": 4
       }
     }
   }],

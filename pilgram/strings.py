@@ -156,7 +156,7 @@ class Strings:
         "hp_mult": "HP",
         "hp_bonus": "HP bonus",
         "damage": "Damage x level",
-        "resistance": "Resist x level",
+        "resist": "Resist x level",
         "discovery_bonus": "Item discovery bonus",
         "lick_wounds": "Animal instincts",
         "passive_regeneration": "Passive HP regeneration",
