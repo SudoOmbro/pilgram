@@ -149,8 +149,6 @@ class Strings:
         "upgrade_cost_multiplier": "Upgrade Cost",
         "xp_mult_per_player_in_cult": "XP x player in cult",
         "money_mult_per_player_in_cult": "BA x player in cult",
-        "randomizer_delay": "Randomize following every {hr} hours",
-        "stats_to_randomize": "Affected stats",
         "power_bonus_per_zone_visited": "Eldritch power x zones visited",
         "qte_frequency_bonus": "QTE frequency bonus",
         "minigame_xp_mult": "Minigame XP",

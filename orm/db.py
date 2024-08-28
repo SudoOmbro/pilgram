@@ -165,7 +165,7 @@ def decode_vocation_progress(data: str | None) -> dict[int, int]:
 
 def encode_vocation_progress(vocation_progress: dict[int, int]) -> str:
     progress_list = list(vocation_progress.items())
-    packed_array = np.empty(len(progress_list), NP_VP)
+    packed_array = np.zeros(len(progress_list), NP_VP)
     for i, (vocation_id, progress) in enumerate(progress_list):
         packed_array[i]["id"] = vocation_id
         packed_array[i]["progress"] = progress
@@ -237,7 +237,10 @@ class PilgramORMDatabase(PilgramDatabase):
             # vocations
             vocation_ids = decode_vocation_ids(pls.vocations)
             vocations_progress = decode_vocation_progress(pls.vocation_progress)
-            vocations = [Vocation.get(vid) for vid in vocation_ids]
+            vocations = []
+            for vid in vocation_ids:
+                if vid != 0:
+                    vocations.append(Vocation.get(vid))
             # items
             for item in items:
                 if item.equipment_id in equipped_items_ids:
@@ -308,7 +311,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.artifact_pieces = player.artifact_pieces
                 pls.flags = player.flags
                 pls.renown = player.renown
-                pls.vocations = encode_vocation_ids(player.cult.original_cults)
+                pls.vocations = encode_vocation_ids(player.vocation.original_cults)
                 pls.satchel = encode_satchel(player.satchel)
                 pls.equipped_items = encode_equipped_items(player.equipped_items)
                 pls.hp_percent = player.hp_percent

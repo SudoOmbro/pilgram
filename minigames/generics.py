@@ -81,7 +81,7 @@ class PilgramMinigame(ABC):
     def get_rewards_apply_bonuses(self) -> tuple[int, int]:
         """ return xp & money gained and apply player related bonuses """
         xp, money = self.get_rewards()
-        return int(xp * self.player.cult.minigame_xp_mult), int(money * self.player.cult.minigame_money_mult)
+        return int(xp * self.player.vocation.minigame_xp_mult), int(money * self.player.vocation.minigame_money_mult)
 
 
 class GamblingMinigame(PilgramMinigame):

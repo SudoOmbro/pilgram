@@ -258,7 +258,7 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             # make a copy of the original player (to avoid cases in which we set a name that isn't valid in the object
             player_copy = copy(player)
             player_copy.name = context.get("name")
-            player_copy.cult = Vocation.LIST[context.get("cult")]
+            player_copy.vocation = Vocation.LIST[context.get("cult")]
             player_copy.description = user_input
             player_copy.money -= MODIFY_COST
             db().update_player_data(player_copy)
@@ -266,14 +266,14 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             player.name = player_copy.name
             player.description = player_copy.description
             player.money = player_copy.money
-            player.cult = player_copy.cult
+            player.vocation = player_copy.vocation
             context.end_process()
             return Strings.obj_modified.format(obj="character")
         else:
             player = Player.create_default(
                 context.get("id"), context.get("name"), user_input
             )
-            player.cult = Vocation.LIST[context.get("cult")]
+            player.vocation = Vocation.LIST[context.get("cult")]
             starting_weapon = Equipment.generate(1, EquipmentType.get(0), 0)
             db().add_player(player)
             item_id = db().add_item(starting_weapon, player)
@@ -720,7 +720,7 @@ def list_vocations(context: UserContext) -> str:
         string: str = "Here are all your vocations:\n\n"
         for vocation in Vocation.LIST[1:]:
             if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
-                string += f"{vocation}\n\n"
+                string += f"{"(X) " if vocation in player.vocation.original_cults else ""}{vocation}\n"
         return string
     except KeyError:
         return Strings.no_character_yet

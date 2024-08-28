@@ -189,7 +189,7 @@ class QuestManager(Manager):
             player.renown += renown
             piece: bool = False
             if random.randint(1, 10) < (
-                3 + player.cult.artifact_drop_bonus
+                3 + player.vocation.artifact_drop_bonus
             ):  # 30% base chance to gain a piece of an artifact
                 player.artifact_pieces += 1
                 piece = True
@@ -222,7 +222,7 @@ class QuestManager(Manager):
     def __player_regenerate_hp(ac: AdventureContainer, player: Player) -> str:
         hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
         regenerated_hp: int = (
-            int((player.gear_level * 0.75) * hours_passed) + player.cult.passive_regeneration
+            int((player.gear_level * 0.75) * hours_passed) + player.vocation.passive_regeneration
         )
         player.modify_hp(regenerated_hp)
         return f"You regenerate {regenerated_hp} HP ({player.get_hp_string()})."
@@ -249,14 +249,14 @@ class QuestManager(Manager):
                 del QTE_CACHE[player.player_id]
                 text = Strings.qte_failed + "\n\n" + text
             elif random.randint(1, 10) <= (
-                1 + player.cult.qte_frequency_bonus
+                1 + player.vocation.qte_frequency_bonus
             ):  # 10% base chance of a quick time event if player is on a quest
                 # log.info(f"Player '{player.name}' encountered a QTE.")
                 qte = random.choice(QuickTimeEvent.LIST)
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
             elif random.randint(1, 10) <= (
-                1 + player.cult.discovery_bonus
+                1 + player.vocation.discovery_bonus
             ):  # 10% base change of finding an item
                 items = self.db().get_player_items(player.player_id)
                 if len(items) < player.get_inventory_size():
@@ -280,7 +280,7 @@ class QuestManager(Manager):
         self.__player_regenerate_hp(ac, player)
         hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
         regenerated_hp: int = (
-            1 + int(player.gear_level * hours_passed) + player.cult.passive_regeneration
+            1 + int(player.gear_level * hours_passed) + player.vocation.passive_regeneration
         )
         player.modify_hp(regenerated_hp)
         # select helper from current updates
@@ -453,7 +453,7 @@ class QuestManager(Manager):
         zones_players_map: dict[int, list[Player]] = {}
         updates = self.get_updates()
         for update in updates:
-            if update.player.cult.can_meet_players:
+            if update.player.vocation.can_meet_players:
                 add_to_zones_players_map(zones_players_map, update)
             self.process_update(update, updates)
             sleep(self.updates_per_second)

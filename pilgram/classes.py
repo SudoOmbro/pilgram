@@ -233,11 +233,11 @@ class Quest:
         rand = random.randint(1, 50)
         return (
             int(
-                ((self.BASE_XP_REWARD * multiplier) + rand) * player.cult.quest_xp_mult
+                ((self.BASE_XP_REWARD * multiplier) + rand) * player.vocation.quest_xp_mult
             ),
             int(
                 ((self.BASE_MONEY_REWARD * multiplier) + rand)
-                * player.cult.quest_money_mult
+                * player.vocation.quest_money_mult
             ),
         )  # XP, Money
 
@@ -249,7 +249,7 @@ class Quest:
                 + (DURATION_PER_QUEST_NUMBER * self.number)
                 + (random.randint(0, self.zone.level) * RANDOM_DURATION)
             )
-            * player.cult.quest_time_multiplier
+            * player.vocation.quest_time_multiplier
         )
 
     def get_prestige(self) -> int:
@@ -428,9 +428,9 @@ class Player(CombatActor):
         self.artifacts = artifacts
         self.flags = flags
         self.renown = renown
-        self.cult: Vocation = Vocation.empty()  # Cult was the legacy variable name
-        for vocation in vocations:
-            self.cult += vocation
+        self.vocation: Vocation = Vocation.empty()  # Created by summing vocations
+        for v in vocations:
+            self.vocation += v
         self.satchel = satchel
         self.equipped_items = equipped_items
         super().__init__(hp_percent)
@@ -453,17 +453,17 @@ class Player(CombatActor):
     def get_required_xp(self) -> int:
         lv = self.level
         value = (100 * (lv * lv)) + (1000 * lv)
-        return int(value * self.cult.upgrade_cost_multiplier)
+        return int(value * self.vocation.upgrade_cost_multiplier)
 
     def get_gear_upgrade_required_money(self) -> int:
         lv = self.gear_level
         value = (50 * (lv * lv)) + (1000 * lv)
-        return int(value * self.cult.upgrade_cost_multiplier)
+        return int(value * self.vocation.upgrade_cost_multiplier)
 
     def get_home_upgrade_required_money(self) -> int:
         lv = self.home_level + 1
         value = (200 * (lv * lv)) + (600 * lv)
-        return int(value * self.cult.upgrade_cost_multiplier)
+        return int(value * self.vocation.upgrade_cost_multiplier)
 
     def can_upgrade_gear(self) -> bool:
         return True
@@ -487,7 +487,7 @@ class Player(CombatActor):
 
     def add_xp(self, amount: float) -> int:
         """adds xp to the player & returns how much was actually added to the player"""
-        amount *= self.cult.general_xp_mult
+        amount *= self.vocation.general_xp_mult
         self.xp += int(amount)
         if self.xp >= self.get_required_xp():
             self.level_up()
@@ -495,7 +495,7 @@ class Player(CombatActor):
 
     def add_money(self, amount: float) -> int:
         """adds money to the player & returns how much was actually added to the player"""
-        amount *= self.cult.general_money_mult
+        amount *= self.vocation.general_money_mult
         for flag in (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3):
             if flag.is_set(self.flags):
                 amount = int(amount * 1.5)
@@ -509,7 +509,7 @@ class Player(CombatActor):
 
     def roll(self, dice_faces: int) -> int:
         """roll a dice and apply all advantages / disadvantages"""
-        roll = random.randint(1, dice_faces) + self.cult.roll_bonus
+        roll = random.randint(1, dice_faces) + self.vocation.roll_bonus
         for modifier, flag in zip(
             (-1, -1, 1, 2), (HexedFlag, CursedFlag, LuckFlag1, LuckFlag2), strict=False
         ):
@@ -537,11 +537,11 @@ class Player(CombatActor):
         return self.name
 
     def get_max_charge(self) -> int:
-        max_charge = (len(self.artifacts) * 10) + self.cult.power_bonus
-        if self.cult.power_bonus_per_zone_visited:
+        max_charge = (len(self.artifacts) * 10) + self.vocation.power_bonus
+        if self.vocation.power_bonus_per_zone_visited:
             max_charge += (
                 len(self.progress.zone_progress)
-                * self.cult.power_bonus_per_zone_visited
+                * self.vocation.power_bonus_per_zone_visited
             )
         return max_charge
 
@@ -581,11 +581,11 @@ class Player(CombatActor):
 
     def get_base_max_hp(self) -> int:
         return int(
-            (((self.level * 1.5) + self.gear_level) * 10) * self.cult.hp_mult
-        ) + self.cult.hp_bonus
+            (((self.level * 1.5) + self.gear_level) * 10) * self.vocation.hp_mult
+        ) + self.vocation.hp_bonus
 
     def get_base_attack_damage(self) -> Damage:
-        base_damage = self.cult.damage.scale(self.level)
+        base_damage = self.vocation.damage.scale(self.level)
         slots = []
         for slot, item in self.equipped_items.items():
             base_damage += item.damage
@@ -618,7 +618,7 @@ class Player(CombatActor):
         return base_damage
 
     def get_base_attack_resistance(self) -> Damage:
-        base_resistance = self.cult.resistance.scale(self.level)
+        base_resistance = self.vocation.resistance.scale(self.level)
         for _, item in self.equipped_items.items():
             base_resistance += item.resist
         return base_resistance
@@ -748,7 +748,7 @@ class Player(CombatActor):
         selected_pool = main_pool.get(
             self.get_stance(), (CombatActions.attack, CombatActions.dodge)
         )
-        if self.cult.lick_wounds:
+        if self.vocation.lick_wounds:
             selected_pool += (CombatActions.lick_wounds,)
         selection = random.choice(selected_pool)
         return selection
@@ -766,9 +766,11 @@ class Player(CombatActor):
         max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
+        if self.vocation.name:
+            string += f"{self.vocation.name}\n"
         string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
-        string += f"Stance: {Strings.stances[self.stance][0]}\nCult: {self.cult.name}\n_Renown: {self.renown}_"
+        string += f"Stance: {Strings.stances[self.stance][0]}\n_Renown: {self.renown}_"
         if (self.get_max_charge() > 0) or (len(self.artifacts) > 0):
             string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()}\nArtifact pieces: {self.artifact_pieces}_"
@@ -939,8 +941,8 @@ class ZoneEvent:
 
     def get_rewards(self, player: Player) -> tuple[int, int]:
         """returns xp & money rewards for the event. Influenced by player home level"""
-        return int(self.__val(player) * player.cult.event_xp_mult), int(
-            self.__val(player) * player.cult.event_money_mult
+        return int(self.__val(player) * player.vocation.event_xp_mult), int(
+            self.__val(player) * player.vocation.event_money_mult
         )
 
     def __str__(self) -> str:
@@ -1220,9 +1222,6 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.upgrade_cost_multiplier: float = modifiers.get(
             "upgrade_cost_multiplier", 1.0
         )
-        self.stats_to_randomize: dict[str, list] = modifiers.get(
-            "stats_to_randomize", {}
-        )
         self.power_bonus_per_zone_visited: int = modifiers.get(
             "power_bonus_per_zone_visited", 0
         )
@@ -1232,7 +1231,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.hp_mult = modifiers.get("hp_mult", 1.0)
         self.hp_bonus = modifiers.get("hp_bonus", 0)
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
-        self.resistance = Damage.load_from_json(modifiers.get("resistance", {}))
+        self.resistance = Damage.load_from_json(modifiers.get("resist", {}))
         self.discovery_bonus: int = modifiers.get("discovery_bonus", 0)
         self.lick_wounds: bool = modifiers.get("lick_wounds", False)
         self.passive_regeneration: int = modifiers.get("passive_regeneration", 0)
@@ -1240,8 +1239,6 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.quest_fail_rewards_multiplier: float = modifiers.get("quest_fail_rewards_multiplier", 0.0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
-        if self.stats_to_randomize:
-            self.modifiers_applied.extend(list(self.stats_to_randomize.keys()))
         self.damage_modifiers_applied = {
             "damage": list(modifiers.get("damage", {}).keys()),
             "resistance": list(modifiers.get("resistance", {}).keys()),
@@ -1318,7 +1315,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         return string
 
     def __str__(self) -> str:
-        string = f"{self.__get_rank_string()} *{self.name.capitalize()}*\n_{self.description}_\nupgrade cost: {self.get_upgrade_cost()} {MONEY}"
+        string = f"{self.__get_rank_string()} *{self.name.capitalize()}*\n_{self.description}_\nupgrade cost: {self.get_upgrade_cost()} {MONEY}\n"
         if self.modifiers_applied:
             string += self.get_modifier_string()
         else:

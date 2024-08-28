@@ -403,7 +403,7 @@
     }
   }, {
     "vocation_id": 2,
-    "id": 101,
+    "id": 6,
     "name": "arcanist",
     "level": 1,
     "description": "Do not call up any that you can not put down.",
@@ -413,7 +413,7 @@
     }
   }, {
     "vocation_id": 2,
-    "id": 102,
+    "id": 7,
     "name": "arcanist",
     "level": 2,
     "description": "The world is indeed comic, but the joke is on mankind.",
@@ -423,7 +423,7 @@
     }
   }, {
     "vocation_id": 2,
-    "id": 103,
+    "id": 8,
     "name": "arcanist",
     "level": 3,
     "description": "Only poetry or madness could do justice to the noises.",
@@ -434,7 +434,7 @@
     }
   }, {
     "vocation_id": 2,
-    "id": 104,
+    "id": 9,
     "name": "arcanist",
     "level": 4,
     "description": "That is not dead which can eternal lie...",
@@ -446,7 +446,7 @@
     }
   }, {
     "vocation_id": 2,
-    "id": 105,
+    "id": 10,
     "name": "arcanist",
     "level": 5,
     "description": "... And with strange aeons even death may die.",
@@ -455,6 +455,154 @@
       "power_bonus": 50,
       "discovery_bonus": 2,
       "artifact_drop_bonus": 2
+    }
+  }, {
+    "vocation_id": 3,
+    "id": 11,
+    "name": "hunter",
+    "level": 1,
+    "description": "It is your duty as a member of the Hunters League to dispatch of anything that would be considered vile.",
+    "modifiers": {
+      "combat_rewards_multiplier": 1.1,
+      "damage": {
+        "slash": 1
+      }
+    }
+  }, {
+    "vocation_id": 3,
+    "id": 12,
+    "name": "hunter",
+    "level": 2,
+    "description": "My confederate, Promise me you'll crush all vermin, to rid us of our impurities. For the sake of our fellows.",
+    "modifiers": {
+      "combat_rewards_multiplier": 1.2,
+      "damage": {
+        "slash": 2,
+        "fire": 2
+      }
+    }
+  }, {
+    "vocation_id": 3,
+    "id": 13,
+    "name": "hunter",
+    "level": 3,
+    "description": "My confederate, Promise me you'll crush all vermin, to rid us of our impurities. For the sake of our fellows.",
+    "modifiers": {
+      "combat_rewards_multiplier": 1.3,
+      "hp_bonus": 20,
+      "passive_regeneration": 2,
+      "qte_frequency_bonus": 1,
+      "damage": {
+        "slash": 3,
+        "fire": 3
+      }
+    }
+  }, {
+    "vocation_id": 3,
+    "id": 14,
+    "name": "hunter",
+    "level": 4,
+    "description": "Farewell good hunter, may you find your worth in the waking world.",
+    "modifiers": {
+      "combat_rewards_multiplier": 1.4,
+      "hp_bonus": 40,
+      "passive_regeneration": 10,
+      "qte_frequency_bonus": 2,
+      "damage": {
+        "slash": 3,
+        "pierce": 3,
+        "fire": 3
+      }
+    }
+  }, {
+    "vocation_id": 3,
+    "id": 15,
+    "name": "hunter",
+    "level": 5,
+    "description": "It's you... You're the beast... Can't you see what you're doing? It's madness...",
+    "modifiers": {
+      "combat_rewards_multiplier": 1.5,
+      "hp_bonus": 80,
+      "passive_regeneration": 20,
+      "qte_frequency_bonus": 2,
+      "lick_wounds": true,
+      "damage": {
+        "slash": 5,
+        "pierce": 5,
+        "fire": 5
+      }
+    }
+  }, {
+    "vocation_id": 4,
+    "id": 16,
+    "name": "clown",
+    "level": 1,
+    "description": "The Gods give their silliest battles to their funniest clowns.",
+    "modifiers": {
+      "minigame_xp_mult": 1.1,
+      "minigame_money_mult": 1.1
+    }
+  }, {
+    "vocation_id": 4,
+    "id": 17,
+    "name": "clown",
+    "level": 2,
+    "description": "Honk honk.",
+    "modifiers": {
+      "minigame_xp_mult": 1.2,
+      "minigame_money_mult": 1.2,
+      "damage": {
+        "blunt": 1
+      }
+    }
+  }, {
+    "vocation_id": 4,
+    "id": 18,
+    "name": "clown",
+    "level": 3,
+    "description": "Are you having fun yet?",
+    "modifiers": {
+      "minigame_xp_mult": 1.3,
+      "minigame_money_mult": 1.3,
+      "quest_fail_rewards_multiplier": 0.1,
+      "upgrade_cost_multiplier": 0.95,
+      "damage": {
+        "blunt": 2,
+        "electric": 2
+      }
+    }
+  }, {
+    "vocation_id": 4,
+    "id": 19,
+    "name": "clown",
+    "level": 4,
+    "description": "You have big shoes to fill.",
+    "modifiers": {
+      "minigame_xp_mult": 1.5,
+      "minigame_money_mult": 1.5,
+      "quest_fail_rewards_multiplier": 0.15,
+      "upgrade_cost_multiplier": 0.9,
+      "damage": {
+        "blunt": 4,
+        "electric": 4
+      }
+    }
+  }, {
+    "vocation_id": 4,
+    "id": 20,
+    "name": "clown",
+    "level": 5,
+    "description": "You seem pretty funny.",
+    "modifiers": {
+      "minigame_xp_mult": 2.0,
+      "minigame_money_mult": 2.0,
+      "quest_fail_rewards_multiplier": 0.25,
+      "upgrade_cost_multiplier": 0.8,
+      "qte_frequency_bonus": 2,
+      "damage": {
+        "blunt": 6,
+        "electric": 6
+      }
     }
   }],
   "equipment types": [{

@@ -93,7 +93,7 @@ def __hex(caster: Player, args: list[str]) -> str:
     target = _db().get_player_from_name(args[0])
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
-    if target.cult.eldritch_resist:
+    if target.vocation.eldritch_resist:
         raise SpellError("The target is immune to spells.")
     power_used = caster.get_spell_charge()
     if (power_used < 100) and HexedFlag.is_set(target.flags):
@@ -115,7 +115,7 @@ def __bless(caster: Player, args: list[str]) -> str:
     target = _db().get_player_from_name(args[0])
     if not target:
         raise SpellError(f"A player named {args[0]} does not exist.")
-    if target.cult.eldritch_resist:
+    if target.vocation.eldritch_resist:
         raise SpellError("The target is immune to spells.")
     power_used = caster.get_spell_charge()
     if (power_used < 100) and LuckFlag1.is_set(target.flags):
