@@ -547,7 +547,7 @@ class Player(CombatActor):
         return self.name
 
     def get_max_charge(self) -> int:
-        max_charge = (len(self.artifacts) * 10) + self.vocation.power_bonus
+        max_charge = (len(self.artifacts) * 5) + self.vocation.power_bonus
         if self.vocation.power_bonus_per_zone_visited:
             max_charge += (
                 len(self.progress.zone_progress)
