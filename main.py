@@ -157,7 +157,7 @@ def main():
     database = PilgramORMDatabase
     threads = [
         threading.Thread(target=lambda: run_quest_manager(database), name="quest-manager"),
-        # threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager"),
+        threading.Thread(target=lambda: run_generator_manager(database), name="generator-manager"),
         threading.Thread(target=lambda: run_tourney_manager(database), name="tourney-manager"),
         threading.Thread(target=lambda: run_updates_manager(database), name="updates-manager"),
         threading.Thread(target=lambda: run_notifications_manager(database, bot), name="notifications-manager")
