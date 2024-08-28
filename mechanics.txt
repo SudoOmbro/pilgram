@@ -6,7 +6,7 @@ that's you! Players are the most complex part of Pilgram in terms of stats, so h
 
 🔷 *Level*: Shows how experienced your character is, influences your success rate on quests (formula follows later).
 
-🔷 *Boromian Alloy*: The money of the world of Borom.
+🔷 *Boromian Alloy*: The money of the world of Borom. Generally abbreviated as BA.
 
 🔷 *XP*: Reach a certain amount and your character will level up. Doing anything in the game grants you XP.
 The amount of xp required to *level up* is calculated with the *formula*:
@@ -29,8 +29,7 @@ Upgrading your home costs money, the *upgrade cost* is calculated with the *form
 - Safe: More dodges than attacks, very few heavy attacks.
 - Reckless: All in on offence.
 
-🔷 *Cult*: The cult you are part of. Cults give you bonuses & maluses, choose the one that is more fitting to your play style (You can only choose a cult after you tried at least 3 quests).
-Changing your cult requires editing your character.
+🔷 *Vocations*: Basically classes that give you various bonuses. You can upgrade the level of your vocations using BA.
 
 🔷 *Artifact pieces*: Used to assemble artifacts, explained later.
 
