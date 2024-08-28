@@ -461,6 +461,7 @@ class PilgramORMDatabase(PilgramDatabase):
         gs = GuildModel.select().order_by(GuildModel.tourney_score.desc()).limit(n)
         return [self.build_guild_object(g, None) for g in gs]
 
+    @_thread_safe()
     def reset_all_guild_scores(self):
         with db.atomic():
             gs: list[GuildModel] = GuildModel.select()
@@ -689,6 +690,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except QuestProgressModel.DoesNotExist:
             return []
 
+    @_thread_safe()
     def update_quest_progress(self, adventure_container: AdventureContainer, last_update: datetime | None = None):
         try:
             with db.atomic():
