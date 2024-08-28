@@ -225,7 +225,6 @@ def start_character_creation(context: UserContext) -> str:
     except KeyError:
         context.start_process("character creation")
         context.set("operation", "create")
-        context.set("cult", 0)
         log.info(f"User {context.get('id')} is creating a character")
         return context.get_process_prompt(USER_PROCESSES)
 
@@ -234,17 +233,6 @@ def process_get_character_name(context: UserContext, user_input) -> str:
     if not re.match(PLAYER_NAME_REGEX, user_input):
         return Strings.player_name_validation_error
     context.set("name", user_input)
-    context.progress_process()
-    return context.get_process_prompt(USER_PROCESSES)
-
-
-def process_get_character_cult(context: UserContext, user_input) -> str:
-    if not re.match(POSITIVE_INTEGER_REGEX, user_input):
-        return Strings.positive_integer_error
-    cult_id = int(user_input)
-    if cult_id >= len(Vocation.LIST):
-        return Strings.cult_does_not_exist.format(start=0, end=len(Vocation.LIST) - 1)
-    context.set("cult", cult_id)
     context.progress_process()
     return context.get_process_prompt(USER_PROCESSES)
 
@@ -258,7 +246,6 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             # make a copy of the original player (to avoid cases in which we set a name that isn't valid in the object
             player_copy = copy(player)
             player_copy.name = context.get("name")
-            player_copy.vocation = Vocation.LIST[context.get("cult")]
             player_copy.description = user_input
             player_copy.money -= MODIFY_COST
             db().update_player_data(player_copy)
@@ -266,14 +253,12 @@ def process_get_character_description(context: UserContext, user_input) -> str:
             player.name = player_copy.name
             player.description = player_copy.description
             player.money = player_copy.money
-            player.vocation = player_copy.vocation
             context.end_process()
             return Strings.obj_modified.format(obj="character")
         else:
             player = Player.create_default(
                 context.get("id"), context.get("name"), user_input
             )
-            player.vocation = Vocation.LIST[context.get("cult")]
             starting_weapon = Equipment.generate(1, EquipmentType.get(0), 0)
             db().add_player(player)
             item_id = db().add_item(starting_weapon, player)
