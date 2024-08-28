@@ -85,7 +85,7 @@ class InternalEventBus:
 
     def __new__(cls, *args, **kwargs):
         if not isinstance(cls._instance, cls):
-            cls._instance = object.__new__(cls, *args, **kwargs)
+            cls._instance = object.__new__(cls)
             cls._instance.events = []
         return cls._instance
 
@@ -428,9 +428,8 @@ class Player(CombatActor):
         self.artifacts = artifacts
         self.flags = flags
         self.renown = renown
-        self.vocation: Vocation = Vocation.empty()  # Created by summing vocations
-        for v in vocations:
-            self.vocation += v
+        self.vocation = Vocation.empty()
+        self.equip_vocations(vocations)
         self.satchel = satchel
         self.equipped_items = equipped_items
         super().__init__(hp_percent)
@@ -438,6 +437,11 @@ class Player(CombatActor):
         self.completed_quests = completed_quests
         self.last_guild_switch = last_guild_switch
         self.vocations_progress = vocations_progress
+
+    def equip_vocations(self, vocations: list[Vocation]) -> None:
+        self.vocation: Vocation = Vocation.empty()
+        for v in vocations:
+            self.vocation += v
 
     def get_name(self) -> str:
         return self.name
@@ -476,6 +480,12 @@ class Player(CombatActor):
 
     def upgrade_home(self) -> None:
         self.home_level += 1
+
+    def upgrade_vocation(self, vocation_id: int) -> None:
+        if vocation_id not in self.vocations_progress:
+            self.vocations_progress[vocation_id] = 2
+        else:
+            self.vocations_progress[vocation_id] += 1
 
     def level_up(self) -> None:
         req_xp = self.get_required_xp()
@@ -759,6 +769,9 @@ class Player(CombatActor):
         if self.level < 20:
             return 1
         return 2
+
+    def get_vocation_level(self, vocation_id: int) -> int:
+        return self.vocations_progress.get(vocation_id, 1)
 
     # utility
 
@@ -1202,7 +1215,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         # generic vars
         self.vocation_id = vocation_id
         self.unique_id = unique_id
-        self.original_cults: list[Vocation] = []
+        self.original_vocations: list[Vocation] = []  # contains the original vocation objects that created the current one.
         self.level = level
         self.name = name
         self.description = description
@@ -1244,16 +1257,14 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
             "resistance": list(modifiers.get("resistance", {}).keys()),
         }
 
-    def randomize(self) -> None:
-        for stat_name, choices in self.stats_to_randomize.items():
-            self.__dict__[stat_name] = random.choice(choices)
-
     def __add__(self, other: Vocation) -> Vocation:
-        result = Vocation(-1, -1, f"{self.name} {other.name}", "", {}, 1)
+        result = Vocation(0, 0, f"{self.name} {other.name}", "", {}, 1)
+        result.name = result.name.lstrip()
+        result.original_vocations = self.original_vocations
         if self.unique_id != 0:
-            result.original_cults.append(self)
+            result.original_vocations.append(self)
         if other.unique_id != 0:
-            result.original_cults.append(other)
+            result.original_vocations.append(other)
         result.general_xp_mult = self.general_xp_mult + other.general_xp_mult
         result.general_money_mult = self.general_money_mult
         result.quest_xp_mult = self.quest_xp_mult + other.quest_xp_mult
@@ -1273,6 +1284,8 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.minigame_money_mult = self.minigame_money_mult * other.minigame_money_mult
         result.hp_mult = self.hp_mult * other.hp_mult
         result.hp_bonus = self.hp_bonus * other.hp_bonus
+        result.damage = self.damage + other.damage
+        result.resistance = self.resistance + other.resistance
         result.discovery_bonus = self.discovery_bonus + other.discovery_bonus
         result.passive_regeneration = self.passive_regeneration * other.passive_regeneration
         result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier
@@ -1290,7 +1303,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
             return self.unique_id == other.unique_id
         return False
 
-    def __get_rank_string(self) -> str:
+    def get_rank_string(self) -> str:
         return {
             1: "Novice",
             2: "Journeyman",
@@ -1315,7 +1328,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         return string
 
     def __str__(self) -> str:
-        string = f"{self.__get_rank_string()} *{self.name.capitalize()}*\n_{self.description}_\nupgrade cost: {self.get_upgrade_cost()} {MONEY}\n"
+        string = f"{self.get_rank_string()} *{self.name}* (id: {self.vocation_id})\n_{self.description}_\nupgrade cost: {self.get_upgrade_cost()} {MONEY}\n"
         if self.modifiers_applied:
             string += self.get_modifier_string()
         else:
@@ -1336,6 +1349,20 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
     @classmethod
     def empty(cls):
         return cls(0, 0, "", "", {}, 0)
+
+    @classmethod
+    def get_correct_vocation_tier(cls, vocation_id: int, player: Player) -> Vocation:
+        for vocation in Vocation.LIST[1:]:
+            if (vocation.vocation_id == vocation_id) and (vocation.level == player.get_vocation_level(vocation_id)):
+                return vocation
+        raise ValueError(f"Vocation with id {vocation_id} does not exist")
+
+    @classmethod
+    def get_correct_vocation_tier_no_player(cls, vocation_id: int, vocation_progress: dict[int, int]) -> Vocation:
+        for vocation in Vocation.LIST[1:]:
+            if (vocation.vocation_id == vocation_id) and (vocation.level == vocation_progress.get(vocation_id, 1)):
+                return vocation
+        raise ValueError(f"Vocation with id {vocation_id} does not exist")
 
     def get_upgrade_cost(self) -> int:
         value = {

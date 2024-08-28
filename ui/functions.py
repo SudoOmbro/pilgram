@@ -720,7 +720,7 @@ def list_vocations(context: UserContext) -> str:
         string: str = "Here are all your vocations:\n\n"
         for vocation in Vocation.LIST[1:]:
             if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
-                string += f"{"(X) " if vocation in player.vocation.original_cults else ""}{vocation}\n"
+                string += f"{"(X) " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
         return string
     except KeyError:
         return Strings.no_character_yet
@@ -1300,6 +1300,54 @@ def check_player_perks(context: UserContext, player_name: str) -> str:
         return Strings.named_object_not_exist.format(obj="player", name=player_name)
 
 
+def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_str: str):
+    try:
+        # get player
+        player = db().get_player_data(context.get("id"))
+        if player.level < 5:
+            return "You haven't unlocked vocations yet!"
+        # convert strings to ints
+        vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
+        # equip vocations
+        vocations = [Vocation.get_correct_vocation_tier(vid, player) for vid in vocation_ids[:(player.get_vocation_limit())]]
+        player.equip_vocations(vocations)
+        db().update_player_data(player)
+        return f"Activated vocations: {" & ".join([x.name for x in vocations])}"
+    except KeyError:
+        return Strings.no_character_yet
+    except ValueError as e:
+        return str(e)
+
+
+def upgrade_vocation(context: UserContext, vocation_id_str: str):
+    try:
+        player = db().get_player_data(context.get("id"))
+        # get basic inputs
+        vocation_id: int = int(vocation_id_str)
+        vocation = Vocation.get_correct_vocation_tier(vocation_id, player)
+        # do checks
+        if vocation.level == Vocation.MAX_LEVEL:
+            return f"Vocation '{vocation.name}' is already at max level ({Vocation.MAX_LEVEL})."
+        price = vocation.get_upgrade_cost()
+        if price > player.money:
+            return Strings.not_enough_money.format(amount=price-player.money)
+        # actually upgrade the vocation
+        player.upgrade_vocation(vocation_id)
+        # re-equip vocations
+        vocations = player.vocation.original_vocations
+        new_vocations: list[Vocation] = []
+        for v in vocations:
+            new_vocations.append(Vocation.get_correct_vocation_tier(v.vocation_id, player))
+        player.equip_vocations(new_vocations)
+        # pay & save player data
+        player.money -= price
+        db().update_player_data(player)
+        return f"Upgraded vocation *{vocation.name}* to *{vocation.get_next_rank().get_rank_string()}*"
+    except KeyError:
+        return Strings.no_character_yet
+    except ValueError as e:
+        return str(e)
+
 
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
@@ -1335,11 +1383,15 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "upgrade": {
         "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
         "home": IFW(None, upgrade, "Upgrade your home.", default_args={"obj": "home"}),
-        "guild": IFW(None, upgrade_guild, "Upgrade your guild.")
+        "guild": IFW(None, upgrade_guild, "Upgrade your guild."),
+        "vocation": IFW([integer_arg("Vocation id")], upgrade_vocation, "Upgrade your vocations.")
     },
     "edit": {
         "character": IFW(None, modify_player, "Modify your character (for a price).",),
-        "guild": IFW(None, modify_guild, "Modify your guild (for a price).",)
+        "guild": IFW(None, modify_guild, "Modify your guild (for a price).",),
+    },
+    "select": {
+        "vocations": IFW([integer_arg("Vocation id 1"), integer_arg("Vocation id 2")], change_vocation, "Select your vocations",)
     },
     "join": IFW([guild_arg("Guild")], join_guild, "Join guild with the given name."),
     "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
