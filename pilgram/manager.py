@@ -18,7 +18,7 @@ from pilgram.classes import (
     Player,
     Quest,
     QuickTimeEvent,
-    Zone,
+    Zone, InternalEventBus, Event, Notification,
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
@@ -593,6 +593,8 @@ class TourneyManager(Manager):
             return
         log.info(f"Tourney {tourney.tourney_edition} has ended")
         top_guilds = self.db().get_top_n_guilds_by_score(3)
+        if len(top_guilds) < 3:
+            return
         # give artifact piece to 1st guild owner
         first_guild = top_guilds[0]
         winner = self.db().get_player_data(first_guild.founder.player_id)
@@ -686,19 +688,42 @@ class NotificationsManager(Manager):
         super().__init__(database)
         self._tmp_blocked_users: list[int] = []
 
+    def send_notification(self, notification: Notification, delay: float = 1.0) -> None:
+        result = self.notifier.notify(notification)
+        if not result.get("ok", False):
+            reason = result.get("reason", "")
+            if reason == "blocked":
+                # log.info(f"User {notification.target.player_id} ({notification.target.name}) blocked the bot, adding to blocked list...")
+                self._tmp_blocked_users.append(notification.target.player_id)
+        sleep(delay)
+
+    def get_internal_event_notification_text(self, event: Event) -> str:
+        string = event.type
+        if event.type == "level up":
+            level: int = event.data["level"]
+            string = f"You reached level {level}!"
+            if level == 5:
+                string += "\n\nYou unlocked the first profession slot!"
+            elif level == 20:
+                string += "\n\nYou unlocked the second profession slot!"
+        return string
+
     def run(self) -> None:
         notifications = self.db().get_pending_notifications()
+        # handle internal events (more important)
+        while True:
+            event = InternalEventBus().consume()
+            if not event:
+                break
+            if event.recipient.player_id in self._tmp_blocked_users:
+                continue
+            notification_text = self.get_internal_event_notification_text(event)
+            self.send_notification(Notification(event.recipient, notification_text), delay=0.1)
+        # handle notifications
         for notification in notifications:
             if notification.target.player_id in self._tmp_blocked_users:
-                # TODO make this more permanent
                 continue
-            result = self.notifier.notify(notification)
-            if not result.get("ok", False):
-                reason = result.get("reason", "")
-                if reason == "blocked":
-                    # log.info(f"User {notification.target.player_id} ({notification.target.name}) blocked the bot, adding to blocked list...")
-                    self._tmp_blocked_users.append(notification.target.player_id)
-            sleep(1)
+            self.send_notification(notification)
 
     def load_pending_notifications(self) -> None:
         if not os.path.isfile("pending_notifications.json"):

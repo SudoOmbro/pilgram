@@ -714,8 +714,16 @@ def __list_spells() -> str:
     return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}\n_{spell.description}_" for key, spell in SPELLS.items())
 
 
-def list_cults(context: UserContext) -> str:
-    return "\n".join(str(x) for x in Vocation.LIST[1:])
+def list_vocations(context: UserContext) -> str:
+    try:
+        player = db().get_player_data(context.get("id"))
+        string: str = "Here are all your vocations:\n\n"
+        for vocation in Vocation.LIST[1:]:
+            if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
+                string += f"{vocation}\n\n"
+        return string
+    except KeyError:
+        return Strings.no_character_yet
 
 
 def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
@@ -1374,7 +1382,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         }
     },
     "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
-    "vocations": IFW(None, list_cults, "Shows all vocations"),
+    "vocations": IFW(None, list_vocations, "Shows all vocations"),
     "hunt": IFW(None, force_combat, "Hunt for a strong enemy"),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
@@ -1391,7 +1399,6 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "character editing": (
         (Strings.character_creation_get_name, process_get_character_name),
-        (Strings.choose_cult + "\n" + list_cults(UserContext()), process_get_character_cult),
         (Strings.character_creation_get_description, process_get_character_description)
     ),
     "guild creation": (

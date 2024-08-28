@@ -65,7 +65,7 @@ def read_update_interval(interval_str: str) -> timedelta:
 
 
 def has_recently_accessed_cache(
-    storage: dict[int, float], user_id: int, cooldown: int
+        storage: dict[int, float], user_id: int, cooldown: int
 ) -> bool:
     if user_id in storage:
         cooldown_expire = storage[user_id]

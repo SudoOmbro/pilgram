@@ -146,10 +146,10 @@ def decode_vocation_ids(data: int) -> list[int]:
     return result
 
 
-def encode_vocation_ids(vocation_ids: list[int]) -> int:
-    packed_array = np.empty(4, np.uint8)
-    for i, vocation_id in enumerate(vocation_ids):
-        packed_array[i] = vocation_id
+def encode_vocation_ids(vocation_ids: list[Vocation]) -> int:
+    packed_array = np.zeros(4, np.uint8)
+    for i, vocation in enumerate(vocation_ids):
+        packed_array[i] = vocation.vocation_id
     return int.from_bytes(packed_array.tobytes())
 
 
@@ -308,7 +308,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.artifact_pieces = player.artifact_pieces
                 pls.flags = player.flags
                 pls.renown = player.renown
-                pls.vocations = player.cult.faction_ids
+                pls.vocations = encode_vocation_ids(player.cult.original_cults)
                 pls.satchel = encode_satchel(player.satchel)
                 pls.equipped_items = encode_equipped_items(player.equipped_items)
                 pls.hp_percent = player.hp_percent

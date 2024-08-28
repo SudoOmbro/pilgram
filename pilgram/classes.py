@@ -4,8 +4,10 @@ import logging
 import math
 import os
 import random
+import threading
 import time
 from collections.abc import Callable
+from copy import copy
 from datetime import datetime, timedelta
 from typing import Any
 
@@ -67,6 +69,35 @@ RANDOM_DURATION: timedelta = read_update_interval(
 QTE_CACHE: dict[
     int, QuickTimeEvent
 ] = {}  # runtime cache that contains all users + quick time events pairs
+
+
+class Event:
+
+    def __init__(self, even_type: str, recipient: Player, data: dict) -> None:
+        self.type = even_type
+        self.recipient = recipient
+        self.data = data
+
+
+class InternalEventBus:
+    _instance = None
+    _LOCK = threading.Lock()
+
+    def __new__(cls, *args, **kwargs):
+        if not isinstance(cls._instance, cls):
+            cls._instance = object.__new__(cls, *args, **kwargs)
+            cls._instance.events = []
+        return cls._instance
+
+    def notify(self, event: Event) -> None:
+        with self._LOCK:
+            self.events.append(event)
+
+    def consume(self) -> Event | None:
+        with self._LOCK:
+            if len(self.events) == 0:
+                return None
+            return self.events.pop(0)
 
 
 class Zone:
@@ -397,7 +428,7 @@ class Player(CombatActor):
         self.artifacts = artifacts
         self.flags = flags
         self.renown = renown
-        self.cult: Vocation = Vocation.empty()
+        self.cult: Vocation = Vocation.empty()  # Cult was the legacy variable name
         for vocation in vocations:
             self.cult += vocation
         self.satchel = satchel
@@ -452,6 +483,7 @@ class Player(CombatActor):
             self.level += 1
             self.xp -= req_xp
             req_xp = self.get_required_xp()
+            InternalEventBus().notify(Event("level up", self, {"level": self.level}))
 
     def add_xp(self, amount: float) -> int:
         """adds xp to the player & returns how much was actually added to the player"""
@@ -1249,6 +1281,11 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier
         result.lick_wounds = self.lick_wounds or other.lick_wounds
         result.quest_fail_rewards_multiplier = self.quest_fail_rewards_multiplier + other.quest_fail_rewards_multiplier
+        # setup applied modifiers
+        result.modifiers_applied = copy(self.modifiers_applied)
+        for modifier in other.modifiers_applied:
+            if not modifier in result.modifiers_applied:
+                result.modifiers_applied.append(modifier)
         return result
 
     def __eq__(self, other: Any) -> bool:
@@ -1265,23 +1302,25 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
             5: "Legendary"
         }.get(self.level, "")
 
+    def get_modifier_string(self):
+        string = ""
+        for modifier in self.modifiers_applied:
+            name = Strings.modifier_names[modifier]
+            value = self.__dict__[modifier]
+            if type(value) is float:
+                string += f"- *{name}*: {value * 100:.0f}%\n"
+            elif type(value) is bool:
+                string += f"- *{name}*: {'Yes' if value else 'No'}\n"
+            elif type(value) is int:
+                string += f"- *{name}*: {print_bonus(value)}\n"
+            elif type(value) is Damage:
+                string += f"- *{name}*:\n{'\n'.join([f"  > {x.capitalize()}: {print_bonus(value.__dict__[x])}" for x in self.damage_modifiers_applied[modifier]])}\n"
+        return string
+
     def __str__(self) -> str:
-        string = f"{self.__get_rank_string()} *{self.name.capitalize()}*\n_{self.description}_\n"
+        string = f"{self.__get_rank_string()} *{self.name.capitalize()}*\n_{self.description}_\nupgrade cost: {self.get_upgrade_cost()} {MONEY}"
         if self.modifiers_applied:
-            for modifier in self.modifiers_applied:
-                name = Strings.modifier_names[modifier]
-                value = self.__dict__[modifier]
-                if modifier == "randomizer_delay":
-                    string += f"- *{name.format(hr=value)}*:\n"
-                    continue
-                if type(value) is float:
-                    string += f"- *{name}*: {value * 100:.0f}%\n"
-                elif type(value) is bool:
-                    string += f"- *{name}*: {'Yes' if value else 'No'}\n"
-                elif type(value) is int:
-                    string += f"- *{name}*: {print_bonus(value)}\n"
-                elif type(value) is Damage:
-                    string += f"- *{name}*:\n{'\n'.join([f"  > {x.capitalize()}: {print_bonus(value.__dict__[x])}" for x in self.damage_modifiers_applied[modifier]])}\n"
+            string += self.get_modifier_string()
         else:
             string += "- *No modifiers*"
         return string
