@@ -203,11 +203,15 @@ class QuestManager(Manager):
             )
         else:
             self.create_shade(player, ac.zone())
+            failure_text = quest.failure_text + Strings.quest_fail.format(name=quest.name) + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}"
+            if player.vocation.quest_fail_rewards_multiplier > 0:
+                xp, money = quest.get_rewards(player)
+                xp_am = player.add_xp(xp)  # am = after modifiers
+                money_am = player.add_money(money)  # am = after modifiers
+                failure_text + _gain(xp_am, money_am, 0)
             self.db().create_and_add_notification(
                 player,
-                quest.failure_text
-                + Strings.quest_fail.format(name=quest.name)
-                + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}",
+                failure_text,
             )
         self.highest_quests.update(
             ac.zone().zone_id, ac.quest.number + 1
