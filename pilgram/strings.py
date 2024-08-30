@@ -175,6 +175,7 @@ class Strings:
         "gain_money_on_player_meet": "Gain money on meet",
         "can_buy_on_a_quest": "Can buy on a quest",
         "can_craft_on_a_quest": "Can craft on a quest",
+        "revive_chance": "Revive Chance"
     }
 
     # items

@@ -333,14 +333,19 @@ class QuestManager(Manager):
         # finish combat
         if player.is_dead():
             if isinstance(enemy, Enemy):
-                text += f"\n\n{enemy.meta.lose_text}" + Strings.quest_fail.format(name=ac.quest.name)
+                text += f"\n\n{enemy.meta.lose_text}"
                 log.info(f"Player '{player.name}' died in combat against a {enemy.meta.name}")
             else:
-                text += f"\n\n{Strings.shade_loss}" + Strings.quest_fail.format(name=ac.quest.name)
+                text += f"\n\n{Strings.shade_loss}"
                 log.info(f"Player '{player.name}' died in combat against {enemy.name}")
             self.create_shade(player, ac.zone())
-            ac.quest = None
-            player.hp_percent = 1.0
+            if (player.vocation.revive_chance > 0) and (random.random() < player.vocation.revive_chance):
+                player.hp_percent = 0.25
+                text += "\n\nBy the grace of the God Emperor you are revived & continue your quest."
+            else:
+                text += Strings.quest_fail.format(name=ac.quest.name)
+                ac.quest = None
+                player.hp_percent = 1.0
         else:
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
             # get rewards

@@ -1253,6 +1253,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.gain_money_on_player_meet: bool = modifiers.get("gain_money_on_player_meet", False)
         self.can_buy_on_a_quest: bool = modifiers.get("can_buy_on_a_quest", False)
         self.can_craft_on_a_quest: bool = modifiers.get("can_craft_on_a_quest", False)
+        self.revive_chance: float = modifiers.get("revive_chance", 0.0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
@@ -1297,6 +1298,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.gain_money_on_player_meet = self.gain_money_on_player_meet or other.gain_money_on_player_meet
         result.can_buy_on_a_quest = self.can_buy_on_a_quest or other.can_buy_on_a_quest
         result.can_craft_on_a_quest = self.can_craft_on_a_quest or other.can_craft_on_a_quest
+        result.revive_chance = self.revive_chance + other.revive_chance
         # setup applied modifiers
         result.modifiers_applied = copy(self.modifiers_applied)
         for modifier in other.modifiers_applied:

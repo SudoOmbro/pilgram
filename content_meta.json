@@ -663,6 +663,7 @@
       "hp_mult": 1.4,
       "hp_bonus": 50,
       "eldritch_resist": true,
+      "revive_chance": 0.1,
       "damage": {
         "fire": 2
       },
@@ -680,6 +681,7 @@
       "hp_mult": 1.6,
       "hp_bonus": 100,
       "eldritch_resist": true,
+      "revive_chance": 0.2,
       "damage": {
         "fire": 4
       },
