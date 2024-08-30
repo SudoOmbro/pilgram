@@ -1003,7 +1003,7 @@ def show_smithy(context: UserContext) -> str:
 def market_buy(context: UserContext, item_pos_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if db().is_player_on_a_quest(player) or (not player.vocation.can_buy_on_a_quest):
+        if db().is_player_on_a_quest(player) and (not player.vocation.can_buy_on_a_quest):
             return Strings.cannot_shop_on_a_quest
         item_pos = int(item_pos_str)
         if item_pos > 10:
@@ -1025,7 +1025,7 @@ def market_buy(context: UserContext, item_pos_str: str) -> str:
 def smithy_craft(context: UserContext, item_pos_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if db().is_player_on_a_quest(player) or (not player.vocation.can_craft_on_a_quest):
+        if db().is_player_on_a_quest(player) and (not player.vocation.can_craft_on_a_quest):
             return Strings.cannot_shop_on_a_quest
         item_pos = int(item_pos_str)
         if item_pos > 10:
