@@ -3,7 +3,7 @@ from datetime import timedelta
 
 import numpy as np
 
-from pilgram.flags import LuckFlag, MoneyFlag, XpFlag
+from pilgram.strings import rewards_string
 from pilgram.utils import PathDict, generate_random_eldritch_name, read_update_interval
 
 
@@ -29,15 +29,12 @@ class TestUtils(unittest.TestCase):
         interval = read_update_interval(interval_string)
         self.assertEqual(interval, timedelta(weeks=4, days=3, seconds=2))
 
-    def test_flags(self):
-        flags = np.uint32(0)
-        flags = LuckFlag.set(flags)
-        flags = XpFlag.set(flags)
-        flags = MoneyFlag.set(flags)
-        self.assertEqual(np.binary_repr(flags), "111")
-        flags = XpFlag.unset(flags)
-        self.assertEqual(np.binary_repr(flags), "101")
-
     def test_eldritch_names(self):
         for _ in range(100):
             print(generate_random_eldritch_name())
+
+    def test_rewards_string(self):
+        print(rewards_string(0, 100, 0))
+        print(rewards_string(100, 100, 0))
+        print(rewards_string(0, 100, 100))
+        print(rewards_string(0, 100, 0, tax=0.5))

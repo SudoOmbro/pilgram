@@ -26,7 +26,7 @@ from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
-from pilgram.strings import Strings
+from pilgram.strings import Strings, rewards_string
 from pilgram.utils import generate_random_eldritch_name
 
 log = logging.getLogger(__name__)
@@ -47,12 +47,6 @@ NUM_MULT_LUT = {
     16: 1.25,
     20: 1
 }
-
-
-def _gain(xp: int, money: int, renown: int, tax: float = 0) -> str:
-    tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
-    renown_str = "" if renown == 0 else f"You gain {renown} renown"
-    return f"\n\n_You gain {xp} xp & {money} {MONEY}{tax_str}\n\n{renown_str}_"
 
 
 def _get_tourney_score_multiplier(player_num: int) -> int:
@@ -198,7 +192,7 @@ class QuestManager(Manager):
                 quest.success_text
                 + Strings.quest_success.format(name=quest.name)
                 + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}"
-                + _gain(xp_am, money_am, renown, tax=tax)
+                + rewards_string(xp_am, money_am, renown, tax=tax)
                 + (Strings.piece_found if piece else ""),
             )
         else:
@@ -208,7 +202,7 @@ class QuestManager(Manager):
                 xp, money = quest.get_rewards(player)
                 xp_am = player.add_xp(xp)  # am = after modifiers
                 money_am = player.add_money(money)  # am = after modifiers
-                failure_text + _gain(xp_am, money_am, 0)
+                failure_text + rewards_string(xp_am, money_am, 0)
             self.db().create_and_add_notification(
                 player,
                 failure_text,
@@ -247,7 +241,7 @@ class QuestManager(Manager):
             regeneration_text = ""
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
-        text = f"*{event.event_text}*{_gain(xp_am, money_am, 0)}"
+        text = f"*{event.event_text}*{rewards_string(xp_am, money_am, 0)}"
         if ac.is_on_a_quest():
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
@@ -358,9 +352,9 @@ class QuestManager(Manager):
             money_am = player.add_money(money)
             # create notification text
             if isinstance(enemy, Enemy):
-                text += f"\n\n{enemy.meta.win_text}{_gain(xp_am, money_am, renown)}"
+                text += f"\n\n{enemy.meta.win_text}{rewards_string(xp_am, money_am, renown)}"
             else:
-                text += f"\n\n{Strings.shade_win}{_gain(xp_am, money_am, renown)}"
+                text += f"\n\n{Strings.shade_win}{rewards_string(xp_am, money_am, renown)}"
             # more rewards if combat was forced
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5
@@ -436,22 +430,17 @@ class QuestManager(Manager):
                 string, actions = Strings.players_meet_in_town, Strings.town_actions
             else:
                 string, actions = Strings.players_meet_on_a_quest, Strings.quest_actions
-            xp = (
+            reward_value = (
                 (10 * zone_id * max([player1.level, player2.level]))
                 if zone_id > 0
                 else 10
             )
-            text = (
-                f"{string} {random.choice(actions)}\n\n{Strings.xp_gain.format(xp=xp)}"
-            )
-            player1.add_xp(xp)
-            player2.add_xp(xp)
-            self.db().update_player_data(player1)
-            self.db().update_player_data(player2)
-            self.db().create_and_add_notification(player1, text.format(name=player2.name))
-            self.db().create_and_add_notification(player2, text.format(name=player1.name))
-            # log.info(f"Players {player1.name} & {player2.name} have met")
-            sleep(self.updates_per_second * 2)
+            for player in [player1, player2]:
+                xp_am = player.add_xp(reward_value)
+                mn_am = player.add_money(reward_value) if player.vocation.gain_money_on_player_meet else 0
+                text = f"{string} {random.choice(actions)}" + rewards_string(xp_am, mn_am, 0)
+                self.db().update_player_data(player)
+                self.db().create_and_add_notification(player, text, notification_type="Meeting")
 
     def run(self) -> None:
         zones_players_map: dict[int, list[Player]] = {}

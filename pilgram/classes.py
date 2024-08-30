@@ -1208,9 +1208,9 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         :param vocation_id: the general vocation id, it stays the same for every level of the vocation
         :param unique_id: the actual unique id of the vocation object.
         :param name: the name of the vocation
-        :param description:
-        :param modifiers:
-        :param level:
+        :param description: description of the vocation
+        :param modifiers: modifiers given by the vocation, determines bonuses given
+        :param level: level of the vocation, determines upgrade cost
         """
         # generic vars
         self.vocation_id = vocation_id
@@ -1250,6 +1250,9 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.passive_regeneration: int = modifiers.get("passive_regeneration", 0)
         self.combat_rewards_multiplier: float = modifiers.get("combat_rewards_multiplier", 1.0)
         self.quest_fail_rewards_multiplier: float = modifiers.get("quest_fail_rewards_multiplier", 0.0)
+        self.gain_money_on_player_meet: bool = modifiers.get("gain_money_on_player_meet", False)
+        self.can_buy_on_a_quest: bool = modifiers.get("can_buy_on_a_quest", False)
+        self.can_craft_on_a_quest: bool = modifiers.get("can_craft_on_a_quest", False)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
@@ -1291,6 +1294,9 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier
         result.lick_wounds = self.lick_wounds or other.lick_wounds
         result.quest_fail_rewards_multiplier = self.quest_fail_rewards_multiplier + other.quest_fail_rewards_multiplier
+        result.gain_money_on_player_meet = self.gain_money_on_player_meet or other.gain_money_on_player_meet
+        result.can_buy_on_a_quest = self.can_buy_on_a_quest or other.can_buy_on_a_quest
+        result.can_craft_on_a_quest = self.can_craft_on_a_quest or other.can_craft_on_a_quest
         # setup applied modifiers
         result.modifiers_applied = copy(self.modifiers_applied)
         for modifier in other.modifiers_applied:

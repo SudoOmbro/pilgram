@@ -1003,7 +1003,7 @@ def show_smithy(context: UserContext) -> str:
 def market_buy(context: UserContext, item_pos_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if db().is_player_on_a_quest(player):
+        if db().is_player_on_a_quest(player) or (not player.vocation.can_buy_on_a_quest):
             return Strings.cannot_shop_on_a_quest
         item_pos = int(item_pos_str)
         if item_pos > 10:
@@ -1025,7 +1025,7 @@ def market_buy(context: UserContext, item_pos_str: str) -> str:
 def smithy_craft(context: UserContext, item_pos_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        if db().is_player_on_a_quest(player):
+        if db().is_player_on_a_quest(player) or (not player.vocation.can_craft_on_a_quest):
             return Strings.cannot_shop_on_a_quest
         item_pos = int(item_pos_str)
         if item_pos > 10:
@@ -1291,6 +1291,8 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
         player = db().get_player_data(context.get("id"))
         if player.level < 5:
             return "You haven't unlocked vocations yet!"
+        if db().is_player_on_a_quest(player):
+            return Strings.cannot_change_vocation_on_quest
         # convert strings to ints
         vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
         # equip vocations

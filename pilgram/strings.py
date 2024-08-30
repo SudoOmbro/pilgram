@@ -7,6 +7,17 @@ TOWN = ContentMeta.get("world.city.name")
 MAX_TAX = ContentMeta.get("guilds.max_tax")
 
 
+def rewards_string(xp: int, money: int, renown: int, tax: float = 0) -> str:
+    renown_str = "" if renown == 0 else f"\n\nYou gain {renown} renown"
+    rewards: list[str] = []
+    if xp:
+        rewards.append(f"{xp} xp")
+    if money:
+        tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
+        rewards.append(f"{money} {MONEY}{tax_str}")
+    return f"\n\n_You gain {" & ".join(rewards)}{renown_str}_"
+
+
 class Strings:
     """
     class that contains all the interface-related strings that will be sent to the players.
@@ -72,6 +83,7 @@ class Strings:
 
     # modify
     cannot_modify_on_quest = "You can't modify your character while on a quest."
+    cannot_change_vocation_on_quest = "You can't change your vocation while on a quest."
     obj_attr_modified = f"{{obj}} {{attr}} has been modified correctly. You paid {ContentMeta.get('modify_cost')}"
     obj_modified = f"Your {{obj}} has been modified correctly. You paid {ContentMeta.get('modify_cost')} {MONEY}"
 
@@ -147,8 +159,6 @@ class Strings:
         "eldritch_resist": "Spell immunity",
         "artifact_drop_bonus": "Artifact Drop Bonus",
         "upgrade_cost_multiplier": "Upgrade Cost",
-        "xp_mult_per_player_in_cult": "XP x player in cult",
-        "money_mult_per_player_in_cult": "BA x player in cult",
         "power_bonus_per_zone_visited": "Eldritch power x zones visited",
         "qte_frequency_bonus": "QTE frequency bonus",
         "minigame_xp_mult": "Minigame XP",
@@ -161,9 +171,11 @@ class Strings:
         "lick_wounds": "Animal instincts",
         "passive_regeneration": "Passive HP regeneration",
         "combat_rewards_multiplier": "Combat rewards",
-        "quest_fail_rewards_multiplier": "Quest failure rewards"
+        "quest_fail_rewards_multiplier": "Quest failure rewards",
+        "gain_money_on_player_meet": "Gain money on meet",
+        "can_buy_on_a_quest": "Can buy on a quest",
+        "can_craft_on_a_quest": "Can craft on a quest",
     }
-    you_can_choose_a_cult = "You tried some quests at this point, how about you join a cult now? Use the `cults` commands to see them all and then if you want edit your character to choose one."
 
     # items
     enchant_symbol = "⭐"
