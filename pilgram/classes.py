@@ -1336,7 +1336,8 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         return string
 
     def __str__(self) -> str:
-        string = f"{self.get_rank_string()} *{self.name}* (id: {self.vocation_id})\n_{self.description}_\nupgrade cost: {self.get_upgrade_cost()} {MONEY}\n"
+        upgrade_cost_string = f"upgrade cost: {self.get_upgrade_cost()} {MONEY}" if self.level < self.MAX_LEVEL else "+--+ Max level +--+"
+        string = f"{self.get_rank_string()} *{self.name}* (id: {self.vocation_id})\n_{self.description}_\n{upgrade_cost_string}\n"
         if self.modifiers_applied:
             string += self.get_modifier_string()
         else:
@@ -1378,7 +1379,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
             2: 250000,
             3: 500000,
             4: 1000000
-        }.get(self.level, 999999999999)
+        }.get(self.level, -1)
         return int(value)
 
     def can_upgrade(self):
