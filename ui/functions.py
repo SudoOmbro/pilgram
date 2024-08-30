@@ -1295,6 +1295,8 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
             return Strings.cannot_change_vocation_on_quest
         # convert strings to ints
         vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
+        if vocation_ids[0] == vocation_ids[1]:
+            return "You can't use 2 of the same vocation!"
         # equip vocations
         vocations = [Vocation.get_correct_vocation_tier(vid, player) for vid in vocation_ids[:(player.get_vocation_limit())]]
         player.equip_vocations(vocations)
