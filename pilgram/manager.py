@@ -435,12 +435,16 @@ class QuestManager(Manager):
                 if zone_id > 0
                 else 10
             )
-            for player in [player1, player2]:
+            for player, other_player in zip([player1, player2], [player2, player1]):
                 xp_am = player.add_xp(reward_value)
                 mn_am = player.add_money(reward_value) if player.vocation.gain_money_on_player_meet else 0
                 text = f"{string} {random.choice(actions)}" + rewards_string(xp_am, mn_am, 0)
                 self.db().update_player_data(player)
-                self.db().create_and_add_notification(player, text, notification_type="Meeting")
+                self.db().create_and_add_notification(
+                    player,
+                    text.format(name=other_player.name),
+                    notification_type="Meeting"
+                )
 
     def run(self) -> None:
         zones_players_map: dict[int, list[Player]] = {}
