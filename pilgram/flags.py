@@ -66,7 +66,6 @@ class LuckFlag2(Flag):
 
 class StrengthBuff(Flag):
     """buff all normal damage (slash, pierce & blunt)"""
-
     pass
 
 

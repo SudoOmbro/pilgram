@@ -22,7 +22,9 @@ from pilgram.classes import (
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.flags import ForcedCombat
+from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
+    LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -1259,28 +1261,70 @@ def duel_reject(context: UserContext, player_name: str) -> str:
         return Strings.no_character_yet
 
 
-def __get_player_perks_string(player: Player) -> str:
+def __get_player_stats_string(player: Player) -> str:
+    # add base stats
+    string = f"*{player.name}'s stats*\n\nTotal Base Damage:\n_{player.get_base_attack_damage()}_\n\nTotal Base Resist:\n_{player.get_base_attack_resistance()}_\n\nTotal Weight: {player.get_delay()} Kg"
+    # add temporary buffs / de-buffs
+    if CursedFlag.is_set(player.flags):
+        string += "\n\nCursed: -2 to quest rolls."
+    elif HexedFlag.is_set(player.flags):
+        string += "\n\nHexed: -1 to quest rolls."
+    if AlloyGlitchFlag3.is_set(player.flags):
+        string += "\n\nAlloy Glitch (3): x3.375 BA multiplier"
+    elif AlloyGlitchFlag2.is_set(player.flags):
+        string += "\n\nAlloy Glitch (2): x2.25 BA multiplier"
+    elif AlloyGlitchFlag1.is_set(player.flags):
+        string += "\n\nAlloy Glitch (1): x1.5 BA multiplier"
+    if LuckFlag2.is_set(player.flags):
+        string += "\n\nBlessed (2): +2 to quest rolls."
+    elif LuckFlag1.is_set(player.flags):
+        string += "\n\nBlessed (1): +1 to quest rolls."
+    if StrengthBuff.is_set(player.flags):
+        string += "\n\nStrength buff: slash, blunt & pierce damage x1.5"
+    if OccultBuff.is_set(player.flags):
+        string += "\n\nOccult buff: occult damage x2"
+    if FireBuff.is_set(player.flags):
+        string += "\n\nFire buff: fire damage x2"
+    if IceBuff.is_set(player.flags):
+        string += "\n\nIce buff: ice damage x2"
+    if AcidBuff.is_set(player.flags):
+        string += "\n\nAcid buff: acid damage x2"
+    if ElectricBuff.is_set(player.flags):
+        string += "\n\nElectric buff: electric damage x2"
+    if MightBuff3.is_set(player.flags):
+        string += "\n\nMight buff (3): all damage x2.5"
+    elif MightBuff2.is_set(player.flags):
+        string += "\n\nMight buff (2): all damage x2"
+    elif MightBuff1.is_set(player.flags):
+        string += "\n\nMight buff (1): all damage x1.5"
+    if SwiftBuff3.is_set(player.flags):
+        string += "\n\nSwift buff (3): weight -45 kg"
+    elif SwiftBuff2.is_set(player.flags):
+        string += "\n\nSwift buff (2): weight -30 kg"
+    elif SwiftBuff1.is_set(player.flags):
+        string += "\n\nSwift buff (1): weight -15 kg"
+    # add perks (if the player has any)
     perks = player.get_modifiers()
     if not perks:
-        return f"{player.name} does not have any Perks."
-    return f"\n\n*{player.name}'s Perks*:\n\n{'\n\n'.join(str(x) for x in perks)}"
+        return string
+    return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in perks)}"
 
 
-def check_my_perks(context: UserContext):
+def check_my_stats(context: UserContext):
     try:
         # get player
         player = db().get_player_data(context.get("id"))
-        return __get_player_perks_string(player)
+        return __get_player_stats_string(player)
     except KeyError:
         return Strings.no_character_yet
 
 
-def check_player_perks(context: UserContext, player_name: str) -> str:
+def check_player_stats(context: UserContext, player_name: str) -> str:
     try:
         message, player = __get_player_from_name(player_name)
         if message:
             return message
-        return __get_player_perks_string(player)
+        return __get_player_stats_string(player)
     except KeyError:
         return Strings.named_object_not_exist.format(obj="player", name=player_name)
 
@@ -1347,12 +1391,12 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "enemy": IFW([integer_arg("Zone number")], check_enemy, "Describes an Enemy."),
         "guild": IFW([guild_arg("Guild")], check_guild, "Shows guild."),
         "player": IFW([player_arg("player")], check_player, "Shows player stats."),
-        "perks": IFW([player_arg("player")], check_player_perks, "Shows player perks."),
+        "stats": IFW([player_arg("player")], check_player_stats, "Shows player perks."),
         "artifact": IFW([integer_arg("Artifact number")], check_artifact, "Describes an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
             "guild": IFW(None, check_my_guild, "Shows your own guild."),
-            "perks": IFW(None, check_my_perks, "Shows your own perks."),
+            "stats": IFW(None, check_my_stats, "Shows your own perks."),
             "auctions": IFW(None, check_my_auctions, "Shows your auctions."),
         },
         "auctions": IFW(None, check_auctions, "Shows all auctions."),

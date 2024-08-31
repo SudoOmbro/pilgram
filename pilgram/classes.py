@@ -797,7 +797,6 @@ class Player(CombatActor):
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"
         if self.equipped_items:
             string += f"\n\nEquipped items:\n{'\n'.join(f"{Strings.get_item_icon(slot)} - *{item.name}*" for slot, item in sorted(self.equipped_items.items()))}"
-        string += f"\n\nTotal Base Damage:\n_{self.get_base_attack_damage()}_\n\nTotal Base Resist:\n_{self.get_base_attack_resistance()}_\n\nTotal Weight: {self.get_delay()} Kg"
         if self.satchel:
             string += f"\n\nSatchel:\n{'\n'.join(f"{i + 1}. {x.name}" for i, x in enumerate(self.satchel))}"
         return string
