@@ -458,7 +458,6 @@ class QuestManager(Manager):
             if update.player.vocation.can_meet_players:
                 add_to_zones_players_map(zones_players_map, update)
             self.process_update(update, updates)
-            sleep(self.updates_per_second)
         self.handle_players_meeting(zones_players_map)
 
 
@@ -605,7 +604,6 @@ class TourneyManager(Manager):
             winner,
             f"Your guild won the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nyou are awarded an artifact piece!",
         )
-        sleep(self.notification_delay)
         # award money to top 3 guilds members
         for guild, reward, position in zip(
             top_guilds, (10000, 5000, 1000), ("first", "second", "third"), strict=False
@@ -623,7 +621,6 @@ class TourneyManager(Manager):
                     player,
                     f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!",
                 )
-                sleep(self.notification_delay)
         # reset all scores & start a new tourney
         self.db().reset_all_guild_scores()
         tourney.tourney_start = time.time()
@@ -650,7 +647,6 @@ class TimedUpdatesManager(Manager):
                     auction.auctioneer,
                     f"No one bid on your auctioned item ({auction.item.name}) and it expired!",
                 )
-                sleep(1)
             else:
                 # handle money transfer
                 auction.best_bidder.money -= auction.best_bid
@@ -676,7 +672,6 @@ class TimedUpdatesManager(Manager):
                     f"You won the auction for item '{auction.item.name}', you paid {auction.best_bid} {MONEY}.",
                 )
                 # wait a couple of seconds since you just sent 2 messages
-                sleep(2)
             # delete the auction from the database
             self.db().delete_auction(auction)
 
