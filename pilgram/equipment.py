@@ -127,7 +127,7 @@ class Equipment:
         rarity = len(self.modifiers)
         dmg_type_string, damage, resist = self.get_dmg_and_resist_values(self.level, seed, self.equipment_type.is_weapon)
         self.name = self.generate_name(self.equipment_type, dmg_type_string, rarity)
-        self.modifiers = self.generate_modifiers(rarity, rarity)
+        self.modifiers = self.generate_modifiers(rarity, self.level)
         self.damage = self.equipment_type.damage.scale(self.level) + damage
         self.resist = self.equipment_type.resist.scale(self.level) + resist
 
