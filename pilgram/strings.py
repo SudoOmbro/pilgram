@@ -15,7 +15,7 @@ def rewards_string(xp: int, money: int, renown: int, tax: float = 0) -> str:
     if money:
         tax_str = "" if tax == 0 else f" (taxed {int(tax * 100)}% by your guild)"
         rewards.append(f"{money} {MONEY}{tax_str}")
-    return f"\n\n_You gain {" & ".join(rewards)}{renown_str}_"
+    return f"\n\n_You gain {" & ".join(rewards)}{renown_str}_\n"
 
 
 class Strings:

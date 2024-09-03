@@ -227,17 +227,15 @@ class Quest:
     def get_rewards(self, player: Player) -> tuple[int, int]:
         """return the amount of xp & money the completion of the quest rewards"""
         guild_level = player.guild_level()
-        multiplier = (self.zone.level + self.number) + (
-            guild_level if guild_level < 10 else 15
-        )
-        rand = random.randint(1, 50)
+        multiplier = self.zone.level + self.number
+        guild_level_bonus = guild_level * 5000 if guild_level < 10 else 10000
+        bonus = random.randint(0, 50) + guild_level_bonus
         return (
             int(
-                ((self.BASE_XP_REWARD * multiplier) + rand) * player.vocation.quest_xp_mult
+                ((self.BASE_XP_REWARD * multiplier) + bonus) * player.vocation.quest_xp_mult
             ),
             int(
-                ((self.BASE_MONEY_REWARD * multiplier) + rand)
-                * player.vocation.quest_money_mult
+                ((self.BASE_MONEY_REWARD * multiplier) + bonus) * player.vocation.quest_money_mult
             ),
         )  # XP, Money
 
@@ -1219,12 +1217,12 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.name = name
         self.description = description
         # stats modifiers
-        self.general_xp_mult: float = modifiers.get("general_xp_mult", 1)
-        self.general_money_mult: float = modifiers.get("general_money_mult", 1)
-        self.quest_xp_mult: float = modifiers.get("quest_xp_mult", 1)
-        self.quest_money_mult: float = modifiers.get("quest_money_mult", 1)
-        self.event_xp_mult: float = modifiers.get("event_xp_mult", 1)
-        self.event_money_mult: float = modifiers.get("event_money_mult", 1)
+        self.general_xp_mult: float = modifiers.get("general_xp_mult", 1.0)
+        self.general_money_mult: float = modifiers.get("general_money_mult", 1.0)
+        self.quest_xp_mult: float = modifiers.get("quest_xp_mult", 1.0)
+        self.quest_money_mult: float = modifiers.get("quest_money_mult", 1.0)
+        self.event_xp_mult: float = modifiers.get("event_xp_mult", 1.0)
+        self.event_money_mult: float = modifiers.get("event_money_mult", 1.0)
         self.can_meet_players: bool = modifiers.get("can_meet_players", True)
         self.power_bonus: int = modifiers.get("power_bonus", 0)
         self.roll_bonus: int = modifiers.get("roll_bonus", 0)
@@ -1238,8 +1236,8 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
             "power_bonus_per_zone_visited", 0
         )
         self.qte_frequency_bonus = modifiers.get("qte_frequency_bonus", 0)
-        self.minigame_xp_mult = modifiers.get("minigame_xp_mult", 1)
-        self.minigame_money_mult = modifiers.get("minigame_money_mult", 1)
+        self.minigame_xp_mult = modifiers.get("minigame_xp_mult", 1.0)
+        self.minigame_money_mult = modifiers.get("minigame_money_mult", 1.0)
         self.hp_mult = modifiers.get("hp_mult", 1.0)
         self.hp_bonus = modifiers.get("hp_bonus", 0)
         self.damage = Damage.load_from_json(modifiers.get("damage", {}))
@@ -1268,17 +1266,17 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
             result.original_vocations.append(self)
         if other.unique_id != 0:
             result.original_vocations.append(other)
-        result.general_xp_mult = self.general_xp_mult + other.general_xp_mult
-        result.general_money_mult = self.general_money_mult
-        result.quest_xp_mult = self.quest_xp_mult + other.quest_xp_mult
-        result.quest_money_mult = self.quest_money_mult
-        result.event_xp_mult = self.event_xp_mult + other.event_xp_mult
-        result.event_money_mult = self.event_money_mult
+        result.general_xp_mult = self.general_xp_mult * other.general_xp_mult
+        result.general_money_mult = self.general_money_mult * other.general_money_mult
+        result.quest_xp_mult = self.quest_xp_mult * other.quest_xp_mult
+        result.quest_money_mult = self.quest_money_mult * other.quest_money_mult
+        result.event_xp_mult = self.event_xp_mult * other.event_xp_mult
+        result.event_money_mult = self.event_money_mult * other.event_money_mult
         result.can_meet_players = self.can_meet_players or other.can_meet_players
         result.power_bonus = self.power_bonus + other.power_bonus
         result.roll_bonus = self.roll_bonus + other.roll_bonus
         result.quest_time_multiplier = self.quest_time_multiplier * other.quest_time_multiplier
-        result.eldritch_resist = self.eldritch_resist * other.eldritch_resist
+        result.eldritch_resist = self.eldritch_resist or other.eldritch_resist
         result.artifact_drop_bonus = self.artifact_drop_bonus + other.artifact_drop_bonus
         result.upgrade_cost_multiplier = self.upgrade_cost_multiplier * other.upgrade_cost_multiplier
         result.power_bonus_per_zone_visited = self.power_bonus_per_zone_visited + other.power_bonus_per_zone_visited
@@ -1286,11 +1284,11 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.minigame_xp_mult = self.minigame_xp_mult * other.minigame_xp_mult
         result.minigame_money_mult = self.minigame_money_mult * other.minigame_money_mult
         result.hp_mult = self.hp_mult * other.hp_mult
-        result.hp_bonus = self.hp_bonus * other.hp_bonus
+        result.hp_bonus = self.hp_bonus + other.hp_bonus
         result.damage = self.damage + other.damage
         result.resist = self.resist + other.resist
         result.discovery_bonus = self.discovery_bonus + other.discovery_bonus
-        result.passive_regeneration = self.passive_regeneration * other.passive_regeneration
+        result.passive_regeneration = self.passive_regeneration + other.passive_regeneration
         result.combat_rewards_multiplier = self.combat_rewards_multiplier * other.combat_rewards_multiplier
         result.lick_wounds = self.lick_wounds or other.lick_wounds
         result.quest_fail_rewards_multiplier = self.quest_fail_rewards_multiplier + other.quest_fail_rewards_multiplier

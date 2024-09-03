@@ -22,7 +22,7 @@ from pilgram.classes import (
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2
+from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -153,7 +153,15 @@ class QuestManager(Manager):
         ac.player = player
         tax: float = 0
         quest_finished, roll, value_to_beat = quest.finish_quest(player)
+        # pity
+        if (not quest_finished) and Pity5.is_set(player.flags):
+            quest_finished = True
+        # give quest rewards
         if quest_finished:
+            # reset pity flags
+            for flag in PITY_FLAGS:
+                player.flags = flag.unset(player.flags)
+            # get rewards
             xp, money = quest.get_rewards(player)
             renown = quest.get_prestige() * 200
             if player.guild:
@@ -196,17 +204,31 @@ class QuestManager(Manager):
                 + (Strings.piece_found if piece else ""),
             )
         else:
+            # create shade & notification text
             self.create_shade(player, ac.zone())
             failure_text = quest.failure_text + Strings.quest_fail.format(name=quest.name) + f"\n\n{Strings.quest_roll.format(roll=roll, target=value_to_beat)}"
+            # give rewards anyway if vocation permits it
             if player.vocation.quest_fail_rewards_multiplier > 0:
                 xp, money = quest.get_rewards(player)
                 xp_am = player.add_xp(xp)  # am = after modifiers
                 money_am = player.add_money(money)  # am = after modifiers
                 failure_text + rewards_string(xp_am, money_am, 0)
+            # create the notification
             self.db().create_and_add_notification(
                 player,
                 failure_text,
             )
+            # add to pity counter
+            if not Pity1.is_set(player.flags):
+                player.flags = Pity1.set(player.flags)
+            elif not Pity2.is_set(player.flags):
+                player.flags = Pity2.set(player.flags)
+            elif not Pity3.is_set(player.flags):
+                player.flags = Pity3.set(player.flags)
+            elif not Pity4.is_set(player.flags):
+                player.flags = Pity4.set(player.flags)
+            elif not Pity5.is_set(player.flags):
+                player.flags = Pity5.set(player.flags)
         self.highest_quests.update(
             ac.zone().zone_id, ac.quest.number + 1
         )  # zone() will return a zone and not None since player must be in a quest to reach this part of the code

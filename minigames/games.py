@@ -151,7 +151,7 @@ class HangmanMinigame(PilgramMinigame, game="open"):
     def __init__(self, player: Player):
         super().__init__(player)
         self.has_started = True  # skip active setup, not needed
-        self.word = get_random_word()
+        self.word = get_random_word().lower()
         self.remaining_tries: int = 3 + (len(self.word) // 2)
         # setup game
         self.guessed_word = ["\\_" for _ in range(len(self.word))]
