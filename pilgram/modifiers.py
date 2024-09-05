@@ -753,7 +753,7 @@ class RouletteAttack(Modifier, rarity=Rarity.RARE):
 
 
 class IdiotGodBlessing(Modifier, rarity=Rarity.LEGENDARY):
-    TYPE = ModifierType.ON_DEATH
+    TYPE = ModifierType.COMBAT_START
 
     MAX_STRENGTH = 100
     MIN_STRENGTH = 10
@@ -763,7 +763,7 @@ class IdiotGodBlessing(Modifier, rarity=Rarity.LEGENDARY):
     DESCRIPTION = "Gives you 1 free revive per combat (restores {str}% hp)."
 
     class FreeRevive(Modifier):
-        TYPE = ModifierType.POST_DEFEND
+        TYPE = ModifierType.ON_DEATH
 
         def function(self, context: ModifierContext) -> Any:
             entity: cc.CombatActor = context.get("entity")

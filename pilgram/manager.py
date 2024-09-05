@@ -22,7 +22,8 @@ from pilgram.classes import (
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5
+from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
+    Cheater
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -323,7 +324,11 @@ class QuestManager(Manager):
             if ForcedCombat.is_set(player.flags):
                 days_left = (ac.finish_time - datetime.now()).days
                 enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
-                for _ in range(2):
+                modifiers_amount = 2
+                if Cheater.is_set(player.flags):
+                    modifiers_amount += 8
+                    enemy_level_modifier += 1000000
+                for _ in range(modifiers_amount):
                     choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
                     modifier_type: type[Modifier] = random.choice(choice_list)
                     modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))

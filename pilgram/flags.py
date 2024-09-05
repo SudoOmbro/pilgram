@@ -37,112 +37,116 @@ class Flag(ABC):
 
 
 class HexedFlag(Flag):
-    pass
+    pass  # 1
 
 
 class CursedFlag(Flag):
-    pass
+    pass  # 2
 
 
 class AlloyGlitchFlag1(Flag):
-    pass
+    pass  # 3
 
 
 class AlloyGlitchFlag2(Flag):
-    pass
+    pass  # 4
 
 
 class AlloyGlitchFlag3(Flag):
-    pass
+    pass  # 5
 
 
 class LuckFlag1(Flag):
-    pass
+    pass  # 6
 
 
 class LuckFlag2(Flag):
-    pass
+    pass  # 7
 
 
 class StrengthBuff(Flag):
     """buff all normal damage (slash, pierce & blunt)"""
-    pass
+    pass  # 8
 
 
 class OccultBuff(Flag):
-    pass
+    pass  # 9
 
 
 class FireBuff(Flag):
-    pass
+    pass  # 10
 
 
 class IceBuff(Flag):
-    pass
+    pass  # 11
 
 
 class AcidBuff(Flag):
-    pass
+    pass  # 12
 
 
 class ElectricBuff(Flag):
-    pass
+    pass  # 13
 
 
 class ForcedCombat(Flag):
-    pass
+    pass  # 14
 
 
 class MightBuff1(Flag):
-    pass
+    pass  # 15
 
 
 class MightBuff2(Flag):
-    pass
+    pass  # 16
 
 
 class MightBuff3(Flag):
-    pass
+    pass  # 17
 
 
 class SwiftBuff1(Flag):
-    pass
+    pass  # 18
 
 
 class SwiftBuff2(Flag):
-    pass
+    pass  # 19
 
 
 class SwiftBuff3(Flag):
-    pass
+    pass  # 20
 
 
 class Ritual1(Flag):
-    pass
+    pass  # 21
 
 
 class Ritual2(Flag):
-    pass
+    pass  # 22
 
 
 class Pity1(Flag):
-    pass
+    pass  # 23
 
 
 class Pity2(Flag):
-    pass
+    pass  # 24
 
 
 class Pity3(Flag):
-    pass
+    pass  # 25
 
 
 class Pity4(Flag):
-    pass
+    pass  # 26
 
 
 class Pity5(Flag):
-    pass
+    pass  # 27
+
+
+class Cheater(Flag):
+    pass  # 28
 
 
 BUFF_FLAGS: tuple[type[Flag], ...] = (
