@@ -150,7 +150,10 @@ class TestClasses(unittest.TestCase):
         player.equip_item(_generate_equipment(
             player,
             EquipmentType.get(44),  # Hood
-            [get_modifier_from_name("Slash Optimized", 25)]
+            [
+                get_modifier_from_name("Slash Optimized", 25),
+                get_modifier_from_name("Unyielding Will", 2)
+            ]
         ))
         # setup player satchel
         player.satchel = [ConsumableItem.get(15), ConsumableItem.get(7), ConsumableItem.get(6), ConsumableItem.get(5), ConsumableItem.get(13)]

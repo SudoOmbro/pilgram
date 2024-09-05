@@ -22,6 +22,7 @@ class ModifierType:
     MODIFY_MAX_HP = 8
     TURN_START = 9
     STAMINA_REGEN = 10
+    ON_DEATH = 11
 
 
 class Rarity:
@@ -625,13 +626,13 @@ class UnyieldingWill(Modifier, rarity=Rarity.LEGENDARY):
     DESCRIPTION = "Gives {str} free revives per combat"
 
     class FreeRevive(Modifier):
-        TYPE = ModifierType.POST_DEFEND
+        TYPE = ModifierType.ON_DEATH
 
         def function(self, context: ModifierContext) -> Any:
-            defender: cc.CombatActor = context.get("other")
-            if defender.hp == 0:
-                self.write_to_log(context, f"{defender.get_name()} still stands.")
-                defender.modify_hp(int(defender.get_max_hp() / 2))
+            entity: cc.CombatActor = context.get("entity")
+            if entity.hp == 0:
+                self.write_to_log(context, f"{entity.get_name()} still stands.")
+                entity.modify_hp(int(entity.get_max_hp() / 2))
             else:
                 self.duration += 1  # if the bonus was not used then restore duration
 
@@ -752,7 +753,7 @@ class RouletteAttack(Modifier, rarity=Rarity.RARE):
 
 
 class IdiotGodBlessing(Modifier, rarity=Rarity.LEGENDARY):
-    TYPE = ModifierType.COMBAT_START
+    TYPE = ModifierType.ON_DEATH
 
     MAX_STRENGTH = 100
     MIN_STRENGTH = 10
@@ -765,7 +766,7 @@ class IdiotGodBlessing(Modifier, rarity=Rarity.LEGENDARY):
         TYPE = ModifierType.POST_DEFEND
 
         def function(self, context: ModifierContext) -> Any:
-            entity: cc.CombatActor = context.get("other")
+            entity: cc.CombatActor = context.get("entity")
             if entity.is_dead():
                 entity.modify_hp(int(entity.get_max_hp() * self.get_fstrength()))
                 self.write_to_log(

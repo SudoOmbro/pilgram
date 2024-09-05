@@ -478,7 +478,13 @@ class CombatContainer:
                 )
             )
 
-    def _try_revive(self, actor: CombatActor) -> bool:
+    def _try_revive(self, actor: CombatActor, opponent: CombatActor) -> bool:
+        # first try to see the actor has any modifiers that revive him
+        for modifier in actor.get_modifiers(m.ModifierType.ON_DEATH):
+            modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponent, "turn": self.turn}))
+        if not actor.is_dead():
+            return True
+        # then if the actor is still dead and it's a player try to use consumables
         if isinstance(actor, c.Player):
             # if player died but has a revive in his inventory then use it
             pos: int = -1
@@ -509,13 +515,13 @@ class CombatContainer:
             # choose & perform actions
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
-                    if not self._try_revive(actor):
+                    if not self._try_revive(actor, opponents[i]):
                         continue
                 for modifier in actor.get_modifiers(m.ModifierType.TURN_START):
                     modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponents[i], "turn": self.turn}))
                 if actor.is_dead():
-                    # the actor may also die here since poison might be applied
-                    if not self._try_revive(actor):
+                    # the actor may also die here since poison or other effects might be applied
+                    if not self._try_revive(actor, opponents[i]):
                         continue
                 # only do something if the actor has full stamina
                 self.regenerate_stamina(actor, opponents[i])
@@ -573,7 +579,7 @@ class CombatContainer:
                     )
             for i, actor in enumerate(self.participants):
                 if actor.is_dead():
-                    if not self._try_revive(actor):
+                    if not self._try_revive(actor, opponents[i]):
                         is_fight_over = True
                         self.write_to_log(f"\n{opponents[i].get_name()} wins.")
         self._cleanup_after_combat()

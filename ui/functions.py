@@ -1305,6 +1305,7 @@ def __get_player_stats_string(player: Player) -> str:
         string += "\n\nSwift buff (1): weight -15 kg"
     # add perks (if the player has any)
     perks = player.get_modifiers()
+    perks.sort(key=lambda perk: (perk.RARITY, perk.NAME, perk.strength))
     if not perks:
         return string
     return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in perks)}"
