@@ -100,7 +100,7 @@ def __hex(caster: Player, args: list[str]) -> str:
         raise SpellError(f"{args[0]} is already hexed!")
     elif HexedFlag.is_set(target.flags) and CursedFlag.is_set(target.flags):
         raise SpellError(f"{args[0]} is already cursed!")
-    if power_used == 100:
+    if power_used >= 100:
         target.set_flag(HexedFlag)
         target.set_flag(CursedFlag)
         _db().update_player_data(target)
@@ -122,7 +122,7 @@ def __bless(caster: Player, args: list[str]) -> str:
         raise SpellError(f"{args[0]} is already blessed (1)!")
     elif LuckFlag1.is_set(target.flags) and LuckFlag2.is_set(target.flags):
         raise SpellError(f"{args[0]} is already blessed (2)!")
-    if power_used == 100:
+    if power_used >= 100:
         target.set_flag(LuckFlag1)
         target.set_flag(LuckFlag2)
         _db().update_player_data(target)
@@ -143,11 +143,11 @@ def __eldritch_healing(caster: Player, args: list[str]) -> str:
 @__add_to_spell_list("might")
 def __eldritch_might(caster: Player, args: list[str]) -> str:
     amount = caster.get_spell_charge()
-    if amount >= 30:
+    if amount >= 40:
         caster.set_flag(MightBuff1)
-    if amount >= 60:
+    if amount >= 80:
         caster.set_flag(MightBuff2)
-    if amount >= 90:
+    if amount >= 120:
         caster.set_flag(MightBuff3)
     # we don't need to save the player data, it will be done automatically later
     return f"You feel stronger ({int(amount / 30)}x)."
@@ -156,11 +156,11 @@ def __eldritch_might(caster: Player, args: list[str]) -> str:
 @__add_to_spell_list("swift")
 def __eldritch_swiftness(caster: Player, args: list[str]) -> str:
     amount = caster.get_spell_charge()
-    if amount >= 30:
+    if amount >= 40:
         caster.set_flag(SwiftBuff1)
-    if amount >= 60:
+    if amount >= 80:
         caster.set_flag(SwiftBuff2)
-    if amount >= 90:
+    if amount >= 120:
         caster.set_flag(SwiftBuff3)
     # we don't need to save the player data, it will be done automatically later
     return f"You feel faster ({int(amount / 30)}x)."
@@ -169,8 +169,8 @@ def __eldritch_swiftness(caster: Player, args: list[str]) -> str:
 @__add_to_spell_list("ritual")
 def __summoning_ritual(caster: Player, args: list[str]) -> str:
     amount = caster.get_spell_charge()
-    if amount >= 40:
+    if amount >= 50:
         caster.set_flag(Ritual1)
-    if amount >= 80:
+    if amount >= 100:
         caster.set_flag(Ritual2)
     return f"You feel a sense of dread ({int(amount / 40)}x)"

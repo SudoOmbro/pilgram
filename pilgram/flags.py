@@ -149,6 +149,10 @@ class Cheater(Flag):
     pass  # 28
 
 
+class QuestCanceled(Flag):
+    pass  # 29
+
+
 BUFF_FLAGS: tuple[type[Flag], ...] = (
     StrengthBuff,
     OccultBuff,

@@ -23,7 +23,7 @@ from pilgram.classes import (
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    Cheater
+    Cheater, QuestCanceled
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -421,6 +421,13 @@ class QuestManager(Manager):
             player: Player = self.db().get_player_data(ac.player.player_id)
             if ac.is_quest_finished():
                 self._complete_quest(ac)
+            elif QuestCanceled.is_set(player.flags):
+                player.unset_flag(QuestCanceled)
+                ac.player = player
+                ac.quest = None
+                self.db().update_quest_progress(ac)
+                self.db().update_player_data(player)
+                self.db().create_and_add_notification(player, "You are back in town after abandoning the quest.")
             elif ForcedCombat.is_set(player.flags) or (
                 random.randint(1, 100) <= 10
             ):  # 10% base chance of combat

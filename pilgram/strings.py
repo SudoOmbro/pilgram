@@ -23,6 +23,9 @@ class Strings:
     class that contains all the interface-related strings that will be sent to the players.
     """
 
+    # quests
+    quest_canceled = "You abandon the quest, you'll be back in town in a few hours"
+
     # character creation
     character_already_created = "You already have a character! Their name is {name} and they are very sad now :("
     character_creation_get_name = "Ok, let's start by naming your character. Send me a name (4 - 20 characters)."
@@ -141,10 +144,7 @@ class Strings:
     invalid_option = "The chosen option is invalid!"
     qte_failed = "You failed the QTE!"
 
-    # cults
-    choose_cult = "Send the number of the cult you want to join. Send 0 to stay of of cults.\n"
-    cult_does_not_exist = "The specfified cult does not exist, only cults {start} to {end} exist."
-    list_cults = "Here are all the existing cults:\n\n"
+    # vocations
     modifier_names: dict[str, str] = {
         "general_xp_mult": "General XP",
         "general_money_mult": "General BA",

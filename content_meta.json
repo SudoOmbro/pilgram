@@ -149,17 +149,17 @@
     },
     "might": {
       "name": "Eldritch Might",
-      "description": "Be much stronger in the next combat.\nEffect scales with amount of power used (30 for 1.5x, 60 for 2x, 90 for 2.5x).",
+      "description": "Be much stronger in the next combat.\nEffect scales with amount of power used (40 for 1.5x, 80 for 2x, 120 for 2.5x).",
       "power": 30
     },
     "swift": {
       "name": "Eldritch Swiftness",
-      "description": "Be much faster in the next combat, ignore weight.\nEffect scales with amount of power used (30 for -15 kg, 60 for -30 kg, 90 for -45 kg).",
+      "description": "Be much faster in the next combat, ignore weight.\nEffect scales with amount of power used (40 for -15 kg, 80 for -30 kg, 120 for -45 kg).",
       "power": 30
     },
     "ritual": {
       "name": "Summoning Ritual",
-      "description": "Enemy in the next encounter is going to be much stronger.\nEffect scales with amount of power used (40 for +5 levels, 80 for +10 levels).",
+      "description": "Enemy in the next encounter is going to be much stronger.\nEffect scales with amount of power used (50 for +5 levels, 100 for +10 levels).",
       "power": 30
     }
   },
@@ -317,7 +317,7 @@
       "rewards": "xp 20"
     }]
 }, {
-    "description": "You encounter a creepy guy who offers advice for a small fee of one of your toenails.",
+    "description": "You encounter a creepy vagabond who offers advice for a small fee of one of your toenails.",
     "choices": [{
       "option": "Rip off a toe nail",
       "chance": 50,
@@ -331,7 +331,79 @@
       "failure": "He lunges at you, scratching you. He runs off on all fours, never to be seen again.",
       "rewards": "xp 20"
     }]
-}],
+}, {
+    "description": "You find a wounded animal, struggling to move. It seems to be a rare creature around here.",
+    "choices": [{
+      "option": "Help the animal",
+      "chance": 50,
+      "success": "The creature recovers and grants you a magical boon as thanks for your kindness.",
+      "failure": "Despite your efforts, the creature succumbs to its wounds, and you feel sorrowful as it fades away.",
+      "rewards": "xp 250, mn 250"
+    }, {
+      "option": "Leave it be",
+      "chance": 80,
+      "success": "You move on, not getting involved, and avoid any unnecessary danger.",
+      "failure": "You later hear the creature’s mournful cry as a predator takes it. You regret your choice.",
+      "rewards": "xp 50"
+    }]
+}, {
+    "description": "You come across a strange well that supposedly grants wishes, but only at a cost.",
+    "choices": [{
+      "option": "Wish for experience",
+      "chance": 42,
+      "success": "Your wish is granted, and you feel the hopes & dreams of lost adventurers fill you.",
+      "failure": "The well demands a high price, draining your energy instead of granting the wish.",
+      "rewards": "xp 1000"
+    }, {
+      "option": "Wish for wealth",
+      "chance": 42,
+      "success": "Your wish is granted, pouches full of Boromian Alloy materialize in front of you.",
+      "failure": "The well demands a high price, draining your energy instead of granting the wish.",
+      "rewards": "mn 1000"
+    }, {
+      "option": "Wish for power",
+      "chance": 13,
+      "success": "Your wish is granted, an artifact piece materializes in front of you.",
+      "failure": "The well demands a high price, draining your energy instead of granting the wish.",
+      "rewards": "ap 1"
+    }, {
+      "option": "Leave it be",
+      "chance": 90,
+      "success": "You avoid the temptation and continue on your journey with no ill effects.",
+      "failure": "You later regret not making a wish, as a challenge arises that you could have avoided.",
+      "rewards": "xp 50"
+    }]
+}, {
+    "description": "You see an item encased in strange glowing red stone.",
+    "choices": [{
+      "option": "Try to break the stone",
+      "chance": 25,
+      "success": "You manage to break the stone & you take the item with you.",
+      "failure": "Despite your efforts, the stone won't break.",
+      "rewards": "item (Eldritch)"
+    }, {
+      "option": "Leave it be",
+      "chance": 90,
+      "success": "The rock looks unbreakable anyway, you leave.",
+      "failure": "You later regret your choice as you learn that the item was infused with powerful boons.",
+      "rewards": "xp 50"
+    }]
+}, {
+    "description": "A strange mist fills the path ahead, and a voice beckons you to enter, promising great rewards within.",
+    "choices": [{
+      "option": "Enter the mist",
+      "chance": 60,
+      "success": "Inside the mist, you find an enchanted grove, filled with rare plants and treasures.",
+      "failure": "The mist disorients you, and you wander aimlessly for hours before finding your way out, exhausted.",
+      "rewards": "xp 500, mn 500"
+    }, {
+      "option": "Avoid the mist",
+      "chance": 90,
+      "success": "You steer clear of the mysterious mist and continue on your journey safely.",
+      "failure": "Later, you learn that those who braved the mist found valuable treasures.",
+      "rewards": "xp 50"
+    }]
+  }],
   "vocations": [{
     "vocation_id": 0,
     "id": 0,

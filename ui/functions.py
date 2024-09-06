@@ -24,7 +24,7 @@ from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
-    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -1383,6 +1383,19 @@ def upgrade_vocation(context: UserContext, vocation_id_str: str):
         return str(e)
 
 
+def cancel_quest(context: UserContext):
+    try:
+        player = db().get_player_data(context.get("id"))
+        ac = db().get_player_adventure_container(player)
+        if not ac.is_on_a_quest():
+            return Strings.not_on_a_quest
+        player.set_flag(QuestCanceled)
+        db().update_player_data(player)
+        return Strings.quest_canceled
+    except KeyError:
+        return Strings.no_character_yet
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "self": IFW(None, check_self, "Shows your own stats."),
@@ -1407,6 +1420,9 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "item": IFW([integer_arg("Item")], check_item, "Shows the specified item stats"),
         "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
+    },
+    "cancel": {
+        "quest": IFW(None, cancel_quest, "Cancels the current quest.")
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
