@@ -650,12 +650,14 @@ class TourneyManager(Manager):
                 if (datetime.now() - player.last_guild_switch) < timedelta(days=1):
                     continue
                 reward_am = player.add_money(reward)  # am = after modifiers
+                log.info(f"rewarding {reward_am} money to {player.name}")
                 self.db().update_player_data(player)
+                log.info(f"notifying {player.name} of the win")
                 self.db().create_and_add_notification(
                     player,
                     f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!",
                 )
-                sleep(1)
+                sleep(0.5)
         # reset all scores & start a new tourney
         self.db().reset_all_guild_scores()
         tourney.tourney_start = time.time()
