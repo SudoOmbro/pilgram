@@ -660,6 +660,7 @@ class TourneyManager(Manager):
                 sleep(0.5)
         # reset all scores & start a new tourney
         self.db().reset_all_guild_scores()
+        log.info(f"successfully reset all guild scores")
         tourney.tourney_start = time.time()
         tourney.tourney_edition += 1
         log.info(
