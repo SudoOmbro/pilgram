@@ -655,6 +655,7 @@ class TourneyManager(Manager):
                     player,
                     f"Your guild placed *{position}* in the *biweekly Guild Tourney n.{tourney.tourney_edition}*!\nYou are awarded {reward_am} {MONEY}!",
                 )
+                sleep(1)
         # reset all scores & start a new tourney
         self.db().reset_all_guild_scores()
         tourney.tourney_start = time.time()

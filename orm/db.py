@@ -48,6 +48,9 @@ from pilgram.modifiers import Modifier, get_modifier
 log = logging.getLogger(__name__)
 
 _LOCK = threading.Lock()
+_TOURNEY_LOCK = threading.Lock()
+_NOTIFICATION_LOCK = threading.Lock()
+_DUEL_LOCK = threading.Lock()
 
 ENCODING = "cp437"  # we use this encoding since we are working with raw bytes & peewee doesn't seem to like raw bytes
 
@@ -180,10 +183,10 @@ def _load_json(json_string: str) -> dict:
         return {}
 
 
-def _thread_safe():
+def _thread_safe(lock: threading.Lock = _LOCK):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            with _LOCK:
+            with lock:
                 return func(*args, **kwargs)
         return wrapper
     return decorator
@@ -783,6 +786,7 @@ class PilgramORMDatabase(PilgramDatabase):
     def get_tourney(self) -> Tourney:
         return Tourney.load_from_file("tourney.json")
 
+    @_thread_safe(lock=_TOURNEY_LOCK)
     def update_tourney(self, tourney: Tourney):
         tourney.save()
 
@@ -1024,27 +1028,29 @@ class PilgramORMDatabase(PilgramDatabase):
 
     # notifications ----
 
-    @_thread_safe()
+    @_thread_safe(lock=_NOTIFICATION_LOCK)
     def get_pending_notifications(self) -> list[Notification]:
         notifications = copy(_NOTIFICATIONS_LIST)
         _NOTIFICATIONS_LIST.clear()
         return notifications
 
-    @_thread_safe()
+    @_thread_safe(lock=_NOTIFICATION_LOCK)
     def add_notification(self, notification: Notification) -> None:
         _NOTIFICATIONS_LIST.append(notification)
+
+    # duels ----
 
     _DUEL_INVITES: dict[int, list[int]] = {}
     # I can't be bothered to make these persistent, if the bot is turned off they disappear. Just invite again :)
 
-    # duels ----
-
+    @_thread_safe(lock=_DUEL_LOCK)
     def add_duel_invite(self, sender: Player, target: Player):
         if self._DUEL_INVITES.get(sender.player_id, None) is None:
             self._DUEL_INVITES[sender.player_id] = []
         if target.player_id not in self._DUEL_INVITES[sender.player_id]:
             self._DUEL_INVITES[sender.player_id].append(target.player_id)
 
+    @_thread_safe(lock=_DUEL_LOCK)
     def delete_duel_invite(self, sender: Player, target: Player):
         if self._DUEL_INVITES.get(sender.player_id, None) is None:
             return
