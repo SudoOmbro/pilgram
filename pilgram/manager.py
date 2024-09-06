@@ -745,10 +745,7 @@ class NotificationsManager(Manager):
     def run(self) -> None:
         notifications = self.db().get_pending_notifications()
         # handle internal events (more important)
-        while True:
-            event = InternalEventBus().consume()
-            if not event:
-                break
+        for event in InternalEventBus().consume_all():
             if event.recipient.player_id in self._tmp_blocked_users:
                 continue
             notification_text = self.get_internal_event_notification_text(event)

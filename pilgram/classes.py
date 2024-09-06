@@ -99,6 +99,13 @@ class InternalEventBus:
                 return None
             return self.events.pop(0)
 
+    def consume_all(self) -> list[Event]:
+        with self._LOCK:
+            events = copy(self.events)
+            self.events.clear()
+            return events
+
+
 
 class Zone:
     """contains info about a zone. Zone 0 should be the town to reuse the zone event system"""
