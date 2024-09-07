@@ -1,6 +1,8 @@
 import logging
+import math
 import random
 import re
+from collections.abc import Iterable
 
 from minigames.generics import GamblingMinigame, PilgramMinigame
 from minigames.utils import (
@@ -353,3 +355,130 @@ class RockPaperScissors(PilgramMinigame, game="war"):
         multiplier = self.player_supply + 1
         return multiplier * self.XP_REWARD, multiplier + self.MONEY_REWARD
 
+
+class AvoidArrows(PilgramMinigame, game="trap"):
+    INTRO_TEXT = "You fall into a trap room!"
+    FIELD_SIZE = 5
+
+    class Tiles:
+        EMPTY = 0
+        PLAYER = 1
+        ARROW_RIGHT = 2
+        ARROW_DOWN = 3
+        ARROW_LEFT = 4
+        ARROW_UP = 5
+
+    ARROWS = (
+        Tiles.ARROW_RIGHT,
+        Tiles.ARROW_DOWN,
+        Tiles.ARROW_LEFT,
+        Tiles.ARROW_UP
+    )
+
+    GRAPHICS = {
+        0: "⬜",
+        1: "🧑",
+        2: "➡️",
+        3: "⬇️",
+        4: "⬅️",
+        5: "⬆️"
+    }
+
+    HALF_PI = math.pi / 2
+
+    def __init__(self, player: Player):
+        super().__init__(player)
+        self.has_started = True  # skip active setup, not needed
+        self.play_field: list[list[int]] = [[0 for _ in range(self.FIELD_SIZE)] for _ in range(self.FIELD_SIZE)]
+        self._set_tile(2, 2, self.Tiles.PLAYER)
+        self.turns_left = 15
+        self._try_spawn_arrow()
+
+    def _get_tile(self, x: int, y: int) -> int:
+        return self.play_field[y][x]
+
+    def _set_tile(self, x: int, y: int, tile: int) -> None:
+        self.play_field[y][x] = tile
+
+    def _spawn_arrow(self, x: int, y: int, direction: int):
+        if self.play_field[y][x] == 0:
+            self._set_tile(x, y, direction + 2)
+
+    def _try_spawn_arrow(self):
+        direction: int = random.randint(0, 3)
+        offset: int = random.randint(1, self.FIELD_SIZE - 2)
+        if direction == 0:
+            self._spawn_arrow(0, offset, direction)
+        elif direction == 1:
+            self._spawn_arrow(offset, 0, direction)
+        elif direction == 2:
+            self._spawn_arrow(self.FIELD_SIZE - 1, offset, direction)
+        elif direction == 3:
+            self._spawn_arrow(offset, self.FIELD_SIZE - 1, direction)
+
+    def _field_iterator(self):
+        for y in range(self.FIELD_SIZE):
+            for x in range(self.FIELD_SIZE):
+                yield x, y, self.play_field[y][x]
+
+    def turn_text(self) -> str:
+        text = f"{self.turns_left} turns left\n\n"
+        # print trap room
+        for x, y, tile in self._field_iterator():
+            text += self.GRAPHICS.get(tile, "A")
+            if x == self.FIELD_SIZE - 1:
+                text += "\n"
+        # add instructions & return
+        return text + "\nWhat do you want to do? (Write n/w/e/s/i)"
+
+    def _check_collision(self, x: int, y: int, entities_to_check_for: Iterable[int]) -> bool:
+        tile: int = self.play_field[y][x]
+        return (tile != self.Tiles.EMPTY) and (tile in entities_to_check_for)
+
+    def _is_out_of_bounds(self, x: int, y: int):
+        return (x > (self.FIELD_SIZE - 1)) or (y > (self.FIELD_SIZE - 1)) or (x < 0) or (y < 0)
+
+    def play_turn(self, command: str) -> str:
+        # get player direction
+        direction_command = command[0].lower()
+        direction = MazeMinigame.DIRECTIONS.get(direction_command, None)
+        if not direction:
+            return "Invalid command.\n\n" + self.turn_text()
+        # move player
+        for x, y, tile in self._field_iterator():
+            if tile == self.Tiles.PLAYER:
+                new_x = x + direction[1]
+                new_y = y + direction[0]
+                if self._is_out_of_bounds(new_x, new_y):
+                    continue
+                if self._check_collision(new_x, new_y, self.ARROWS):
+                    return self.lose(Strings.trap_minigame_lose)
+                self._set_tile(x, y, self.Tiles.EMPTY)
+                self._set_tile(new_x, new_y, tile)
+                break
+        # try move arrows
+        arrows: list[tuple[int, int, int]] = []  # arrow direction, x, y
+        for x, y, tile in self._field_iterator():
+            if tile >= self.Tiles.ARROW_RIGHT:
+                new_x = x + int(math.cos((tile - 2) * self.HALF_PI))
+                new_y = y + int(math.sin((tile - 2) * self.HALF_PI))
+                if self._is_out_of_bounds(new_x, new_y):
+                    self._set_tile(x, y, self.Tiles.EMPTY)
+                    continue
+                if self._check_collision(new_x, new_y, (self.Tiles.PLAYER,)):
+                    return self.lose(Strings.trap_minigame_lose)
+                self._set_tile(x, y, self.Tiles.EMPTY)
+                arrows.append((tile, new_x, new_y))
+        # actually move arrows
+        for arrow, x, y in arrows:
+            self._set_tile(x, y, arrow)
+        # spawn new arrow every turn
+        self._try_spawn_arrow()
+        # advance turn & check win
+        if self.turns_left > 1:
+            self.turns_left -= 1
+            return self.turn_text()
+        return self.win("You manged to survive the arrows!")
+
+    def get_rewards(self) -> tuple[int, int]:
+        return -1, self.MONEY_REWARD

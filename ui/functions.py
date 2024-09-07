@@ -784,7 +784,7 @@ def minigame_process(context: UserContext, user_input: str) -> str:
                 message += f"\n\nYou gain {xp_am} xp & {money_am} {MONEY}."
             else:
                 items = db().get_player_items(player.player_id)
-                item = Equipment.generate(player.level, EquipmentType.get_random(), random.choice((0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3)))
+                item = Equipment.generate(player.level, EquipmentType.get_random(), random.choice((0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 3)))
                 message += f"\n\nYou gain {money_am} {MONEY} & find *{item.name}*."
                 if len(items) >= player.get_inventory_size():
                     message += " You leave the item there since you don't have space in your inventory."
@@ -799,6 +799,8 @@ def minigame_process(context: UserContext, user_input: str) -> str:
                 guild.tourney_score += minigame.RENOWN
                 db().update_guild(guild)
             return message + ("" if minigame.RENOWN == 0 else f"\n\nYou gain {minigame.RENOWN} renown.")
+        if xp < 0:
+            xp = 1
         xp_am = player.add_xp(xp)
         db().update_player_data(minigame.player)
         return message + f"\n\n{Strings.xp_gain.format(xp=xp_am)}"

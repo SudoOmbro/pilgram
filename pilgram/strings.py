@@ -122,6 +122,7 @@ class Strings:
     hands_minigame_bet = "What value are you betting? (3 - 18, 10 & 5 excluded)."
     fate_minigame_lose = f"The Pilgrim walks away with your {MONEY}, not making a sound."
     fate_minigame_win = "The Pilgrim just walks away, not making a sound."
+    trap_minigame_lose = "You got hit by an arrow! You manage to escape with just a bruise, but no treasure."
     you_win = "You win."
     you_lose = "You lose."
     minigame_played_too_recently = "You played this minigame too recently, wait {seconds} seconds and try again."
