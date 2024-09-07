@@ -1623,6 +1623,17 @@
       "pierce": 2
     },
     "value": 10
+  }, {
+    "id": 72,
+    "name": "Pata",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 5,
+    "resist": {
+      "slash": 2,
+      "pierce": 2
+    },
+    "value": 10
   }],
   "consumables": [{
     "id": 0,

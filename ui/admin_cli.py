@@ -17,7 +17,7 @@ from pilgram.globals import POSITIVE_INTEGER_REGEX as PIR
 from pilgram.globals import YES_NO_REGEX, ContentMeta, GlobalSettings
 from pilgram.strings import Strings
 from ui.interpreter import CLIInterpreter
-from ui.utils import InterpreterFunctionWrapper as IFW
+from ui.utils import InterpreterFunctionWrapper as IFW, player_arg, integer_arg
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
 
@@ -329,6 +329,25 @@ def give_random_item_to_player(context: UserContext, player_name: str) -> str:
     return f"Added '{item.name}' to player '{player_name}'."
 
 
+def give_item_to_player(
+        context: UserContext,
+        player_name: str,
+        item_type_str: str,
+        item_level_str: str,
+        item_rarity_str: str
+) -> str:
+    player = db().get_player_from_name(player_name)
+    items = db().get_player_items(player.player_id)
+    item_type_id = int(item_type_str)
+    item_level = int(item_level_str)
+    item_rarity = int(item_rarity_str)
+    item = Equipment.generate(item_level, EquipmentType.get(item_type_id), item_rarity)
+    item_id = db().add_item(item, player)
+    item.equipment_id = item_id
+    items.append(item)
+    return f"Added '{item.name}' to player '{player_name}'."
+
+
 def reset_guild_tourney(context: UserContext) -> str:
     """manually reset guild tourney scores"""
     db().reset_all_guild_scores()
@@ -365,7 +384,8 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "gear": __generate_int_op_command("gear_level", "player", "add"),
             "home": __generate_int_op_command("home_level", "player", "add"),
             "pieces": __generate_int_op_command("artifact_pieces", "player", "add"),
-            "item": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], give_random_item_to_player, "Add a random item to the player's inventory")
+            "randitem": IFW([player_arg("player name")], give_random_item_to_player, "Add a random item to the player's inventory"),
+            "item": IFW([player_arg("player name"), integer_arg("item type"), integer_arg("item level"), integer_arg("item rarity")], give_item_to_player, "Add an item to the player's inventory")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),
