@@ -854,11 +854,16 @@ def bestiary(context: UserContext, zone_id_str: str):
         return Strings.obj_does_not_exist.format(obj="zone")
 
 
+def __get_items(player: Player) -> list[Equipment]:
+    items = db().get_player_items(player.player_id)
+    items.sort(key=lambda item: (item.equipment_type.slot, item.get_rarity(), item.level))
+    return items
+
+
 def inventory(context: UserContext) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        items = db().get_player_items(player.player_id)
-        items.sort(key=lambda item: (item.equipment_type.slot, item.get_rarity(), item.level))
+        items = __get_items(player)
         equipped_items = list(player.equipped_items.values())
         if not items:
             return Strings.no_items_yet
@@ -875,7 +880,7 @@ def check_item(context: UserContext, item_pos_str: str) -> str:
     try:
         item_pos = int(item_pos_str)
         player = db().get_player_data(context.get("id"))
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         if not items:
             return Strings.no_items_yet
         if not __item_id_is_valid(item_pos, items):
@@ -889,7 +894,7 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
     try:
         item_pos = int(item_pos_str)
         player = db().get_player_data(context.get("id"))
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         if not items:
             return Strings.no_items_yet
         if not __item_id_is_valid(item_pos, items):
@@ -907,7 +912,7 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
 def reroll_item(context: UserContext, item_pos_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         item_pos = int(item_pos_str)
         if not items:
             return Strings.no_items_yet
@@ -935,7 +940,7 @@ def enchant_item(context: UserContext, item_pos_str: str) -> str:
         player = db().get_player_data(context.get("id"))
         if player.artifact_pieces < 1:
             return Strings.no_items_yet
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         if not items:
             return Strings.no_items_yet
         if not __item_id_is_valid(item_pos, items):
@@ -960,7 +965,7 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
     try:
         item_pos = int(item_pos_str)
         player = db().get_player_data(context.get("id"))
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         if not items:
             return Strings.no_items_yet
         if not __item_id_is_valid(item_pos, items):
@@ -1098,7 +1103,7 @@ def check_my_auctions(context: UserContext) -> str:
 def create_auction(context: UserContext, item_pos_str: str, starting_bid_str: str) -> str:
     try:
         player = db().get_player_data(context.get("id"))
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         item_pos = int(item_pos_str)
         if item_pos > len(items):
             return Strings.invalid_item
@@ -1158,7 +1163,7 @@ def send_gift_to_player(context: UserContext, player_name: str, item_pos_str: st
         if recipient.name == player.name:
             return Strings.no_self_gift
         # get specified item
-        items = db().get_player_items(player.player_id)
+        items = __get_items(player)
         item_pos = int(item_pos_str)
         if item_pos > len(items):
             return Strings.invalid_item
