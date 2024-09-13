@@ -2,10 +2,10 @@ from collections.abc import Callable
 from functools import cache
 
 from ui.utils import (
-    ArgumentValidationError,
     TooFewArgumentsError,
     UserContext,
     reconstruct_delimited_arguments,
+    CommandError,
 )
 from ui.utils import CommandParsingResult as CPS
 from ui.utils import InterpreterFunctionWrapper as IFW
@@ -95,7 +95,5 @@ class CLIInterpreter:
         try:
             parsing_result = self.parse_command(user_input)
             return parsing_result.execute(user)
-        except ArgumentValidationError as e:
-            return str(e)
-        except TooFewArgumentsError as e:
+        except CommandError as e:
             return str(e)

@@ -2,12 +2,18 @@ import re
 from collections.abc import Callable
 from typing import Any
 
-from pilgram.globals import POSITIVE_INTEGER_REGEX, PLAYER_NAME_REGEX, GUILD_NAME_REGEX
+from pilgram.classes import Player
+from pilgram.generics import PilgramDatabase
+from pilgram.globals import POSITIVE_INTEGER_REGEX, PLAYER_NAME_REGEX, GUILD_NAME_REGEX, YES_NO_REGEX
 from pilgram.strings import Strings
 from pilgram.utils import PathDict
 
 
-class ArgumentValidationError(Exception):
+class CommandError(Exception):
+    pass
+
+
+class ArgumentValidationError(CommandError):
 
     def __init__(self, argument: str, argument_name: str, index: int, error_message: str) -> None:
         if error_message:
@@ -17,12 +23,18 @@ class ArgumentValidationError(Exception):
         super().__init__(msg)
 
 
-class TooFewArgumentsError(Exception):
+class TooFewArgumentsError(CommandError):
 
     def __init__(self, command: str, required: int, passed: int) -> None:
         self.required = required
         self.passed = passed
         super().__init__(f"command {command} requires {required} arguments, but {passed} were given")
+
+
+class YesNoError(CommandError):
+
+    def __init__(self) -> None:
+        self.message = Strings.yes_no_error
 
 
 class CommandParsingResult:
@@ -222,3 +234,17 @@ def reconstruct_delimited_arguments(separated_strings: list[str], delimiter: str
                 continue
             built_string += f"{string} "
     return result
+
+
+def get_yes_or_no(user_input: str) -> bool:
+    processed_user_input = user_input[0].lower()
+    if not re.match(YES_NO_REGEX, processed_user_input):
+        raise YesNoError
+    return processed_user_input == "y"
+
+
+def get_player(db: Callable[[], PilgramDatabase], context: UserContext) -> Player:
+    try:
+        return db().get_player_data(context.get("id"))
+    except KeyError:
+        raise CommandError(Strings.no_character_yet)

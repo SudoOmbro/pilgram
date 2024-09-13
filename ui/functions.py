@@ -39,7 +39,7 @@ from pilgram.globals import (
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings
 from pilgram.utils import read_text_file
-from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg
+from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg, get_yes_or_no, get_player
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
 
@@ -57,12 +57,9 @@ def db() -> PilgramDatabase:
 
 
 def check_board(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        zones = db().get_all_zones()
-        return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones) + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}"
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    zones = db().get_all_zones()
+    return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones) + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}"
 
 
 def check_current_quest(context: UserContext) -> str:
@@ -104,11 +101,8 @@ def return_string(context: UserContext, string: str = "") -> str:
 
 
 def check_self(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        return str(player)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    return str(player)
 
 
 def __get_player_from_name(player_name: str) -> tuple[str | None, Player | None]:
@@ -173,16 +167,13 @@ def check_guild(context: UserContext, guild_name: str) -> str:
 
 
 def check_prices(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        result: str = f"*Gear upgrade*: {player.get_gear_upgrade_required_money()} {MONEY}\n*Home upgrade*: {player.get_home_upgrade_required_money()} {MONEY}"
-        if player.guild:
-            result += f"\n*Guild upgrade*: {player.guild.get_upgrade_required_money()} {MONEY}"
-        result += f"\n\n*Create guild*: {ContentMeta.get('guilds.creation_cost')} {MONEY}\n*Modify*: {MODIFY_COST} {MONEY}"
-        result += f"\n\n*You have*: {player.money} {MONEY}"
-        return result
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    result: str = f"*Gear upgrade*: {player.get_gear_upgrade_required_money()} {MONEY}\n*Home upgrade*: {player.get_home_upgrade_required_money()} {MONEY}"
+    if player.guild:
+        result += f"\n*Guild upgrade*: {player.guild.get_upgrade_required_money()} {MONEY}"
+    result += f"\n\n*Create guild*: {ContentMeta.get('guilds.creation_cost')} {MONEY}\n*Modify*: {MODIFY_COST} {MONEY}"
+    result += f"\n\n*You have*: {player.money} {MONEY}"
+    return result
 
 
 def check_my_guild(context: UserContext) -> str:
@@ -276,19 +267,16 @@ def process_get_character_description(context: UserContext, user_input) -> str:
 
 
 def start_guild_creation(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        if db().get_owned_guild(player):
-            return Strings.guild_already_created
-        creation_cost = ContentMeta.get("guilds.creation_cost")
-        if player.money < creation_cost:
-            return Strings.not_enough_money.format(amount=creation_cost - player.money)
-        log.info(f"Player '{player.name}' is creating a guild")
-        context.start_process("guild creation")
-        context.set("operation", "create")
-        return context.get_process_prompt(USER_PROCESSES)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    if db().get_owned_guild(player):
+        return Strings.guild_already_created
+    creation_cost = ContentMeta.get("guilds.creation_cost")
+    if player.money < creation_cost:
+        return Strings.not_enough_money.format(amount=creation_cost - player.money)
+    log.info(f"Player '{player.name}' is creating a guild")
+    context.start_process("guild creation")
+    context.set("operation", "create")
+    return context.get_process_prompt(USER_PROCESSES)
 
 
 def process_get_guild_name(context: UserContext, user_input) -> str:
@@ -313,7 +301,7 @@ def process_get_guild_tax(context: UserContext, user_input) -> str:
 def process_get_guild_description(context: UserContext, user_input) -> str:
     if not re.match(DESCRIPTION_REGEX, user_input):
         return Strings.description_validation_error
-    player = db().get_player_data(context.get("id"))
+    player = get_player(db, context)
     try:
         if context.get("operation") == "edit":
             guild = db().get_owned_guild(player)
@@ -348,52 +336,46 @@ def process_get_guild_description(context: UserContext, user_input) -> str:
 
 
 def upgrade(context: UserContext, obj: str = "gear") -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        can_upgrade: bool = {
-            "gear": player.can_upgrade_gear,
-            "home": player.can_upgrade_home
-        }.get(obj)()
-        if not can_upgrade:
-            return Strings.obj_reached_max_level.format(obj=obj)
-        price: int = {
-            "gear": player.get_gear_upgrade_required_money,
-            "home": player.get_home_upgrade_required_money,
-        }.get(obj)()
-        if player.money < price:
-            return Strings.not_enough_money.format(amount=price - player.money)
-        func = {
-            "gear": player.upgrade_gear,
-            "home": player.upgrade_home
-        }.get(obj)
-        db().update_player_data(player)
-        context.start_process("upgrade confirm")
-        context.set("price", price)
-        context.set("obj", obj)
-        context.set("func", func)
-        return Strings.upgrade_object_confirmation.format(obj=obj, price=price)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    can_upgrade: bool = {
+        "gear": player.can_upgrade_gear,
+        "home": player.can_upgrade_home
+    }.get(obj)()
+    if not can_upgrade:
+        return Strings.obj_reached_max_level.format(obj=obj)
+    price: int = {
+        "gear": player.get_gear_upgrade_required_money,
+        "home": player.get_home_upgrade_required_money,
+    }.get(obj)()
+    if player.money < price:
+        return Strings.not_enough_money.format(amount=price - player.money)
+    func = {
+        "gear": player.upgrade_gear,
+        "home": player.upgrade_home
+    }.get(obj)
+    db().update_player_data(player)
+    context.start_process("upgrade confirm")
+    context.set("price", price)
+    context.set("obj", obj)
+    context.set("func", func)
+    return Strings.upgrade_object_confirmation.format(obj=obj, price=price)
 
 
 def upgrade_guild(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        guild = db().get_owned_guild(player)
-        if not guild:
-            return Strings.no_guild_yet
-        if guild.can_upgrade():
-            return Strings.obj_reached_max_level.format(obj="guild")
-        price = guild.get_upgrade_required_money()
-        if player.money < price:
-            return Strings.not_enough_money.format(amount=price - player.money)
-        context.start_process("upgrade confirm")
-        context.set("price", price)
-        context.set("obj", "guild")
-        context.set("func", guild.upgrade)
-        return Strings.upgrade_object_confirmation.format(obj="guild", price=price)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    guild = db().get_owned_guild(player)
+    if not guild:
+        return Strings.no_guild_yet
+    if guild.can_upgrade():
+        return Strings.obj_reached_max_level.format(obj="guild")
+    price = guild.get_upgrade_required_money()
+    if player.money < price:
+        return Strings.not_enough_money.format(amount=price - player.money)
+    context.start_process("upgrade confirm")
+    context.set("price", price)
+    context.set("obj", "guild")
+    context.set("func", guild.upgrade)
+    return Strings.upgrade_object_confirmation.format(obj="guild", price=price)
 
 
 def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
@@ -417,60 +399,51 @@ def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
 
 
 def modify_player(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        # check if the player has enough money
-        if db().is_player_on_a_quest(player):
-            return Strings.cannot_modify_on_quest
-        if player.money < MODIFY_COST:
-            return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
-        context.start_process("character editing")
-        context.set("operation", "edit")
-        return f"name: `{player.name}`\n\ndescr: `{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    # check if the player has enough money
+    if db().is_player_on_a_quest(player):
+        return Strings.cannot_modify_on_quest
+    if player.money < MODIFY_COST:
+        return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
+    context.start_process("character editing")
+    context.set("operation", "edit")
+    return f"name: `{player.name}`\n\ndescr: `{player.description}`\n\n" + context.get_process_prompt(USER_PROCESSES)
 
 
 def modify_guild(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        guild = db().get_owned_guild(player)
-        # check if the player doesn't already have a guild of his own & has enough money
-        if not guild:
-            return Strings.guild_not_owned
-        if player.money < MODIFY_COST:
-            return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
-        # set the attribute
-        context.start_process("guild creation")
-        context.set("operation", "edit")
-        return f"name: `{guild.name}`\n\ndescr: `{guild.description}`\n\ntax: `{guild.tax}`\n\n" + context.get_process_prompt(USER_PROCESSES)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    guild = db().get_owned_guild(player)
+    # check if the player doesn't already have a guild of his own & has enough money
+    if not guild:
+        return Strings.guild_not_owned
+    if player.money < MODIFY_COST:
+        return Strings.not_enough_money.format(amount=MODIFY_COST - player.money)
+    # set the attribute
+    context.start_process("guild creation")
+    context.set("operation", "edit")
+    return f"name: `{guild.name}`\n\ndescr: `{guild.description}`\n\ntax: `{guild.tax}`\n\n" + context.get_process_prompt(USER_PROCESSES)
 
 
 def join_guild(context: UserContext, guild_name: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        message, guild = __get_guild_from_name(guild_name)
-        if message:
-            return message
-        if not guild:
-            return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
-        members: int = db().get_guild_members_number(guild)
-        if not guild.can_add_member(members):
-            return Strings.guild_is_full
-        player.guild = guild
-        player.last_guild_switch = datetime.now()
-        db().update_player_data(player)
-        db().create_and_add_notification(
-            guild.founder,
-            Strings.player_joined_your_guild.format(
-                player=player.print_username(), guild=guild.name
-            )
+    player = get_player(db, context)
+    message, guild = __get_guild_from_name(guild_name)
+    if message:
+        return message
+    if not guild:
+        return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+    members: int = db().get_guild_members_number(guild)
+    if not guild.can_add_member(members):
+        return Strings.guild_is_full
+    player.guild = guild
+    player.last_guild_switch = datetime.now()
+    db().update_player_data(player)
+    db().create_and_add_notification(
+        guild.founder,
+        Strings.player_joined_your_guild.format(
+            player=player.print_username(), guild=guild.name
         )
-        return Strings.guild_join_success.format(guild=guild_name)
-    except KeyError:
-        return Strings.no_character_yet
+    )
+    return Strings.guild_join_success.format(guild=guild_name)
 
 
 def __start_quest_in_zone(player: Player, zone: Zone) -> str:
@@ -501,85 +474,74 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
 
 
 def process_embark_confirm(context: UserContext, user_input: str) -> str:
-    processed_user_input = user_input[0].lower()
+    yes = get_yes_or_no(user_input)
     player = db().get_player_data(context.get("id"))  # player must exist to get to this point
-    if not re.match(YES_NO_REGEX, processed_user_input):
-        return Strings.yes_no_error
     context.end_process()
-    if processed_user_input == "n":
-        return Strings.embark_underleveled_cancel
-    return __start_quest_in_zone(player, context.get("zone"))
+    if yes:
+        return __start_quest_in_zone(player, context.get("zone"))
+    return Strings.embark_underleveled_cancel
 
 
 def kick(context: UserContext, player_name: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        guild = db().get_owned_guild(player)
-        if not guild:
-            return Strings.guild_not_owned
-        target = db().get_player_from_name(player_name)
-        if not target:
-            return Strings.named_object_not_exist.format(obj="Player", name=player_name)
-        if target.guild != guild:
-            return Strings.player_not_in_own_guild.format(name=player_name)
-        target.guild = None
-        db().update_player_data(target)
-        db().create_and_add_notification(target, Strings.you_have_been_kicked.format(guild=guild.name))
-        return Strings.player_kicked_successfully.format(name=player_name, guild=guild.name)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    guild = db().get_owned_guild(player)
+    if not guild:
+        return Strings.guild_not_owned
+    target = db().get_player_from_name(player_name)
+    if not target:
+        return Strings.named_object_not_exist.format(obj="Player", name=player_name)
+    if target.guild != guild:
+        return Strings.player_not_in_own_guild.format(name=player_name)
+    target.guild = None
+    db().update_player_data(target)
+    db().create_and_add_notification(target, Strings.you_have_been_kicked.format(guild=guild.name))
+    return Strings.player_kicked_successfully.format(name=player_name, guild=guild.name)
 
 
 def cast_spell(context: UserContext, spell_name: str, *extra_args) -> str:
+    player = get_player(db, context)
+    if spell_name not in SPELLS:
+        return Strings.named_object_not_exist.format(obj="Spell", name=spell_name)
+    spell = SPELLS[spell_name]
+    if not spell.can_cast(player):
+        return Strings.not_enough_power
+    if not spell.check_args(extra_args):
+        return Strings.not_enough_args.format(num=spell.required_args)
     try:
-        player = db().get_player_data(context.get("id"))
-        if spell_name not in SPELLS:
-            return Strings.named_object_not_exist.format(obj="Spell", name=spell_name)
-        spell = SPELLS[spell_name]
-        if not spell.can_cast(player):
-            return Strings.not_enough_power
-        if not spell.check_args(extra_args):
-            return Strings.not_enough_args.format(num=spell.required_args)
-        try:
-            result = spell.cast(player, extra_args)
-            db().update_player_data(player)
-            return result
-        except SpellError as e:
-            return e.message
-    except KeyError:
-        return Strings.no_character_yet
+        result = spell.cast(player, extra_args)
+        db().update_player_data(player)
+        return result
+    except SpellError as e:
+        return e.message
 
 
 def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        amount: int = int(amount_str)
-        if amount <= 0:
-            return Strings.invalid_money_amount
-        if player.money < amount:
-            return Strings.not_enough_money
-        message, recipient = __get_player_from_name(recipient_name)
-        if message:
-            return message
-        if not recipient:
-            return Strings.named_object_not_exist.format(obj="Player", name=recipient_name)
-        # update money for recipient
-        recipient.money += amount
-        db().update_player_data(recipient)
-        # update money for donor
-        player.money -= amount
-        db().update_player_data(player)
-        # notify
-        db().create_and_add_notification(
-            recipient,
-            Strings.donation_received.format(
-                donor=player.print_username(), amm=amount
-            ),
-        )
-        log.info(f"player '{player.name}' donated {amount} to '{recipient_name}'")
-        return Strings.donation_successful.format(amm=amount_str, rec=recipient_name)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    amount: int = int(amount_str)
+    if amount <= 0:
+        return Strings.invalid_money_amount
+    if player.money < amount:
+        return Strings.not_enough_money
+    message, recipient = __get_player_from_name(recipient_name)
+    if message:
+        return message
+    if not recipient:
+        return Strings.named_object_not_exist.format(obj="Player", name=recipient_name)
+    # update money for recipient
+    recipient.money += amount
+    db().update_player_data(recipient)
+    # update money for donor
+    player.money -= amount
+    db().update_player_data(player)
+    # notify
+    db().create_and_add_notification(
+        recipient,
+        Strings.donation_received.format(
+            donor=player.print_username(), amm=amount
+        ),
+    )
+    log.info(f"player '{player.name}' donated {amount} to '{recipient_name}'")
+    return Strings.donation_successful.format(amm=amount_str, rec=recipient_name)
 
 
 def rank_guilds(context: UserContext) -> str:
@@ -614,34 +576,28 @@ def rank_tourney(context: UserContext) -> str:
 
 
 def send_message_to_player(context: UserContext, player_name: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        if player.name == player_name:
-            return Strings.no_self_message
-        message, target = __get_player_from_name(player_name)
-        if message:
-            return message
-        context.set("targets", [target.player_id])
-        context.set("text", "{name} sent you a message:\n\n")
-        context.start_process("message")
-        return Strings.write_your_message
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    if player.name == player_name:
+        return Strings.no_self_message
+    message, target = __get_player_from_name(player_name)
+    if message:
+        return message
+    context.set("targets", [target.player_id])
+    context.set("text", "{name} sent you a message:\n\n")
+    context.start_process("message")
+    return Strings.write_your_message
 
 
 def send_message_to_owned_guild(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        owned_guild = db().get_owned_guild(player)
-        if not owned_guild:
-            return Strings.no_guild_yet
-        members: list[tuple[int, str, int]] = db().get_guild_members_data(owned_guild)
-        context.set("targets", [member[0] for member in members])
-        context.set("text", f"{player.name} sent a message to the guild ({owned_guild.name}):\n\n")
-        context.start_process("message")
-        return Strings.write_your_message
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    owned_guild = db().get_owned_guild(player)
+    if not owned_guild:
+        return Strings.no_guild_yet
+    members: list[tuple[int, str, int]] = db().get_guild_members_data(owned_guild)
+    context.set("targets", [member[0] for member in members])
+    context.set("text", f"{player.name} sent a message to the guild ({owned_guild.name}):\n\n")
+    context.start_process("message")
+    return Strings.write_your_message
 
 
 def send_message_process(context: UserContext, message: str):
@@ -655,42 +611,36 @@ def send_message_process(context: UserContext, message: str):
 
 
 def set_last_update(context: UserContext, delta: timedelta | None = None, msg: str = "default", cost: int | None = None) -> str:
+    player = get_player(db, context)
+    if cost and player.money < cost:
+        return Strings.not_enough_money.format(amount=cost - player.money)
     try:
-        player = db().get_player_data(context.get("id"))
-        if cost and player.money < cost:
-            return Strings.not_enough_money.format(amount=cost - player.money)
-        try:
-            adventure_container = db().get_player_adventure_container(player)
-            db().update_quest_progress(adventure_container, last_update=(datetime.now() + timedelta(days=365)) if delta else datetime.now())
-            if cost:
-                player.money -= cost
-                db().update_player_data(player)
-                return msg + "\n\n" + Strings.you_paid.format(paid=cost)
-            return msg
-        except KeyError:
-            return "Fatal error: adventure container not found. THIS SHOULD NOT HAPPEN. EVER."
+        adventure_container = db().get_player_adventure_container(player)
+        db().update_quest_progress(adventure_container, last_update=(datetime.now() + timedelta(days=365)) if delta else datetime.now())
+        if cost:
+            player.money -= cost
+            db().update_player_data(player)
+            return msg + "\n\n" + Strings.you_paid.format(paid=cost)
+        return msg
     except KeyError:
-        return Strings.no_character_yet
+        return "Fatal error: adventure container not found. THIS SHOULD NOT HAPPEN. EVER."
 
 
 def assemble_artifact(context: UserContext) -> str:
+    player = get_player(db, context)
+    if len(player.artifacts) >= player.get_max_number_of_artifacts():
+        return Strings.max_number_of_artifacts_reached.format(num=len(player.artifacts))
+    if player.artifact_pieces < REQUIRED_PIECES:
+        return Strings.not_enough_pieces.format(amount=REQUIRED_PIECES - player.artifact_pieces)
     try:
-        player = db().get_player_data(context.get("id"))
-        if len(player.artifacts) >= player.get_max_number_of_artifacts():
-            return Strings.max_number_of_artifacts_reached.format(num=len(player.artifacts))
-        if player.artifact_pieces < REQUIRED_PIECES:
-            return Strings.not_enough_pieces.format(amount=REQUIRED_PIECES - player.artifact_pieces)
-        try:
-            artifact = db().get_unclaimed_artifact()
-            player.artifact_pieces -= REQUIRED_PIECES
-            player.artifacts.append(artifact)
-            db().update_artifact(artifact, player)
-            db().update_player_data(player)
-            return Strings.craft_successful.format(name=artifact.name)
-        except KeyError:
-            return "ERROR: no artifacts available! Try again in a few hours!"
+        artifact = db().get_unclaimed_artifact()
+        player.artifact_pieces -= REQUIRED_PIECES
+        player.artifacts.append(artifact)
+        db().update_artifact(artifact, player)
+        db().update_player_data(player)
+        return Strings.craft_successful.format(name=artifact.name)
     except KeyError:
-        return Strings.no_character_yet
+        return "ERROR: no artifacts available! Try again in a few hours!"
 
 
 def __list_minigames() -> str:
@@ -702,67 +652,58 @@ def __list_spells() -> str:
 
 
 def list_vocations(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        string: str = "Here are all your vocations:\n\n"
-        for vocation in Vocation.LIST[1:]:
-            if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
-                string += f"{"(X) " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
-        return string
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    string: str = "Here are all your vocations:\n\n"
+    for vocation in Vocation.LIST[1:]:
+        if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
+            string += f"{"(X) " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
+    return string
 
 
 def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        qte = QTE_CACHE.get(player.player_id)
-        if not qte:
-            return Strings.no_qte_active
-        option_chosen = int(option_chosen_str) - 1
-        if option_chosen >= len(qte.options):
-            return Strings.invalid_option
-        func, string = qte.resolve(option_chosen)
-        if func:
-            results = func(player)
-            for result in results:
-                if isinstance(result, Equipment):
-                    items = db().get_player_items(player.player_id)
-                    item = result
-                    item_id = db().add_item(item, player)
-                    item.equipment_id = item_id
-                    items.append(item)
-            player.renown += 5
-            if player.guild:
-                guild = db().get_guild(player.guild.guild_id)
-                guild.tourney_score += 5
-                db().update_guild(guild)
-            db().update_player_data(player)
-        del QTE_CACHE[player.player_id]
-        return string
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    qte = QTE_CACHE.get(player.player_id)
+    if not qte:
+        return Strings.no_qte_active
+    option_chosen = int(option_chosen_str) - 1
+    if option_chosen >= len(qte.options):
+        return Strings.invalid_option
+    func, string = qte.resolve(option_chosen)
+    if func:
+        results = func(player)
+        for result in results:
+            if isinstance(result, Equipment):
+                items = db().get_player_items(player.player_id)
+                item = result
+                item_id = db().add_item(item, player)
+                item.equipment_id = item_id
+                items.append(item)
+        player.renown += 5
+        if player.guild:
+            guild = db().get_guild(player.guild.guild_id)
+            guild.tourney_score += 5
+            db().update_guild(guild)
+        db().update_player_data(player)
+    del QTE_CACHE[player.player_id]
+    return string
 
 
 def start_minigame(context: UserContext, minigame_name: str) -> str:
-    try:
-        minigame: type[PilgramMinigame] | None = MINIGAMES.get(minigame_name, None)
-        if not minigame:
-            return Strings.named_object_not_exist.format(obj="minigame", name=minigame_name) + f"\n\n{__list_minigames()}"
-        if minigame.has_played_too_recently(context.get("id")):
-            return Strings.minigame_played_too_recently.format(seconds=minigame.COOLDOWN)
-        player = db().get_player_data(context.get("id"))
-        can_play, error = minigame.can_play(player)
-        if not can_play:
-            return minigame.INTRO_TEXT + "\n\n" + error
-        minigame_instance = minigame(player)
-        context.set("minigame instance", minigame_instance)
-        context.start_process("minigame")
-        if not minigame_instance.has_started:  # skip setup if it is not needed
-            return minigame.INTRO_TEXT + "\n\n" + minigame_instance.setup_text()
-        return minigame.INTRO_TEXT + "\n\n" + minigame_instance.turn_text()
-    except KeyError:
-        return Strings.no_character_yet
+    minigame: type[PilgramMinigame] | None = MINIGAMES.get(minigame_name, None)
+    if not minigame:
+        return Strings.named_object_not_exist.format(obj="minigame", name=minigame_name) + f"\n\n{__list_minigames()}"
+    if minigame.has_played_too_recently(context.get("id")):
+        return Strings.minigame_played_too_recently.format(seconds=minigame.COOLDOWN)
+    player = get_player(db, context)
+    can_play, error = minigame.can_play(player)
+    if not can_play:
+        return minigame.INTRO_TEXT + "\n\n" + error
+    minigame_instance = minigame(player)
+    context.set("minigame instance", minigame_instance)
+    context.start_process("minigame")
+    if not minigame_instance.has_started:  # skip setup if it is not needed
+        return minigame.INTRO_TEXT + "\n\n" + minigame_instance.setup_text()
+    return minigame.INTRO_TEXT + "\n\n" + minigame_instance.turn_text()
 
 
 def minigame_process(context: UserContext, user_input: str) -> str:
@@ -830,16 +771,13 @@ def manual(context: UserContext, page_str: str) -> str:
 
 
 def switch_stance(context: UserContext, stance: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        stance_byte = stance[0].lower()
-        if stance_byte not in Strings.stances:
-            return Strings.invalid_stance + "\n".join([f"*{stance}*: _{descr}_" for stance, descr in list(Strings.stances.values())])
-        player.stance = stance_byte
-        db().update_player_data(player)
-        return Strings.stance_switch + Strings.stances[stance_byte][0]
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    stance_byte = stance[0].lower()
+    if stance_byte not in Strings.stances:
+        return Strings.invalid_stance + "\n".join([f"*{stance}*: _{descr}_" for stance, descr in list(Strings.stances.values())])
+    player.stance = stance_byte
+    db().update_player_data(player)
+    return Strings.stance_switch + Strings.stances[stance_byte][0]
 
 
 def bestiary(context: UserContext, zone_id_str: str):
@@ -863,15 +801,12 @@ def __get_items(player: Player) -> list[Equipment]:
 
 
 def inventory(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        items = __get_items(player)
-        equipped_items = list(player.equipped_items.values())
-        if not items:
-            return Strings.no_items_yet
-        return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if x in equipped_items else ''}| *{x.name}*' for i, x in enumerate(items)])}"
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    items = __get_items(player)
+    equipped_items = list(player.equipped_items.values())
+    if not items:
+        return Strings.no_items_yet
+    return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if x in equipped_items else ''}| *{x.name}*' for i, x in enumerate(items)])}"
 
 
 def __item_id_is_valid(item_id: int, items: list[Equipment]) -> bool:
@@ -879,51 +814,58 @@ def __item_id_is_valid(item_id: int, items: list[Equipment]) -> bool:
 
 
 def check_item(context: UserContext, item_pos_str: str) -> str:
-    try:
-        item_pos = int(item_pos_str)
-        player = db().get_player_data(context.get("id"))
-        items = __get_items(player)
-        if not items:
-            return Strings.no_items_yet
-        if not __item_id_is_valid(item_pos, items):
-            return Strings.invalid_item
-        return str(items[item_pos - 1])
-    except KeyError:
-        return Strings.no_character_yet
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_item
+    return str(items[item_pos - 1])
 
 
 def equip_item(context: UserContext, item_pos_str: str) -> str:
-    try:
-        item_pos = int(item_pos_str)
-        player = db().get_player_data(context.get("id"))
-        items = __get_items(player)
-        if not items:
-            return Strings.no_items_yet
-        if not __item_id_is_valid(item_pos, items):
-            return Strings.invalid_item
-        item = items[item_pos - 1]
-        if db().get_auction_from_item(item):
-            return Strings.cannot_equip_auctioned_item
-        player.equip_item(item)
-        db().update_player_data(player)
-        return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
-    except KeyError:
-        return Strings.no_character_yet
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    if db().get_auction_from_item(item):
+        return Strings.cannot_equip_auctioned_item
+    player.equip_item(item)
+    db().update_player_data(player)
+    return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
 
 
 def reroll_item(context: UserContext, item_pos_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
+    player = get_player(db, context)
+    items = __get_items(player)
+    item_pos = int(item_pos_str)
+    if not items:
+        return Strings.no_items_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    price = item.get_value() * 20
+    if player.money < price:
+        return Strings.not_enough_money.format(amount=price - player.money)
+    context.set("item pos", item_pos)
+    context.start_process("reroll confirm")
+    return Strings.item_reroll_confirm.format(item=item.name, price=price)
+
+
+def process_reroll_confirm(context: UserContext, user_input: str) -> str:
+    yes = get_yes_or_no(user_input)
+    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    context.end_process()
+    if yes:
         items = __get_items(player)
-        item_pos = int(item_pos_str)
-        if not items:
-            return Strings.no_items_yet
-        if not __item_id_is_valid(item_pos, items):
-            return Strings.invalid_item
+        item_pos = context.get("item pos")
         item = items[item_pos - 1]
         price = item.get_value() * 20
-        if player.money < price:
-            return Strings.not_enough_money.format(amount=price - player.money)
         old_name = item.name
         item.reroll()
         if item in player.equipped_items.values():
@@ -932,26 +874,36 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
         db().update_player_data(player)
         db().update_item(item, player)
         return Strings.item_rerolled.format(amount=price, old_name=old_name) + "\n\n" + str(item)
-    except KeyError:
-        return Strings.no_character_yet
-
+    return Strings.action_canceled.format(action="Reroll")
 
 def enchant_item(context: UserContext, item_pos_str: str) -> str:
-    try:
-        item_pos = int(item_pos_str)
-        player = db().get_player_data(context.get("id"))
-        if player.artifact_pieces < 1:
-            return Strings.no_items_yet
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    if player.artifact_pieces < 1:
+        return Strings.no_items_yet
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    if item.get_rarity() >= 4:
+        return Strings.max_enchants_reached
+    if db().get_auction_from_item(item):
+        return Strings.cannot_enchant_auctioned_item
+    context.set("item pos", item_pos)
+    context.start_process("enchant confirm")
+    return Strings.item_enchant_confirm.format(item=item.name)
+
+
+def process_enchant_confirm(context: UserContext, user_input: str) -> str:
+    yes = get_yes_or_no(user_input)
+    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    context.end_process()
+    if yes:
         items = __get_items(player)
-        if not items:
-            return Strings.no_items_yet
-        if not __item_id_is_valid(item_pos, items):
-            return Strings.invalid_item
+        item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        if item.get_rarity() >= 4:
-            return Strings.max_enchants_reached
-        if db().get_auction_from_item(item):
-            return Strings.cannot_enchant_auctioned_item
         item.enchant()
         player.artifact_pieces -= 1
         if item in player.equipped_items.values():
@@ -959,24 +911,35 @@ def enchant_item(context: UserContext, item_pos_str: str) -> str:
         db().update_player_data(player)
         db().update_item(item, player)
         return Strings.item_enchanted + "\n\n" + str(item)
-    except KeyError:
-        return Strings.no_character_yet
+    return Strings.action_canceled.format(action="Enchant")
 
 
 def sell_item(context: UserContext, item_pos_str: str) -> str:
-    try:
-        item_pos = int(item_pos_str)
-        player = db().get_player_data(context.get("id"))
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    if item in player.equipped_items.values():
+        return Strings.cannot_sell_equipped_item
+    if db().get_auction_from_item(item):
+        return Strings.cannot_sell_auctioned_item
+    context.set("item pos", item_pos)
+    context.start_process("sell confirm")
+    return Strings.item_sell_confirm.format(item=item.name)
+
+
+def process_sell_confirm(context: UserContext, user_input: str) -> str:
+    yes = get_yes_or_no(user_input)
+    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    context.end_process()
+    if yes:
         items = __get_items(player)
-        if not items:
-            return Strings.no_items_yet
-        if not __item_id_is_valid(item_pos, items):
-            return Strings.invalid_item
+        item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        if item in player.equipped_items.values():
-            return Strings.cannot_sell_equipped_item
-        if db().get_auction_from_item(item):
-            return Strings.cannot_sell_auctioned_item
         mult = 1 if player.guild_level() < 6 else 2
         money = int(item.get_value() * mult)
         player.add_money(money)
@@ -987,8 +950,7 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
         except KeyError as e:
             return f"Error: {e}"
         return Strings.item_sold.format(item=item.name, money=money)
-    except KeyError:
-        return Strings.no_character_yet
+    return Strings.action_canceled.format(action="Sell")
 
 
 def show_market(context: UserContext) -> str:
@@ -1033,52 +995,43 @@ def market_buy(context: UserContext, item_pos_str: str) -> str:
 
 
 def smithy_craft(context: UserContext, item_pos_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        if db().is_player_on_a_quest(player) and (not player.vocation.can_craft_on_a_quest):
-            return Strings.cannot_shop_on_a_quest
-        item_pos = int(item_pos_str)
-        if item_pos > 10:
-            return "Invalid item (max item: 10)"
-        items = db().get_player_items(player.player_id)
-        if len(items) >= player.get_inventory_size():
-            return "Inventory already full!"
-        item_type = db().get_smithy_items()[item_pos - 1]
-        price = int(__get_item_type_value(item_type, player) * (1 if player.guild_level() < 9 else 0.5))
-        if player.money < price:
-            return Strings.not_enough_money.format(amount=price - player.money)
-        rarity: int = choice((0, 0, 0, 0, 1)) if player.guild_level() < 7 else 1
-        item = Equipment.generate(player.level, item_type, rarity)
-        item_id = db().add_item(item, player)
-        item.equipment_id = item_id
-        items.append(item)
-        player.money -= price
-        db().update_player_data(player)
-        return Strings.item_bought.format(item=item.name, money=price)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    if db().is_player_on_a_quest(player) and (not player.vocation.can_craft_on_a_quest):
+        return Strings.cannot_shop_on_a_quest
+    item_pos = int(item_pos_str)
+    if item_pos > 10:
+        return "Invalid item (max item: 10)"
+    items = db().get_player_items(player.player_id)
+    if len(items) >= player.get_inventory_size():
+        return "Inventory already full!"
+    item_type = db().get_smithy_items()[item_pos - 1]
+    price = int(__get_item_type_value(item_type, player) * (1 if player.guild_level() < 9 else 0.5))
+    if player.money < price:
+        return Strings.not_enough_money.format(amount=price - player.money)
+    rarity: int = choice((0, 0, 0, 0, 1)) if player.guild_level() < 7 else 1
+    item = Equipment.generate(player.level, item_type, rarity)
+    item_id = db().add_item(item, player)
+    item.equipment_id = item_id
+    items.append(item)
+    player.money -= price
+    db().update_player_data(player)
+    return Strings.item_bought.format(item=item.name, money=price)
 
 
 def use_consumable(context: UserContext, item_pos_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        item_pos = int(item_pos_str)
-        text, used = player.use_consumable(item_pos)
-        if used:
-            db().update_player_data(player)
-        return text
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    item_pos = int(item_pos_str)
+    text, used = player.use_consumable(item_pos)
+    if used:
+        db().update_player_data(player)
+    return text
 
 
 def force_combat(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        player.set_flag(ForcedCombat)
-        db().update_player_data(player)
-        return Strings.force_combat
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    player.set_flag(ForcedCombat)
+    db().update_player_data(player)
+    return Strings.force_combat
 
 
 def check_auctions(context: UserContext) -> str:
@@ -1092,57 +1045,48 @@ def check_auctions(context: UserContext) -> str:
 
 
 def check_my_auctions(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        auctions = db().get_player_auctions(player)
-        if not auctions:
-            return Strings.no_auctions_yet
-        return "Here are all your auctions:\n\n" + "\n".join(str(x) for x in auctions)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    auctions = db().get_player_auctions(player)
+    if not auctions:
+        return Strings.no_auctions_yet
+    return "Here are all your auctions:\n\n" + "\n".join(str(x) for x in auctions)
 
 
 def create_auction(context: UserContext, item_pos_str: str, starting_bid_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        items = __get_items(player)
-        item_pos = int(item_pos_str)
-        if item_pos > len(items):
-            return Strings.invalid_item
-        item = items[item_pos - 1]
-        if item in player.equipped_items.values():
-            return Strings.cannot_sell_equipped_item
-        starting_bid = int(starting_bid_str)
-        if db().get_auction_from_item(item):
-            return Strings.auction_already_exists
-        auction = Auction.create_default(player, item, starting_bid)
-        db().add_auction(auction)
-        return Strings.auction_created.format(item=item.name)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    items = __get_items(player)
+    item_pos = int(item_pos_str)
+    if item_pos > len(items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    if item in player.equipped_items.values():
+        return Strings.cannot_sell_equipped_item
+    starting_bid = int(starting_bid_str)
+    if db().get_auction_from_item(item):
+        return Strings.auction_already_exists
+    auction = Auction.create_default(player, item, starting_bid)
+    db().add_auction(auction)
+    return Strings.auction_created.format(item=item.name)
 
 
 def bid_on_auction(context: UserContext, auction_id_str: str, bid_str: str) -> str:
+    player = get_player(db, context)
+    auction_id = int(auction_id_str)
+    bid = int(bid_str)
+    if player.money < bid:
+        return Strings.not_enough_money.format(amount=bid - player.money)
     try:
-        player = db().get_player_data(context.get("id"))
-        auction_id = int(auction_id_str)
-        bid = int(bid_str)
-        if player.money < bid:
-            return Strings.not_enough_money.format(amount=bid - player.money)
-        try:
-            auction = db().get_auction_from_id(auction_id)
-        except KeyError:
-            return Strings.obj_does_not_exist.format(obj="Auction")
-        if auction.auctioneer == player:
-            return Strings.cant_bid_on_own_auction
-        if auction.is_expired():
-            return Strings.auction_is_expired
-        if not auction.place_bid(player, bid):
-            return Strings.bid_too_low + str(auction.best_bid + 1)
-        db().update_auction(auction)
-        return Strings.bid_placed.format(amount=bid, item=auction.item.name)
+        auction = db().get_auction_from_id(auction_id)
     except KeyError:
-        return Strings.no_character_yet
+        return Strings.obj_does_not_exist.format(obj="Auction")
+    if auction.auctioneer == player:
+        return Strings.cant_bid_on_own_auction
+    if auction.is_expired():
+        return Strings.auction_is_expired
+    if not auction.place_bid(player, bid):
+        return Strings.bid_too_low + str(auction.best_bid + 1)
+    db().update_auction(auction)
+    return Strings.bid_placed.format(amount=bid, item=auction.item.name)
 
 
 def check_auction(context: UserContext, auction_id_str: str) -> str:
@@ -1155,118 +1099,106 @@ def check_auction(context: UserContext, auction_id_str: str) -> str:
 
 
 def send_gift_to_player(context: UserContext, player_name: str, item_pos_str: str) -> str:
-    try:
-        # get player
-        player = db().get_player_data(context.get("id"))
-        # get recipient
-        message, recipient = __get_player_from_name(player_name)
-        if message:
-            return message
-        if recipient.name == player.name:
-            return Strings.no_self_gift
-        # get specified item
-        items = __get_items(player)
-        item_pos = int(item_pos_str)
-        if item_pos > len(items):
-            return Strings.invalid_item
-        item = items[item_pos - 1]
-        if item in player.equipped_items.values():
-            return Strings.cannot_gift_equipped_item
-        # check if there is enough space
-        recipient_items = db().get_player_items(recipient.player_id)
-        if len(recipient_items) >= recipient.get_inventory_size():
-            return f"{recipient.name} does not have enough space for your item!"
-        # transfer item
-        db().update_item(item, recipient)
-        recipient_items.append(item)
-        items.pop(item_pos - 1)
-        # notify
-        db().create_and_add_notification(
-            recipient,
-            f"{player.name} gifted you a *{item.name}*!"
-        )
-        return f"successfully gifted *{item.name}* to {recipient.name}."
-    except KeyError:
-        return Strings.no_character_yet
+    # get player
+    player = get_player(db, context)
+    # get recipient
+    message, recipient = __get_player_from_name(player_name)
+    if message:
+        return message
+    if recipient.name == player.name:
+        return Strings.no_self_gift
+    # get specified item
+    items = __get_items(player)
+    item_pos = int(item_pos_str)
+    if item_pos > len(items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    if item in player.equipped_items.values():
+        return Strings.cannot_gift_equipped_item
+    # check if there is enough space
+    recipient_items = db().get_player_items(recipient.player_id)
+    if len(recipient_items) >= recipient.get_inventory_size():
+        return f"{recipient.name} does not have enough space for your item!"
+    # transfer item
+    db().update_item(item, recipient)
+    recipient_items.append(item)
+    items.pop(item_pos - 1)
+    # notify
+    db().create_and_add_notification(
+        recipient,
+        f"{player.name} gifted you a *{item.name}*!"
+    )
+    return f"successfully gifted *{item.name}* to {recipient.name}."
 
 
 def duel_invite(context: UserContext, player_name: str) -> str:
-    try:
-        # get player
-        player = db().get_player_data(context.get("id"))
-        # get target
-        message, target = __get_player_from_name(player_name)
-        if message:
-            return message
-        if target.name == player.name:
-            return Strings.no_self_duel
-        db().add_duel_invite(player, target)
-        log.info(f"{player.name} sent a duel invite to {target.name}")
-        return Strings.duel_invite_sent.format(name=target.name)
-    except KeyError:
-        return Strings.no_character_yet
+    # get player
+    player = get_player(db, context)
+    # get target
+    message, target = __get_player_from_name(player_name)
+    if message:
+        return message
+    if target.name == player.name:
+        return Strings.no_self_duel
+    db().add_duel_invite(player, target)
+    log.info(f"{player.name} sent a duel invite to {target.name}")
+    return Strings.duel_invite_sent.format(name=target.name)
 
 
 def duel_accept(context: UserContext, player_name: str) -> str:
-    try:
-        # get player
-        player = db().get_player_data(context.get("id"))
-        # get challenger
-        message, challenger = __get_player_from_name(player_name)
-        if message:
-            return message
-        # check if the duel invite exists
-        if not db().duel_invite_exists(challenger, player):
-            return Strings.not_invited_to_duel.format(name=challenger.name)
-        # check that both player are in town
-        player_ac = db().get_player_adventure_container(player)
-        challenger_ac = db().get_player_adventure_container(challenger)
-        if player_ac.quest is not None:
-            return Strings.you_must_be_in_town
-        if challenger_ac.quest is not None:
-            return Strings.opponent_must_be_in_town
-        # do combat
-        players = [player, challenger]
-        db().delete_duel_invite(challenger, player)
-        combat = CombatContainer(players, helpers={player: None, challenger: None})
-        combat_log = combat.fight()
-        log.info(f"{player.name} & {challenger.name} dueled.")
-        # give xp to both players, money to the winner + restore health
-        for p in players:
-            p.add_xp(100)
-            if not p.is_dead():
-                p.add_money(100)
-            p.hp_percent = 1.0
-            db().update_player_data(p)
-        # notify participants
-        text = "Duel!\n\n" + combat_log
-        db().create_and_add_notification(challenger, text, "Duel log")
-        return text
-    except KeyError:
-        return Strings.no_character_yet
+    # get player
+    player = get_player(db, context)
+    # get challenger
+    message, challenger = __get_player_from_name(player_name)
+    if message:
+        return message
+    # check if the duel invite exists
+    if not db().duel_invite_exists(challenger, player):
+        return Strings.not_invited_to_duel.format(name=challenger.name)
+    # check that both player are in town
+    player_ac = db().get_player_adventure_container(player)
+    challenger_ac = db().get_player_adventure_container(challenger)
+    if player_ac.quest is not None:
+        return Strings.you_must_be_in_town
+    if challenger_ac.quest is not None:
+        return Strings.opponent_must_be_in_town
+    # do combat
+    players = [player, challenger]
+    db().delete_duel_invite(challenger, player)
+    combat = CombatContainer(players, helpers={player: None, challenger: None})
+    combat_log = combat.fight()
+    log.info(f"{player.name} & {challenger.name} dueled.")
+    # give xp to both players, money to the winner + restore health
+    for p in players:
+        p.add_xp(100)
+        if not p.is_dead():
+            p.add_money(100)
+        p.hp_percent = 1.0
+        db().update_player_data(p)
+    # notify participants
+    text = "Duel!\n\n" + combat_log
+    db().create_and_add_notification(challenger, text, "Duel log")
+    return text
 
 
 def duel_reject(context: UserContext, player_name: str) -> str:
-    try:
-        # get player
-        player = db().get_player_data(context.get("id"))
-        # get challenger
-        message, challenger = __get_player_from_name(player_name)
-        if message:
-            return message
-        # check if the duel invite exists
-        if not db().duel_invite_exists(challenger, player):
-            return Strings.not_invited_to_duel.format(name=challenger.name)
-        # reject & notify
-        db().delete_duel_invite(challenger, player)
-        db().create_and_add_notification(
-            challenger,
-            Strings.duel_invite_reject_notification.format(player.name),
-            "Duel log"
-        )
-        return Strings.duel_invite_reject.format(name=challenger.name)
-    except KeyError:
-        return Strings.no_character_yet
+    # get player
+    player = get_player(db, context)
+    # get challenger
+    message, challenger = __get_player_from_name(player_name)
+    if message:
+        return message
+    # check if the duel invite exists
+    if not db().duel_invite_exists(challenger, player):
+        return Strings.not_invited_to_duel.format(name=challenger.name)
+    # reject & notify
+    db().delete_duel_invite(challenger, player)
+    db().create_and_add_notification(
+        challenger,
+        Strings.duel_invite_reject_notification.format(player.name),
+        "Duel log"
+    )
+    return Strings.duel_invite_reject.format(name=challenger.name)
 
 
 def __get_player_stats_string(player: Player) -> str:
@@ -1320,12 +1252,8 @@ def __get_player_stats_string(player: Player) -> str:
 
 
 def check_my_stats(context: UserContext):
-    try:
-        # get player
-        player = db().get_player_data(context.get("id"))
-        return __get_player_stats_string(player)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    return __get_player_stats_string(player)
 
 
 def check_player_stats(context: UserContext, player_name: str) -> str:
@@ -1341,7 +1269,7 @@ def check_player_stats(context: UserContext, player_name: str) -> str:
 def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_str: str):
     try:
         # get player
-        player = db().get_player_data(context.get("id"))
+        player = get_player(db, context)
         if player.level < 5:
             return "You haven't unlocked vocations yet!"
         if db().is_player_on_a_quest(player):
@@ -1355,15 +1283,13 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
         player.equip_vocations(vocations)
         db().update_player_data(player)
         return f"Activated vocations: {" & ".join([x.name for x in vocations])}"
-    except KeyError:
-        return Strings.no_character_yet
     except ValueError as e:
         return str(e)
 
 
 def upgrade_vocation(context: UserContext, vocation_id_str: str):
     try:
-        player = db().get_player_data(context.get("id"))
+        player = get_player(db, context)
         # get basic inputs
         vocation_id: int = int(vocation_id_str)
         vocation = Vocation.get_correct_vocation_tier(vocation_id, player)
@@ -1385,23 +1311,18 @@ def upgrade_vocation(context: UserContext, vocation_id_str: str):
         player.money -= price
         db().update_player_data(player)
         return f"Upgraded vocation *{vocation.name}* to *{vocation.get_next_rank().get_rank_string()}*"
-    except KeyError:
-        return Strings.no_character_yet
     except ValueError as e:
         return str(e)
 
 
 def cancel_quest(context: UserContext):
-    try:
-        player = db().get_player_data(context.get("id"))
-        ac = db().get_player_adventure_container(player)
-        if not ac.is_on_a_quest():
-            return Strings.not_on_a_quest
-        player.set_flag(QuestCanceled)
-        db().update_player_data(player)
-        return Strings.quest_canceled
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    ac = db().get_player_adventure_container(player)
+    if not ac.is_on_a_quest():
+        return Strings.not_on_a_quest
+    player.set_flag(QuestCanceled)
+    db().update_player_data(player)
+    return Strings.quest_canceled
 
 
 USER_COMMANDS: dict[str, str | IFW | dict] = {
@@ -1527,5 +1448,14 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "upgrade confirm": (
         ("confirm", process_upgrade_confirm),
-    )
+    ),
+    "reroll confirm": (
+        ("confirm", process_reroll_confirm),
+    ),
+    "enchant confirm": (
+        ("confirm", process_enchant_confirm),
+    ),
+    "sell confirm": (
+        ("confirm", process_sell_confirm),
+    ),
 }

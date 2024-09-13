@@ -225,16 +225,20 @@ class Strings:
     ]
     no_items_yet = "You don't have any items yet"
     invalid_item = "Invalid item."
+    item_sell_confirm = f"Are you sure you want to sell {{item}}? (y/n)"
     item_sold = f"You sold '*{{item}}*' for *{{money}} {MONEY}*."
     item_bought = f"You bought '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
     cannot_sell_equipped_item = "You can't sell an equipped item!"
     cannot_gift_equipped_item = "You can't gift an equipped item!"
     cannot_shop_on_a_quest = "You cannot shop while on a quest!"
-    item_rerolled = F"You paid {{amount}} {MONEY} to reroll {{old_name}} into:"
+    item_reroll_confirm = f"Are you sure you want to reroll {{item}}? It will cost you {{price}} {MONEY}. (y/n)"
+    item_rerolled = f"You paid {{amount}} {MONEY} to reroll {{old_name}} into:"
+    item_enchant_confirm = "Are you sure you want to enchant {item}? It will cost you an artifact piece. (y/n)"
     item_enchanted = "You used 1 artifact piece to enchant:"
     no_ap_to_enchant = "You don't have any artifact pieces to enchant with."
     max_enchants_reached = "You have reached the maximum amount of perks on this item."
+    action_canceled = "{action} canceled."
 
     # auctions
     no_auctions_yet = "No auctions yet"
