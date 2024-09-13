@@ -934,7 +934,7 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
 
 def process_sell_confirm(context: UserContext, user_input: str) -> str:
     yes = get_yes_or_no(user_input)
-    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    player = get_player(db, context)
     context.end_process()
     if yes:
         items = __get_items(player)
@@ -964,34 +964,28 @@ def __get_item_type_value(item_type: EquipmentType, player: Player):
 
 
 def show_smithy(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        item_types = db().get_smithy_items()
-        return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i + 1}. {Strings.get_item_icon(x.slot)}| {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    item_types = db().get_smithy_items()
+    return "Here what the smithy can craft for you today:\n\n" + "\n".join(f"{i + 1}. {Strings.get_item_icon(x.slot)}| {x.name} (lv. {player.level}) - {__get_item_type_value(x, player)} {MONEY}" for i, x in enumerate(item_types))
 
 
 def market_buy(context: UserContext, item_pos_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        if db().is_player_on_a_quest(player) and (not player.vocation.can_buy_on_a_quest):
-            return Strings.cannot_shop_on_a_quest
-        item_pos = int(item_pos_str)
-        if item_pos > 10:
-            return "Invalid item (max item: 10)"
-        if len(player.satchel) >= player.get_max_satchel_items():
-            return "Satchel already full!"
-        item = db().get_market_items()[item_pos - 1]
-        item_cost = int(item.value * (1 if player.guild_level() < 8 else 0.5))
-        if player.money < item.value:
-            return Strings.not_enough_money.format(amount=item_cost - player.money)
-        player.satchel.append(item)
-        player.money -= item_cost
-        db().update_player_data(player)
-        return Strings.item_bought.format(item=item.name, money=item_cost)
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
+    if db().is_player_on_a_quest(player) and (not player.vocation.can_buy_on_a_quest):
+        return Strings.cannot_shop_on_a_quest
+    item_pos = int(item_pos_str)
+    if item_pos > 10:
+        return "Invalid item (max item: 10)"
+    if len(player.satchel) >= player.get_max_satchel_items():
+        return "Satchel already full!"
+    item = db().get_market_items()[item_pos - 1]
+    item_cost = int(item.value * (1 if player.guild_level() < 8 else 0.5))
+    if player.money < item.value:
+        return Strings.not_enough_money.format(amount=item_cost - player.money)
+    player.satchel.append(item)
+    player.money -= item_cost
+    db().update_player_data(player)
+    return Strings.item_bought.format(item=item.name, money=item_cost)
 
 
 def smithy_craft(context: UserContext, item_pos_str: str) -> str:
