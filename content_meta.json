@@ -113,7 +113,8 @@
       "hide together from a pack of monsters approaching your position",
       "help each other move some debris from a blocked passageway.",
       "carve your names into a wall, as way to leave a mark on this cruel world.",
-      "Gossip about other adventurers."
+      "Gossip about other adventurers.",
+      "finish off a dying animal & cook it's remains."
     ]
   },
   "spells": {
@@ -410,7 +411,67 @@
       "failure": "Later, you learn that those who braved the mist found valuable treasures.",
       "rewards": "xp 50"
     }]
-  }],
+  }, {
+    "description": "A hooded figure offers you a mysterious glowing crystal, claiming it holds untold power.",
+    "choices": [{
+      "option": "Buy the crystal",
+      "chance": 50,
+      "success": "The crystal radiates with energy, enhancing your abilities as you feel a surge of power.",
+      "failure": "The crystal crumbles to dust in your hands, leaving you with nothing but a sense of loss.",
+      "rewards": "xp 500"
+    }, {
+      "option": "Decline the offer",
+      "chance": 90,
+      "success": "You refuse and avoid potential danger, saving your money for something more trustworthy.",
+      "failure": "Later, you hear rumors that the crystal was real and the buyer became incredibly powerful.",
+      "rewards": "xp 50"
+    }]
+}, {
+    "description": "A traveling bard offers to sing a song about your adventures, claiming it will spread your fame far and wide.",
+    "choices": [{
+      "option": "Let the bard sing",
+      "chance": 70,
+      "success": "The bard's song captivates the crowd, and soon you find yourself more well-known in the region.",
+      "failure": "The bard’s song is terrible, and you become the laughing stock of the taverns.",
+      "rewards": "xp 150, mn 150"
+    }, {
+      "option": "Refuse the bard",
+      "chance": 85,
+      "success": "You avoid unwanted attention and continue on your journey in peace.",
+      "failure": "Later, you hear another adventurer became famous thanks to the bard’s song.",
+      "rewards": "xp 50"
+    }]
+}, {
+    "description": "You find an old, dusty book in an abandoned library, its pages filled with strange symbols and drawings.",
+    "choices": [{
+      "option": "Read the book",
+      "chance": 50,
+      "success": "The book reveals ancient knowledge, granting you new powers and insights into the arcane.",
+      "failure": "The symbols confuse and overwhelm you, causing a painful headache before you throw the book aside.",
+      "rewards": "xp 500"
+    }, {
+      "option": "Leave the book",
+      "chance": 90,
+      "success": "You decide to leave the mysterious tome untouched and exit the library unharmed.",
+      "failure": "Later, you regret not learning what secrets the book could have revealed.",
+      "rewards": "xp 50"
+    }]
+}, {
+    "description": "A mysterious blacksmith offers to forge you a weapon, but demands something of personal value in return.",
+    "choices": [{
+      "option": "Agree to the trade",
+      "chance": 60,
+      "success": "The blacksmith forges a powerful weapon that shimmers with enchantments, empowering you.",
+      "failure": "The weapon is flawed, and you feel you’ve lost something precious for little gain.",
+      "rewards": "item (Strange)"
+    }, {
+      "option": "Refuse the trade",
+      "chance": 90,
+      "success": "Whatever the blacksmith meant for 'something of personal value', you don't like it, so you leave.",
+      "failure": "You wonder if the blacksmith's weapon could have given you the strength to overcome your next challenge.",
+      "rewards": "xp 100"
+    }]
+}],
   "vocations": [{
     "vocation_id": 0,
     "id": 0,

@@ -940,6 +940,10 @@ def process_sell_confirm(context: UserContext, user_input: str) -> str:
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
+        if item in player.equipped_items.values():
+            return Strings.cannot_sell_equipped_item
+        if db().get_auction_from_item(item):
+            return Strings.cannot_sell_auctioned_item
         mult = 1 if player.guild_level() < 6 else 2
         money = int(item.get_value() * mult)
         player.add_money(money)
