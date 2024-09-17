@@ -23,7 +23,7 @@ from pilgram.classes import (
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    Cheater, QuestCanceled
+    Cheater, QuestCanceled, Explore
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -262,20 +262,17 @@ class QuestManager(Manager):
             regeneration_text = self.__player_regenerate_hp(ac, player)
         else:
             regeneration_text = ""
-        self.db().update_player_data(player)
-        self.db().update_quest_progress(ac)
         text = f"*{event.event_text}*{rewards_string(xp_am, money_am, 0)}"
         if ac.is_on_a_quest():
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
                 text = Strings.qte_failed + "\n\n" + text
-            elif random.randint(1, 10) <= (
-                1 + player.vocation.qte_frequency_bonus
-            ):  # 10% base chance of a quick time event if player is on a quest
+            elif random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus) or Explore.is_set(player.flags):  # 10% base chance of a quick time event if player is on a quest
                 # log.info(f"Player '{player.name}' encountered a QTE.")
                 qte = random.choice(QuickTimeEvent.LIST)
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
+                player.unset_flag(Explore)
             elif random.randint(1, 10) <= (
                 1 + player.vocation.discovery_bonus
             ):  # 10% base change of finding an item
@@ -292,6 +289,8 @@ class QuestManager(Manager):
                     items.append(item)
                     text += f"You found an item:\n*{item.name}*\n\n"
             text += regeneration_text
+        self.db().update_player_data(player)
+        self.db().update_quest_progress(ac)
         self.db().create_and_add_notification(ac.player, text)
 
     def _process_combat(

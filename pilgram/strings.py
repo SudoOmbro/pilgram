@@ -25,6 +25,7 @@ class Strings:
 
     # quests
     quest_canceled = "You abandon the quest, you'll be back in town in a few hours"
+    explore_text = "You look around for something interesting..."
 
     # character creation
     character_already_created = "You already have a character! Their name is {name} and they are very sad now :("
@@ -303,6 +304,8 @@ class Strings:
     invalid_page = "The specified manual page does not exist. Only pages 1 to {pl} exist."
     less_than_3_quests = "You tried less than 3 quests, you can't modify your character yet."
     multiple_matches_found = "Multiple {obj}s found for your input, use correct casing."
+    already_hunting = "You are already hunting!"
+    already_exploring = "You are already exploring!"
 
     @classmethod
     def get_item_icon(cls, item_slot: int) -> str:

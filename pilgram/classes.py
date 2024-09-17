@@ -235,7 +235,7 @@ class Quest:
         """return the amount of xp & money the completion of the quest rewards"""
         guild_level = player.guild_level()
         multiplier = self.zone.level + self.number
-        guild_level_bonus = guild_level * 5000 if guild_level < 10 else 10000
+        guild_level_bonus = guild_level * (5000 if guild_level < 10 else 10000)
         bonus = random.randint(0, 50) + guild_level_bonus
         return (
             int(

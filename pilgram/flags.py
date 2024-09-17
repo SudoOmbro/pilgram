@@ -153,6 +153,10 @@ class QuestCanceled(Flag):
     pass  # 29
 
 
+class Explore(Flag):
+    pass  # 30
+
+
 BUFF_FLAGS: tuple[type[Flag], ...] = (
     StrengthBuff,
     OccultBuff,

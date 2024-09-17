@@ -24,7 +24,7 @@ from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
-    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -1028,9 +1028,20 @@ def use_consumable(context: UserContext, item_pos_str: str) -> str:
 
 def force_combat(context: UserContext) -> str:
     player = get_player(db, context)
+    if Explore.is_set(player.flags):
+        return Strings.already_exploring
     player.set_flag(ForcedCombat)
     db().update_player_data(player)
     return Strings.force_combat
+
+
+def force_qte(context: UserContext) -> str:
+    player = get_player(db, context)
+    if ForcedCombat.is_set(player.flags):
+        return Strings.already_hunting
+    player.set_flag(Explore)
+    db().update_player_data(player)
+    return Strings.explore_text
 
 
 def check_auctions(context: UserContext) -> str:
@@ -1414,6 +1425,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
     "vocations": IFW(None, list_vocations, "Shows all vocations"),
     "hunt": IFW(None, force_combat, "Hunt for a strong enemy"),
+    "explore": IFW(None, force_qte, "Force a QTE"),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
