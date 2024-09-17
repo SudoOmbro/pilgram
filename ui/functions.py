@@ -849,7 +849,7 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    price = item.get_value() * 20
+    price = item.get_value() * 15
     if player.money < price:
         return Strings.not_enough_money.format(amount=price - player.money)
     context.set("item pos", item_pos)
