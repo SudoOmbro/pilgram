@@ -178,7 +178,7 @@ class _GenericDamageMult(Modifier):
 class _GenericDamageBonus(Modifier):
     MAX_STRENGTH = 0
     MIN_STRENGTH = 1
-    SCALING = 2
+    SCALING = 0.5
 
     OP_ORDERING = 1
 
@@ -210,7 +210,7 @@ class _GenericDamageAbsorb(Modifier):
 
     MAX_STRENGTH = 100
     MIN_STRENGTH = 1
-    SCALING = 2
+    SCALING = 0.5
 
     DESCRIPTION = "absorb {str}% of incoming DAMAGE damage as HP"
     DAMAGE_TYPE: str
