@@ -695,6 +695,12 @@ class Player(CombatActor):
     def equip_item(self, item: Equipment) -> None:
         self.equipped_items[item.equipment_type.slot] = item
 
+    def is_item_equipped(self, item: Equipment) -> bool:
+        for equipped_item in self.equipped_items.values():
+            if equipped_item == item:
+                return True
+        return False
+
     def get_stance(self) -> str:
         return self.stance
 

@@ -804,10 +804,9 @@ def __get_items(player: Player) -> list[Equipment]:
 def inventory(context: UserContext) -> str:
     player = get_player(db, context)
     items = __get_items(player)
-    equipped_items = list(player.equipped_items.values())
     if not items:
         return Strings.no_items_yet
-    return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if x in equipped_items else ''}| *{x.name}*' for i, x in enumerate(items)])}"
+    return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if player.is_item_equipped(x) else ''}| *{x.name}*' for i, x in enumerate(items)])}"
 
 
 def __item_id_is_valid(item_id: int, items: list[Equipment]) -> bool:
@@ -869,7 +868,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         price = item.get_value() * 20
         old_name = item.name
         item.reroll()
-        if item in player.equipped_items.values():
+        if player.is_item_equipped(item):
             player.equip_item(item)
         player.money -= price
         db().update_player_data(player)
@@ -908,7 +907,7 @@ def process_enchant_confirm(context: UserContext, user_input: str) -> str:
         item = items[item_pos - 1]
         item.enchant()
         player.artifact_pieces -= 1
-        if item in player.equipped_items.values():
+        if player.is_item_equipped(item):
             player.equip_item(item)
         db().update_player_data(player)
         db().update_item(item, player)
@@ -925,7 +924,7 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    if item in player.equipped_items.values():
+    if player.is_item_equipped(item):
         return Strings.cannot_sell_equipped_item
     if db().get_auction_from_item(item):
         return Strings.cannot_sell_auctioned_item
@@ -942,7 +941,7 @@ def process_sell_confirm(context: UserContext, user_input: str) -> str:
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        if item in player.equipped_items.values():
+        if player.is_item_equipped(item):
             return Strings.cannot_sell_equipped_item
         if db().get_auction_from_item(item):
             return Strings.cannot_sell_auctioned_item
@@ -1059,7 +1058,7 @@ def create_auction(context: UserContext, item_pos_str: str, starting_bid_str: st
     if item_pos > len(items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    if item in player.equipped_items.values():
+    if player.is_item_equipped(item):
         return Strings.cannot_sell_equipped_item
     starting_bid = int(starting_bid_str)
     if db().get_auction_from_item(item):
@@ -1113,7 +1112,7 @@ def send_gift_to_player(context: UserContext, player_name: str, item_pos_str: st
     if item_pos > len(items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    if item in player.equipped_items.values():
+    if player.is_item_equipped(item):
         return Strings.cannot_gift_equipped_item
     # check if there is enough space
     recipient_items = db().get_player_items(recipient.player_id)
