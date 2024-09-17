@@ -267,7 +267,7 @@ class QuestManager(Manager):
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
                 text = Strings.qte_failed + "\n\n" + text
-            elif (random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus)) or Explore.is_set(player.flags):  # 10% base chance of a quick time event if player is on a quest
+            elif Explore.is_set(player.flags) or (random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus)):
                 # log.info(f"Player '{player.name}' encountered a QTE.")
                 qte = random.choice(QuickTimeEvent.LIST)
                 QTE_CACHE[player.player_id] = qte
