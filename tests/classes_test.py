@@ -97,6 +97,10 @@ class TestClasses(unittest.TestCase):
         for qte in QuickTimeEvent.LIST:
             print(qte)
 
+    def test_qte_resolve(self):
+        for qte in QuickTimeEvent.LIST:
+            print(qte.resolve(randint(0, len(qte.options)-1)))
+
     def test_print_modifiers(self):
         print_all_modifiers()
 

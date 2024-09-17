@@ -668,7 +668,7 @@ def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
     option_chosen = int(option_chosen_str) - 1
     if option_chosen >= len(qte.options):
         return Strings.invalid_option
-    func, string = qte.resolve(option_chosen)
+    func, string, success = qte.resolve(option_chosen)
     if func:
         results = func(player)
         for result in results:
@@ -678,6 +678,7 @@ def do_quick_time_event(context: UserContext, option_chosen_str: str) -> str:
                 item_id = db().add_item(item, player)
                 item.equipment_id = item_id
                 items.append(item)
+    if success:
         player.renown += 5
         if player.guild:
             guild = db().get_guild(player.guild.guild_id)
@@ -875,6 +876,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         db().update_item(item, player)
         return Strings.item_rerolled.format(amount=price, old_name=old_name) + "\n\n" + str(item)
     return Strings.action_canceled.format(action="Reroll")
+
 
 def enchant_item(context: UserContext, item_pos_str: str) -> str:
     item_pos = int(item_pos_str)

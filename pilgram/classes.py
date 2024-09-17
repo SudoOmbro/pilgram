@@ -1078,13 +1078,15 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         failures: list[str],
         options: list[tuple[str, int]],
         rewards: list[list[Callable[[Player], None]]],
+        maluses: list[list[Callable[[Player], None]]]
     ) -> None:
         """
         :param description: description of the quick time event
         :param successes: descriptions of the quick time event successful completions
         :param failures: descriptions of the quick time event failures
         :param options: the options to give the player
-        :param rewards: the functions used to give rewards to the players
+        :param rewards: the functions used to give rewards to the players on QTE success
+        :param maluses: the functions used to give maluses to the player on QTE failure
         """
         assert len(options) == len(rewards) == len(successes) == len(failures)
         self.description = description
@@ -1092,6 +1094,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         self.failures = failures
         self.options = options
         self.rewards = rewards
+        self.maluses = maluses
 
     def __get_reward(self, index: int) -> Callable[[Player], list[Any]]:
         reward_functions = self.rewards[index]
@@ -1104,15 +1107,28 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
 
         return execute_funcs
 
+    def __get_malus(self, index: int) -> Callable[[Player], list[Any]]:
+        malus_functions = self.maluses[index]
+
+        def execute_funcs(player: Player):
+            result = []
+            for func in malus_functions:
+                result.append(func(player))
+            return result
+
+        return execute_funcs
+
     def resolve(
         self, chosen_option: int
-    ) -> tuple[Callable[[Player], list] | None, str]:
+    ) -> tuple[Callable[[Player], list] | None, str, bool]:
         """return if the qte succeeded and the string associated"""
         option = self.options[chosen_option]
         roll = random.randint(1, 100)
         if roll <= option[1]:
-            return self.__get_reward(chosen_option), self.successes[chosen_option]
-        return None, self.failures[chosen_option]
+            return self.__get_reward(chosen_option), self.successes[chosen_option], True
+        return self.__get_malus(chosen_option), self.failures[chosen_option], False
+
+    # rewards ----
 
     @staticmethod
     def _add_money(player: Player, amount: int) -> None:
@@ -1142,6 +1158,39 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
             }.get(rarity_str, 0)
         return Equipment.generate(player.level, EquipmentType.get_random(), rarity)
 
+    @staticmethod
+    def _add_renown(player: Player, amount: int) -> None:
+        player.renown += amount
+        return None
+
+    # maluses ----
+
+    @staticmethod
+    def _lose_hp(player: Player, amount: int) -> None:
+        player.modify_hp(-amount)
+        if player.is_dead():
+            player.modify_hp(1)  # this cannot kill
+        return None
+
+    @staticmethod
+    def _lose_money(player: Player, amount: int) -> None:
+        player.money -= amount
+        if player.money < 0:
+            player.money = 0
+        return None
+
+    @staticmethod
+    def _lose_xp(player: Player, amount: int) -> None:
+        player.xp -= amount
+        if player.xp < 0:
+            player.xp = 0
+        return None
+
+    @staticmethod
+    def _lose_renown(player: Player, amount: int) -> None:
+        player.renown -= amount
+        return None
+
     @classmethod
     def __get_rewards_from_string(cls, reward_string: str) -> list[FuncWithParam]:
         split_reward_str = reward_string.split(", ")
@@ -1158,6 +1207,26 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
                 )
             elif components[0] == "item":
                 funcs_list.append(FuncWithParam(cls._add_item, components[1]))
+            elif components[0] == "rn":
+                funcs_list.append(FuncWithParam(cls._add_renown, int(components[1])))
+        return funcs_list
+
+    @classmethod
+    def __get_maluses_from_string(cls, reward_string: str) -> list[FuncWithParam]:
+        split_reward_str = reward_string.split(", ")
+        funcs_list: list[FuncWithParam] = []
+        for reward_func_components in split_reward_str:
+            components = reward_func_components.split(" ")
+            if components[0] == "xp":
+                funcs_list.append(FuncWithParam(cls._lose_xp, int(components[1])))
+            elif components[0] == "mn":
+                funcs_list.append(FuncWithParam(cls._lose_money, int(components[1])))
+            elif components[0] == "hp":
+                funcs_list.append(
+                    FuncWithParam(cls._lose_hp, int(components[1]))
+                )
+            elif components[0] == "rn":
+                funcs_list.append(FuncWithParam(cls._lose_renown, int(components[1])))
         return funcs_list
 
     @classmethod
@@ -1169,11 +1238,13 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         successes: list[str] = []
         failures: list[str] = []
         rewards: list[list[Callable[[Player], None]]] = []
+        maluses: list[list[Callable[[Player], None]]] = []
         for choice in choices:
             # get params
             option = choice.get("option")
             chance = choice.get("chance")
             rewards_str = choice.get("rewards")
+            maluses_str = choice.get("maluses", "hp 1")
             success = (
                 choice.get("success")
                 + "\n\nYou gain "
@@ -1181,14 +1252,23 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
                 .replace("mn", f"{MONEY}:")
                 .replace("ap", "Artifact pieces:")
                 .replace("item", "an item")
+                .replace("rn", "Renown")
             )
-            failure = choice.get("failure")
+            failure = (
+                choice.get("failure")
+                + "\n\nYou lose "
+                + maluses_str.replace("xp", "XP:")
+                .replace("mn", f"{MONEY}:")
+                .replace("hp", "HP:")
+                .replace("rn", "Renown")
+            )
             # add params to struct
             options.append((option, chance))
             successes.append(success)
             failures.append(failure)
             rewards.append(cls.__get_rewards_from_string(rewards_str))
-        return cls(qte_json.get("description"), successes, failures, options, rewards)
+            maluses.append(cls.__get_maluses_from_string(maluses_str))
+        return cls(qte_json.get("description"), successes, failures, options, rewards, maluses)
 
     def __str__(self):
         return f"{self.description}\n{'\n'.join(f'{i + 1}. {s} ({p}% chance)' for i, (s, p) in enumerate(self.options))}"
