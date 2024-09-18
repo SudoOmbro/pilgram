@@ -861,7 +861,7 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    price = item.get_value() * REROLL_MULT
+    price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier)
     if player.money < price:
         return Strings.not_enough_money.format(amount=price - player.money)
     context.set("item pos", item_pos)
@@ -877,7 +877,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        price = item.get_value() * REROLL_MULT
+        price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier)
         old_name = item.name
         item.reroll(player.vocation.reroll_stats_bonus, player.vocation.perk_rarity_bonus)
         if player.is_item_equipped(item):
