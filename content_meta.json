@@ -18,7 +18,8 @@
     "players_per_level": 4,
     "creation_cost": 1000,
     "max_tax": 50,
-    "max_players": 20
+    "max_players": 20,
+    "switch_delay": "1d"
   },
   "modify_cost": 1000,
   "money": {
@@ -29,7 +30,11 @@
     "base_money_reward": 760
   },
   "artifacts": {
-    "required_pieces": 8
+    "required_pieces": 8,
+    "power_per_artifact": 5
+  },
+  "crafting": {
+    "reroll_mult": 18
   },
   "minigames": {
     "hands": {
@@ -936,6 +941,63 @@
       "gain_money_on_player_meet": true,
       "can_craft_on_a_quest": true,
       "can_buy_on_a_quest": true
+    }
+  }, {
+    "vocation_id": 7,
+    "id": 31,
+    "name": "Artisan",
+    "level": 1,
+    "description": "It wasn't an architect or a designer who invented objects, but an artisan.",
+    "modifiers": {
+      "reroll_cost_multiplier": 0.9,
+      "xp_on_reroll": 5
+    }
+  }, {
+    "vocation_id": 7,
+    "id": 32,
+    "name": "Artisan",
+    "level": 2,
+    "description": "There is something deeply satisfying in shaping something with your hands. Proper artificing is like a song made solid. It is an act of creation.",
+    "modifiers": {
+      "reroll_cost_multiplier": 0.8,
+      "xp_on_reroll": 10,
+      "reroll_stats_bonus": 5
+    }
+  }, {
+    "vocation_id": 7,
+    "id": 33,
+    "name": "Artisan",
+    "level": 3,
+    "description": "Talent is cheaper than table salt. What separates the talented individual from the successful one is a lot of hard work.",
+    "modifiers": {
+      "reroll_cost_multiplier": 0.7,
+      "xp_on_reroll": 20,
+      "reroll_stats_bonus": 10,
+      "perk_rarity_bonus": 1
+    }
+  }, {
+    "vocation_id": 7,
+    "id": 34,
+    "name": "Artisan",
+    "level": 4,
+    "description": "Instead of worrying about what you cannot control, shift your energy to what you can create.",
+    "modifiers": {
+      "reroll_cost_multiplier": 0.6,
+      "xp_on_reroll": 40,
+      "reroll_stats_bonus": 20,
+      "perk_rarity_bonus": 2
+    }
+  }, {
+    "vocation_id": 7,
+    "id": 35,
+    "name": "Artisan",
+    "level": 5,
+    "description": "It is just the little touches after the average man would quit that make the master's fame.",
+    "modifiers": {
+      "reroll_cost_multiplier": 0.5,
+      "xp_on_reroll": 100,
+      "reroll_stats_bonus": 40,
+      "perk_rarity_bonus": 3
     }
   }],
   "equipment types": [{

@@ -45,6 +45,7 @@ class Strings:
     guild_join_success = "You successfully joined guild '{guild}'!"
     player_joined_your_guild = "Player {player} joined your guild ({guild})!"
     guild_is_full = "The guild is full! Tell the owner to upgrade it or make your own."
+    switched_too_recently = "You switched Guild/Vocation too recently! Wait another {hours} hours."
 
     # quests
     check_board = "You check the quest board, you see there are quests available in the following zones:\n\n"
@@ -177,7 +178,11 @@ class Strings:
         "gain_money_on_player_meet": "Gain money on meet",
         "can_buy_on_a_quest": "Can buy on a quest",
         "can_craft_on_a_quest": "Can craft on a quest",
-        "revive_chance": "Revive Chance"
+        "revive_chance": "Revive Chance",
+        "reroll_cost_multiplier": "Reroll cost",
+        "xp_on_reroll": "Reroll XP (x Item lv.)",
+        "reroll_stats_bonus": "Reroll stats bonus",
+        "perk_rarity_bonus": "Reroll perk bonus",
     }
 
     # items
@@ -230,6 +235,7 @@ class Strings:
     item_sold = f"You sold '*{{item}}*' for *{{money}} {MONEY}*."
     item_bought = f"You bought '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
+    unequip_all = "Unequipped all items."
     cannot_sell_equipped_item = "You can't sell an equipped item!"
     cannot_gift_equipped_item = "You can't gift an equipped item!"
     cannot_shop_on_a_quest = "You cannot shop while on a quest!"

@@ -37,8 +37,8 @@ from pilgram.globals import (
     ContentMeta,
 )
 from pilgram.spells import SPELLS
-from pilgram.strings import MONEY, Strings
-from pilgram.utils import read_text_file
+from pilgram.strings import MONEY, Strings, rewards_string
+from pilgram.utils import read_text_file, read_update_interval
 from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg, get_yes_or_no, get_player
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
@@ -47,9 +47,11 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 BBB = AAA
-MODIFY_COST = ContentMeta.get("modify_cost")
-MAX_TAX = ContentMeta.get("guilds.max_tax")
-REQUIRED_PIECES = ContentMeta.get("artifacts.required_pieces")
+MODIFY_COST: int = ContentMeta.get("modify_cost")
+MAX_TAX: int = ContentMeta.get("guilds.max_tax")
+REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
+SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
+REROLL_MULT: int = ContentMeta.get("crafting.reroll_mult")
 
 
 def db() -> PilgramDatabase:
@@ -431,6 +433,9 @@ def join_guild(context: UserContext, guild_name: str) -> str:
         return message
     if not guild:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+    time_since_last_switch = datetime.now() - player.last_guild_switch
+    if (time_since_last_switch) < SWITCH_DELAY:
+        return Strings.switched_too_recently.format(hours=time_since_last_switch.seconds // 3600)
     members: int = db().get_guild_members_number(guild)
     if not guild.can_add_member(members):
         return Strings.guild_is_full
@@ -656,7 +661,7 @@ def list_vocations(context: UserContext) -> str:
     string: str = "Here are all your vocations:\n\n"
     for vocation in Vocation.LIST[1:]:
         if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
-            string += f"{"(X) " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
+            string += f"{"✅ " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
     return string
 
 
@@ -840,6 +845,13 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
     return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
 
 
+def unequip_all_items(context: UserContext) -> str:
+    player = get_player(db, context)
+    player.equipped_items = {}
+    db().update_player_data(player)
+    return Strings.unequip_all
+
+
 def reroll_item(context: UserContext, item_pos_str: str) -> str:
     player = get_player(db, context)
     items = __get_items(player)
@@ -849,7 +861,7 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    price = item.get_value() * 15
+    price = item.get_value() * REROLL_MULT
     if player.money < price:
         return Strings.not_enough_money.format(amount=price - player.money)
     context.set("item pos", item_pos)
@@ -865,15 +877,19 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        price = item.get_value() * 20
+        price = item.get_value() * REROLL_MULT
         old_name = item.name
-        item.reroll()
+        item.reroll(player.vocation.reroll_stats_bonus, player.vocation.perk_rarity_bonus)
         if player.is_item_equipped(item):
             player.equip_item(item)
         player.money -= price
+        text = ""
+        if player.vocation.xp_on_reroll > 0:
+            xp_am = player.add_xp(player.vocation.xp_on_reroll * item.level)
+            text = rewards_string(xp_am, 0, 0)
         db().update_player_data(player)
         db().update_item(item, player)
-        return Strings.item_rerolled.format(amount=price, old_name=old_name) + "\n\n" + str(item)
+        return Strings.item_rerolled.format(amount=price, old_name=old_name) + "\n\n" + str(item) + text
     return Strings.action_canceled.format(action="Reroll")
 
 
@@ -1280,10 +1296,14 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
     try:
         # get player
         player = get_player(db, context)
+        # validate if player can change vocation
         if player.level < 5:
             return "You haven't unlocked vocations yet!"
         if db().is_player_on_a_quest(player):
             return Strings.cannot_change_vocation_on_quest
+        time_since_last_switch = datetime.now() - player.last_guild_switch
+        if (time_since_last_switch) < SWITCH_DELAY:
+            return Strings.switched_too_recently.format(hours=time_since_last_switch.seconds // 3600)
         # convert strings to ints
         vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
         if vocation_ids[0] == vocation_ids[1]:
@@ -1291,6 +1311,7 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
         # equip vocations
         vocations = [Vocation.get_correct_vocation_tier(vid, player) for vid in vocation_ids[:(player.get_vocation_limit())]]
         player.equip_vocations(vocations)
+        player.last_guild_switch = datetime.now()
         db().update_player_data(player)
         return f"Activated vocations: {" & ".join([x.name for x in vocations])}"
     except ValueError as e:
@@ -1408,6 +1429,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
     "equip": IFW([integer_arg("Item")], equip_item, "Equip an item from your inventory"),
+    "unequip": IFW(None, unequip_all_items, "Unequip all items"),
     "sell": IFW([integer_arg("Item")], sell_item, "Sell an item from your inventory."),
     "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),
     "craft": IFW([integer_arg("Item")], smithy_craft, "Craft something at the smithy."),

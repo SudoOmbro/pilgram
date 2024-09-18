@@ -65,6 +65,7 @@ DURATION_PER_QUEST_NUMBER: timedelta = read_update_interval(
 RANDOM_DURATION: timedelta = read_update_interval(
     GlobalSettings.get("quest.random duration")
 )
+POWER_PER_ARTIFACT: int = ContentMeta.get("artifacts.power_per_artifact")
 
 QTE_CACHE: dict[
     int, QuickTimeEvent
@@ -552,7 +553,7 @@ class Player(CombatActor):
         return self.name
 
     def get_max_charge(self) -> int:
-        max_charge = (len(self.artifacts) * 5) + self.vocation.power_bonus
+        max_charge = (len(self.artifacts) * POWER_PER_ARTIFACT) + self.vocation.power_bonus
         if self.vocation.power_bonus_per_zone_visited:
             max_charge += (
                 len(self.progress.zone_progress)
@@ -1322,12 +1323,8 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.quest_time_multiplier: float = modifiers.get("quest_time_multiplier", 1.0)
         self.eldritch_resist: bool = modifiers.get("eldritch_resist", False)
         self.artifact_drop_bonus: int = modifiers.get("artifact_drop_bonus", 0)
-        self.upgrade_cost_multiplier: float = modifiers.get(
-            "upgrade_cost_multiplier", 1.0
-        )
-        self.power_bonus_per_zone_visited: int = modifiers.get(
-            "power_bonus_per_zone_visited", 0
-        )
+        self.upgrade_cost_multiplier: float = modifiers.get("upgrade_cost_multiplier", 1.0)
+        self.power_bonus_per_zone_visited: int = modifiers.get("power_bonus_per_zone_visited", 0)
         self.qte_frequency_bonus = modifiers.get("qte_frequency_bonus", 0)
         self.minigame_xp_mult = modifiers.get("minigame_xp_mult", 1.0)
         self.minigame_money_mult = modifiers.get("minigame_money_mult", 1.0)
@@ -1344,6 +1341,10 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.can_buy_on_a_quest: bool = modifiers.get("can_buy_on_a_quest", False)
         self.can_craft_on_a_quest: bool = modifiers.get("can_craft_on_a_quest", False)
         self.revive_chance: float = modifiers.get("revive_chance", 0.0)
+        self.reroll_cost_multiplier: float = modifiers.get("reroll_cost_multiplier", 1.0)
+        self.xp_on_reroll: int = modifiers.get("xp_on_reroll", 0)
+        self.reroll_stats_bonus: int = modifiers.get("reroll_stats_bonus", 0)
+        self.perk_rarity_bonus: int = modifiers.get("perk_rarity_bonus", 0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
@@ -1389,6 +1390,10 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.can_buy_on_a_quest = self.can_buy_on_a_quest or other.can_buy_on_a_quest
         result.can_craft_on_a_quest = self.can_craft_on_a_quest or other.can_craft_on_a_quest
         result.revive_chance = self.revive_chance + other.revive_chance
+        result.reroll_cost_multiplier = self.reroll_cost_multiplier * other.reroll_cost_multiplier
+        result.xp_on_reroll = self.xp_on_reroll + other.xp_on_reroll
+        result.reroll_stats_bonus = self.reroll_stats_bonus + other.reroll_stats_bonus
+        result.perk_rarity_bonus = self.perk_rarity_bonus + other.perk_rarity_bonus
         # setup applied modifiers
         result.modifiers_applied = copy(self.modifiers_applied)
         for modifier in other.modifiers_applied:

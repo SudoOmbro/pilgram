@@ -18,7 +18,8 @@
     "players_per_level": 4,
     "creation_cost": 1000,
     "max_tax": 50,
-    "max_players": 20
+    "max_players": 20,
+    "switch_delay": "1d"
   },
   "modify_cost": 1000,
   "money": {
@@ -29,7 +30,8 @@
     "base_money_reward": 760
   },
   "artifacts": {
-    "required_pieces": 8
+    "required_pieces": 8,
+    "power_per_artifact": 5
   },
   "minigames": {
     "hands": {

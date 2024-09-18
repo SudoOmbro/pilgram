@@ -122,12 +122,14 @@ class Equipment:
     def get_value(self) -> int:
         return (self.equipment_type.value + self.level) * (self.get_rarity() + 1)
 
-    def reroll(self) -> None:
+    def reroll(self, stats_bonus: int, modifier_bias: int) -> None:
         seed = time.time()
         rarity = len(self.modifiers)
-        dmg_type_string, damage, resist = self.get_dmg_and_resist_values(self.level, seed, self.equipment_type.is_weapon)
+        dmg_type_string, damage, resist = self.get_dmg_and_resist_values(
+            self.level + stats_bonus, seed, self.equipment_type.is_weapon
+        )
         self.name = self.generate_name(self.equipment_type, dmg_type_string, rarity)
-        self.modifiers = self.generate_modifiers(rarity, self.level)
+        self.modifiers = self.generate_modifiers(rarity, self.level, bias=modifier_bias)
         self.damage = self.equipment_type.damage.scale(self.level) + damage
         self.resist = self.equipment_type.resist.scale(self.level) + resist
 
@@ -193,8 +195,9 @@ class Equipment:
             return chosen_modifiers, Damage.get_empty(), resist
 
     @classmethod
-    def _get_random_modifier(cls, level: int) -> m.Modifier:
+    def _get_random_modifier(cls, level: int, bias: int = 0) -> m.Modifier:
         category = choice((
+            m.Rarity.COMMON,
             m.Rarity.COMMON,
             m.Rarity.COMMON,
             m.Rarity.COMMON,
@@ -206,16 +209,16 @@ class Equipment:
             m.Rarity.RARE,
             m.Rarity.RARE,
             m.Rarity.LEGENDARY
-        ))
+        )[bias:])
         modifier_type = choice(m.get_modifiers_by_rarity(category))
         return modifier_type.generate(level)
 
     @classmethod
-    def generate_modifiers(cls, amount: int, item_level: int) -> list[m.Modifier]:
+    def generate_modifiers(cls, amount: int, item_level: int, bias: int = 0) -> list[m.Modifier]:
         modifiers: list[m.Modifier] = []
         if amount > 0:
             for i in range(amount):
-                modifiers.append(cls._get_random_modifier(item_level))
+                modifiers.append(cls._get_random_modifier(item_level, bias=bias))
         return modifiers
 
     @classmethod
