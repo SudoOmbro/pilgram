@@ -267,13 +267,15 @@ class QuestManager(Manager):
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
                 text = Strings.qte_failed + "\n\n" + text
-                player.unset_flag(Explore)
+                if Explore.is_set(player.flags):
+                    player.unset_flag(Explore)
             elif Explore.is_set(player.flags) or (random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus)):
                 # log.info(f"Player '{player.name}' encountered a QTE.")
                 qte = random.choice(QuickTimeEvent.LIST)
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
-                player.unset_flag(Explore)
+                if Explore.is_set(player.flags):
+                    player.unset_flag(Explore)
             elif random.randint(1, 10) <= (
                 1 + player.vocation.discovery_bonus
             ):  # 10% base change of finding an item
