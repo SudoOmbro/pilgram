@@ -465,11 +465,13 @@ class PilgramORMDatabase(PilgramDatabase):
         return [self.build_guild_object(g, None) for g in gs]
 
     def reset_all_guild_scores(self):
-        with db.atomic():
+        for _ in range(2):
+            # do it twice idk at this point
             for g in GuildModel.select():
                 guild = self.get_guild(g.id, None)
                 guild.tourney_score = 0
                 self.update_guild(guild)
+                sleep(1)
 
     # zones ----
 
