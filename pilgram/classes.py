@@ -1353,6 +1353,8 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         }
 
     def __add__(self, other: Vocation) -> Vocation:
+        if self.vocation_id == other.vocation_id:
+            return self
         result = Vocation(0, 0, f"{self.name} {other.name}", "", {}, 1)
         result.name = result.name.lstrip()
         result.original_vocations = self.original_vocations

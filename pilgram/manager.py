@@ -648,9 +648,6 @@ class TourneyManager(Manager):
             members = self.db().get_guild_members_data(guild)
             for player_id, _, _ in members:
                 player = self.db().get_player_data(player_id)
-                # players that joined the guild less than a day ago will not get tourney rewards
-                if (datetime.now() - player.last_guild_switch) < timedelta(days=1):
-                    continue
                 reward_am = player.add_money(reward)  # am = after modifiers
                 log.info(f"rewarding {reward_am} money to {player.name}")
                 self.db().update_player_data(player)

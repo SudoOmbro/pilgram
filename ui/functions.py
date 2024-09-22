@@ -61,7 +61,13 @@ def db() -> PilgramDatabase:
 def check_board(context: UserContext) -> str:
     player = get_player(db, context)
     zones = db().get_all_zones()
-    return Strings.check_board + "\n".join(f"Zone {x.zone_id} - *{x.zone_name}* (lv. {x.level})" for x in zones) + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}"
+    text = Strings.check_board
+    for zone in zones:
+        text += f"*Zone {zone.zone_id} - {zone.zone_name}* (lv. {zone.level})\n"
+        player_progress = player.progress.get_zone_progress(zone)
+        if player_progress != 0:
+            text += f"> progress: {player_progress}\n"
+    return text + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}"
 
 
 def check_current_quest(context: UserContext) -> str:
@@ -434,8 +440,8 @@ def join_guild(context: UserContext, guild_name: str) -> str:
     if not guild:
         return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
     time_since_last_switch = datetime.now() - player.last_guild_switch
-    if (time_since_last_switch) < SWITCH_DELAY:
-        return Strings.switched_too_recently.format(hours=time_since_last_switch.seconds // 3600)
+    if time_since_last_switch < SWITCH_DELAY:
+        return Strings.switched_too_recently.format(hours=(SWITCH_DELAY.total_seconds() - time_since_last_switch.total_seconds()) // 3600)
     members: int = db().get_guild_members_number(guild)
     if not guild.can_add_member(members):
         return Strings.guild_is_full
@@ -1302,8 +1308,8 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
         if db().is_player_on_a_quest(player):
             return Strings.cannot_change_vocation_on_quest
         time_since_last_switch = datetime.now() - player.last_guild_switch
-        if (time_since_last_switch) < SWITCH_DELAY:
-            return Strings.switched_too_recently.format(hours=time_since_last_switch.seconds // 3600)
+        if time_since_last_switch < SWITCH_DELAY:
+            return Strings.switched_too_recently.format(hours=(SWITCH_DELAY.total_seconds() - time_since_last_switch.total_seconds()) // 3600)
         # convert strings to ints
         vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
         if vocation_ids[0] == vocation_ids[1]:
