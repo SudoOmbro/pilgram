@@ -403,7 +403,8 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "xp": __generate_int_op_command("xp", "player", "set"),
             "gear": __generate_int_op_command("gear_level", "player", "set"),
             "home": __generate_int_op_command("home_level", "player", "set"),
-            "pieces": __generate_int_op_command("artifact_pieces", "player", "set")
+            "pieces": __generate_int_op_command("artifact_pieces", "player", "set"),
+            "level": __generate_int_op_command("level", "player", "set")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "set"),

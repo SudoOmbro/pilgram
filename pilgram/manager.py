@@ -161,7 +161,8 @@ class QuestManager(Manager):
         if quest_finished:
             # reset pity flags
             for flag in PITY_FLAGS:
-                player.flags = flag.unset(player.flags)
+                if flag.is_set(player.flags):
+                    player.unset_flag(flag)
             # get rewards
             xp, money = quest.get_rewards(player)
             renown = quest.get_prestige() * 200

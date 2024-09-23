@@ -348,7 +348,7 @@ class CombatActor(ABC):
 
     def get_initiative(self) -> int:
         """returns the initiative of the actor, which determines who goes first in the combat turn"""
-        value = self.get_delay() - self.roll(20)
+        value = self.get_delay() - random.randint(1, 20)
         if self.get_stance() == "r":
             value -= 1
         elif self.get_stance() == "s":

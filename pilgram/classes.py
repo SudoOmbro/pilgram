@@ -531,7 +531,7 @@ class Player(CombatActor):
         ):
             if flag.is_set(self.flags):
                 roll += modifier
-                self.flags = flag.unset(self.flags)
+                self.flags = flag.unset(flag)
         if random.randint(1, 10) > 5:
             # skew the roll to avoid players failing too much
             roll += random.randint(1, 5)
@@ -1353,7 +1353,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         }
 
     def __add__(self, other: Vocation) -> Vocation:
-        if self.vocation_id == other.vocation_id:
+        if other.vocation_id in self.original_vocations:
             return self
         result = Vocation(0, 0, f"{self.name} {other.name}", "", {}, 1)
         result.name = result.name.lstrip()
