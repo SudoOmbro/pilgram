@@ -515,7 +515,7 @@ class Player(CombatActor):
         for flag in (AlloyGlitchFlag1, AlloyGlitchFlag2, AlloyGlitchFlag3):
             if flag.is_set(self.flags):
                 amount = int(amount * 1.5)
-                self.flags = flag.unset(self.flags)
+                self.unset_flag(flag)
         amount = int(amount)
         self.money += amount
         return amount
@@ -531,7 +531,7 @@ class Player(CombatActor):
         ):
             if flag.is_set(self.flags):
                 roll += modifier
-                self.flags = flag.unset(flag)
+                self.unset_flag(flag)
         if random.randint(1, 10) > 5:
             # skew the roll to avoid players failing too much
             roll += random.randint(1, 5)
