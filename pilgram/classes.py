@@ -219,7 +219,7 @@ class Anomaly:
         return Anomaly("No Anomaly", "No current anomaly observed", TOWN_ZONE, {}, datetime.now())
 
     def __str__(self):
-        return f"Anomaly in {self.zone.zone_name}:\n\n*{self.name}*\n\n_{self.description}_\n\n{self.get_effects_string()}"
+        return f"Anomaly in {self.zone.zone_name} ({self.zone.zone_id}):\n\n*{self.name}*\n\n_{self.description}_\n\n{self.get_effects_string()}"
 
 
 class Quest:

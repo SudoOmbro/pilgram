@@ -4,7 +4,7 @@ import os
 import random
 import time
 from abc import ABC
-from copy import deepcopy
+from copy import deepcopy, copy
 from datetime import datetime, timedelta
 from time import sleep
 from typing import Self
@@ -628,7 +628,7 @@ class GeneratorManager(Manager):
         try:
             anomaly = self.db().get_current_anomaly()
             if anomaly.is_expired():
-                zones = self.db().get_all_zones()
+                zones = copy(self.db().get_all_zones())
                 random.shuffle(zones)
                 new_anomaly = self.generator.generate_anomaly(zones[0])
                 self.db().update_anomaly(new_anomaly)
