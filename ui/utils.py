@@ -34,7 +34,7 @@ class TooFewArgumentsError(CommandError):
 class YesNoError(CommandError):
 
     def __init__(self) -> None:
-        self.message = Strings.yes_no_error
+        super().__init__(Strings.yes_no_error)
 
 
 class CommandParsingResult:
