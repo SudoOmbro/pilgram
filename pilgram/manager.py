@@ -154,6 +154,7 @@ class QuestManager(Manager):
         ac.player = player
         tax: float = 0
         quest_finished, roll, value_to_beat = quest.finish_quest(player)
+        anomaly = self.db().get_current_anomaly()
         # pity
         if (not quest_finished) and Pity5.is_set(player.flags):
             quest_finished = True
@@ -165,6 +166,9 @@ class QuestManager(Manager):
                     player.unset_flag(flag)
             # get rewards
             xp, money = quest.get_rewards(player)
+            if ac.zone() == anomaly.zone:
+                xp = int(xp * anomaly.xp_mult)
+                money = int(money * anomaly.money_mult)
             renown = quest.get_prestige() * 200
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
@@ -193,7 +197,7 @@ class QuestManager(Manager):
             player.renown += renown
             piece: bool = False
             if random.randint(1, 10) < (
-                3 + player.vocation.artifact_drop_bonus
+                3 + player.vocation.artifact_drop_bonus + (anomaly.artifact_drop_bonus if ac.zone() == anomaly.zone else 0)
             ):  # 30% base chance to gain a piece of an artifact
                 player.artifact_pieces += 1
                 piece = True
@@ -252,10 +256,14 @@ class QuestManager(Manager):
     def _process_event(self, ac: AdventureContainer) -> None:
         zone = ac.zone()
         event = self.db().get_random_zone_event(zone)
+        anomaly = self.db().get_current_anomaly()
         player: Player = self.db().get_player_data(
             ac.player.player_id
         )  # get the most up-to-date object
         xp, money = event.get_rewards(ac.player)
+        if ac.zone() == anomaly.zone:
+            xp = int(xp * anomaly.xp_mult)
+            money = int(money * anomaly.money_mult)
         xp_am = player.add_xp(xp)  # am = after modifiers
         money_am = player.add_money(money)  # am = after modifiers
         ac.player = player
@@ -278,7 +286,7 @@ class QuestManager(Manager):
                 if Explore.is_set(player.flags):
                     player.unset_flag(Explore)
             elif random.randint(1, 10) <= (
-                1 + player.vocation.discovery_bonus
+                1 + player.vocation.discovery_bonus + (anomaly.item_drop_bonus if ac.zone() == anomaly.zone else 0)
             ):  # 10% base change of finding an item
                 items = self.db().get_player_items(player.player_id)
                 if len(items) < player.get_inventory_size():
@@ -301,6 +309,7 @@ class QuestManager(Manager):
         self, ac: AdventureContainer, updates: list[AdventureContainer]
     ) -> None:
         player: Player = self.db().get_player_data(ac.player.player_id)
+        anomaly = self.db().get_current_anomaly()
         self.__player_regenerate_hp(ac, player)
         hours_passed: float = (datetime.now() - ac.last_update).seconds / 3600
         regenerated_hp: int = (
@@ -324,6 +333,8 @@ class QuestManager(Manager):
             # if there are no shades to fight then generate an enemy
             modifiers: list[Modifier] = []
             enemy_level_modifier: int = ac.quest.number
+            if ac.zone() == anomaly.zone:
+                enemy_level_modifier += anomaly.level_bonus
             if ForcedCombat.is_set(player.flags):
                 days_left = (ac.finish_time - datetime.now()).days
                 enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
@@ -380,6 +391,9 @@ class QuestManager(Manager):
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
             # get rewards
             xp, money = enemy.get_rewards(player)
+            if ac.zone() == anomaly.zone:
+                xp = int(xp * anomaly.xp_mult)
+                money = int(money * anomaly.money_mult)
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             # add rewards
             xp_am = player.add_xp(xp)
@@ -610,6 +624,16 @@ class GeneratorManager(Manager):
                 log.info("artifact generation done")
             except Exception as e:
                 log.error(f"Encountered an error while generating artifacts: {e}")
+        # update anomaly
+        try:
+            anomaly = self.db().get_current_anomaly()
+            if anomaly.is_expired():
+                zones = self.db().get_all_zones()
+                random.shuffle(zones)
+                new_anomaly = self.generator.generate_anomaly(zones[0])
+                self.db().update_anomaly(new_anomaly)
+        except Exception as e:
+            log.error("Encountered an error while generating anomaly: " + str(e))
 
 
 class TourneyManager(Manager):
@@ -712,6 +736,7 @@ class TimedUpdatesManager(Manager):
                 # wait a couple of seconds since you just sent 2 messages
             # delete the auction from the database
             self.db().delete_auction(auction)
+
 
 
 class NotificationsManager(Manager):

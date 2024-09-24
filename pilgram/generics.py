@@ -15,7 +15,7 @@ from pilgram.classes import (
     Quest,
     Tourney,
     Zone,
-    ZoneEvent, Notification,
+    ZoneEvent, Notification, Anomaly,
 )
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 
@@ -444,6 +444,16 @@ class PilgramDatabase(ABC):
         """returns whether the specified duel invite exists"""
         raise NotImplementedError
 
+    # anomalies ----------------------------------
+
+    def get_current_anomaly(self) -> Anomaly:
+        """ returns the current active anomaly """
+        raise NotImplementedError
+
+    def update_anomaly(self, anomaly: Anomaly) -> None:
+        """ sets the current anomaly as the active anomaly """
+        raise NotImplementedError
+
 
 class PilgramGenerator(ABC):
     def generate_quests(self, zone: Zone, quest_data: Any) -> list[Quest]:
@@ -456,6 +466,9 @@ class PilgramGenerator(ABC):
         raise NotImplementedError
 
     def generate_enemy_metas(self, zone: Zone) -> list[EnemyMeta]:
+        raise NotImplementedError
+
+    def generate_anomaly(self, zone: Zone) -> Anomaly:
         raise NotImplementedError
 
 

@@ -60,6 +60,7 @@ def db() -> PilgramDatabase:
 
 def check_board(context: UserContext) -> str:
     player = get_player(db, context)
+    anomaly = db().get_current_anomaly()
     zones = db().get_all_zones()
     text = Strings.check_board
     for zone in zones:
@@ -67,7 +68,7 @@ def check_board(context: UserContext) -> str:
         player_progress = player.progress.get_zone_progress(zone)
         if player_progress != 0:
             text += f"> progress: {player_progress}\n"
-    return text + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}"
+    return text + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}\n\n{anomaly}"
 
 
 def check_current_quest(context: UserContext) -> str:

@@ -1,5 +1,7 @@
+import json
 import logging
 import re
+from datetime import datetime, timedelta
 from functools import cache
 
 import requests
@@ -10,12 +12,11 @@ from AI.utils import (
     get_string_list_from_tuple_list,
     remove_leading_numbers,
 )
-from pilgram.classes import Artifact, EnemyMeta, Quest, Zone, ZoneEvent
+from pilgram.classes import Artifact, EnemyMeta, Quest, Zone, ZoneEvent, Anomaly
 from pilgram.generics import PilgramGenerator
 from pilgram.globals import ContentMeta
 
 log = logging.getLogger(__name__)
-
 
 QUESTS_PER_BATCH: int = 5
 EVENTS_PER_BATCH: int = 25
@@ -28,12 +29,67 @@ QUEST_FORMATTING_PROMPT = "Leave 2 lines between each quest"
 EVENT_FORMATTING_PROMPT = "Leave 2 lines between events"
 ARTIFACTS_FORMATTING_PROMPT = "Separate name and description with ':' putting the name before and the description after. Do not write 'Name' & 'Description'."
 ENEMIES_FORMATTING_PROMPT = "Do not number the entries, put 'Name' before the name of the enemy."
+ANOMALY_SYS_PROMPT = "numbers can go from 0.8 to 1.5, integers can go from -3 to 8"
+
+ANOMALY_RESPONSE_FORMAT = {
+    "type": "json_schema",
+    "json_schema": {
+        "name": "anomaly_response",
+        "schema": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "effects": {
+                    "type": "object",
+                    "properties": {
+                        "xp mult": {
+                            "type": "number"
+                        },
+                        "money mult": {
+                            "type": "number"
+                        },
+                        "level bonus": {
+                            "type": "integer"
+                        },
+                        "item drop bonus": {
+                            "type": "integer"
+                        },
+                        "artifact drop bonus": {
+                            "type": "integer"
+                        }
+                    },
+                    "required": [
+                        "xp mult",
+                        "money mult",
+                        "level bonus",
+                        "item drop bonus",
+                        "artifact drop bonus"
+                    ],
+                    "additionalProperties": False
+                }
+            },
+            "required": [
+                "name",
+                "description",
+                "effects"
+            ],
+            "additionalProperties": False
+        },
+        "strict": True
+    }
+}
 
 ZONE_PROMPT = "The current zone is called \"{name}\", it is a {descr}"
 QUESTS_PROMPT = f"Write {QUESTS_PER_BATCH} quests set in the current zone with objective, success and failure descriptions"
 EVENTS_PROMPT = f"Write {EVENTS_PER_BATCH} short events set in the current zone"
 ARTIFACTS_PROMPT = f"Write name and description of {ARTIFACTS_PER_BATCH} unique & rare artifacts found in the world"
 ENEMIES_PROMPT = f"Write name, description, win text and loss text for {MONSTERS_PER_BATCH} enemies that would be found in the current zone"
+ANOMALY_PROMPT = "Create & write some kind of anomaly for the given zone."
 
 QUEST_NAME_REGEX: str = r"^\d*\.?\**#*\s?[Qq]uest\s?[\d]*:\s(.*)$"
 QUEST_DESCRIPTION_REGEX: str = r"^\**[Oo]bjective\**:\**\s(.*)$"
@@ -91,6 +147,15 @@ def get_enemies_system_prompt(zone: Zone) -> list[dict]:
     )
 
 
+def get_anomaly_system_prompt(zone: Zone) -> list[dict]:
+    return build_messages(
+        "system",
+        WORLD_PROMPT,
+        ZONE_PROMPT.format(name=zone.zone_name, descr=zone.zone_description),
+        ANOMALY_SYS_PROMPT
+    )
+
+
 class GPTAPIError(Exception):
 
     def __init__(self, response: requests.Response):
@@ -136,14 +201,15 @@ class ChatGPTAPI:
     def _build_request_url(self, endpoint: str) -> str:
         return f"{self.BASE_URL}/v{self.api_version}/{endpoint}"
 
-    def create_completion(self, messages: list[dict], temperature: int = 1) -> str:
+    def create_completion(self, messages: list[dict], temperature: int = 1, response_format: dict | None = None) -> str:
         response = requests.post(
             self._build_request_url("chat/completions"),
             None,
             {
                 "model": self.model,
                 "messages": messages,
-                "temperature": temperature
+                "temperature": temperature,
+                "response_format": response_format
             },
             headers=self.headers
         )
@@ -275,3 +341,15 @@ class ChatGPTGenerator(PilgramGenerator):
         messages = get_enemies_system_prompt(zone) + build_messages("user", ENEMIES_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         return self._get_enemies_from_generated_text(generated_text, zone)
+
+    def generate_anomaly(self, zone: Zone) -> Anomaly:
+        messages = get_anomaly_system_prompt(zone) + build_messages("user", ANOMALY_PROMPT)
+        generated_output_str = self.api_wrapper.create_completion(messages, response_format=ANOMALY_RESPONSE_FORMAT)
+        output = json.loads(generated_output_str)
+        return Anomaly(
+            output["name"],
+            output["description"],
+            zone,
+            output["effects"],
+            datetime.now() + timedelta(days=7)
+        )

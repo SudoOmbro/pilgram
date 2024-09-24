@@ -38,12 +38,13 @@ from pilgram.classes import (
     Quest,
     Tourney,
     Zone,
-    ZoneEvent, Notification,
+    ZoneEvent, Notification, Anomaly,
 )
 from pilgram.combat_classes import Damage
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.modifiers import Modifier, get_modifier
+from pilgram.utils import save_json_to_file, read_json_file
 
 log = logging.getLogger(__name__)
 
@@ -1065,3 +1066,27 @@ class PilgramORMDatabase(PilgramDatabase):
         if target.player_id in self._DUEL_INVITES[sender.player_id]:
             return True
         return False
+
+    # anomalies ----
+
+    ANOMALY: dict[str, Anomaly] = {}
+    ANOMALY_FILENAME: str = "anomaly.json"
+
+    def get_current_anomaly(self) -> Anomaly:
+        if "current" not in self.ANOMALY:
+            anomaly_json = read_json_file(self.ANOMALY_FILENAME)
+            if not anomaly_json:
+                self.ANOMALY["current"] = Anomaly.get_empty()
+            else:
+                self.ANOMALY["current"] = Anomaly(
+                    anomaly_json["name"],
+                    anomaly_json["description"],
+                    self.get_zone(anomaly_json["zone_id"]),
+                    anomaly_json["effects"],
+                    datetime.strptime(anomaly_json["expire_date"], Anomaly.DATE_FORMAT),
+                )
+        return self.ANOMALY["current"]
+
+    def update_anomaly(self, anomaly: Anomaly):
+        self.ANOMALY["current"] = anomaly
+        save_json_to_file(self.ANOMALY_FILENAME, anomaly.get_json())

@@ -16,6 +16,9 @@ from AI.chatgpt import (
     get_enemies_system_prompt,
     get_events_system_prompt,
     get_quests_system_prompt,
+    get_anomaly_system_prompt,
+    ANOMALY_PROMPT,
+    ANOMALY_RESPONSE_FORMAT,
 )
 from AI.utils import (
     filter_string_list_remove_empty,
@@ -77,6 +80,11 @@ class TestChatGPT(unittest.TestCase):
         messages = get_enemies_system_prompt(self.ZONE) + build_messages("user", ENEMIES_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
+
+    def test_generate_anomaly(self):
+        messages = get_anomaly_system_prompt(self.ZONE) + build_messages("user", ANOMALY_PROMPT)
+        generated_output = self.api_wrapper.create_completion(messages, response_format=ANOMALY_RESPONSE_FORMAT)
+        print(generated_output)
 
     def test_build_quests_from_generated_text(self):
         text = _read_file("mock_quests_response.txt")

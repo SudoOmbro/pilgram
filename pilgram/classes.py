@@ -107,7 +107,6 @@ class InternalEventBus:
             return events
 
 
-
 class Zone:
     """contains info about a zone. Zone 0 should be the town to reuse the zone event system"""
 
@@ -140,7 +139,9 @@ class Zone:
         self.extra_data = extra_data
 
     def __eq__(self, other):
-        return self.zone_id == other.zone_id
+        if isinstance(other, Zone):
+            return self.zone_id == other.zone_id
+        return False
 
     def __str__(self):
         return f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}\n\nDamage modifiers:\n{self.damage_modifiers}\n\nResist modifiers:\n{self.resist_modifiers}"
@@ -162,6 +163,63 @@ TOWN_ZONE: Zone = Zone(
     Damage.get_empty(),
     {},
 )
+
+
+class Anomaly:
+    """ AI generated anomaly that modifies a specific zone's parameters """
+
+    DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    def __init__(self, name: str, description: str, zone: Zone, effects: dict, expire_date: datetime) -> None:
+        self.name = name
+        self.description = description
+        self.zone = zone
+        self.expire_date = expire_date
+        # effects
+        self.xp_mult: float = effects.get("xp mult", 1.0)
+        self.money_mult: float = effects.get("money mult", 1.0)
+        self.level_bonus: int = effects.get("level bonus", 0)
+        self.item_drop_bonus: int = effects.get("item drop bonus", 0)
+        self.artifact_drop_bonus: int = effects.get("artifact drop bonus", 0)
+
+    def get_json(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "zone_id": self.zone.zone_id,
+            "expire_date": self.expire_date.strftime(self.DATE_FORMAT),
+            "effects": {
+                "xp mult": self.xp_mult,
+                "money mult": self.money_mult,
+                "level bonus": self.level_bonus,
+                "item drop bonus": self.item_drop_bonus,
+                "artifact drop bonus": self.artifact_drop_bonus
+            }
+        }
+
+    def get_effects_string(self) -> str:
+        result = ""
+        if self.xp_mult != 1.0:
+            result += f"XP mult: {int(100 * self.xp_mult)}%\n"
+        if self.money_mult != 1.0:
+            result += f"BA mult: {int(100 * self.money_mult)}%\n"
+        if self.level_bonus != 0:
+            result += f"Enemy level bonus: {self.level_bonus}\n"
+        if self.item_drop_bonus != 0:
+            result += f"Item drop bonus: {self.item_drop_bonus}\n"
+        if self.artifact_drop_bonus != 0:
+            result += f"Artifact drop bonus: {self.artifact_drop_bonus}"
+        return result
+
+    def is_expired(self) -> bool:
+        return datetime.now() > self.expire_date
+
+    @classmethod
+    def get_empty(cls):
+        return Anomaly("No Anomaly", "No current anomaly observed", TOWN_ZONE, {}, datetime.now())
+
+    def __str__(self):
+        return f"Anomaly in {self.zone.zone_name}:\n\n*{self.name}*\n\n_{self.description}_\n\n{self.get_effects_string()}"
 
 
 class Quest:
