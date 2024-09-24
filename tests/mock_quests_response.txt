@@ -1,24 +1,59 @@
-Quest 1: The Mysterious Package
-Objective: Find and retrieve a mysterious package hidden deep in the forest.
-Success: You locate the package, discovering a powerful artifact inside.
-Failure: Ambushed by bandits, you lose the package and are left empty-handed.
+/home/ombro/PycharmProjects/pilgram/venv/bin/python /home/ombro/.local/share/JetBrains/Toolbox/apps/pycharm-professional/plugins/python/helpers/pycharm/_jb_unittest_runner.py --target chatgpt_test.TestChatGPT.test_generate_quests 
+Testing started at 1:05 PM ...
+Launching unittests with arguments python -m unittest chatgpt_test.TestChatGPT.test_generate_quests in /home/ombro/PycharmProjects/pilgram/tests
 
-Quest 2: The Lost Scout
-Objective: Locate a missing scout who wandered into the forest.
-Success: You find the scout alive and bring them back to safety.
-Failure: Unable to locate the scout, their fate remains unknown in the dangerous forest.
+Loaded 78 equipment types
+Loaded 16 consumables
+Loaded 62 modifiers
+Loaded 18 quick time events
+Loaded 31 vocations
 
-Quest 3: The Enchanted Grove
-Objective: Discover the secret entrance to the hidden grove rumored to contain ancient magic.
-Success: You find the entrance and uncover the magical grove, gaining new knowledge and abilities.
-Failure: Lost in the dense forest, you are unable to locate the grove and miss out on its hidden powers.
 
-Quest 4: The Forest Guardian
-Objective: Confront and defeat the powerful guardian spirit protecting the heart of the forest.
-Success: You defeat the guardian and gain its blessing, granting you protection and strength in the forest.
-Failure: Overwhelmed by the guardian's power, you are forced to retreat and face its wrath in future encounters.
+Ran 1 test in 8.090s
 
-Quest 5: The Dark Ritual
-Objective: Stop a group of dark cultists from performing a dangerous ritual in the forest.
-Success: You thwart the ritual, preventing a catastrophe and earning the gratitude of the forest spirits.
-Failure: The ritual is completed, unleashing a wave of dark energy that threatens to corrupt the forest and its inhabitants.
+OK
+### Quest 1: The Whispering Shadows
+
+**Objective:** Investigate the source of eerie whispers echoing through the forest.
+
+**Success:** You uncover an old, enchanted stone that amplifies the thoughts of nearby creatures. You choose to cleanse its magic, bringing peace back to the Test Zone. As a reward, a guide spirit offers to aid you in future quests.
+
+**Failure:** You misinterpret the whispers as a warning and flee in fear, causing the shadows to grow darker and more menacing. The forest becomes increasingly hostile, and you must face aggressive wildlife with heightened danger.
+
+
+### Quest 2: The Lost Satchel
+
+**Objective:** Find the satchel of an adventurer who ventured too deep into the Test Zone.
+
+**Success:** After navigating through dense underbrush and solving a few riddles left by the adventurer, you retrieve the satchel. Inside, you find rare herbs and a map to hidden resources nearby, increasing your knowledge of the area.
+
+**Failure:** You get lost in the twisting paths of the forest and become disoriented. The satchel remains unfound, and you must expend energy to retrace your steps, feeling the suffocating grip of despair settle in.
+
+
+### Quest 3: The Flickering Lights
+
+**Objective:** Investigate the strange flickering lights seen at dusk and discern whether they are benign or malevolent.
+
+**Success:** You discover that the flickering lights are harmless will-o'-the-wisps, beckoning lost travelers. Choosing to guide them safely back to the outskirts of the forest earns you their favor, and they bestow upon you a charm that wards off illusions.
+
+**Failure:** You approach the lights without caution, only to find they are a trap set by a mischievous fae. Caught in a web of illusions, you lose valuable time and resources while struggling to escape their clutches.
+
+
+### Quest 4: The Withering Grove
+
+**Objective:** Help a group of cursed trees regain their vitality by gathering the essence of nearby flowers.
+
+**Success:** By skillfully gathering the essence and delivering it to the grove, you watch as the trees bloom once more, restoring life to the Test Zone. The forest spirits reward you with a boon, enhancing your abilities in nature-based magic.
+
+**Failure:** You misjudge the potion needed to revive the trees, inadvertently causing them to wither further. The forest reacts in fury, sending blights to attack you, forcing you into a desperate battle for survival.
+
+
+### Quest 5: The Hunter’s Moon
+
+**Objective:** Survive the night during the Hunter’s Moon, when beasts become unusually aggressive.
+
+**Success:** You set traps and create a barricade, fending off the creatures that stalk the forest. As dawn breaks, you stand victorious, earning respect from the local inhabitants who regard you as a protector of the realm.
+
+**Failure:** You underestimate the ferocity of the beasts and are caught off-guard. Overwhelmed, you suffer injuries that leave you vulnerable, and your reputation takes a hit, causing the locals to view you with suspicion.
+
+Process finished with exit code 0

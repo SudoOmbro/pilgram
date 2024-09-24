@@ -61,7 +61,7 @@ def run_generator_manager(database: PilgramDatabase):
         database,
         ChatGPTGenerator(ChatGPTAPI(
             GlobalSettings.get("ChatGPT token"),
-            "gpt-3.5-turbo"
+            "gpt-4o-mini"
         ))
     )
     while True:

@@ -23,6 +23,7 @@ from AI.utils import (
     remove_leading_numbers,
 )
 from pilgram.classes import Zone
+from pilgram.combat_classes import Damage
 
 SETTINGS = json.load(open('settings.json'))
 
@@ -33,8 +34,8 @@ def _read_file(filename: str) -> str:
 
 
 class TestChatGPT(unittest.TestCase):
-    ZONE: Zone = Zone(1, "Test zone", 1, "forest at the edge of the city")
-    api_wrapper = ChatGPTAPI(SETTINGS["ChatGPT token"], "gpt-3.5-turbo")
+    ZONE: Zone = Zone(1, "Test zone", 1, "forest at the edge of the city", Damage.get_empty(), Damage.get_empty(), {})
+    api_wrapper = ChatGPTAPI(SETTINGS["ChatGPT token"], "gpt-4o-mini")
     generator: ChatGPTGenerator = ChatGPTGenerator(api_wrapper)
 
     def test_build_messages(self):
@@ -57,17 +58,17 @@ class TestChatGPT(unittest.TestCase):
         print(get_quests_system_prompt(self.ZONE))
         print(get_events_system_prompt(self.ZONE))
 
-    def _test_generate_quests(self):
+    def test_generate_quests(self):
         messages = get_quests_system_prompt(self.ZONE) + build_messages("user", QUESTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
 
-    def _test_generate_events(self):
+    def test_generate_events(self):
         messages = get_events_system_prompt(self.ZONE) + build_messages("user", EVENTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
 
-    def _test_generate_artifacts(self):
+    def test_generate_artifacts(self):
         messages = get_artifacts_system_prompt() + build_messages("user", ARTIFACTS_PROMPT)
         generated_text = self.api_wrapper.create_completion(messages)
         print(generated_text)
