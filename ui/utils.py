@@ -237,6 +237,7 @@ def reconstruct_delimited_arguments(separated_strings: list[str], delimiter: str
 
 
 def get_yes_or_no(user_input: str) -> bool:
+    """ returns True if the input was yes, else returns False """
     processed_user_input = user_input[0].lower()
     if not re.match(YES_NO_REGEX, processed_user_input):
         raise YesNoError()

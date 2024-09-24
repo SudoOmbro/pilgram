@@ -387,12 +387,10 @@ def upgrade_guild(context: UserContext) -> str:
 
 
 def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
-    processed_user_input = user_input[0].lower()
-    if not re.match(YES_NO_REGEX, processed_user_input):
-        return Strings.yes_no_error
+    yes = get_yes_or_no(user_input)
     player = db().get_player_data(context.get("id"))
     context.end_process()
-    if processed_user_input == "n":
+    if not yes:
         return Strings.upgrade_cancelled
     obj = context.get("obj")
     price = context.get("price")
