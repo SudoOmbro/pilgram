@@ -1074,7 +1074,10 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def get_current_anomaly(self) -> Anomaly:
         if "current" not in self.ANOMALY:
-            anomaly_json = read_json_file(self.ANOMALY_FILENAME)
+            try:
+                anomaly_json = read_json_file(self.ANOMALY_FILENAME)
+            except:
+                anomaly_json = {}
             if not anomaly_json:
                 self.ANOMALY["current"] = Anomaly.get_empty()
             else:
