@@ -33,7 +33,6 @@ from pilgram.globals import (
     PLAYER_NAME_REGEX,
     POSITIVE_INTEGER_REGEX,
     SPELL_NAME_REGEX,
-    YES_NO_REGEX,
     ContentMeta,
 )
 from pilgram.spells import SPELLS
@@ -109,11 +108,6 @@ def return_string(context: UserContext, string: str = "") -> str:
     return string
 
 
-def check_self(context: UserContext) -> str:
-    player = get_player(db, context)
-    return str(player)
-
-
 def __get_player_from_name(player_name: str) -> tuple[str | None, Player | None]:
     player_ids: list[int] = db().get_player_ids_from_name_case_insensitive(player_name)
     if len(player_ids) == 0:
@@ -146,14 +140,18 @@ def __get_guild_from_name(guild_name: str) -> tuple[str | None, Guild | None]:
     return None, guild
 
 
-def check_player(context: UserContext, player_name: str) -> str:
-    try:
-        message, player = __get_player_from_name(player_name)
-        if message:
-            return message
+def check_player(context: UserContext, *args) -> str:
+    if len(args) > 0:
+        try:
+            message, player = __get_player_from_name(args[0])
+            if message:
+                return message
+            return str(player)
+        except KeyError:
+            return Strings.named_object_not_exist.format(obj="player", name=args[0])
+    else:
+        player = get_player(db, context)
         return str(player)
-    except KeyError:
-        return Strings.named_object_not_exist.format(obj="player", name=player_name)
 
 
 def check_artifact(context: UserContext, artifact_id_str: str) -> str:
@@ -165,14 +163,21 @@ def check_artifact(context: UserContext, artifact_id_str: str) -> str:
         return Strings.obj_does_not_exist.format(obj="Artifact")
 
 
-def check_guild(context: UserContext, guild_name: str) -> str:
-    try:
-        message, guild = __get_guild_from_name(guild_name)
-        if message:
-            return message
-        return str(guild)
-    except KeyError:
-        return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
+def check_guild(context: UserContext, *args) -> str:
+    if len(args) > 0:
+        try:
+            message, guild = __get_guild_from_name(args[0])
+            if message:
+                return message
+            return str(guild)
+        except KeyError:
+            return Strings.named_object_not_exist.format(obj="guild", name=args[0])
+    else:
+        player = get_player(db, context)
+        if player.guild:
+            return str(player.guild)
+        else:
+            return Strings.not_in_a_guild
 
 
 def check_prices(context: UserContext) -> str:
@@ -185,39 +190,21 @@ def check_prices(context: UserContext) -> str:
     return result
 
 
-def check_my_guild(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-        if player.guild:
-            return str(player.guild)
-        else:
-            return Strings.not_in_a_guild
-    except KeyError:
-        return Strings.no_character_yet
-
-
-def check_guild_mates(context: UserContext) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
+def check_guild_members(context: UserContext, *args) -> str:
+    if len(args) > 0:
+        message, guild = __get_guild_from_name(args[0])
+        if message:
+            return message
+        if guild is None:
+            return Strings.named_object_not_exist.format(obj="guild", name=args[0])
+        members = db().get_guild_members_data(guild)
+        return Strings.show_guild_members.format(name=guild.name, num=len(members)) + Guild.print_members(members)
+    else:
+        player = get_player(db, context)
         if not player.guild:
             return Strings.not_in_a_guild
         members = db().get_guild_members_data(player.guild)
         return Strings.here_are_your_mates.format(num=len(members)) + Guild.print_members(members)
-    except KeyError:
-        return Strings.no_character_yet
-
-
-def check_guild_members(context: UserContext, guild_name: str) -> str:
-    try:
-        message, guild = __get_guild_from_name(guild_name)
-        if message:
-            return message
-        if guild is None:
-            return Strings.named_object_not_exist.format(obj="guild", name=guild_name)
-        members = db().get_guild_members_data(guild)
-        return Strings.show_guild_members.format(name=guild.name, num=len(members)) + Guild.print_members(members)
-    except KeyError:
-        return Strings.no_character_yet
 
 
 def start_character_creation(context: UserContext) -> str:
@@ -1282,22 +1269,21 @@ def __get_player_stats_string(player: Player) -> str:
     return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in perks)}"
 
 
-def check_my_stats(context: UserContext):
-    player = get_player(db, context)
-    return __get_player_stats_string(player)
-
-
-def check_player_stats(context: UserContext, player_name: str) -> str:
-    try:
-        message, player = __get_player_from_name(player_name)
-        if message:
-            return message
+def check_player_stats(context: UserContext, *args) -> str:
+    if len(args) > 0:
+        try:
+            message, player = __get_player_from_name(args[0])
+            if message:
+                return message
+            return __get_player_stats_string(player)
+        except KeyError:
+            return Strings.named_object_not_exist.format(obj="player", name=args[0])
+    else:
+        player = get_player(db, context)
         return __get_player_stats_string(player)
-    except KeyError:
-        return Strings.named_object_not_exist.format(obj="player", name=player_name)
 
 
-def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_str: str):
+def change_vocation(context: UserContext, vocation_id1_str: str, *args):
     try:
         # get player
         player = get_player(db, context)
@@ -1310,6 +1296,10 @@ def change_vocation(context: UserContext, vocation_id1_str: str, vocation_id2_st
         if time_since_last_switch < SWITCH_DELAY:
             return Strings.switched_too_recently.format(hours=(SWITCH_DELAY.total_seconds() - time_since_last_switch.total_seconds()) // 3600)
         # convert strings to ints
+        if len(args) > 0:
+            vocation_id2_str = args[0]
+        else:
+            vocation_id2_str = 1
         vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
         if vocation_ids[0] == vocation_ids[1]:
             return "You can't use 2 of the same vocation!"
@@ -1363,25 +1353,21 @@ def cancel_quest(context: UserContext):
 
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
-        "self": IFW(None, check_self, "Shows your own stats."),
+        "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
         "board": IFW(None, check_board, "Shows the quest board."),
-        "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration if you are on a quest."),
+        "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration."),
         "zone": IFW([integer_arg("Zone number")], check_zone, "Describes a Zone."),
         "enemy": IFW([integer_arg("Zone number")], check_enemy, "Describes an Enemy."),
-        "guild": IFW([guild_arg("Guild")], check_guild, "Shows guild."),
-        "player": IFW([player_arg("player")], check_player, "Shows player stats."),
-        "stats": IFW([player_arg("player")], check_player_stats, "Shows player perks."),
+        "guild": IFW(None, check_guild, "Shows guild (your guild by default).", optional_args=[guild_arg("Guild")]),
+        "stats": IFW(None, check_player_stats, "Shows player perks.", optional_args=[player_arg("Player name")]),
         "artifact": IFW([integer_arg("Artifact number")], check_artifact, "Describes an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
         "my": {
-            "guild": IFW(None, check_my_guild, "Shows your own guild."),
-            "stats": IFW(None, check_my_stats, "Shows your own perks."),
             "auctions": IFW(None, check_my_auctions, "Shows your auctions."),
         },
         "auctions": IFW(None, check_auctions, "Shows all auctions."),
         "auction": IFW([integer_arg("Auction")], check_auction, "Show a specific auction."),
-        "mates": IFW(None, check_guild_mates, "Shows your guild mates"),
-        "members": IFW([guild_arg("Guild")], check_guild_members, "Shows the members of the given guild"),
+        "members": IFW(None, check_guild_members, "Shows the members of the given guild", optional_args=[guild_arg("Guild")]),
         "item": IFW([integer_arg("Item")], check_item, "Shows the specified item stats"),
         "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
@@ -1406,14 +1392,14 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "guild": IFW(None, modify_guild, "Modify your guild (for a price).",),
     },
     "select": {
-        "vocations": IFW([integer_arg("Vocation id 1"), integer_arg("Vocation id 2")], change_vocation, "Select your vocations",)
+        "vocations": IFW([integer_arg("Vocation id")], change_vocation, "Select your vocations", optional_args=[integer_arg("Vocation id")])
     },
     "join": IFW([guild_arg("Guild")], join_guild, "Join guild with the given name."),
     "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([player_arg("player")], kick, "Kicks player from your own guild."),
     "donate": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "gift": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player."),
-    "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=1),
+    "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("spell args", None, None)]),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige."),

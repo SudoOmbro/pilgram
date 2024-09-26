@@ -138,22 +138,23 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
             function: Callable[..., str],
             description: str,
             default_args: dict[str, Any] | None = None,
-            optional_args: int = 0
+            optional_args: list[RegexWithErrorMessage] | None = None
     ):
-        self.number_of_args = (len(args) + optional_args) if (args or (optional_args != 0)) else 0
-        self.args_container: tuple[RegexWithErrorMessage, ...] | None = tuple(args) if args else None
+        self.number_of_args = (len(args)) if args else 0
+        self.required_args_container: tuple[RegexWithErrorMessage, ...] = tuple(args) if args else tuple()
+        self.optional_args_container: tuple[RegexWithErrorMessage, ...] = tuple(optional_args) if optional_args else tuple()
         self.function = function
         self.description = description
         self.default_args = default_args
         if not default_args:
-            if self.number_of_args == 0:
+            if (self.number_of_args == 0) and (not self.optional_args_container):
                 self.run = self.__call_no_args
             elif self.__are_all_arg_regexes_none():
                 self.run = self.__call_with_args_no_check
             else:
                 self.run = self.__call_with_args_and_check
         else:
-            if self.number_of_args == 0:
+            if (self.number_of_args == 0) and (not self.optional_args_container):
                 self.run = self.__call_no_args_da
             elif self.__are_all_arg_regexes_none():
                 self.run = self.__call_with_args_no_check_da
@@ -161,33 +162,47 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
                 self.run = self.__call_with_args_and_check_da
 
     def __are_all_arg_regexes_none(self) -> bool:
-        for arg in self.args_container:
+        if not self.required_args_container:
+            return True
+        for arg in self.required_args_container:
             if arg.regex is not None:
                 return False
         return True
 
     def generate_help_args_string(self) -> str:
         result: str = ""
-        if not self.args_container:
-            return ""
-        for arg in self.args_container:
+        for arg in self.required_args_container:
             result += f"\\[{arg.argument_name}] "
+        for arg in self.optional_args_container:
+            result += f"({arg.argument_name}) "
         return result
 
-    def __check_args(self, args):
-        for (index, arg), arg_container in zip(enumerate(args), self.args_container, strict=False):
+    def __get_args(self, *args) -> tuple[tuple[str, ...], tuple[str, ...]]:
+        required_args = args[:self.number_of_args]
+        optional_args = args[self.number_of_args:]
+        return required_args, optional_args
+
+    @staticmethod
+    def __check_args(container: tuple[RegexWithErrorMessage, ...], *args):
+        for (index, arg), arg_container in zip(enumerate(*args), container, strict=False):
             if arg_container.regex and (not arg_container.check(arg)):
                 raise ArgumentValidationError(arg, arg_container.argument_name, index, arg_container.error_message)
 
+    def __check_required_args(self, args):
+        self.__check_args(self.required_args_container, args)
+
+    def __check_optional_args(self, args):
+        self.__check_args(self.optional_args_container, args)
+
     def __call_with_args_and_check_da(self, context: UserContext, *args) -> str:
         """ call with args and check args validity + use default args """
-        args = args[:self.number_of_args]  # clamp the args to the defined value
-        self.__check_args(args)
+        command_args, optional_args = self.__get_args(*args)
+        self.__check_required_args(command_args)
+        self.__check_optional_args(command_args)
         return self.function(context, *args, **self.default_args)
 
     def __call_with_args_no_check_da(self, context: UserContext, *args) -> str:
         """ call with args and DO NOT check args validity + use default args """
-        args = args[:self.number_of_args]
         return self.function(context, *args, **self.default_args)
 
     def __call_no_args_da(self, context: UserContext, *args) -> str:
@@ -196,13 +211,13 @@ class InterpreterFunctionWrapper:  # maybe import as IFW, this name is a tad too
 
     def __call_with_args_and_check(self, context: UserContext, *args) -> str:
         """ call with args and check args validity """
-        args = args[:self.number_of_args]  # clamp the args to the defined value
-        self.__check_args(args)
+        command_args, optional_args = self.__get_args(*args)
+        self.__check_required_args(command_args)
+        self.__check_optional_args(command_args)
         return self.function(context, *args)
 
     def __call_with_args_no_check(self, context: UserContext, *args) -> str:
         """ call with args and DO NOT check args validity """
-        args = args[:self.number_of_args]
         return self.function(context, *args)
 
     def __call_no_args(self, context: UserContext, *args) -> str:
