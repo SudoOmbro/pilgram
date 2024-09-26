@@ -192,9 +192,7 @@ class PilgramBot(PilgramNotifier):
             # get the commands sent by the user
             command: str = update.message.text
             if command[0] == "/":
-                command = update.message.text.lstrip("/").replace("_", " ") + (
-                    " " + " ".join(c.args) if c.args else ""
-                )
+                command = update.message.text.lstrip("/").replace("_", " ")
             # execute the command
             result = self.interpreter.context_aware_execute(user_context, command)
             if (result is None) or (result == ""):
