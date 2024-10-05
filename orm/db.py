@@ -380,7 +380,7 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.tax
         )
 
-    @cache_sized_ttl_quick(size_limit=400, ttl=3600)
+    @cache_sized_ttl_quick(size_limit=400, ttl=28800)
     def get_guild(self, guild_id: int, calling_player_id: int | None = None) -> Guild:
         try:
             gs = GuildModel.get(GuildModel.id == guild_id)

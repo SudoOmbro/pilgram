@@ -99,7 +99,8 @@ def start_edit_obj_process(context: UserContext, obj_id: int, obj_type: str = "z
             "zone": lambda: db().get_zone(obj_id),
             "quest": lambda: db().get_quest(obj_id),
             "event": lambda: db().get_zone_event(obj_id),
-            "artifact": lambda: db().get_artifact(obj_id)
+            "artifact": lambda: db().get_artifact(obj_id),
+            "enemy": lambda: db().get_enemy_meta(obj_id)
         }.get(obj_type)()
         context.set("type", obj_type)
         context.set("obj", target_object)
@@ -179,7 +180,8 @@ def process_obj_add_confirm(context: UserContext, user_input: str) -> str:
             "zone": lambda: db().add_zone(obj),
             "quest": lambda: db().add_quest(obj),
             "event": lambda: db().add_zone_event(obj),
-            "artifact": lambda: db().add_artifact(obj)
+            "artifact": lambda: db().add_artifact(obj),
+            "enemy": lambda: db().add_enemy_meta(obj)
         }.get(obj_type)
         func()
         context.end_process()
@@ -198,7 +200,8 @@ def process_obj_edit_confirm(context: UserContext, user_input: str) -> str:
             "zone": lambda: db().update_zone(obj),
             "quest": lambda: db().update_quest(obj),
             "event": lambda: db().update_zone_event(obj),
-            "artifact": lambda: db().update_artifact(obj, None)
+            "artifact": lambda: db().update_artifact(obj, None),
+            "enemy": lambda: db().update_enemy_meta(obj)
         }.get(obj_type)
         func()
         context.end_process()
