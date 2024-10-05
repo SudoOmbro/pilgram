@@ -56,7 +56,7 @@ class Strings:
     not_on_a_quest = "You are not on a quest!"
     quest_embark = "You have embarked on the quest:\n\n{quest}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
-    reappear = f"An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
+    reappear = f"An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken.\n\nYou lose {{money}} {MONEY}"
     quest_fail = "\n\nYou have failed to complete the quest '*{name}*'. " + reappear
     quest_roll = "(You rolled {roll}, Value to beat: {target})"
 
