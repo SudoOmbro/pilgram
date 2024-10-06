@@ -385,7 +385,7 @@ class QuestManager(Manager):
                 text += "\n\nBy the grace of the God Emperor you are revived & continue your quest."
             else:
                 lost_money: int = int(player.money * 0.1)
-                text += Strings.quest_fail.format(name=ac.quest.name, money=lost_money)
+                text += (Strings.quest_fail + Strings.lose_money).format(name=ac.quest.name, money=lost_money)
                 ac.quest = None
                 player.money -= lost_money  # lose 10% of money on death
                 player.hp_percent = 1.0
