@@ -1947,6 +1947,26 @@
       "occult": 20
     },
     "value": 100
+  }, {
+    "id": 82,
+    "name": "High heels",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "acid": 5
+    },
+    "value": 20
+  }, {
+    "id": 83,
+    "name": "Shoes",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1
+    },
+    "value": 5
   }],
   "consumables": [{
     "id": 0,

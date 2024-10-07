@@ -198,12 +198,14 @@ def check_guild_members(context: UserContext, *args) -> str:
         if guild is None:
             return Strings.named_object_not_exist.format(obj="guild", name=args[0])
         members = db().get_guild_members_data(guild)
+        members.sort(key=lambda entry: entry[2], reverse=True)
         return Strings.show_guild_members.format(name=guild.name, num=len(members)) + Guild.print_members(members)
     else:
         player = get_player(db, context)
         if not player.guild:
             return Strings.not_in_a_guild
         members = db().get_guild_members_data(player.guild)
+        members.sort(key=lambda entry: entry[2], reverse=True)
         return Strings.here_are_your_mates.format(num=len(members)) + Guild.print_members(members)
 
 

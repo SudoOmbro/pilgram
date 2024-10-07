@@ -170,6 +170,9 @@ class QuestManager(Manager):
                 xp = int(xp * anomaly.xp_mult)
                 money = int(money * anomaly.money_mult)
             renown = quest.get_prestige() * 200
+            xp_am = player.add_xp(xp)  # am = after modifiers
+            money_am = player.add_money(money)  # am = after modifiers
+            # pay taxes if player is in a guild
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
                 guild.prestige += quest.get_prestige()
@@ -183,18 +186,19 @@ class QuestManager(Manager):
                         guild.founder.player_id
                     )  # get most up-to-date object
                     tax = guild.tax / 100
-                    amount = int(money * tax)
+                    amount = int(money_am * tax)
                     amount_am = founder.add_money(amount)  # am = after modifiers
                     self.db().update_player_data(founder)
                     self.db().create_and_add_notification(
                         founder,
                         Strings.tax_gain.format(amount=amount_am, name=player.name),
                     )
-                    money -= amount
-            xp_am = player.add_xp(xp)  # am = after modifiers
-            money_am = player.add_money(money)  # am = after modifiers
+                    player.money -= amount
+                    money_am -= amount
+            # add to completed quests & add renown
             player.completed_quests += 1
             player.renown += renown
+            # get artifact piece if lucky
             piece: bool = False
             if random.randint(1, 10) < (
                 3 + player.vocation.artifact_drop_bonus + (anomaly.artifact_drop_bonus if ac.zone() == anomaly.zone else 0)
