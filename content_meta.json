@@ -1906,6 +1906,47 @@
       "blunt": 8
     },
     "value": 100
+  }, {
+    "id": 78,
+    "name": "Sandals",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 1
+    },
+    "value": 5
+  }, {
+    "id": 79,
+    "name": "Tiara",
+    "slot": "head",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 4
+    },
+    "value": 30
+  }, {
+    "id": 80,
+    "name": "Slippers",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 1,
+      "freeze": 1
+    },
+    "value": 8
+  }, {
+    "id": 81,
+    "name": "Ouroboros paired rings",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 20
+    },
+    "value": 100
   }],
   "consumables": [{
     "id": 0,
