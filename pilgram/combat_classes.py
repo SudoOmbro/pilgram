@@ -445,7 +445,7 @@ class CombatContainer:
         for modifier in attacker.get_modifiers(m.ModifierType.MID_ATTACK):
             new_damage = modifier.apply(
                 self.get_mod_context(
-                    {"damage": damage, "attacker": attacker, "target": target}
+                    {"damage": damage, "attacker": attacker, "target": target, "turn": self.turn}
                 )
             )
             if new_damage is not None:
@@ -453,7 +453,7 @@ class CombatContainer:
         for modifier in target.get_modifiers(m.ModifierType.MID_DEFEND):
             new_damage = modifier.apply(
                 self.get_mod_context(
-                    {"damage": damage, "attacker": attacker, "target": target}
+                    {"damage": damage, "attacker": attacker, "target": target, "turn": self.turn}
                 )
             )
             if new_damage is not None:
@@ -560,7 +560,7 @@ class CombatContainer:
                         else:
                             self._attack(actor, opponents[i])
                 elif action_id == CombatActions.lick_wounds:
-                    hp_restored = 1 + actor.get_level()
+                    hp_restored = (1 + actor.get_level()) * 2
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
                     self.write_to_log(
                         f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()})."

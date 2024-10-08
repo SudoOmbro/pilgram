@@ -11,18 +11,18 @@ from pilgram.strings import Strings
 
 
 class ModifierType:
-    COMBAT_START = 0
-    PRE_ATTACK = 1
-    PRE_DEFEND = 2
-    MID_ATTACK = 3
-    MID_DEFEND = 4
-    POST_ATTACK = 5
-    POST_DEFEND = 6
-    REWARDS = 7
-    MODIFY_MAX_HP = 8
-    TURN_START = 9
-    STAMINA_REGEN = 10
-    ON_DEATH = 11
+    COMBAT_START = 0  # applied at the start of the combat
+    PRE_ATTACK = 1  # applied when the attacker starts to attack
+    PRE_DEFEND = 2  # applied when the target starts to defend
+    MID_ATTACK = 3  # applied just before inflicting the damage
+    MID_DEFEND = 4  # applied just before the damage is inflicted
+    POST_ATTACK = 5  # applied after the damage is inflicted
+    POST_DEFEND = 6  # applied just after the damage was inflicted
+    REWARDS = 7  # applied at combat end, during the reward phase
+    MODIFY_MAX_HP = 8  # modify max hp
+    TURN_START = 9  # applied at the start of the turn
+    STAMINA_REGEN = 10  # applied during the stamina regen phase
+    ON_DEATH = 11  # applied on death
 
 
 class Rarity:
@@ -948,35 +948,76 @@ class AdditionalHelper(Modifier, rarity=Rarity.LEGENDARY):
 class StaminaRegenLowHP(Modifier, rarity=Rarity.UNCOMMON):
     TYPE = ModifierType.STAMINA_REGEN
 
-    MAX_STRENGTH = 2
-    MIN_STRENGTH = 1.1
-    SCALING = 0.05
+    MAX_STRENGTH = 200
+    MIN_STRENGTH = 110
+    SCALING = 2
 
     NAME = "Adrenaline"
-    DESCRIPTION = "Regenerate {str}% more stamina if you have less than 25% HP."
+    DESCRIPTION = "Regenerate {str}% stamina if you have less than 25% HP."
 
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         if entity.hp_percent <= 0.25:
-            return self.strength
+            return 1 + (self.strength / 100)
         return 1.0
 
 
 class StaminaRegenHighHP(Modifier, rarity=Rarity.UNCOMMON):
     TYPE = ModifierType.STAMINA_REGEN
 
-    MAX_STRENGTH = 1.5
-    MIN_STRENGTH = 1.1
-    SCALING = 0.01
+    MAX_STRENGTH = 150
+    MIN_STRENGTH = 110
+    SCALING = 1
 
     NAME = "Momentum"
-    DESCRIPTION = "Regenerate {str}% more stamina if you have more than 75% HP."
+    DESCRIPTION = "Regenerate {str}% stamina if you have more than 75% HP."
 
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
         if entity.hp_percent >= 0.75:
-            return self.strength
+            return 1 + (self.strength / 100)
         return 1.0
+
+
+class Flinching(Modifier, rarity=Rarity.UNCOMMON):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 50
+    MIN_STRENGTH = 10
+    SCALING = 2
+
+    NAME = "Flinching"
+    DESCRIPTION = "{str}% chance of flinching the target on attack (next attack 50% damage)."
+
+    class FlinchedEffect(Modifier):
+        TYPE = ModifierType.PRE_ATTACK
+
+        def function(self, context: ModifierContext) -> Any:
+            damage: cc.Damage = context.get("damage")
+            return damage.scale(0.5)
+
+    def function(self, context: ModifierContext) -> Any:
+        target: cc.CombatActor = context.get("other")
+        if random.random() < (self.strength / 100):
+            target.timed_modifiers.append(self.FlinchedEffect(0, duration=1))
+            self.write_to_log(context, f"{target.get_name()} flinches!")
+        return context.get("damage")
+
+
+class CommandingPresence(Modifier, rarity=Rarity.RARE):
+    TYPE = ModifierType.MID_ATTACK
+
+    MAX_STRENGTH = 5
+    MIN_STRENGTH = 1
+    SCALING = 20
+
+    NAME = "Commanding Presence"
+    DESCRIPTION = "Increase attack by {str}% every turn"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        turn: int = context.get("turn")
+        return damage.scale(1 + ((self.strength / 100) * turn))
 
 
 print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
