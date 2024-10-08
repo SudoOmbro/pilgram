@@ -37,7 +37,7 @@ from pilgram.globals import (
 )
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
-from pilgram.utils import read_text_file, read_update_interval
+from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name
 from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg, get_yes_or_no, get_player
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
@@ -1353,6 +1353,22 @@ def cancel_quest(context: UserContext):
     return Strings.quest_canceled
 
 
+def sacrifice(context: UserContext):
+    player = get_player(db, context)
+    if player.hp_percent < 0.80:
+        return "Your HP is too low!"
+    if not db().is_player_on_a_quest(player):
+        return "You can't sacrifice in town!"
+    eldritch_truth = ""
+    for _ in range(random.randint(5, 10)):
+        eldritch_truth += f"{generate_random_eldritch_name()} "
+    player.hp_percent -= 0.75
+    amount: int = int((player.get_max_hp() * 0.2) * player.level)
+    amount_am = player.add_xp(amount)
+    db().update_player_data(player)
+    return f"You stab yourself with your ritual knife. Some eldritch truth is revealed to you:\n\n_{eldritch_truth}_\n\nYou gain {amount_am} XP."
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1374,6 +1390,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
     },
+    "sacrifice": IFW(None, sacrifice, "Sacrifice 50% of HP for XP."),
     "cancel": {
         "quest": IFW(None, cancel_quest, "Cancels the current quest.")
     },
