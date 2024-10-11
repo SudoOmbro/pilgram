@@ -139,6 +139,7 @@ class QuestManager(Manager):
         shade: Player = deepcopy(player)
         shade.name = player.name + "'s Shade"
         shade.hp_percent = 1.0
+        shade.team = 1
         # limit the amount of items a shade can have to 3 + No consumables
         while len(list(shade.equipped_items.values())) > 3:
             key = random.choice(list(shade.equipped_items.keys()))

@@ -18,7 +18,7 @@ from pilgram.classes import Player, Notification
 from pilgram.generics import PilgramNotifier
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.utils import TempIntCache, has_recently_accessed_cache, read_text_file
-from ui.functions import USER_COMMANDS, USER_PROCESSES
+from ui.functions import USER_COMMANDS, USER_PROCESSES, ALIASES
 from ui.interpreter import CLIInterpreter
 from ui.utils import UserContext
 
@@ -109,7 +109,10 @@ class PilgramBot(PilgramNotifier):
     def __init__(self, bot_token: str):
         self.__token: str = bot_token
         self.interpreter = CLIInterpreter(
-            USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n"
+            USER_COMMANDS,
+            USER_PROCESSES,
+            help_formatting="`{c}`{a}- _{d}_\n\n",
+            aliases=ALIASES
         )
         self.__app = ApplicationBuilder().token(bot_token).build()
         self.__app.add_handler(CommandHandler("start", start))

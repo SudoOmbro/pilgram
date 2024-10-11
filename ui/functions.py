@@ -1236,7 +1236,7 @@ def __get_player_stats_string(player: Player) -> str:
     elif AlloyGlitchFlag1.is_set(player.flags):
         string += "\n\nAlloy Glitch (1): x1.5 BA multiplier"
     if LuckFlag2.is_set(player.flags):
-        string += "\n\nBlessed (2): +2 to quest rolls."
+        string += "\n\nBlessed (2): +3 to quest rolls."
     elif LuckFlag1.is_set(player.flags):
         string += "\n\nBlessed (1): +1 to quest rolls."
     if StrengthBuff.is_set(player.flags):
@@ -1369,6 +1369,24 @@ def sacrifice(context: UserContext):
     return f"You stab yourself with your ritual knife. Some eldritch truth is revealed to you:\n\n_{eldritch_truth}_\n\nYou gain {amount_am} XP."
 
 
+def start_raid(context: UserContext, zone_id: int):
+    player = get_player(db, context)
+    # do basic checks
+    guild = db().get_owned_guild(player)
+    if not guild:
+        return "You have to own a guild to start a raid!"
+    if db().is_player_on_a_quest(player):
+        return "You can't start a raid while on a quest!"
+    guild_members_data = db().get_guild_members_data(guild)
+    # get guild members available for the raid
+    available_members: list[Player] = []
+    for member_id, _, _ in guild_members_data:
+        member = db().get_player_data(member_id)
+        if not db().is_player_on_a_quest(member):
+            available_members.append(member)
+    return "Coming soon :)"
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1390,7 +1408,8 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
     },
-    "sacrifice": IFW(None, sacrifice, "Sacrifice 50% of HP for XP."),
+    "sacrifice": IFW(None, sacrifice, "Sacrifice 75% of HP for XP."),
+    "raid": IFW([integer_arg("Zone number")], start_raid, "Start a raid with your guild members"),
     "cancel": {
         "quest": IFW(None, cancel_quest, "Cancels the current quest.")
     },
@@ -1501,4 +1520,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     "sell confirm": (
         ("confirm", process_sell_confirm),
     ),
+}
+
+ALIASES: dict[str, str] = {
+    "check self": "check player",
+    "check mates": "check members"
 }

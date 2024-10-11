@@ -42,7 +42,8 @@ class CLIInterpreter:
             self,
             commands_dict: dict[str, str | IFW],
             processes: dict[str, tuple[tuple[str, Callable], ...]],
-            help_formatting: str | None = None
+            help_formatting: str | None = None,
+            aliases: dict[str, str] = None
     ):
         self.commands_dict = commands_dict
         self.processes = processes
@@ -58,6 +59,11 @@ class CLIInterpreter:
             )
         self.commands_list: list[tuple[str, int, str]] = []
         populate_sc_commands_list(self.commands_list, self.commands_dict, "")
+        # init aliases
+        if aliases is None:
+            self.aliases = {}
+        else:
+            self.aliases = aliases
 
     @cache
     def __help(self, formatting: str) -> str:
@@ -90,6 +96,8 @@ class CLIInterpreter:
 
     def context_aware_execute(self, user: UserContext, user_input: str) -> str:
         """ parses and elaborates the given user input and returns the output. """
+        if user_input.lower() in self.aliases:
+            user_input = self.aliases[user_input]
         try:
             if user.is_in_a_process():
                 return self.processes[user.get_process_name()][user.get_process_step()][1](user, user_input)

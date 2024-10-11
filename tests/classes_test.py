@@ -177,7 +177,19 @@ class TestClasses(unittest.TestCase):
         # use to test PvP
         enemy_player = deepcopy(player)
         enemy_player.name = "Liquid Ombro"
+        enemy_player.team = 1
+        # used to test multiple actor combat
+        player2 = Player.create_default(1, "Ciro Esposito", "")
+        player2.level = 10
+        player2.gear_level = 60
+        player2.equip_item(
+            _generate_equipment(
+                player2,
+                EquipmentType.get(0),  # Longsword
+                []
+            )
+        )
         # create & do fight
-        combat = CombatContainer([player, enemy], {player: None, enemy: None})
+        combat = CombatContainer([player, player2, enemy, enemy_player], {player: None, enemy: None})
         result = combat.fight()
         print(result)

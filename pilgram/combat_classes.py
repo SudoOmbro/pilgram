@@ -240,11 +240,12 @@ class Damage:
 
 
 class CombatActor(ABC):
-    def __init__(self, hp_percent: float) -> None:
+    def __init__(self, hp_percent: float, team: int) -> None:
         self.hp_percent = hp_percent  # used out of fights
         self.hp: int = int(self.get_max_hp() * hp_percent)  # only used during fights
         # list of timed modifiers inflicted on the CombatActor
         self.timed_modifiers: list[m.Modifier] = []
+        self.team = team
 
     def get_name(self) -> str:
         """returns the name of the entity"""
@@ -384,6 +385,7 @@ class CombatContainer:
         self.stamina: dict[CombatActor, float] = {}
         self._reset_damage_and_resist_scales()
         self.turn = 0
+        self.death_was_notified: list[CombatActor] = []
 
     def _reset_damage_and_resist_scales(self) -> None:
         for actor in self.participants:
@@ -404,10 +406,15 @@ class CombatContainer:
         return m.ModifierContext(context)
 
     def _start_combat(self) -> None:
+        teams: dict[int, list[CombatActor]] = {}
+        for actor in self.participants:
+            if actor.team not in teams:
+                teams[actor.team] = []
+            teams[actor.team].append(actor)
         self.combat_log = (
             "*"
             + " vs ".join(
-                f"{x.get_name()} (lv. {x.get_level()})" for x in self.participants
+                " & ".join(f"{x.get_name()} (lv. {x.get_level()})" for x in team) for team in teams.values()
             )
             + "*"
         )
@@ -479,6 +486,7 @@ class CombatContainer:
             )
 
     def _try_revive(self, actor: CombatActor, opponent: CombatActor) -> bool:
+        """ return true if the actor manages to revive, otherwise false """
         # first try to see the actor has any modifiers that revive him
         for modifier in actor.get_modifiers(m.ModifierType.ON_DEATH):
             modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponent, "turn": self.turn}))
@@ -498,7 +506,30 @@ class CombatContainer:
                     f"{actor.get_name()} {text}, they are revived! ({actor.get_hp_string()})"
                 )
                 return True
-            return False
+        return False
+
+    def get_alive_actors(self) -> list[CombatActor]:
+        result: list[CombatActor] = []
+        for participant in self.participants:
+            if not participant.is_dead():
+                result.append(participant)
+        # self.write_to_log("alive actors: " + ", ".join(x.get_name() for x in result))
+        return result
+
+    def choose_attack_target(self, attacker: CombatActor) -> CombatActor | None:
+        temp_participants = self.get_alive_actors()
+        random.shuffle(temp_participants)
+        for participant in temp_participants:
+            if participant.team != attacker.team:
+                return participant
+        return None
+
+    def is_fight_over(self) -> bool:
+        teams: list[int] = []
+        for participant in self.get_alive_actors():
+            if participant.team not in teams:
+                teams.append(participant.team)
+        return len(teams) == 1
 
     def fight(self) -> str:
         """simulate combat between players and enemies. Return battle report in a string."""
@@ -509,33 +540,33 @@ class CombatContainer:
             self.write_to_log("")
             # sort participants based on what they rolled on initiative
             self.participants.sort(key=lambda a: a.get_initiative())
-            # get opponents by copying & reversing the participant list
-            opponents = copy(self.participants)
-            opponents.reverse()
             # choose & perform actions
-            for i, actor in enumerate(self.participants):
+            for actor in self.participants:
+                opponent = self.choose_attack_target(actor)
                 if actor.is_dead():
-                    if not self._try_revive(actor, opponents[i]):
+                    if not self._try_revive(actor, opponent):
                         continue
+                if not opponent:
+                    continue
                 for modifier in actor.get_modifiers(m.ModifierType.TURN_START):
-                    modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponents[i], "turn": self.turn}))
+                    modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponent, "turn": self.turn}))
                 if actor.is_dead():
                     # the actor may also die here since poison or other effects might be applied
-                    if not self._try_revive(actor, opponents[i]):
+                    if not self._try_revive(actor, opponent):
                         continue
                 # only do something if the actor has full stamina
-                self.regenerate_stamina(actor, opponents[i])
+                self.regenerate_stamina(actor, opponent)
                 if not self.stamina[actor] >= 1.0:
                     action_id = CombatActions.catch_breath
                 else:
-                    action_id = actor.choose_action(opponents[i])
+                    action_id = actor.choose_action(opponent)
                 # actually do stuff
                 if action_id == CombatActions.attack:
-                    self._attack(actor, opponents[i])
+                    self._attack(actor, opponent)
                 elif action_id == CombatActions.dodge:
                     if self.resist_scale[actor] < 1.0:
                         # if actor is already dodging then attack
-                        self._attack(actor, opponents[i])
+                        self._attack(actor, opponent)
                     else:
                         # if actor isn't already dodging then dodge
                         factor = actor.get_delay() / 100
@@ -558,7 +589,7 @@ class CombatContainer:
                                 f"{actor.get_name()} {text}. ({actor.get_hp_string()})"
                             )
                         else:
-                            self._attack(actor, opponents[i])
+                            self._attack(actor, opponent)
                 elif action_id == CombatActions.lick_wounds:
                     hp_restored = (1 + actor.get_level()) * 2
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
@@ -568,19 +599,21 @@ class CombatContainer:
                 elif action_id == CombatActions.catch_breath:
                     self.write_to_log(f"{actor.get_name()} is recovering ({int(self.stamina[actor] * 100)}%)")
                 # use helpers
-                if self.helpers[actor] and (
-                    random.randint(1, 5) == 1
-                ):  # 20% chance of helper intervention
+                if (actor in self.helpers) and self.helpers[actor] and (random.randint(1, 5) == 1):  # 20% chance of helper intervention
                     helper = self.helpers[actor]
                     damage = int(helper.get_level() * (1 + random.random()))
-                    opponents[i].modify_hp(-damage)
+                    opponent.modify_hp(-damage)
                     self.write_to_log(
-                        f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} dmg to {opponents[i].get_name()}."
+                        f"{helper.get_name()} helps {actor.get_name()} by dealing {damage} dmg to {opponent.get_name()}."
                     )
-            for i, actor in enumerate(self.participants):
+            for actor in self.participants:
                 if actor.is_dead():
-                    if not self._try_revive(actor, opponents[i]):
-                        is_fight_over = True
-                        self.write_to_log(f"\n{opponents[i].get_name()} wins.")
+                    opponent = self.choose_attack_target(actor)
+                    if not self._try_revive(actor, opponent):
+                        if actor not in self.death_was_notified:
+                            self.write_to_log(f"\n{actor.get_name()} died.")
+                            self.death_was_notified.append(actor)
+                    is_fight_over = self.is_fight_over()
+        self.write_to_log(f"\n{" & ".join(x.get_name() for x in self.get_alive_actors())} won.")
         self._cleanup_after_combat()
         return self.combat_log

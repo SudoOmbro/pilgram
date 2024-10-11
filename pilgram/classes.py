@@ -496,7 +496,7 @@ class Player(CombatActor):
         self.equip_vocations(vocations)
         self.satchel = satchel
         self.equipped_items = equipped_items
-        super().__init__(hp_percent)
+        super().__init__(hp_percent, 0)
         self.stance = stance
         self.completed_quests = completed_quests
         self.last_guild_switch = last_guild_switch
@@ -1628,7 +1628,7 @@ class Enemy(CombatActor):
         self.level_modifier = level_modifier + random.randint(-5, 2)
         self.delay = 7 + meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
         self.stance = self.meta.zone.extra_data.get("stance", "r")
-        super().__init__(1.0)
+        super().__init__(1.0, 1)
 
     def roll(self, dice_faces: int) -> int:
         return random.randint(1, dice_faces)
