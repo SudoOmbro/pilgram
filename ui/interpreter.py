@@ -97,7 +97,7 @@ class CLIInterpreter:
     def context_aware_execute(self, user: UserContext, user_input: str) -> str:
         """ parses and elaborates the given user input and returns the output. """
         if user_input.lower() in self.aliases:
-            user_input = self.aliases[user_input]
+            user_input = self.aliases[user_input.lower()]
         try:
             if user.is_in_a_process():
                 return self.processes[user.get_process_name()][user.get_process_step()][1](user, user_input)
