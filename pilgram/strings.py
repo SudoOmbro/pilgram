@@ -73,6 +73,9 @@ class Strings:
     guild_not_owned = "You don't own a guild!"
     no_guild_yet = "You haven't created a guild yet!"
     tax_gain = f"You gained {{amount}} {MONEY} from guild taxes on {{name}} completing a quest."
+    bank_not_enough_money = "Your guild's bank doesn't have enough money"
+    withdrawal_successful = f"You successfully withdrew {{amm}} {MONEY} from the bank."
+    no_logs = "Your guild has no transactions recorded"
 
     # messages
     write_your_message = "Write the message you want to send"

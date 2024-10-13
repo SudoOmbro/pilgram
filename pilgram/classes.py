@@ -44,8 +44,10 @@ from pilgram.strings import MONEY, Strings
 from pilgram.utils import (
     FuncWithParam,
     print_bonus,
+    read_text_file,
     read_json_file,
     read_update_interval,
+    save_text_to_file,
     save_json_to_file,
 )
 
@@ -930,6 +932,7 @@ class Guild:
         prestige: int,
         tourney_score: int,
         tax: int,
+        bank: int
     ) -> None:
         """
         :param guild_id: unique id of the guild
@@ -941,6 +944,7 @@ class Guild:
         :param prestige: the amount of prestige the guild has
         :param tourney_score: the score of the bi-weekly tournament the guild has
         :param tax: how much the quest rewards are taxed by the guild
+        :param bank: the guild's bank
         """
         self.guild_id = guild_id
         self.name = name
@@ -951,12 +955,34 @@ class Guild:
         self.prestige = prestige
         self.tourney_score = tourney_score
         self.tax = tax
+        self.bank = bank
 
     def get_max_members(self) -> int:
         value = self.level * self.PLAYERS_PER_LEVEL
         if value > self.MAX_PLAYERS:
             return self.MAX_PLAYERS
         return value
+
+    def get_bank_logs_data(self) -> str:
+        file_path = f"pilgram/bank_logs/{self.guild_id}.txt"
+        try:
+            data = read_text_file(file_path)
+            if data:
+                return data
+            else:
+                return Strings.no_logs
+        except FileNotFoundError:
+            save_text_to_file(file_path, '') # create the file
+            return Strings.no_logs
+
+    def create_bank_log(self, log_type: str, player_id: int, amount: int):
+        file_path = f"pilgram/bank_logs/{self.guild_id}.txt"
+        data = self.get_bank_logs_data()
+        if data == Strings.no_logs:
+            data = ''
+        new_data = data + '{"transaction": "' + log_type + '", "by": ' + str(player_id) + ', "amount": ' + str(amount) + '}\n' # ugly
+        save_text_to_file(file_path, new_data)
+        return new_data
 
     def can_add_member(self, current_members: int) -> bool:
         return current_members < self.get_max_members()
@@ -978,13 +1004,13 @@ class Guild:
 
     def __str__(self) -> str:
         return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: {self.founder.print_username() if self.founder else '???'}\n_Since {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}\n\n_Tax: {self.tax}%\nTourney score: {self.tourney_score}_"
-
+    
     def __hash__(self) -> int:
         return hash(self.guild_id)
 
     @classmethod
     def create_default(cls, founder: Player, name: str, description: str) -> Guild:
-        return Guild(0, name, 1, description, founder, datetime.now(), 0, 0, 5)
+        return Guild(0, name, 1, description, founder, datetime.now(), 0, 0, 5, 0)
 
     @classmethod
     def print_members(cls, members: list[tuple[int, str, int]]) -> str:
