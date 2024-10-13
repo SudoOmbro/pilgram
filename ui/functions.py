@@ -579,11 +579,11 @@ def process_transactions(data):
                 deposits.append(data)
         except json.JSONDecodeError as e:
             return Strings.no_logs # there might actually be something deeper going on
-    message = "Last 5 withdrawals:\n"
+    message = "Last 10 withdrawals:\n"
     for withdrawal in withdrawals:
             withdrawer = db().get_player_data(withdrawal['by']) # if the player withdrawed he must exist
             message += f"{withdrawal['amount']} {MONEY} ➡️ {withdrawer.name}\n"
-    message += "\nLast 5 deposits:\n"
+    message += "\nLast 10 deposits:\n"
     for deposit in deposits:
             depositer = db().get_player_data(deposit['by']) # if the player deposited he must exist
             message += f"{depositer.name} ➡️ {deposit['amount']} {MONEY}\n"
