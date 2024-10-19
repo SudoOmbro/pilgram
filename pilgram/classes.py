@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 import math
 import os
@@ -963,8 +964,12 @@ class Guild:
             return self.MAX_PLAYERS
         return value
 
+    def get_bank_logs_file_path(self):
+        # we should separate data layer & control layer but eh, it's fine for this for now.
+        return f"bank_logs/{self.guild_id}.txt"
+
     def get_bank_logs_data(self) -> str:
-        file_path = f"pilgram/bank_logs/{self.guild_id}.txt"
+        file_path = self.get_bank_logs_file_path()
         try:
             data = read_text_file(file_path)
             if data:
@@ -972,15 +977,15 @@ class Guild:
             else:
                 return Strings.no_logs
         except FileNotFoundError:
-            save_text_to_file(file_path, '') # create the file
+            save_text_to_file(file_path, '')  # create the file
             return Strings.no_logs
 
     def create_bank_log(self, log_type: str, player_id: int, amount: int):
-        file_path = f"pilgram/bank_logs/{self.guild_id}.txt"
+        file_path = self.get_bank_logs_file_path()
         data = self.get_bank_logs_data()
         if data == Strings.no_logs:
             data = ''
-        new_data = data + '{"transaction": "' + log_type + '", "by": ' + str(player_id) + ', "amount": ' + str(amount) + '}\n' # ugly
+        new_data = data + json.dumps({"transaction": log_type, "by": player_id, "amount": amount}) + "\n"
         save_text_to_file(file_path, new_data)
         return new_data
 

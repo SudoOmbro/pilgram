@@ -517,8 +517,7 @@ class LuckyHit(Modifier, rarity=Rarity.UNCOMMON):
 
     def function(self, context: ModifierContext) -> Any:
         damage: cc.Damage = context.get("damage")
-        attacker: cc.CombatActor = context.get("supplier")
-        if attacker.roll(10) > 8:
+        if random.randint(1, 10) > 8:
             scale = self.get_fstrength()
             self.write_to_log(context, "Lucky Hit!")
             return damage.scale(scale)
