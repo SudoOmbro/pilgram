@@ -1,7 +1,9 @@
 import logging
 import random
 import re
+import json
 from collections.abc import Callable
+from collections import deque
 from copy import copy
 from datetime import datetime, timedelta
 from functools import cache
@@ -37,7 +39,7 @@ from pilgram.globals import (
 )
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
-from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name
+from pilgram.utils import read_text_file, save_text_to_file, read_update_interval, generate_random_eldritch_name
 from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg, get_yes_or_no, get_player
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
@@ -175,7 +177,7 @@ def check_guild(context: UserContext, *args) -> str:
     else:
         player = get_player(db, context)
         if player.guild:
-            return str(player.guild)
+            return str(player.guild) + f"\n\n_Bank: {player.guild.bank} {MONEY}_"
         else:
             return Strings.not_in_a_guild
 
@@ -542,6 +544,56 @@ def donate(context: UserContext, recipient_name: str, amount_str: str) -> str:
     log.info(f"player '{player.name}' donated {amount} to '{recipient_name}'")
     return Strings.donation_successful.format(amm=amount_str, rec=recipient_name)
 
+
+def withdraw(context: UserContext, amount_str: str) -> str:
+    player = get_player(db, context)
+    amount: int = int(amount_str)
+    guild = db().get_owned_guild(player)
+    if not guild:
+        return Strings.guild_not_owned
+    if amount <= 0:
+        return Strings.invalid_money_amount
+    if guild.bank < amount:
+        return Strings.bank_not_enough_money
+    # update money
+    player.money += amount
+    db().update_player_data(player)
+    # update bank's money
+    guild.bank -= amount
+    db().update_guild(guild)
+    # create a log
+    guild.create_bank_log("withdrawal", player.player_id, amount)
+    return Strings.withdrawal_successful.format(amm=amount_str)
+
+
+def process_transactions(data):
+    withdrawals = deque(maxlen=10)
+    deposits = deque(maxlen=10)
+    transactions = data.strip().split('\n')
+    for transaction in transactions:
+        try:
+            data = json.loads(transaction)
+            if data["transaction"] == "withdrawal":
+                withdrawals.append(data)
+            elif data["transaction"] == "deposit":
+                deposits.append(data)
+        except json.JSONDecodeError as e:
+            return Strings.no_logs # there might actually be something deeper going on
+    message = "Last 10 withdrawals:\n"
+    for withdrawal in withdrawals:
+            withdrawer = db().get_player_data(withdrawal['by']) # if the player withdrawed he must exist
+            message += f"{withdrawal['amount']} {MONEY} ➡️ {withdrawer.name}\n"
+    message += "\nLast 10 deposits:\n"
+    for deposit in deposits:
+            depositer = db().get_player_data(deposit['by']) # if the player deposited he must exist
+            message += f"{depositer.name} ➡️ {deposit['amount']} {MONEY}\n"
+    return message
+
+
+def check_bank_logs(context: UserContext) -> str:
+    player = get_player(db, context)
+    guild = player.guild
+    return process_transactions(guild.get_bank_logs_data())
 
 def rank_guilds(context: UserContext) -> str:
     result = Strings.rank_guilds + "\n"
@@ -1437,6 +1489,8 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "kick": IFW([player_arg("player")], kick, "Kicks player from your own guild."),
     "donate": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
     "gift": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player."),
+    "withdraw": IFW([integer_arg("Amount")], withdraw, "Withdraw from your guild's bank"),
+    "logs": IFW(None, check_bank_logs, "Checks the last 10 withdrawals and deposits from the bank"),
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("spell args", None, None)]),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {

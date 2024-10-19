@@ -42,6 +42,11 @@ def read_text_file(path: str) -> str:
     return Path(path).read_text()
 
 
+def save_text_to_file(path: str, data: str):
+    with open(path, "w") as f:
+        f.write(data)
+
+
 def read_json_file(path: str) -> dict[str, Any]:
     with open(path) as f:
         return json.load(f)

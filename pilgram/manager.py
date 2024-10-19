@@ -177,25 +177,16 @@ class QuestManager(Manager):
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
                 guild.prestige += quest.get_prestige()
+                tax = guild.tax / 100
+                amount = int(money_am * tax)
+                guild.bank += amount
+                player.money -= amount
                 guild_members = len(self.db().get_guild_members_data(guild))
                 mult = _get_tourney_score_multiplier(guild_members)
                 guild.tourney_score += int(renown * mult)
                 self.db().update_guild(guild)
-                player.guild = guild
-                if guild.founder != player:  # check if winnings should be taxed
-                    founder = self.db().get_player_data(
-                        guild.founder.player_id
-                    )  # get most up-to-date object
-                    tax = guild.tax / 100
-                    amount = int(money_am * tax)
-                    amount_am = founder.add_money(amount)  # am = after modifiers
-                    self.db().update_player_data(founder)
-                    self.db().create_and_add_notification(
-                        founder,
-                        Strings.tax_gain.format(amount=amount_am, name=player.name),
-                    )
-                    player.money -= amount
-                    money_am -= amount
+                # create a log
+                guild.create_bank_log("deposit", player.player_id, amount)
             # add to completed quests & add renown
             player.completed_quests += 1
             player.renown += renown

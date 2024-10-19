@@ -125,6 +125,12 @@ class PilgramDatabase(ABC):
         """
         raise NotImplementedError
 
+    def get_bank_data(self, guild: Guild) -> str:
+        """
+        return a string with the bank's logs
+        """
+        raise NotImplementedError
+
     def get_guild_members_number(self, guild: Guild) -> int:
         """get amount of members in a guild."""
         raise NotImplementedError

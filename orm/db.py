@@ -377,7 +377,8 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.creation_date,
             gs.prestige,
             gs.tourney_score,
-            gs.tax
+            gs.tax,
+            gs.bank
         )
 
     @cache_sized_ttl_quick(size_limit=400, ttl=28800)
@@ -435,6 +436,7 @@ class PilgramORMDatabase(PilgramDatabase):
             gs.prestige = guild.prestige
             gs.tourney_score = guild.tourney_score
             gs.tax = guild.tax
+            gs.bank = guild.bank
             gs.save()
 
     @_thread_safe()

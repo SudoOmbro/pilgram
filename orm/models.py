@@ -14,7 +14,7 @@ from peewee import (
     SqliteDatabase,
 )
 
-DB_FILENAME: str = "pilgram_v8.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v9.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -82,6 +82,7 @@ class GuildModel(BaseModel):
     prestige = IntegerField(default=0)
     tourney_score = IntegerField(default=0)
     tax = IntegerField(default=5)
+    bank = IntegerField(default=0)
 
 
 class ZoneEventModel(BaseModel):
