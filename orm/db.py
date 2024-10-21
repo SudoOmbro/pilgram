@@ -476,6 +476,14 @@ class PilgramORMDatabase(PilgramDatabase):
                 self.update_guild(guild)
                 sleep(1)
 
+    @_thread_safe()
+    def delete_guild(self, guild: Guild) -> None:
+        try:
+            GuildModel.get(GuildModel.id == guild.guild_id).delete_instance()
+            guild.deleted = True
+        except GuildModel.DoesNotExist:
+            raise KeyError(f'Guild with id {guild.guild_id} not found')
+
     # zones ----
 
     @staticmethod

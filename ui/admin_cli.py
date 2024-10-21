@@ -379,6 +379,16 @@ def unmark_as_cheater(context: UserContext, player_name: str) -> str:
     return f"Player {player.name} has been un-flagged as cheater."
 
 
+def restore_player_last_switch(context: UserContext, player_name: str) -> str:
+    """ set the player's guild """
+    player = db().get_player_from_name(player_name)
+    if player is None:
+        return Strings.obj_does_not_exist.format(obj="player")
+    player.last_guild_switch = datetime.now() - timedelta(days=2)
+    db().update_player_data(player)
+    return f"Recharged last switch for player {player.name}"
+
+
 ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
     "add": {
         "player": {
@@ -438,13 +448,14 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
         "enemies": IFW([RWE("Zone id", PIR, "Invalid integer id")], force_generate_enemy_metas, "Generate new enemies")
     },
     "recharge": {
-        "power": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], give_player_eldritch_power, "recharge players eldritch power")
+        "power": IFW([player_arg("player name")], give_player_eldritch_power, "recharge player eldritch power"),
+        "switch": IFW([player_arg("player name")], restore_player_last_switch, "recharge player last switch"),
     },
     "force": {
-        "update": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], force_update, "Force update for the given player"),
+        "update": IFW([player_arg("player name")], force_update, "Force update for the given player"),
         "quest": {
-            "complete": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], force_quest_complete, "Force quest complete for the given player"),
-            "time": IFW([RWE("player name", PNR, Strings.player_name_validation_error), RWE("hours", PIR, "Invalid integer id")], force_quest_end_time, "Force quest finish time in [hours] for the given player")
+            "complete": IFW([player_arg("player name")], force_quest_complete, "Force quest complete for the given player"),
+            "time": IFW([player_arg("player name"), RWE("hours", PIR, "Invalid integer id")], force_quest_end_time, "Force quest finish time in [hours] for the given player")
         }
     },
     "tourney": {

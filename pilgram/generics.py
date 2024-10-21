@@ -110,6 +110,8 @@ class PilgramDatabase(ABC):
                 self.get_guild_id_from_founder(player),
                 calling_player_id=player.player_id,
             )
+            if guild.deleted:
+                return None
             guild.founder = player
             player.guild = guild
             return guild
@@ -158,6 +160,10 @@ class PilgramDatabase(ABC):
 
     def reset_all_guild_scores(self) -> None:
         """reset the tourney scores of all guilds"""
+        raise NotImplementedError
+
+    def delete_guild(self, guild: Guild) -> None:
+        """ delete the guild with the given id """
         raise NotImplementedError
 
     # zones ----------------------------------

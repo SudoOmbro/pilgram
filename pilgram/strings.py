@@ -99,7 +99,12 @@ class Strings:
     # kick
     player_not_in_own_guild = "player '{name}' is not in your guild."
     player_kicked_successfully = "player '{name}' has been successfully kicked from guild '{guild}'. Note that guild members may take some time to update."
+    cant_kick_yourself = "You can't kick yourself!"
     you_have_been_kicked = "You have been kicked from guild {guild}."
+
+    # delete guild
+    are_you_sure_action = "Are you sure you want to {action}? (y/n)"
+    guild_deleted = "Your guild has been successfully deleted."
 
     # donations
     donation_received = f"{{donor}} just donated you {{amm}} {MONEY}!"

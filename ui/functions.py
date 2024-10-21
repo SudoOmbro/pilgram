@@ -379,10 +379,9 @@ def upgrade_guild(context: UserContext) -> str:
 
 
 def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
-    yes = get_yes_or_no(user_input)
     player = db().get_player_data(context.get("id"))
     context.end_process()
-    if not yes:
+    if not get_yes_or_no(user_input):
         return Strings.upgrade_cancelled
     obj = context.get("obj")
     price = context.get("price")
@@ -475,10 +474,9 @@ def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
 
 
 def process_embark_confirm(context: UserContext, user_input: str) -> str:
-    yes = get_yes_or_no(user_input)
     player = db().get_player_data(context.get("id"))  # player must exist to get to this point
     context.end_process()
-    if yes:
+    if get_yes_or_no(user_input):
         return __start_quest_in_zone(player, context.get("zone"))
     return Strings.embark_underleveled_cancel
 
@@ -491,6 +489,8 @@ def kick(context: UserContext, player_name: str) -> str:
     target = db().get_player_from_name(player_name)
     if not target:
         return Strings.named_object_not_exist.format(obj="Player", name=player_name)
+    if target == player:
+        return Strings.cant_kick_yourself
     if target.guild != guild:
         return Strings.player_not_in_own_guild.format(name=player_name)
     target.guild = None
@@ -916,10 +916,9 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
 
 
 def process_reroll_confirm(context: UserContext, user_input: str) -> str:
-    yes = get_yes_or_no(user_input)
     player = db().get_player_data(context.get("id"))  # player must exist to get to this point
     context.end_process()
-    if yes:
+    if get_yes_or_no(user_input):
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
@@ -960,10 +959,9 @@ def enchant_item(context: UserContext, item_pos_str: str) -> str:
 
 
 def process_enchant_confirm(context: UserContext, user_input: str) -> str:
-    yes = get_yes_or_no(user_input)
     player = db().get_player_data(context.get("id"))  # player must exist to get to this point
     context.end_process()
-    if yes:
+    if get_yes_or_no(user_input):
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
@@ -996,10 +994,9 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
 
 
 def process_sell_confirm(context: UserContext, user_input: str) -> str:
-    yes = get_yes_or_no(user_input)
     player = get_player(db, context)
     context.end_process()
-    if yes:
+    if get_yes_or_no(user_input):
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
@@ -1337,7 +1334,7 @@ def check_player_stats(context: UserContext, *args) -> str:
         return __get_player_stats_string(player)
 
 
-def change_vocation(context: UserContext, vocation_id1_str: str, *args):
+def change_vocation(context: UserContext, vocation_id1_str: str, *args) -> str:
     try:
         # get player
         player = get_player(db, context)
@@ -1367,7 +1364,7 @@ def change_vocation(context: UserContext, vocation_id1_str: str, *args):
         return str(e)
 
 
-def upgrade_vocation(context: UserContext, vocation_id_str: str):
+def upgrade_vocation(context: UserContext, vocation_id_str: str) -> str:
     try:
         player = get_player(db, context)
         # get basic inputs
@@ -1395,7 +1392,7 @@ def upgrade_vocation(context: UserContext, vocation_id_str: str):
         return str(e)
 
 
-def cancel_quest(context: UserContext):
+def cancel_quest(context: UserContext) -> str:
     player = get_player(db, context)
     ac = db().get_player_adventure_container(player)
     if not ac.is_on_a_quest():
@@ -1405,7 +1402,7 @@ def cancel_quest(context: UserContext):
     return Strings.quest_canceled
 
 
-def sacrifice(context: UserContext):
+def sacrifice(context: UserContext) -> str:
     player = get_player(db, context)
     if player.hp_percent < 0.80:
         return "Your HP is too low!"
@@ -1421,7 +1418,7 @@ def sacrifice(context: UserContext):
     return f"You stab yourself with your ritual knife. Some eldritch truth is revealed to you:\n\n_{eldritch_truth}_\n\nYou gain {amount_am} XP."
 
 
-def start_raid(context: UserContext, zone_id: int):
+def start_raid(context: UserContext, zone_id: int) -> str:
     player = get_player(db, context)
     # do basic checks
     guild = db().get_owned_guild(player)
@@ -1437,6 +1434,31 @@ def start_raid(context: UserContext, zone_id: int):
         if not db().is_player_on_a_quest(member):
             available_members.append(member)
     return "Coming soon :)"
+
+
+def delete_guild(context: UserContext) -> str:
+    player = get_player(db, context)
+    guild = db().get_owned_guild(player)
+    if not guild:
+        return Strings.no_guild_yet
+    context.start_process("delete guild")
+    return Strings.are_you_sure_action.format(action="disband your Guild")
+
+
+def process_delete_guild_confirm(context: UserContext, user_input: str) -> str:
+    context.end_process()
+    if not get_yes_or_no(user_input):
+        return Strings.action_canceled.format(action="Guild deletion")
+    player = get_player(db, context)
+    guild = db().get_owned_guild(player)
+    members = db().get_guild_members_data(guild)
+    for _, name, _ in members:
+        member = db().get_player_from_name(name)
+        db().create_and_add_notification(member, f"Your guild ({guild.name}) was deleted!")
+        member.guild = None
+        db().update_player_data(member)
+    db().delete_guild(guild)
+    return Strings.guild_deleted
 
 
 USER_COMMANDS: dict[str, str | IFW | dict] = {
@@ -1470,6 +1492,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "guild": IFW(None, start_guild_creation, f"Create your own Guild (cost: {ContentMeta.get('guilds.creation_cost')} {MONEY})."),
         "auction": IFW([integer_arg("item"), integer_arg("Starting bid")], create_auction, "auctions the selected item."),
     },
+    "disband": IFW(None, delete_guild, "Disband your guild"),
     "bid": IFW([integer_arg("Auction id"), integer_arg("Bid")], bid_on_auction, "bid on the selected auction."),
     "upgrade": {
         "gear": IFW(None, upgrade, "Upgrade your gear.", default_args={"obj": "gear"}),
@@ -1574,6 +1597,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     "sell confirm": (
         ("confirm", process_sell_confirm),
     ),
+    "delete guild": (
+        ("confirm", process_delete_guild_confirm),
+    )
 }
 
 ALIASES: dict[str, str] = {

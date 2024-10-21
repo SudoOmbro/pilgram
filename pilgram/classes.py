@@ -957,6 +957,7 @@ class Guild:
         self.tourney_score = tourney_score
         self.tax = tax
         self.bank = bank
+        self.deleted: bool = False
 
     def get_max_members(self) -> int:
         value = self.level * self.PLAYERS_PER_LEVEL
