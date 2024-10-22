@@ -1516,7 +1516,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "gift": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player."),
     "withdraw": IFW([integer_arg("Amount")], withdraw, "Withdraw from your guild's bank"),
     "logs": IFW(None, check_bank_logs, "Checks the last 10 withdrawals and deposits from the bank"),
-    "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("spell args", None, None)]),
+    "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("target", None, None)]),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
         "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige."),

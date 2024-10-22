@@ -149,8 +149,7 @@
     "bless": {
       "name": "Ancient Blessing",
       "description": "Bless someone of your choosing, they will have an advantage finishing their next quest. Send the name after 'bless'. Triple the effect if you use 100 power.",
-      "power": 50,
-      "args": 1
+      "power": 50
     },
     "heal": {
       "name": "Eldritch Healing",

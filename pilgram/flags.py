@@ -157,6 +157,10 @@ class Explore(Flag):
     pass  # 30
 
 
+class Raiding(Flag):
+    pass  # 31
+
+
 BUFF_FLAGS: tuple[type[Flag], ...] = (
     StrengthBuff,
     OccultBuff,
