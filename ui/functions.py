@@ -1233,9 +1233,11 @@ def duel_accept(context: UserContext, player_name: str) -> str:
         return Strings.opponent_must_be_in_town
     # do combat
     players = [player, challenger]
+    challenger.team = 1
     db().delete_duel_invite(challenger, player)
     combat = CombatContainer(players, helpers={player: None, challenger: None})
     combat_log = combat.fight()
+    challenger.team = 0
     log.info(f"{player.name} & {challenger.name} dueled.")
     # give xp to both players, money to the winner + restore health
     for p in players:
