@@ -993,6 +993,30 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
     return Strings.item_sell_confirm.format(item=item.name)
 
 
+def sell_all(context: UserContext) -> str:
+    player = db().get_player_data(context.get("id"))
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    result: str = ""
+    total_money_gained: int = 0
+    for pos in reversed(range(len(items))):
+        item = items[pos - 1]
+        if player.is_item_equipped(item) or db().get_auction_from_item(item):
+            continue
+        mult = 1 if player.guild_level() < 6 else 2
+        money = int(item.get_value() * mult)
+        money_am = player.add_money(money)
+        total_money_gained += money_am
+        items.pop(pos - 1)
+        try:
+            db().delete_item(item)
+        except KeyError as e:
+            return f"Error: {e}"
+        result += f"Sold *{item.name}* for {money_am} {MONEY}\n"
+    db().update_player_data(player)
+    return result + f"\nTotal {MONEY} gained: {total_money_gained}"
+
 def process_sell_confirm(context: UserContext, user_input: str) -> str:
     player = get_player(db, context)
     context.end_process()
@@ -1006,14 +1030,14 @@ def process_sell_confirm(context: UserContext, user_input: str) -> str:
             return Strings.cannot_sell_auctioned_item
         mult = 1 if player.guild_level() < 6 else 2
         money = int(item.get_value() * mult)
-        player.add_money(money)
+        money_am = player.add_money(money)
         items.pop(item_pos - 1)
         db().update_player_data(player)
         try:
             db().delete_item(item)
         except KeyError as e:
             return f"Error: {e}"
-        return Strings.item_sold.format(item=item.name, money=money)
+        return Strings.item_sold.format(item=item.name, money=money_am)
     return Strings.action_canceled.format(action="Sell")
 
 
@@ -1539,6 +1563,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "equip": IFW([integer_arg("Item")], equip_item, "Equip an item from your inventory"),
     "unequip": IFW(None, unequip_all_items, "Unequip all items"),
     "sell": IFW([integer_arg("Item")], sell_item, "Sell an item from your inventory."),
+    "sellall": IFW(None, sell_all, "Sell all unused items from your inventory."),
     "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),
     "craft": IFW([integer_arg("Item")], smithy_craft, "Craft something at the smithy."),
     "reroll": IFW([integer_arg("Item")], reroll_item, "Reroll an item from your inventory"),
