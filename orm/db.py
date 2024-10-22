@@ -282,6 +282,11 @@ class PilgramORMDatabase(PilgramDatabase):
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player_id} not found')  # raising exceptions makes sure invalid queries aren't cached
 
+    def get_random_player_data(self) -> Player:
+        pls = PlayerModel.select(PlayerModel.id).order_by(fn.Random()).limit(1).namedtuples()
+        for p in pls:
+            return self.get_player_data(p.id)
+
     @cache_sized_ttl_quick(size_limit=200, ttl=3600)
     def get_player_id_from_name(self, name: str) -> int:
         try:

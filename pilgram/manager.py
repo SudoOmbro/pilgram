@@ -23,7 +23,7 @@ from pilgram.classes import (
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    Cheater, QuestCanceled, Explore
+    Cheater, QuestCanceled, Explore, InCrypt
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -130,21 +130,28 @@ class QuestManager(Manager):
         self.updates_per_second = 1 / updates_per_second
         self.player_shades: dict[int, list[Player]] = {}
 
+    @staticmethod
+    def _create_shade(player: Player) -> Player:
+        # deepcopy a player
+        shade: Player = deepcopy(player)
+        shade.name = player.name + "'s Shade"
+        shade.hp_percent = 1.0
+        shade.team = 1
+        # remove some equipped items if necessary
+        while len(list(shade.equipped_items.values())) > 3:
+            key = random.choice(list(shade.equipped_items.keys()))
+            del shade.equipped_items[key]
+        # empty satchel
+        shade.satchel = []
+        return shade
+
     def create_shade(self, player: Player, zone: Zone | None) -> None:
         if zone is None:
             return
         log.info(f"creating shade of player {player.name} in {zone.zone_name}")
         if self.player_shades.get(zone.zone_id, None) is None:
             self.player_shades[zone.zone_id] = []
-        shade: Player = deepcopy(player)
-        shade.name = player.name + "'s Shade"
-        shade.hp_percent = 1.0
-        shade.team = 1
-        # limit the amount of items a shade can have to 3 + No consumables
-        while len(list(shade.equipped_items.values())) > 3:
-            key = random.choice(list(shade.equipped_items.keys()))
-            del shade.equipped_items[key]
-        shade.satchel = []
+        shade: Player = self._create_shade(player)
         self.player_shades[zone.zone_id].append(shade)
 
     def _complete_quest(self, ac: AdventureContainer) -> None:
@@ -301,6 +308,31 @@ class QuestManager(Manager):
         self.db().update_quest_progress(ac)
         self.db().create_and_add_notification(ac.player, text)
 
+    @staticmethod
+    def _buff_enemy(player: Player, enemy: Enemy | Player):
+        if Ritual1.is_set(player.flags):
+            if isinstance(enemy, Player):
+                enemy.level += 5
+            else:
+                enemy.level_modifier += 5
+        if Ritual2.is_set(player.flags):
+            if isinstance(enemy, Player):
+                enemy.level += 5
+            else:
+                enemy.level_modifier += 5
+
+    @staticmethod
+    def _process_combat_death(player: Player, ac: AdventureContainer) -> str:
+        if (player.vocation.revive_chance > 0) and (random.random() < player.vocation.revive_chance):
+            player.hp_percent = 0.25
+            return "\n\nBy the grace of the God Emperor you are revived & continue your quest."
+        else:
+            lost_money: int = int(player.money * 0.1)
+            ac.quest = None
+            player.money -= lost_money  # lose 10% of money on death
+            player.hp_percent = 1.0
+            return (Strings.quest_fail + Strings.lose_money).format(name=ac.quest.name if ac.quest else "Crypt exploration", money=lost_money)
+
     def _process_combat(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
     ) -> None:
@@ -354,16 +386,7 @@ class QuestManager(Manager):
             # fight a shade
             enemy = self.player_shades[ac.zone().zone_id].pop(0)
         # buff enemy with ritual
-        if Ritual1.is_set(player.flags):
-            if isinstance(enemy, Player):
-                enemy.level += 5
-            else:
-                enemy.level_modifier += 5
-        if Ritual2.is_set(player.flags):
-            if isinstance(enemy, Player):
-                enemy.level += 5
-            else:
-                enemy.level_modifier += 5
+        self._buff_enemy(player, enemy)
         # do combat
         combat = CombatContainer([player, enemy], {player: helper, enemy: None})
         text = "Combat starts!\n\n" + combat.fight()
@@ -376,15 +399,7 @@ class QuestManager(Manager):
                 text += f"\n\n{Strings.shade_loss}"
                 log.info(f"Player '{player.name}' died in combat against {enemy.name}")
             self.create_shade(player, ac.zone())
-            if (player.vocation.revive_chance > 0) and (random.random() < player.vocation.revive_chance):
-                player.hp_percent = 0.25
-                text += "\n\nBy the grace of the God Emperor you are revived & continue your quest."
-            else:
-                lost_money: int = int(player.money * 0.1)
-                text += (Strings.quest_fail + Strings.lose_money).format(name=ac.quest.name, money=lost_money)
-                ac.quest = None
-                player.money -= lost_money  # lose 10% of money on death
-                player.hp_percent = 1.0
+            text += self._process_combat_death(player, ac)
         else:
             log.info(f"Player '{player.name}' won against {enemy.get_name()}")
             # get rewards
@@ -429,6 +444,32 @@ class QuestManager(Manager):
         # notify player
         self.db().create_and_add_notification(ac.player, text, notification_type="Combat Log")
 
+    def _process_crypt_update(self, ac: AdventureContainer):
+        player: Player = self.db().get_player_data(ac.player.player_id)
+        shade = self._create_shade(self.db().get_random_player_data())
+        self._buff_enemy(player, shade)
+        combat = CombatContainer([player, shade], {player: None, shade: None})
+        text = "Combat starts!\n\n" + combat.fight()
+        if player.is_dead():
+            player.unset_flag(InCrypt)
+            text += f"\n\n{Strings.shade_loss}"
+            log.info(f"Player '{player.name}' died in combat against {shade.name}")
+            text += self._process_combat_death(player, ac)
+        else:
+            xp, money = shade.get_rewards(player)
+            renown = shade.get_level() * 10
+            # add rewards
+            xp_am = player.add_xp(xp)
+            player.renown += renown
+            money_am = player.add_money(money)
+            text += f"\n\n{Strings.shade_win}{rewards_string(xp_am, money_am, renown)}"
+        for flag in BUFF_FLAGS:
+            if flag.is_set(player.flags):
+                player.flags = flag.unset(player.flags)
+        self.db().update_player_data(player)
+        self.db().update_quest_progress(ac)
+        self.db().create_and_add_notification(ac.player, text, notification_type="Combat Log")
+
     def process_update(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
     ) -> None:
@@ -449,6 +490,8 @@ class QuestManager(Manager):
                 self._process_combat(ac, updates)
             else:
                 self._process_event(ac)
+        elif InCrypt.is_set(ac.player.flags):
+            self._process_crypt_update(ac)
         else:
             self._process_event(ac)
 

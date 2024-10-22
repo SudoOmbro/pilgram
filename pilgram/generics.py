@@ -45,6 +45,10 @@ class PilgramDatabase(ABC):
         """
         raise NotImplementedError
 
+    def get_random_player_data(self) -> Player:
+        """ returns a random complete player object """
+        raise NotImplementedError
+
     def get_player_id_from_name(self, player_name) -> int:
         raise NotImplementedError
 

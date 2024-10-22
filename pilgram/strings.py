@@ -303,6 +303,13 @@ class Strings:
     # artifacts
     max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."
 
+    # crypt
+    no_crypt_while_questing = "You can't explore the crypt while you are on a quest!"
+    already_in_crypt = "You are already exploring the crypt!"
+    entered_crypt = f"You enter the crpyt below {TOWN}..."
+    exit_crypt = f"You emerge from the crpyt below {TOWN}..."
+    no_quest_while_in_crypt = "You can't embark on a quest while in the crypt!"
+
     # errors
     no_character_yet = "You haven't made a character yet!"
     named_object_not_exist = "{obj} with name {name} does not exist."

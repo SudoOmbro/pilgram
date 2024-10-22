@@ -26,7 +26,7 @@ from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
-    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore, InCrypt
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -456,12 +456,11 @@ def __start_quest_in_zone(player: Player, zone: Zone) -> str:
 
 
 def embark_on_quest(context: UserContext, zone_id_str: str) -> str:
-    try:
-        player = db().get_player_data(context.get("id"))
-    except KeyError:
-        return Strings.no_character_yet
+    player = get_player(db, context)
     if db().is_player_on_a_quest(player):
         return Strings.already_on_a_quest
+    if InCrypt.is_set(player.flags):
+        return Strings.no_quest_while_in_crypt
     try:
         zone = db().get_zone(int(zone_id_str))
     except KeyError:
@@ -1487,6 +1486,20 @@ def process_delete_guild_confirm(context: UserContext, user_input: str) -> str:
     return Strings.guild_deleted
 
 
+def crypt(context: UserContext) -> str:
+    player = get_player(db, context)
+    ac = db().get_player_adventure_container(player)
+    if ac.is_on_a_quest():
+        return Strings.no_crypt_while_questing
+    if InCrypt.is_set(player.flags):
+        player.unset_flag(InCrypt)
+        db().update_player_data(player)
+        return Strings.exit_crypt
+    player.set_flag(InCrypt)
+    db().update_player_data(player)
+    return Strings.entered_crypt
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1510,6 +1523,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     },
     "sacrifice": IFW(None, sacrifice, "Sacrifice 75% of HP for XP."),
     "raid": IFW([integer_arg("Zone number")], start_raid, "Start a raid with your guild members"),
+    "crypt": IFW(None, crypt, "Enter the crypt"),
     "cancel": {
         "quest": IFW(None, cancel_quest, "Cancels the current quest.")
     },

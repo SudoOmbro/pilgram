@@ -161,6 +161,10 @@ class Raiding(Flag):
     pass  # 31
 
 
+class InCrypt(Flag):
+    pass  # 32
+
+
 BUFF_FLAGS: tuple[type[Flag], ...] = (
     StrengthBuff,
     OccultBuff,
