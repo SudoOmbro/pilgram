@@ -73,17 +73,16 @@ def check_board(context: UserContext) -> str:
 
 
 def check_current_quest(context: UserContext) -> str:
+    player = get_player(db, context)
     try:
-        player = db().get_player_data(context.get("id"))
-        try:
-            ac = db().get_player_adventure_container(player)
-            if ac.quest is None:
-                return Strings.not_on_a_quest
-            return str(ac)
-        except KeyError as e:
-            return f"Fatal error: {e}"
-    except KeyError:
-        return Strings.no_character_yet
+        ac = db().get_player_adventure_container(player)
+        if ac.quest is None:
+            if InCrypt.is_set(player.flags):
+                return Strings.in_crypt
+            return Strings.not_on_a_quest
+        return str(ac)
+    except KeyError as e:
+        return f"Fatal error: {e}"
 
 
 def check_zone(context: UserContext, zone_id_str: int) -> str:
@@ -379,7 +378,7 @@ def upgrade_guild(context: UserContext) -> str:
 
 
 def process_upgrade_confirm(context: UserContext, user_input: str) -> str:
-    player = db().get_player_data(context.get("id"))
+    player = get_player(db, context)
     context.end_process()
     if not get_yes_or_no(user_input):
         return Strings.upgrade_cancelled

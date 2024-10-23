@@ -53,7 +53,7 @@ class Strings:
     embark_underleveled = "You can still choose zones for which you are under-leveled, but you will be more likely to fail quests. Make sure to upgrade your gear!"
     embark_underleveled_confirm = "Are you sure you want go to {zone}? You should be at least level {lv} for this zone.\n\nWrite 'y' or 'n' (yes or no)"
     embark_underleveled_cancel = "Good riddance."
-    not_on_a_quest = "You are not on a quest!"
+    not_on_a_quest = "You are not on a quest."
     quest_embark = "You have embarked on the quest:\n\n{quest}\n\nGood luck!"
     quest_success = "\n\nYou have completed the quest '*{name}*'!"
     reappear = f"An higher power lets you reappear at {TOWN}, the Ouroboros contract remains unbroken."
@@ -309,6 +309,7 @@ class Strings:
     entered_crypt = f"You enter the crpyt below {TOWN}..."
     exit_crypt = f"You emerge from the crpyt below {TOWN}..."
     no_quest_while_in_crypt = "You can't embark on a quest while in the crypt!"
+    in_crypt = "You are currently exploring the Crypt..."
 
     # raids
     raid_guild_required = "You have to own a guild to start a raid!"
