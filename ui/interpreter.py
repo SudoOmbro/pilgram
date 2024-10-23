@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable
 from functools import cache
 
@@ -9,6 +10,10 @@ from ui.utils import (
 )
 from ui.utils import CommandParsingResult as CPS
 from ui.utils import InterpreterFunctionWrapper as IFW
+
+
+log = logging.getLogger(__name__)
+log.setLevel(logging.INFO)
 
 
 def command_not_found_error_function(context: UserContext, command: str, suggestion: str) -> str:
@@ -105,3 +110,6 @@ class CLIInterpreter:
             return parsing_result.execute(user)
         except CommandError as e:
             return str(e)
+        except TypeError as e:
+            log.error(e)
+            return "Too many arguments given! Check help for instructions."

@@ -221,7 +221,7 @@ class Strings:
         "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel", "Voltaic")
     }
     armor_modifiers: dict[str, tuple[str, ...]] = {
-        "slash": ("Plated", "-the Bulwark", "Meshed"),
+        "slash": ("Plated", "-the Bulwark", "Meshed", "Rounded"),
         "pierce": ("Reinforced", "-the Cataphract", "Thick"),
         "blunt": ("Heavy", "Stable", "Well-built", "Sturdy"),
         "occult": ("Occult", "Eldritch", "Warded", "Runic", "-the Inquisitor"),
@@ -309,6 +309,12 @@ class Strings:
     entered_crypt = f"You enter the crpyt below {TOWN}..."
     exit_crypt = f"You emerge from the crpyt below {TOWN}..."
     no_quest_while_in_crypt = "You can't embark on a quest while in the crypt!"
+
+    # raids
+    raid_guild_required = "You have to own a guild to start a raid!"
+    raid_on_quest = "You can't start a raid while on a quest!"
+    raid_not_enough_players = "A minimum of 3 players are required to start a raid!"
+    raid_cancel = "Raid canceled."
 
     # errors
     no_character_yet = "You haven't made a character yet!"

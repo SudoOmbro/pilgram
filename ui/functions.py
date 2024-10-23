@@ -39,7 +39,7 @@ from pilgram.globals import (
 )
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
-from pilgram.utils import read_text_file, save_text_to_file, read_update_interval, generate_random_eldritch_name
+from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name
 from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg, get_yes_or_no, get_player
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
@@ -1443,22 +1443,44 @@ def sacrifice(context: UserContext) -> str:
     return f"You stab yourself with your ritual knife. Some eldritch truth is revealed to you:\n\n_{eldritch_truth}_\n\nYou gain {amount_am} XP."
 
 
-def start_raid(context: UserContext, zone_id: int) -> str:
-    player = get_player(db, context)
-    # do basic checks
-    guild = db().get_owned_guild(player)
-    if not guild:
-        return "You have to own a guild to start a raid!"
-    if db().is_player_on_a_quest(player):
-        return "You can't start a raid while on a quest!"
+def _get_avaible_players_for_raid(guild: Guild) -> list[Player]:
     guild_members_data = db().get_guild_members_data(guild)
-    # get guild members available for the raid
     available_members: list[Player] = []
     for member_id, _, _ in guild_members_data:
         member = db().get_player_data(member_id)
         if not db().is_player_on_a_quest(member):
             available_members.append(member)
-    return "Coming soon :)"
+    return available_members
+
+
+def start_raid(context: UserContext, zone_id: int) -> str:
+    player = get_player(db, context)
+    # do basic checks
+    guild = db().get_owned_guild(player)
+    if not guild:
+        return Strings.raid_guild_required
+    if db().is_player_on_a_quest(player):
+        return Strings.raid_on_quest
+    available_members = _get_avaible_players_for_raid(guild)
+    if len(available_members) < 3:
+        return Strings.raid_not_enough_players
+    # confirm
+    context.set("zone", zone_id)
+    context.start_process("raid start")
+    return f"The following players are avaiable for a raid:\n\n{"\n".join(x.name for x in available_members)}\n\nDo you confirm?"
+
+
+def process_start_raid_confirm(context: UserContext, user_input: str) -> str:
+    context.end_process()
+    if not get_yes_or_no(user_input):
+        return Strings.raid_cancel
+    player = get_player(db, context)
+    guild = db().get_owned_guild(player)
+    available_members = _get_avaible_players_for_raid(guild)
+    zone_id: int = context.get("zone")
+    # actually start the raid
+    # TODO
+    return "coming soon :)"
 
 
 def delete_guild(context: UserContext) -> str:
@@ -1640,6 +1662,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "delete guild": (
         ("confirm", process_delete_guild_confirm),
+    ),
+    "raid start": (
+        ("confirm", process_start_raid_confirm),
     )
 }
 
