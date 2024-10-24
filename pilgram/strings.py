@@ -200,7 +200,8 @@ class Strings:
         "hp_restored": "HP restored",
         "hp_percent_restored": "HP % restored",
         "revive": "Revives you",
-        "buffs": "Damage buffs (2x)"
+        "buffs": "Damage buffs (2x)",
+        "sanity_restored": "Sanity restored",
     }
     satchel_position_out_of_range = "The given satchel position is not valid, you have {num} items in your satchel."
     used_item = "{verb} the {item}"
@@ -288,6 +289,7 @@ class Strings:
     }
     stance_switch = "Stance switched to "
     force_combat = "You hunt for something strong to kill..."
+    sanity_too_low = "Your sanity is too low to hunt now..."
     shade_win = "The shade crumbles and dissolves into nothingness."
     shade_loss = "The shade absorbs you into it's mass."
 

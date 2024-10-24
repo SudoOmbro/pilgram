@@ -396,12 +396,14 @@ class Spell:
         name: str,
         description: str,
         required_power: int,
+        required_artifacts: int,
         required_args: int,
         function: Callable[[Player, list[str]], str],
     ) -> None:
         self.name = name
         self.description = description
         self.required_power = required_power
+        self.required_artifacts = required_artifacts
         self.required_args = required_args
         self.function = function
 
@@ -454,7 +456,8 @@ class Player(CombatActor):
         stance: str,
         completed_quests: int,
         last_guild_switch: datetime,
-        vocations_progress: dict[int, int]
+        vocations_progress: dict[int, int],
+        sanity: int
     ) -> None:
         """
         :param player_id (int): unique id of the player
@@ -478,7 +481,8 @@ class Player(CombatActor):
         :param stance: the player's stance
         :param completed_quests: the player's completed quests
         :param last_guild_switch: The time in which the player last changed guild
-        :param vocations_progress: the player's vocations progress'
+        :param vocations_progress: the player's vocations progress
+        :param sanity: the player's sanity, used to hunt/explore
         """
         self.player_id = player_id
         self.name = name
@@ -504,6 +508,7 @@ class Player(CombatActor):
         self.completed_quests = completed_quests
         self.last_guild_switch = last_guild_switch
         self.vocations_progress = vocations_progress
+        self.sanity = sanity
 
     def equip_vocations(self, vocations: list[Vocation]) -> None:
         self.vocation: Vocation = Vocation.empty()
@@ -732,6 +737,7 @@ class Player(CombatActor):
         else:
             self.hp_percent = 1.0
         self.flags = self.flags | item.buff_flag
+        self.add_sanity(item.sanity_restored)
         text = Strings.used_item.format(verb=item.verb, item=item.name)
         if add_you:
             return "You " + text, True
@@ -846,19 +852,29 @@ class Player(CombatActor):
     def get_vocation_level(self, vocation_id: int) -> int:
         return self.vocations_progress.get(vocation_id, 1)
 
+    def get_max_sanity(self):
+        return 100
+
+    def add_sanity(self, amount: int):
+        self.sanity += amount
+        max_sanity = self.get_max_sanity()
+        if amount > max_sanity:
+            self.sanity = max_sanity
+
     # utility
 
     def __str__(self) -> str:
         max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        string = f"{self.print_username()} | lv. {self.level}{guild}\n_{self.xp} / {self.get_required_xp()} xp_\n"
+        string = f"{self.print_username()} | lv. {self.level}{guild}\n`{self.xp}/{self.get_required_xp()} xp`\n"
         if self.vocation.name:
             string += f"{self.vocation.name}\n"
         string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
+        string += f"Sanity: `{self.sanity}/{self.get_max_sanity()}`\n"
         string += f"{self.money} *{MONEY}*\n*Home* lv. {self.home_level}, *Gear* lv. {self.gear_level}\n"
-        string += f"Stance: {Strings.stances[self.stance][0]}\n_Renown: {self.renown}_"
+        string += f"Stance: {Strings.stances[self.stance][0]}\nRenown: {self.renown}"
         if (self.get_max_charge() > 0) or (len(self.artifacts) > 0):
-            string += f"\n*Eldritch power*: {self.get_spell_charge()} / {self.get_max_charge()}"
+            string += f"\nEldritch power: `{self.get_spell_charge()}/{self.get_max_charge()}`"
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()}\nArtifact pieces: {self.artifact_pieces}_"
             string += (
                 f"\n\nArtifacts ({len(self.artifacts)}/{self.get_max_number_of_artifacts()}):\n"
@@ -869,7 +885,7 @@ class Player(CombatActor):
         else:
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"
         if self.equipped_items:
-            string += f"\n\nEquipped items:\n{'\n'.join(f"{Strings.get_item_icon(slot)} - *{item.name}*" for slot, item in sorted(self.equipped_items.items()))}"
+            string += f"\n\nEquipped items:\n*{'\n'.join(f"{Strings.get_item_icon(slot)} - {item.name}" for slot, item in sorted(self.equipped_items.items()))}*"
         if self.satchel:
             string += f"\n\nSatchel:\n{'\n'.join(f"{i + 1}. {x.name}" for i, x in enumerate(self.satchel))}"
         return string
@@ -911,7 +927,8 @@ class Player(CombatActor):
             "b",
             0,
             datetime.now() - timedelta(days=1),
-            {}
+            {},
+            100
         )
 
 

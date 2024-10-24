@@ -274,6 +274,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.completed_quests,
                 pls.last_guild_switch,
                 vocations_progress,
+                pls.sanity
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved

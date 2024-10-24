@@ -176,6 +176,24 @@
       "name": "Summoning Ritual",
       "description": "Enemy in the next encounter is going to be much stronger.\nEffect scales with amount of power used (50 for +5 levels, 100 for +10 levels).",
       "power": 30
+    },
+    "ironflesh": {
+      "name": "Ironflesh Boon",
+      "description": "Set the target's HP to (100 + power used)%.",
+      "power": 50,
+      "artifacts": 1
+    },
+    "radiance": {
+      "name": "Radiance Boon",
+      "description": "Materialize a God Emperor's blessing in the target's satchel.",
+      "power": 50,
+      "artifacts": 1
+    },
+    "supremacy": {
+      "name": "Supremacy Boon",
+      "description": "Give the target every combat buff.\nEffect scales with amount of power used (50 for 1.5x, 100 for 2x).",
+      "power": 50,
+      "artifacts": 1
     }
   },
   "quick time events": [{
@@ -2115,6 +2133,24 @@
     "effects": {
       "revive": true,
       "hp_percent_restored": 1.0
+    }
+  }, {
+    "id": 16,
+    "name": "Happy Pills",
+    "description": "Grey, metallic looking pills. They make you feel a bit less depressed when ingested.",
+    "verb": "consumed",
+    "value": 500,
+    "effects": {
+      "sanity_restored": 20
+    }
+  }, {
+    "id": 17,
+    "name": "Shrooma",
+    "description": "A flask containing a potent juice made from hallucinogenic mushrooms.",
+    "verb": "consumed",
+    "value": 1200,
+    "effects": {
+      "sanity_restored": 100
     }
   }]
 }

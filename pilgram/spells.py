@@ -5,6 +5,7 @@ from datetime import timedelta
 
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Player, Spell, SpellError
+from pilgram.equipment import ConsumableItem
 from pilgram.flags import (
     AlloyGlitchFlag1,
     AlloyGlitchFlag2,
@@ -18,7 +19,9 @@ from pilgram.flags import (
     MightBuff3,
     SwiftBuff1,
     SwiftBuff2,
-    SwiftBuff3, Ritual1, Ritual2,
+    SwiftBuff3,
+    Ritual1,
+    Ritual2, StrengthBuff, OccultBuff, IceBuff, FireBuff, AcidBuff, ElectricBuff,
 )
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import ContentMeta
@@ -50,6 +53,7 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
             ContentMeta.get(f"spells.{spell_short_name}.name"),
             ContentMeta.get(f"spells.{spell_short_name}.description"),
             ContentMeta.get(f"spells.{spell_short_name}.power"),
+            ContentMeta.get(f"spells.{spell_short_name}.artifacts", default=0),
             ContentMeta.get(f"spells.{spell_short_name}.args", default=0),
             func,
         )
@@ -224,4 +228,48 @@ def __summoning_ritual(caster: Player, args: list[str]) -> str:
     if not self_cast:
         _db().update_player_data(target)
     _db().create_and_add_notification(target, f"You feel a sense of dread ({int(amount / 40)}x)")
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("ironflesh")
+def __ironflesh_boon(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    if target.hp_percent > 1.0:
+        raise SpellError("You can't use Ironflesh Boon on a player that is already overhealed!")
+    amount = caster.get_spell_charge()
+    target.hp_percent = (100 + amount) / 100
+    if not self_cast:
+        _db().update_player_data(target)
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("radiance")
+def __radiance_boon(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    if len(target.satchel) >= target.get_max_satchel_items():
+        raise SpellError("The target already has a full satchel!")
+    target.satchel.append(ConsumableItem.get(15))
+    if not self_cast:
+        _db().update_player_data(target)
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("supremacy")
+def __supremacy_boon(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    if amount <= 50:
+        target.set_flag(MightBuff1)
+        target.set_flag(SwiftBuff1)
+    else:
+        target.set_flag(MightBuff2)
+        target.set_flag(SwiftBuff2)
+    target.set_flag(StrengthBuff)
+    target.set_flag(OccultBuff)
+    target.set_flag(FireBuff)
+    target.set_flag(IceBuff)
+    target.set_flag(AcidBuff)
+    target.set_flag(ElectricBuff)
+    if not self_cast:
+        _db().update_player_data(target)
     return get_cast_string(target, self_cast)

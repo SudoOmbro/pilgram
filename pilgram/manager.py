@@ -276,6 +276,7 @@ class QuestManager(Manager):
             regeneration_text = ""
         text = f"*{event.event_text}*{rewards_string(xp_am, money_am, 0)}"
         if ac.is_on_a_quest():
+            player.add_sanity(5)
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
                 text = Strings.qte_failed + "\n\n" + text

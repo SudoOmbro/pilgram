@@ -256,10 +256,11 @@ class ConsumableItem(Listable, meta_name="consumables"):
         self.description = description
         self.verb = verb
         self.value = value
-        self.hp_restored = effects.get("hp_restored", 0)
-        self.hp_percent_restored = effects.get("hp_percent_restored", 0.0)
-        self.revive = effects.get("revive", False)
+        self.hp_restored: int = effects.get("hp_restored", 0)
+        self.hp_percent_restored: float = effects.get("hp_percent_restored", 0.0)
+        self.revive: bool = effects.get("revive", False)
         self.buff_flag: Flag = self.get_buff_flag(buffs)
+        self.sanity_restored: int = effects.get("sanity_restored", 0)
         # internal vars used to build the description
         self.buffs = buffs
         self.effects = list(effects.keys())

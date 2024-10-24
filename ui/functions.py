@@ -697,7 +697,7 @@ def __list_minigames() -> str:
 
 
 def __list_spells() -> str:
-    return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}\n_{spell.description}_" for key, spell in SPELLS.items())
+    return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}{(" | artifact pieces: " + str(spell.required_artifacts)) if spell.required_artifacts > 0 else ""}\n_{spell.description}_" for key, spell in SPELLS.items())
 
 
 def list_vocations(context: UserContext) -> str:
@@ -1109,6 +1109,10 @@ def use_consumable(context: UserContext, item_pos_str: str) -> str:
 
 def force_combat(context: UserContext) -> str:
     player = get_player(db, context)
+    if player.sanity >= 10:
+        player.sanity -= 10
+    else:
+        return Strings.sanity_too_low
     if Explore.is_set(player.flags):
         return Strings.already_exploring
     player.set_flag(ForcedCombat)
