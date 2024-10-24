@@ -179,7 +179,7 @@
     },
     "ironflesh": {
       "name": "Ironflesh Boon",
-      "description": "Set the target's HP to (100 + power used)%.",
+      "description": "Set the target's HP to (100 + [power used])%.",
       "power": 50,
       "artifacts": 1
     },
@@ -194,6 +194,11 @@
       "description": "Give the target every combat buff.\nEffect scales with amount of power used (50 for 1.5x, 100 for 2x).",
       "power": 50,
       "artifacts": 1
+    },
+    "peace": {
+      "name": "Peace of Mind",
+      "description": "Restore [power used] sanity of the target.",
+      "power": 20
     }
   },
   "quick time events": [{
@@ -228,14 +233,14 @@
       "success": "You leave, you don't want to get involved.",
       "failure": "As soon as you start to leave, the crying stops. You turn around and you see empty eye sockets stalking you. You run.",
       "rewards": "xp 10",
-      "maluses": "hp 5"
+      "maluses": "hp 5, sa 10"
     }, {
       "option": "Investigate",
       "chance": 50,
       "success": "It turns out the crying was coming from a tied-up woman. You untie her and she rewards you with some Alloy.",
       "failure": "It turns out the crying was just an hallucination.",
       "rewards": "xp 100, mn 50",
-      "maluses": "xp 200"
+      "maluses": "xp 200, sa 20"
     }]
   }, {
     "description": "You spot a piece of an artifact at the bottom of a well.",
@@ -244,8 +249,8 @@
       "chance": 90,
       "success": "The rock hits the piece, shattering it in the process. You don't know why you did that but you are satisfied with your shot.",
       "failure": "You miss your shot. You leave, feeling defeated.",
-      "rewards": "xp 20",
-      "maluses": "mn 10"
+      "rewards": "xp 20, sa 10",
+      "maluses": "sa 5"
     }, {
       "option": "Descend with the help of a rope",
       "chance": 50,
@@ -262,28 +267,28 @@
       "success": "You manage to slip away, undetected.",
       "failure": "You feel His presence growing in your mind. Madness overwhelms you.",
       "rewards": "xp 666",
-      "maluses": "hp 100"
+      "maluses": "hp 100, sa 50"
     }, {
       "option": "RUN",
       "chance": 50,
       "success": "You manage to hide from him inside a nearby horse carcass.",
       "failure": "You feel His presence growing in your chest. The growing heat of Chaos overwhelms you.",
       "rewards": "xp 666",
-      "maluses": "hp 100"
+      "maluses": "hp 100, sa 50"
     }, {
       "option": "RUN",
       "chance": 50,
       "success": "You start running, He ignores you.",
       "failure": "You feel his presence growing in your limbs. The pain overwhelms you.",
       "rewards": "xp 666",
-      "maluses": "hp 100"
+      "maluses": "hp 100, sa 50"
     }, {
       "option": "KILL",
       "chance": 1,
       "success": "Against all your instincts you lunge at Him, landing a \"fatal\" blow. He vanishes, leaving behind some treasure.",
       "failure": "You are paralyzed by terror & consumed by madness.",
       "rewards": "xp 10000, item (Eldritch)",
-      "maluses": "hp 666, mn 666, xp 666"
+      "maluses": "hp 666, mn 666, xp 666, sa 100"
     }]
   }, {
     "description": "You stumble upon a strange lady that offers you a potion, claiming it will make you stronger.",
@@ -309,15 +314,15 @@
       "chance": 90,
       "success": "You touch her & you suddenly feel stronger. She slowly fades away, as if she was a dream all along",
       "failure": "You try to touch her but it turns out she was an hallucination all along.",
-      "rewards": "xp 100",
-      "maluses": "xp 100"
+      "rewards": "xp 100, sa 20",
+      "maluses": "xp 100, sa 20"
     }, {
       "option": "Steal her squid.",
       "chance": 5,
       "success": "You manage to swipe her squid, which starts melting and turns into 3 artifact pieces that kind of look like umbilical cords.",
       "failure": "The moment you think of stealing her squid she disappears, as horrible visions of nightmarish monsters fill your mind.",
       "rewards": "xp 200, ap 3",
-      "maluses": "hp 200"
+      "maluses": "hp 200, sa 50"
     }]
   }, {
     "description": "Suddenly, everything becomes silent. You are immersed in an endless sea of darkness & silence. A female voice speaks softly: \"I AM BOROM. I AM THE PLANET. I AM AFRAID\"",
@@ -327,30 +332,30 @@
       "success": "Whatever this thing is it's freaking you out, you try running but you can't move. You try waking up instead. It works.",
       "failure": "You can't run. You can't even move. The voice falls silent but the darkness remains. You wake some time later, covered in sweat.",
       "rewards": "xp 100",
-      "maluses": "hp 20"
+      "maluses": "hp 20, sa 20"
     }, {
       "option": "Ask what she is afraid of",
       "chance": 38,
       "success": "\"DEATH. I NEED YOU TO PROTECT ME FROM DEATH. A PRESENCE INSIDE MY CORE KILLING ME. I NEED YOU. I LOVE YOU.\" You wake up a few moments later, light headed.",
       "failure": "You are terrified and cannot speak. You wake some time later, covered in sweat & bruises.",
       "rewards": "xp 3800",
-      "maluses": "hp 50, xp 100"
+      "maluses": "hp 50, xp 100, sa 25"
     }]
   }, {
     "description": "A talking crow lands on your shoulder and offers to tell you a secret for a piece of bread.",
     "choices": [{
       "option": "Give the crow bread",
-      "chance": 50,
+      "chance": 90,
       "success": "The crow reveals a hidden path that leads to a some treasure.",
       "failure": "The crow eats the bread and flies away, leaving you with nothing.",
       "rewards": "xp 100",
       "maluses": "mn 10"
     }, {
       "option": "Shoo the crow away",
-      "chance": 15,
+      "chance": 42,
       "success": "The crow flies off, and you find a shiny trinket where it was standing.",
       "failure": "The crow angrily caws and summons a flock to harass you.",
-      "rewards": "xp 150, ap 1",
+      "rewards": "xp 150, ap 1, sa 5",
       "maluses": "hp 50, mn 50"
     }]
 }, {
@@ -360,15 +365,15 @@
       "chance": 75,
       "success": "You help the ghost resolve its unfinished business and it leads you to a hidden room filled with treasure.",
       "failure": "Despite your efforts, the ghost remains restless and vanishes, leaving you with nothing but a chill.",
-      "rewards": "xp 200, mn 200",
-      "maluses": "hp 5, xp 50"
+      "rewards": "xp 200, mn 200, sa 10",
+      "maluses": "hp 5, xp 50, sa 5"
     }, {
       "option": "Ignore the ghost",
       "chance": 90,
       "success": "You ignore the ghost and continue your quest.",
       "failure": "The ghost becomes angry and lets out a blood curling scream.",
-      "rewards": "xp 20",
-      "maluses": "hp 50"
+      "rewards": "xp 20, sa 5",
+      "maluses": "hp 50, sa 10"
     }]
 }, {
     "description": "You encounter a creepy vagabond who offers advice for a small fee of one of your toenails.",
@@ -384,7 +389,7 @@
       "chance": 90,
       "success": "You rightfully decide to ignore him.",
       "failure": "He lunges at you, scratching you. He runs off on all fours, never to be seen again.",
-      "rewards": "xp 20",
+      "rewards": "xp 20, sa 5",
       "maluses": "hp 5"
     }]
 }, {
@@ -401,7 +406,7 @@
       "chance": 80,
       "success": "You move on, not getting involved, and avoid any unnecessary danger.",
       "failure": "You later hear the creature’s mournful cry as a predator takes it. You regret your choice.",
-      "rewards": "xp 50",
+      "rewards": "xp 50, sa 5",
       "maluses": "xp 20"
     }]
 }, {
@@ -439,7 +444,7 @@
       "chance": 90,
       "success": "You avoid the temptation and continue on your journey with no ill effects.",
       "failure": "You later regret not making a wish, as a challenge arises that you could have avoided.",
-      "rewards": "xp 50",
+      "rewards": "xp 50, sa 5",
       "maluses": "xp 10"
     }]
 }, {
@@ -456,8 +461,8 @@
       "chance": 90,
       "success": "The rock looks unbreakable anyway, you leave.",
       "failure": "You later regret your choice as you learn that the item was infused with powerful boons.",
-      "rewards": "xp 50",
-      "maluses": "xp 10"
+      "rewards": "xp 50, sa 5",
+      "maluses": "xp 10, sa 5"
     }]
 }, {
     "description": "A strange mist fills the path ahead, and a voice beckons you to enter, promising great rewards within.",
@@ -467,13 +472,13 @@
       "success": "Inside the mist, you find an enchanted grove, filled with rare plants and treasures.",
       "failure": "The mist disorients you, and you wander aimlessly for hours before finding your way out, exhausted.",
       "rewards": "xp 500, mn 500",
-      "maluses": "hp 100"
+      "maluses": "hp 100, sa 5"
     }, {
       "option": "Avoid the mist",
       "chance": 90,
       "success": "You steer clear of the mysterious mist and continue on your journey safely.",
       "failure": "Later, you learn that those who braved the mist found valuable treasures.",
-      "rewards": "xp 50",
+      "rewards": "xp 50, sa 5",
       "maluses": "xp 10"
     }]
   }, {
@@ -483,15 +488,15 @@
       "chance": 50,
       "success": "The crystal radiates with energy, enhancing your abilities as you feel a surge of power.",
       "failure": "The crystal crumbles to dust in your hands, leaving you with nothing but a sense of loss.",
-      "rewards": "xp 500",
+      "rewards": "xp 500, sa 20",
       "maluses": "mn 500"
     }, {
       "option": "Decline the offer",
       "chance": 90,
       "success": "You refuse and avoid potential danger, saving your money for something more trustworthy.",
       "failure": "Later, you hear rumors that the crystal was real and the buyer became incredibly powerful.",
-      "rewards": "xp 50",
-      "maluses": "xp 10"
+      "rewards": "xp 50, sa 5",
+      "maluses": "xp 10, sa 5"
     }]
 }, {
     "description": "A traveling bard offers to sing a song about your adventures, claiming it will spread your fame far and wide.",
@@ -500,15 +505,15 @@
       "chance": 70,
       "success": "The bard's song captivates the crowd, and soon you find yourself more well-known in the region.",
       "failure": "The bard’s song is terrible, and you become the laughing stock of the taverns.",
-      "rewards": "rn 100",
+      "rewards": "rn 100, sa 50",
       "maluses": "rn 100"
     }, {
       "option": "Refuse the bard",
       "chance": 85,
       "success": "You avoid unwanted attention and continue on your journey in peace.",
       "failure": "Later, you hear another adventurer became famous thanks to the bard’s song.",
-      "rewards": "xp 50",
-      "maluses": "xp 10"
+      "rewards": "xp 50, sa 5",
+      "maluses": "xp 10, sa 5"
     }]
 }, {
     "description": "You find an old, dusty book in an abandoned library, its pages filled with strange symbols and drawings.",
@@ -518,14 +523,14 @@
       "success": "The book reveals ancient knowledge, granting you new powers and insights into the arcane.",
       "failure": "The symbols confuse and overwhelm you, causing a painful headache before you throw the book aside.",
       "rewards": "xp 500",
-      "maluses": "hp 100"
+      "maluses": "hp 100, sa 10"
     }, {
       "option": "Leave the book",
       "chance": 90,
       "success": "You decide to leave the mysterious tome untouched and exit the library unharmed.",
       "failure": "Later, you regret not learning what secrets the book could have revealed.",
-      "rewards": "xp 50",
-      "maluses": "xp 10"
+      "rewards": "xp 50, sa 5",
+      "maluses": "xp 10, sa 5"
     }]
 }, {
     "description": "A mysterious blacksmith offers to forge you a weapon, but demands a payment in fragments of your soul in return.",
@@ -535,14 +540,14 @@
       "success": "The blacksmith forges a powerful weapon that shimmers with enchantments, empowering you.",
       "failure": "The weapon is flawed, and you feel you’ve lost something precious for little gain.",
       "rewards": "item (Strange)",
-      "maluses": "hp 100"
+      "maluses": "hp 100, sa 5"
     }, {
       "option": "Refuse the trade",
       "chance": 90,
       "success": "Whatever the blacksmith meant for 'something of personal value', you don't like it, so you leave.",
       "failure": "You wonder if the blacksmith's weapon could have given you the strength to overcome your next challenge.",
-      "rewards": "xp 50",
-      "maluses": "xp 10"
+      "rewards": "xp 50, sa 5",
+      "maluses": "xp 10, sa 5"
     }]
 }, {
     "description": "At a crossroads, you meet an old hermit who claims he can see the future. He offers to tell you what lies ahead for a price.",
@@ -552,13 +557,13 @@
       "success": "The hermit's prophecy proves accurate, helping you avoid a dangerous trap later on.",
       "failure": "The hermit mutters gibberish & vanishes, leaving you with more questions than answers.",
       "rewards": "xp 180",
-      "maluses": "mn 50"
+      "maluses": "mn 50, sa 5"
     }, {
       "option": "Refuse the offer",
       "chance": 80,
       "success": "You save your Alloy and navigate your journey through your own instincts.",
       "failure": "You later fall into a trap that the hermit might have warned you about.",
-      "rewards": "xp 70",
+      "rewards": "xp 70, sa 5",
       "maluses": "hp 10"
     }]
 }, {
@@ -575,8 +580,8 @@
       "chance": 85,
       "success": "You leave the ancient relic undisturbed, avoiding whatever curse or challenge it may bring.",
       "failure": "Later, you hear of a hero who claimed the sword and became a legend.",
-      "rewards": "xp 50",
-      "maluses": "xp 50"
+      "rewards": "xp 50, sa 5",
+      "maluses": "xp 50, sa 5"
     }]
 }],
   "vocations": [{

@@ -1278,6 +1278,11 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         player.renown += amount
         return None
 
+    @staticmethod
+    def _add_sanity(player: Player, amount: int) -> None:
+        player.add_sanity(amount)
+        return None
+
     # maluses ----
 
     @staticmethod
@@ -1306,6 +1311,11 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         player.renown -= amount
         return None
 
+    @staticmethod
+    def _lose_sanity(player: Player, amount: int) -> None:
+        player.sanity -= amount
+        return None
+
     @classmethod
     def __get_rewards_from_string(cls, reward_string: str) -> list[FuncWithParam]:
         split_reward_str = reward_string.split(", ")
@@ -1324,6 +1334,8 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
                 funcs_list.append(FuncWithParam(cls._add_item, components[1]))
             elif components[0] == "rn":
                 funcs_list.append(FuncWithParam(cls._add_renown, int(components[1])))
+            elif components[0] == "sa":
+                funcs_list.append(FuncWithParam(cls._add_sanity, int(components[1])))
         return funcs_list
 
     @classmethod
@@ -1342,6 +1354,8 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
                 )
             elif components[0] == "rn":
                 funcs_list.append(FuncWithParam(cls._lose_renown, int(components[1])))
+            elif components[0] == "sa":
+                funcs_list.append(FuncWithParam(cls._lose_sanity, int(components[1])))
         return funcs_list
 
     @classmethod
@@ -1368,6 +1382,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
                 .replace("ap", "Artifact pieces:")
                 .replace("item", "an item")
                 .replace("rn", "Renown")
+                .replace("sa", "Sanity")
             )
             failure = (
                 choice.get("failure")
@@ -1376,6 +1391,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
                 .replace("mn", f"{MONEY}:")
                 .replace("hp", "HP:")
                 .replace("rn", "Renown")
+                .replace("sa", "Sanity")
             )
             # add params to struct
             options.append((option, chance))
@@ -1386,7 +1402,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         return cls(qte_json.get("description"), successes, failures, options, rewards, maluses)
 
     def __str__(self):
-        return f"{self.description}\n{'\n'.join(f'{i + 1}. {s} ({p}% chance)' for i, (s, p) in enumerate(self.options))}"
+        return f"{self.description}\n{'\n'.join(f'{i + 1}. {s}' for i, (s, p) in enumerate(self.options))}"
 
 
 class Vocation(Listable["Vocation"], meta_name="vocations"):

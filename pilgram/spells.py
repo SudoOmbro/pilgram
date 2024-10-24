@@ -240,6 +240,7 @@ def __ironflesh_boon(caster: Player, args: list[str]) -> str:
     target.hp_percent = (100 + amount) / 100
     if not self_cast:
         _db().update_player_data(target)
+    _db().create_and_add_notification(target, "Your skin becomes as hard as Iron...")
     return get_cast_string(target, self_cast)
 
 
@@ -251,6 +252,7 @@ def __radiance_boon(caster: Player, args: list[str]) -> str:
     target.satchel.append(ConsumableItem.get(15))
     if not self_cast:
         _db().update_player_data(target)
+    _db().create_and_add_notification(target, "You feel something new in your satchel...")
     return get_cast_string(target, self_cast)
 
 
@@ -272,4 +274,18 @@ def __supremacy_boon(caster: Player, args: list[str]) -> str:
     target.set_flag(ElectricBuff)
     if not self_cast:
         _db().update_player_data(target)
+    _db().create_and_add_notification(target, "You feel an incredible surge of power...")
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("peace")
+def __peace_of_mind(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    if target.sanity >= target.get_max_sanity():
+        return "Target is already at max sanity"
+    target.add_sanity(amount)
+    if not self_cast:
+        _db().update_player_data(target)
+    _db().create_and_add_notification(target, "You feel a sense of calm...")
     return get_cast_string(target, self_cast)
