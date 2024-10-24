@@ -2040,7 +2040,8 @@
     "verb": "consumed",
     "value": 700,
     "effects": {
-      "hp_percent_restored": 0.5
+      "hp_percent_restored": 0.5,
+      "sanity_restored": -15
     }
   }, {
     "id": 6,
@@ -2050,7 +2051,8 @@
     "value": 1200,
     "effects": {
       "revive": true,
-      "hp_percent_restored": 0.5
+      "hp_percent_restored": 0.5,
+      "sanity_restored": -50
     }
   }, {
     "id": 7,
