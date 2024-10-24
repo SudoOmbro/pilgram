@@ -408,7 +408,7 @@ class Spell:
         self.function = function
 
     def can_cast(self, caster: Player) -> bool:
-        return caster.get_spell_charge() >= self.required_power
+        return (caster.get_spell_charge() >= self.required_power ) and (caster.artifact_pieces >= self.required_artifacts)
 
     def check_args(self, args: tuple[str, ...]) -> bool:
         if self.required_args == 0:
@@ -419,6 +419,7 @@ class Spell:
         try:
             result = self.function(caster, args)
             caster.last_cast = datetime.now()
+            caster.artifact_pieces -= self.required_artifacts
             return f"You cast {self.name}, " + result
         except SpellError as e:
             return e.message
