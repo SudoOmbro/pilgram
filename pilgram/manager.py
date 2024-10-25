@@ -373,6 +373,9 @@ class QuestManager(Manager):
                 if Cheater.is_set(player.flags):
                     modifiers_amount += 8
                     enemy_level_modifier += 1000000
+                if player.sanity <= 50:
+                    modifiers_amount += 1
+                    enemy_level_modifier += 5 + ((player.get_max_sanity() - player.sanity)/5)
                 for _ in range(modifiers_amount):
                     choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
                     modifier_type: type[Modifier] = random.choice(choice_list)
