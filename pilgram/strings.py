@@ -192,6 +192,7 @@ class Strings:
         "xp_on_reroll": "Reroll XP (x Item lv.)",
         "reroll_stats_bonus": "Reroll stats bonus",
         "perk_rarity_bonus": "Reroll perk bonus",
+        "hunt_sanity_loss": "Hunt sanity loss",
     }
 
     # items
@@ -318,6 +319,21 @@ class Strings:
     raid_on_quest = "You can't start a raid while on a quest!"
     raid_not_enough_players = "A minimum of 3 players are required to start a raid!"
     raid_cancel = "Raid canceled."
+
+    sanity_lines: dict[int, tuple[str, ...]] = {
+        40: (
+            "You see shadows move at the edge of your vision...",
+            "You hear voices whisper unintelligibly..."
+        ),
+        25: (
+            "There's a jester in your ear telling you to cause funny times.",
+            "And you dance, dance. And you say you'll never die."
+        ),
+        0: (
+            "DO YOU THINK YOU ARE IN CONTROL?",
+            "MAGNIFICENT SLAUGHTER"
+        )
+    }
 
     # errors
     no_character_yet = "You haven't made a character yet!"

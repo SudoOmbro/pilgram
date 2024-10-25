@@ -222,7 +222,6 @@ def __migrate_v7_to_v8():
 @__add_to_migration_list("pilgram_v8.db")
 def __migrate_v8_to_v9():
     from playhouse.migrate import SqliteMigrator, migrate
-    from ._models_v8 import GuildModel
     from ._models_v8 import db as previous_db
     log.info("Migrating v8 to v9...")
     previous_db.connect()

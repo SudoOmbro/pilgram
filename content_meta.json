@@ -755,7 +755,7 @@
       "combat_rewards_multiplier": 1.3,
       "hp_bonus": 20,
       "passive_regeneration": 2,
-      "qte_frequency_bonus": 1,
+      "hunt_sanity_loss": -1,
       "damage": {
         "slash": 2,
         "pierce": 1
@@ -771,7 +771,7 @@
       "combat_rewards_multiplier": 1.4,
       "hp_bonus": 40,
       "passive_regeneration": 10,
-      "qte_frequency_bonus": 2,
+      "hunt_sanity_loss": -2,
       "damage": {
         "slash": 2,
         "pierce": 2
@@ -787,7 +787,7 @@
       "combat_rewards_multiplier": 1.5,
       "hp_bonus": 80,
       "passive_regeneration": 20,
-      "qte_frequency_bonus": 2,
+      "hunt_sanity_loss": -2,
       "lick_wounds": true,
       "damage": {
         "slash": 3,
@@ -898,6 +898,7 @@
     "modifiers": {
       "hp_mult": 1.3,
       "eldritch_resist": true,
+      "hunt_sanity_loss": -1,
       "damage": {
         "fire": 1
       },
@@ -915,6 +916,7 @@
       "hp_mult": 1.4,
       "hp_bonus": 50,
       "eldritch_resist": true,
+      "hunt_sanity_loss": -2,
       "revive_chance": 0.1,
       "damage": {
         "fire": 2
@@ -933,6 +935,7 @@
       "hp_mult": 1.6,
       "hp_bonus": 100,
       "eldritch_resist": true,
+      "hunt_sanity_loss": -3,
       "revive_chance": 0.2,
       "damage": {
         "fire": 4

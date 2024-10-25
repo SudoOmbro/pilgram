@@ -398,7 +398,8 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "home": __generate_int_op_command("home_level", "player", "add"),
             "pieces": __generate_int_op_command("artifact_pieces", "player", "add"),
             "randitem": IFW([player_arg("player name")], give_random_item_to_player, "Add a random item to the player's inventory"),
-            "item": IFW([player_arg("player name"), integer_arg("item type"), integer_arg("item level"), integer_arg("item rarity")], give_item_to_player, "Add an item to the player's inventory")
+            "item": IFW([player_arg("player name"), integer_arg("item type"), integer_arg("item level"), integer_arg("item rarity")], give_item_to_player, "Add an item to the player's inventory"),
+            "sanity": __generate_int_op_command("sanity", "player", "add"),
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "add"),
@@ -417,7 +418,8 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "gear": __generate_int_op_command("gear_level", "player", "set"),
             "home": __generate_int_op_command("home_level", "player", "set"),
             "pieces": __generate_int_op_command("artifact_pieces", "player", "set"),
-            "level": __generate_int_op_command("level", "player", "set")
+            "level": __generate_int_op_command("level", "player", "set"),
+            "sanity": __generate_int_op_command("sanity", "player", "set"),
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "set"),
@@ -430,7 +432,8 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "xp": __generate_int_op_command("xp", "player", "sub"),
             "gear": __generate_int_op_command("gear_level", "player", "sub"),
             "home": __generate_int_op_command("home_level", "player", "sub"),
-            "pieces": __generate_int_op_command("artifact_pieces", "player", "sub")
+            "pieces": __generate_int_op_command("artifact_pieces", "player", "sub"),
+            "sanity": __generate_int_op_command("sanity", "player", "sub"),
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "sub"),

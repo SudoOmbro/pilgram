@@ -37,6 +37,8 @@ Upgrading your home costs money, the *upgrade cost* is calculated with the *form
 
 🔷 *Total Base Damage/Resist*: The sum of all your equipment contributions for damage & resistance. Not affected by modifiers.
 
+🔷 *Sanity*: Used to hunt. The more you hunt the lower it goes. If you get it too low bad stuff starts to happen...
+
 ♦️♦️*Quests*♦️♦️
 Your main source of income & xp. *Succeeding in a quest* depends on a D20 throw:
 

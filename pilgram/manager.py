@@ -782,7 +782,6 @@ class TimedUpdatesManager(Manager):
             self.db().delete_auction(auction)
 
 
-
 class NotificationsManager(Manager):
     """class that is tasked with sending all the notifications"""
     _PENDING_NOTIFICATIONS = "pending_notifications.json"
@@ -810,6 +809,11 @@ class NotificationsManager(Manager):
                 string += "\n\nYou unlocked the first profession slot!"
             elif level == 20:
                 string += "\n\nYou unlocked the second profession slot!"
+        elif event.type == "sanity low":
+            sanity = event.data["sanity"]
+            for value, strings in Strings.sanity_lines.items():
+                if sanity >= value:
+                    string = random.choice(strings)
         return string
 
     def run(self) -> None:

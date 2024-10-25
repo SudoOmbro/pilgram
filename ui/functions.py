@@ -1114,7 +1114,7 @@ def force_combat(context: UserContext) -> str:
     if Explore.is_set(player.flags):
         return Strings.already_exploring
     if player.sanity >= 10:
-        player.sanity -= 10
+        player.add_sanity(-10)
     else:
         return Strings.sanity_too_low
     player.set_flag(ForcedCombat)

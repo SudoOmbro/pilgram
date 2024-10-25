@@ -861,6 +861,8 @@ class Player(CombatActor):
         max_sanity = self.get_max_sanity()
         if self.sanity > max_sanity:
             self.sanity = max_sanity
+        if (amount < 0) and (self.sanity <= 50):
+            InternalEventBus().notify(Event("sanity low", self, {"sanity": self.sanity}))
 
     # utility
 
@@ -1313,7 +1315,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
 
     @staticmethod
     def _lose_sanity(player: Player, amount: int) -> None:
-        player.sanity -= amount
+        player.add_sanity(-amount)
         return None
 
     @classmethod
@@ -1469,6 +1471,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         self.xp_on_reroll: int = modifiers.get("xp_on_reroll", 0)
         self.reroll_stats_bonus: int = modifiers.get("reroll_stats_bonus", 0)
         self.perk_rarity_bonus: int = modifiers.get("perk_rarity_bonus", 0)
+        self.hunt_sanity_loss: int = modifiers.get("hunt_sanity_loss", 0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
@@ -1520,6 +1523,7 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
         result.xp_on_reroll = self.xp_on_reroll + other.xp_on_reroll
         result.reroll_stats_bonus = self.reroll_stats_bonus + other.reroll_stats_bonus
         result.perk_rarity_bonus = self.perk_rarity_bonus + other.perk_rarity_bonus
+        result.hunt_sanity_loss = self.hunt_sanity_loss + other.hunt_sanity_loss
         # setup applied modifiers
         result.modifiers_applied = copy(self.modifiers_applied)
         for modifier in other.modifiers_applied:
@@ -1707,7 +1711,7 @@ class Enemy(CombatActor):
         return max(1, value)
 
     def get_base_max_hp(self) -> int:
-        return (30 + self.level_modifier) * self.meta.zone.level
+        return (45 + self.level_modifier) * self.meta.zone.level
 
     def get_base_attack_damage(self) -> Damage:
         return self.meta.zone.damage_modifiers.scale(1 + self.get_level()).apply_bonus(self.meta.zone.level)
