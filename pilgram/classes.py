@@ -859,7 +859,7 @@ class Player(CombatActor):
     def add_sanity(self, amount: int):
         self.sanity += amount
         max_sanity = self.get_max_sanity()
-        if amount > max_sanity:
+        if self.sanity > max_sanity:
             self.sanity = max_sanity
 
     # utility

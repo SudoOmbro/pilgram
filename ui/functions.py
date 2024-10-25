@@ -1109,12 +1109,14 @@ def use_consumable(context: UserContext, item_pos_str: str) -> str:
 
 def force_combat(context: UserContext) -> str:
     player = get_player(db, context)
+    if ForcedCombat.is_set(player.flags):
+        return Strings.already_hunting
+    if Explore.is_set(player.flags):
+        return Strings.already_exploring
     if player.sanity >= 10:
         player.sanity -= 10
     else:
         return Strings.sanity_too_low
-    if Explore.is_set(player.flags):
-        return Strings.already_exploring
     player.set_flag(ForcedCombat)
     db().update_player_data(player)
     return Strings.force_combat
@@ -1124,6 +1126,8 @@ def force_qte(context: UserContext) -> str:
     player = get_player(db, context)
     if ForcedCombat.is_set(player.flags):
         return Strings.already_hunting
+    if Explore.is_set(player.flags):
+        return Strings.already_exploring
     player.set_flag(Explore)
     db().update_player_data(player)
     return Strings.explore_text
