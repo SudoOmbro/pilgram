@@ -1444,6 +1444,7 @@ def sacrifice(context: UserContext) -> str:
     for _ in range(random.randint(5, 10)):
         eldritch_truth += f"{generate_random_eldritch_name()} "
     player.hp_percent -= 0.75
+    player.add_sanity(-20)
     amount: int = int((player.get_max_hp() * 0.2) * player.level)
     amount_am = player.add_xp(amount)
     db().update_player_data(player)
