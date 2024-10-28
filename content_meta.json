@@ -36,6 +36,9 @@
   "crafting": {
     "reroll_mult": 18
   },
+  "hunt": {
+    "sanity_cost": 25
+  },
   "minigames": {
     "hands": {
       "min_buy_in": 5,

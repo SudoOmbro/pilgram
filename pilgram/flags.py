@@ -145,7 +145,7 @@ class Pity5(Flag):
     pass  # 27
 
 
-class Cheater(Flag):
+class Cheater(Flag):  # this flag should be unused actually
     pass  # 28
 
 

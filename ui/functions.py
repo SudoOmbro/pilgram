@@ -53,6 +53,7 @@ MAX_TAX: int = ContentMeta.get("guilds.max_tax")
 REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
 SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
 REROLL_MULT: int = ContentMeta.get("crafting.reroll_mult")
+HUNT_SANITY_COST: int = ContentMeta.get("hunt.sanity_cost")
 
 
 def db() -> PilgramDatabase:
@@ -1015,6 +1016,7 @@ def sell_all(context: UserContext) -> str:
     db().update_player_data(player)
     return result + f"\nTotal {MONEY} gained: {total_money_gained}"
 
+
 def process_sell_confirm(context: UserContext, user_input: str) -> str:
     player = get_player(db, context)
     context.end_process()
@@ -1113,8 +1115,8 @@ def force_combat(context: UserContext) -> str:
         return Strings.already_hunting
     if Explore.is_set(player.flags):
         return Strings.already_exploring
-    if player.sanity >= 10:
-        player.add_sanity(-10)
+    if player.sanity >= HUNT_SANITY_COST:
+        player.add_sanity(-HUNT_SANITY_COST - player.vocation.hunt_sanity_loss)
     else:
         return Strings.sanity_too_low
     player.set_flag(ForcedCombat)
