@@ -372,6 +372,8 @@ class CombatActor(ABC):
 
 
 class CombatContainer:
+    MAX_TURNS: int = 1000
+
     def __init__(
         self,
         participants: list[CombatActor],
@@ -537,6 +539,11 @@ class CombatContainer:
         self._start_combat()
         while not is_fight_over:
             self.turn += 1
+            if self.turn > self.MAX_TURNS:
+                amount: int = 100 * (self.turn - self.MAX_TURNS)
+                for participant in self.get_alive_actors():
+                    participant.modify_hp(-amount)
+                    self.write_to_log(f"SUDDEN DEATH! {participant.get_name()} loses {amount} HP ({participant.get_hp_string()})")
             self.write_to_log("")
             # sort participants based on what they rolled on initiative
             self.participants.sort(key=lambda a: a.get_initiative())
