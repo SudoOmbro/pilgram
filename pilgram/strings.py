@@ -319,6 +319,10 @@ class Strings:
     raid_on_quest = "You can't start a raid while on a quest!"
     raid_not_enough_players = "A minimum of 3 players are required to start a raid!"
     raid_cancel = "Raid canceled."
+    raid_description = "Raiding with your guild in {zone}."
+    raid_started = "Raid in {zone} started. Godspeed."
+    raid_win = "You manage to vanquish the group of enemies."
+    raid_success = "You completed the raid successfully."
 
     sanity_lines: dict[int, tuple[str, ...]] = {
         40: (

@@ -18,6 +18,8 @@ from pilgram.classes import (
     ZoneEvent, Notification, Anomaly,
 )
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
+from pilgram.flags import Raiding
+from pilgram.strings import Strings
 
 log = logging.getLogger(__name__)
 
@@ -170,6 +172,24 @@ class PilgramDatabase(ABC):
         """ delete the guild with the given id """
         raise NotImplementedError
 
+    def get_avaible_players_for_raid(self, guild: Guild) -> list[Player]:
+        guild_members_data = self.get_guild_members_data(guild)
+        available_members: list[Player] = []
+        for member_id, _, _ in guild_members_data:
+            member = self.get_player_data(member_id)
+            if not self.is_player_on_a_quest(member):
+                available_members.append(member)
+        return available_members
+
+    def get_raid_participants(self, guild: Guild) -> list[Player]:
+        guild_members_data = self.get_guild_members_data(guild)
+        participants: list[Player] = []
+        for member_id, _, _ in guild_members_data:
+            member = self.get_player_data(member_id)
+            if Raiding.is_set(member.flags):
+                participants.append(member)
+        return participants
+
     # zones ----------------------------------
 
     def get_zone(self, zone_id: int) -> Zone:
@@ -216,9 +236,25 @@ class PilgramDatabase(ABC):
         """returns the next quest the player has to do in the specified zone."""
         return self.get_quest_from_number(zone, player.progress.get_zone_progress(zone))
 
-    def get_quest(self, quest_id: int) -> Quest:
+    def get_quest_internal(self, quest_id: int) -> Quest:
         """get a quest given a zone and the number of the quest"""
         raise NotImplementedError
+
+    def get_quest(self, quest_id: int) -> Quest:
+        """get a quest given a zone and the number of the quest. If the zone id is negative return a raid"""
+        if quest_id >= 0:
+            return self.get_quest_internal(quest_id)
+        zone = self.get_zone(-quest_id)
+        return Quest(
+            quest_id,
+            zone,
+            -quest_id,
+            f"Raid: {zone.zone_name}",
+            Strings.raid_description.format(zone=zone.zone_name),
+            "",
+            "",
+            is_raid=True
+        )
 
     def get_quest_from_number(self, zone: Zone, quest_number: int) -> Quest:
         """get a quest given a zone and the number of the quest"""

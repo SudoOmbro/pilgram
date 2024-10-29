@@ -20,13 +20,13 @@ from pilgram.classes import (
     Guild,
     Player,
     SpellError,
-    Zone,
+    Zone, Quest,
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
-    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore, InCrypt
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore, InCrypt, Raiding
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -509,6 +509,7 @@ def cast_spell(context: UserContext, spell_name: str, *extra_args) -> str:
         return Strings.not_enough_args.format(num=spell.required_args)
     try:
         result = spell.cast(player, extra_args)
+        log.info(f"{player.name} casted {spell_name} on {extra_args}")
         db().update_player_data(player)
         return result
     except SpellError as e:
@@ -1453,16 +1454,6 @@ def sacrifice(context: UserContext) -> str:
     return f"You stab yourself with your ritual knife. Some eldritch truth is revealed to you:\n\n_{eldritch_truth}_\n\nYou gain {amount_am} XP."
 
 
-def _get_avaible_players_for_raid(guild: Guild) -> list[Player]:
-    guild_members_data = db().get_guild_members_data(guild)
-    available_members: list[Player] = []
-    for member_id, _, _ in guild_members_data:
-        member = db().get_player_data(member_id)
-        if not db().is_player_on_a_quest(member):
-            available_members.append(member)
-    return available_members
-
-
 def start_raid(context: UserContext, zone_id: int) -> str:
     player = get_player(db, context)
     # do basic checks
@@ -1471,7 +1462,7 @@ def start_raid(context: UserContext, zone_id: int) -> str:
         return Strings.raid_guild_required
     if db().is_player_on_a_quest(player):
         return Strings.raid_on_quest
-    available_members = _get_avaible_players_for_raid(guild)
+    available_members = db().get_avaible_players_for_raid(guild)
     if len(available_members) < 3:
         return Strings.raid_not_enough_players
     # confirm
@@ -1486,11 +1477,23 @@ def process_start_raid_confirm(context: UserContext, user_input: str) -> str:
         return Strings.raid_cancel
     player = get_player(db, context)
     guild = db().get_owned_guild(player)
-    available_members = _get_avaible_players_for_raid(guild)
+    available_members = db().get_avaible_players_for_raid(guild)
+    # get zone & quest
     zone_id: int = context.get("zone")
+    quest = db().get_quest(-zone_id)
+    finish_time = datetime.now() + timedelta(hours=12 * zone_id)
     # actually start the raid
-    # TODO
-    return "coming soon :)"
+    for member in available_members:
+        ac = db().get_player_adventure_container(member)
+        member.set_flag(Raiding)
+        ac.quest = quest
+        ac.finish_time = finish_time
+        db().update_player_data(member)
+        if member == player:
+            db().update_quest_progress(ac)
+        else:
+            db().update_quest_progress(ac, last_update=finish_time + timedelta(hours=1) + timedelta(minutes=random.randint(-30, 30)))
+    return Strings.raid_started.format(zone=quest.zone.zone_name)
 
 
 def delete_guild(context: UserContext) -> str:

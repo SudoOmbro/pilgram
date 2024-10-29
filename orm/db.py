@@ -619,7 +619,7 @@ class PilgramORMDatabase(PilgramDatabase):
         )
 
     @cache_sized_ttl_quick(size_limit=200, ttl=86400)
-    def get_quest(self, quest_id: int) -> Quest:
+    def get_quest_internal(self, quest_id: int) -> Quest:
         try:
             qs = QuestModel.get(QuestModel.id == quest_id)
             return self.build_quest_object(qs)
@@ -827,7 +827,6 @@ class PilgramORMDatabase(PilgramDatabase):
         except EnemyTypeModel.DoesNotExist:
             raise KeyError(f"Enemey meta with id {enemy_meta_id} does not exist")
 
-    @cache_sized_ttl_quick(size_limit=20, ttl=300)
     def get_random_enemy_meta(self, zone: Zone) -> EnemyMeta:
         ems = EnemyTypeModel.select(
             EnemyTypeModel.id,

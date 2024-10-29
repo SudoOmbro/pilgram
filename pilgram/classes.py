@@ -240,6 +240,7 @@ class Quest:
         description: str,
         success_text: str,
         failure_text: str,
+        is_raid: bool = False
     ) -> None:
         """
         :param quest_id (int): unique id of the quest
@@ -256,6 +257,7 @@ class Quest:
         self.description = description
         self.success_text = success_text
         self.failure_text = failure_text
+        self.is_raid = is_raid
 
     def get_value_to_beat(self, player: Player) -> int:
         sqrt_multiplier = (1.2 * self.zone.level) - (

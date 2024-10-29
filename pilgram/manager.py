@@ -20,10 +20,10 @@ from pilgram.classes import (
     QuickTimeEvent,
     Zone, InternalEventBus, Event, Notification,
 )
-from pilgram.combat_classes import CombatContainer
+from pilgram.combat_classes import CombatContainer, CombatActor
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    Cheater, QuestCanceled, Explore, InCrypt
+    Cheater, QuestCanceled, Explore, InCrypt, Raiding
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
@@ -326,6 +326,7 @@ class QuestManager(Manager):
 
     @staticmethod
     def _process_combat_death(player: Player, ac: AdventureContainer) -> str:
+        """ either revive the player or respawn them in town """
         if (player.vocation.revive_chance > 0) and (random.random() < player.vocation.revive_chance):
             player.hp_percent = 0.25
             return "\n\nBy the grace of the God Emperor you are revived & continue your quest."
@@ -335,6 +336,22 @@ class QuestManager(Manager):
             player.money -= lost_money  # lose 10% of money on death
             player.hp_percent = 1.0
             return (Strings.quest_fail + Strings.lose_money).format(name=ac.quest.name if ac.quest else "Crypt exploration", money=lost_money)
+
+    def _create_enemy(self, ac: AdventureContainer, modifiers_amount: int, level_modifier: int):
+        anomaly = self.db().get_current_anomaly()
+        modifiers: list[Modifier] = []
+        enemy_level_modifier: int = level_modifier
+        if ac.zone() == anomaly.zone:
+            enemy_level_modifier += anomaly.level_bonus
+        for _ in range(modifiers_amount):
+            choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
+            modifier_type: type[Modifier] = random.choice(choice_list)
+            modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))
+        return Enemy(
+            self.db().get_random_enemy_meta(ac.quest.zone),
+            modifiers,
+            enemy_level_modifier
+        )
 
     def _process_combat(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
@@ -362,10 +379,7 @@ class QuestManager(Manager):
                 break
         if not self.player_shades.get(ac.zone().zone_id, None):
             # if there are no shades to fight then generate an enemy
-            modifiers: list[Modifier] = []
             enemy_level_modifier: int = ac.quest.number
-            if ac.zone() == anomaly.zone:
-                enemy_level_modifier += anomaly.level_bonus
             if ForcedCombat.is_set(player.flags):
                 days_left = (ac.finish_time - datetime.now()).days
                 enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
@@ -376,18 +390,12 @@ class QuestManager(Manager):
                 if player.sanity <= 50:
                     modifiers_amount += 1
                     enemy_level_modifier += 5 + ((player.get_max_sanity() - player.sanity)/5)
-                for _ in range(modifiers_amount):
-                    choice_list = get_modifiers_by_rarity(random.randint(Rarity.UNCOMMON, Rarity.LEGENDARY))
-                    modifier_type: type[Modifier] = random.choice(choice_list)
-                    modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))
-            elif random.randint(1, 100) < 20:  # 20% chance of randomly getting a monster with a modifier
-                modifier_type: type[Modifier] = random.choice(get_all_modifiers())
-                modifiers.append(modifier_type.generate(ac.quest.zone.level + enemy_level_modifier))
-            enemy = Enemy(
-                self.db().get_random_enemy_meta(ac.quest.zone),
-                modifiers,
-                enemy_level_modifier
-            )
+                enemy = self._create_enemy(ac, modifiers_amount, enemy_level_modifier)
+            elif random.randint(1, 100) < 20:
+                # 20% chance of randomly getting a monster with a modifier
+                enemy = self._create_enemy(ac, 1, enemy_level_modifier)
+            else:
+                enemy = self._create_enemy(ac, 0, enemy_level_modifier)
         else:
             # fight a shade
             enemy = self.player_shades[ac.zone().zone_id].pop(0)
@@ -476,12 +484,50 @@ class QuestManager(Manager):
         self.db().update_quest_progress(ac)
         self.db().create_and_add_notification(ac.player, text, notification_type="Combat Log")
 
+    def process_raid_combat(self, ac: AdventureContainer):
+        player = self.db().get_player_data(ac.player.player_id)
+        guild = self.db().get_owned_guild(player)
+        party = self.db().get_raid_participants(guild)
+        # get combat participants
+        level_modifier = (ac.finish_time - datetime.now()).days
+        participants: list[CombatActor] = party + [self._create_enemy(ac, random.randint(0, 2), level_modifier + int(x.level / 3)) for x in party]
+        # process combat
+        combat = CombatContainer(participants, {})
+        combat_log = "Combat starts!\n\n" + combat.fight()
+        # give rewards to members that are still alive & return dead members to town
+        for member in party:
+            if member.is_dead():
+                member_ac = self.db().get_player_adventure_container(member)
+                text = self._process_combat_death(member, member_ac)
+                self.db().create_and_add_notification(member, combat_log + text)
+                self.db().update_player_data(member)
+                if member.is_dead():
+                    self.db().update_quest_progress(member_ac)
+            else:
+                xp, money = member.get_rewards(member)
+                xp_am = player.add_xp(xp)
+                money_am = player.add_money(money)
+                renown = member.get_level() * 5
+                self.db().create_and_add_notification(
+                    member,
+                    combat_log + "\n\n" + Strings.raid_win + rewards_string(xp_am, money_am, renown)
+                )
+                self.db().update_player_data(member)
+                guild.prestige += player.get_level()
+        # if leader is dead then abort the raid
+        # TODO
+        # update guild & leader adventure container
+        self.db().update_guild(guild)
+        self.db().update_quest_progress(ac)
+
     def process_update(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
     ) -> None:
         if ac.is_on_a_quest():
             player: Player = self.db().get_player_data(ac.player.player_id)
-            if ac.is_quest_finished():
+            if Raiding.is_set(ac.player.flags):
+                self.process_raid_combat(ac)
+            elif ac.is_quest_finished():
                 self._complete_quest(ac)
             elif QuestCanceled.is_set(player.flags):
                 player.unset_flag(QuestCanceled)
