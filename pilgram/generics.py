@@ -506,6 +506,12 @@ class PilgramDatabase(ABC):
         """ sets the current anomaly as the active anomaly """
         raise NotImplementedError
 
+    # utility functions ----------------------------------
+
+    def reset_caches(self):
+        """ resets all caches """
+        raise NotImplementedError
+
 
 class PilgramGenerator(ABC):
     def generate_quests(self, zone: Zone, quest_data: Any) -> list[Quest]:

@@ -1108,3 +1108,12 @@ class PilgramORMDatabase(PilgramDatabase):
     def update_anomaly(self, anomaly: Anomaly):
         self.ANOMALY["current"] = anomaly
         save_json_to_file(self.ANOMALY_FILENAME, anomaly.get_json())
+
+    # utility functions ----
+
+    @_thread_safe()
+    def reset_caches(self):
+        log.info("Recreating DB Singleton instance")
+        self.__class__._instance = self.__class__.__new__(self.__class__)
+        self.__class__._instance.is_connected = False
+        log.info("DB Instance recreated successfully")
