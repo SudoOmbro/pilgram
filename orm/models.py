@@ -46,6 +46,9 @@ class QuestModel(BaseModel):
     success_text = CharField(null=False)
     failure_text = CharField(null=False)
 
+    def __int__(self):
+        return int(self.id)
+
 
 class PlayerModel(BaseModel):
     id = IntegerField(primary_key=True, unique=True)

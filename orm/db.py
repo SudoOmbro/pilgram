@@ -688,7 +688,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def build_adventure_container(self, qps: QuestProgressModel, owner: Player | None = None) -> AdventureContainer:
         player = self.get_player_data(int(qps.player_id)) if owner is None else owner
-        quest = self.get_quest(qps.quest_id.id) if (qps.quest_id is not None) else None
+        quest = self.get_quest(int(qps.quest_id)) if (qps.quest_id is not None) else None
         return AdventureContainer(player, quest, qps.end_time, qps.last_update)
 
     @cache_sized_ttl_quick(size_limit=200, ttl=60)
