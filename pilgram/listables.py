@@ -7,18 +7,26 @@ from typing import Generic, TypeVar
 from pilgram.globals import ContentMeta
 
 T = TypeVar("T")
+DEFAULT_TAG: str = "default"
 
 
 class Listable(Generic[T], ABC):
-    LIST: list[T] = []
+    LISTS: dict[str, list[T]] = {}
 
     def __init_subclass__(cls, meta_name: str = None, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
         if meta_name and not hasattr(cls, "_initialized"):
-            cls.LIST = []
+            items_counter: int = 0
+            tags_counter: int = 0
+            cls.LISTS = {}
             for listable_json in ContentMeta.get(meta_name):
-                cls.LIST.append(cls.create_from_json(listable_json))
-            print(f"Loaded {len(cls.LIST)} {meta_name}")
+                tag: str = listable_json.get("tag", DEFAULT_TAG)
+                if tag not in cls.LISTS:
+                    cls.LISTS[tag] = []
+                    tags_counter += 1
+                cls.LISTS[tag].append(cls.create_from_json(listable_json))
+                items_counter += 1
+            print(f"Loaded {items_counter} {meta_name}, {tags_counter} tag{"s" if tags_counter > 1 else ""} found")
             cls._initialized = True
 
     @classmethod
@@ -26,14 +34,14 @@ class Listable(Generic[T], ABC):
         raise NotImplementedError
 
     @classmethod
-    def get(cls, listable_id: int) -> T:
-        return cls.LIST[listable_id]
+    def get(cls, listable_id: int, tag: str = DEFAULT_TAG) -> T:
+        return cls.LISTS[tag][listable_id]
 
     @classmethod
-    def get_random(cls) -> T:
-        return cls.LIST[randint(0, len(cls.LIST) - 1)]
+    def get_random(cls, tag: str = DEFAULT_TAG) -> T:
+        return cls.LISTS[tag][randint(0, len(cls.LISTS[tag]) - 1)]
 
     @classmethod
-    def get_random_selection(cls, seed: float, amount: int) -> list[T]:
+    def get_random_selection(cls, seed: float, amount: int, tag: str = DEFAULT_TAG) -> list[T]:
         rng = Random(seed)
-        return rng.sample(cls.LIST, amount)
+        return rng.sample(cls.LISTS[tag], amount)

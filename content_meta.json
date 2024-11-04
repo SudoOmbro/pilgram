@@ -37,7 +37,7 @@
     "reroll_mult": 18
   },
   "hunt": {
-    "sanity_cost": 25
+    "sanity_cost": 20
   },
   "minigames": {
     "hands": {
@@ -201,6 +201,16 @@
     "peace": {
       "name": "Peace of Mind",
       "description": "Restore [power used] sanity of the target.",
+      "power": 20
+    },
+    "terror": {
+      "name": "Terrifying presence",
+      "description": "Decrease the target's sanity by [power used].",
+      "power": 20
+    },
+    "blood": {
+      "name": "Blood boil",
+      "description": "Lose [power used] HP & remove [power used] HP from target.",
       "power": 20
     }
   },
@@ -1997,6 +2007,30 @@
       "slash": 1
     },
     "value": 5
+  }, {
+    "id": 84,
+    "name": "Hateful Heart",
+    "description": "Still beating hearth of a legendary beast. It radiates an aura of hatred.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": true,
+    "delay": -10,
+    "damage": {
+      "occult": 120
+    },
+    "value": 5000
+  }, {
+    "id": 85,
+    "name": "Leaden Amygdala",
+    "description": "The amygdala of a legendary hero, encased in damascus pattern Lead.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "occult": 120
+    },
+    "value": 5000
   }],
   "consumables": [{
     "id": 0,

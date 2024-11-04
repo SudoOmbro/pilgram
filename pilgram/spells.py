@@ -289,3 +289,28 @@ def __peace_of_mind(caster: Player, args: list[str]) -> str:
         _db().update_player_data(target)
     _db().create_and_add_notification(target, "You feel a sense of calm...")
     return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("terror")
+def __terrifying_presence(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    target.add_sanity(-amount)
+    if not self_cast:
+        _db().update_player_data(target)
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("blood")
+def __blood_boil(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    caster.modify_hp(-amount)
+    if caster.hp < 1:
+        caster.hp = 1
+    target.modify_hp(-amount)
+    if target.hp < 1:
+        target.hp = 1
+    if not self_cast:
+        _db().update_player_data(target)
+    return get_cast_string(target, self_cast)

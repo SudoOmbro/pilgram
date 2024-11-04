@@ -238,7 +238,8 @@ class Strings:
         "Legs",
         "Arms",
         "Primary",
-        "Secondary"
+        "Secondary",
+        "Relic"
     ]
     no_items_yet = "You don't have any items yet"
     invalid_item = "Invalid item."
@@ -325,17 +326,20 @@ class Strings:
     raid_success = "You completed the raid successfully."
 
     sanity_lines: dict[int, tuple[str, ...]] = {
-        40: (
+        50: (
             "You see shadows move at the edge of your vision...",
-            "You hear voices whisper unintelligibly..."
+            "You hear voices whisper unintelligibly...",
+            "The smell of blood makes your mind go blank..."
         ),
         25: (
             "There's a jester in your ear telling you to cause funny times.",
-            "And you dance, dance. And you say you'll never die."
+            "And you dance, dance. And you say you'll never die.",
+            "You struggle to remember your name."
         ),
         0: (
             "DO YOU THINK YOU ARE IN CONTROL?",
-            "MAGNIFICENT SLAUGHTER"
+            "MAGNIFICENT SLAUGHTER",
+            "AHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAH"
         )
     }
 
@@ -366,5 +370,6 @@ class Strings:
             Slots.HEAD: "🪖",
             Slots.CHEST: "🧥",
             Slots.ARMS: "🧤",
-            Slots.LEGS: "👖"
+            Slots.LEGS: "👖",
+            Slots.RELIC: "💎"
         }.get(item_slot, "❓")

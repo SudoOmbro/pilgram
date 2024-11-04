@@ -26,8 +26,9 @@ class Slots:
     ARMS = 3
     PRIMARY = 4
     SECONDARY = 5
+    RELIC = 6
 
-    NUMBER = 6
+    NUMBER = 7
 
     ARMOR = (HEAD, CHEST, LEGS, ARMS)
     WEAPONS = (PRIMARY, SECONDARY)

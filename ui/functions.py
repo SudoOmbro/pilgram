@@ -1447,7 +1447,7 @@ def sacrifice(context: UserContext) -> str:
     for _ in range(random.randint(5, 10)):
         eldritch_truth += f"{generate_random_eldritch_name()} "
     player.hp_percent -= 0.75
-    player.add_sanity(-20)
+    player.add_sanity(-50)
     amount: int = int((player.get_max_hp() * 0.2) * player.level)
     amount_am = player.add_xp(amount)
     db().update_player_data(player)
@@ -1478,6 +1478,7 @@ def process_start_raid_confirm(context: UserContext, user_input: str) -> str:
     player = get_player(db, context)
     guild = db().get_owned_guild(player)
     available_members = db().get_avaible_players_for_raid(guild)
+    return "WIP :)"
     # get zone & quest
     zone_id: int = context.get("zone")
     quest = db().get_quest(-zone_id)
@@ -1535,6 +1536,23 @@ def crypt(context: UserContext) -> str:
     return Strings.entered_crypt
 
 
+def ascension(context: UserContext) -> str:
+    player = get_player(db, context)
+    if player.artifact_pieces < 10:
+        return "You don't have enough artifact pieces!"
+    context.start_process("ascension")
+    return "Are you sure you want to spend 10 artifact pieces to ascend?"
+
+
+def process_ascension_confirm(context: UserContext, user_input: str) -> str:
+    context.end_process()
+    if not get_yes_or_no(user_input):
+        return Strings.action_canceled.format(action="Guild deletion")
+    player = get_player(db, context)
+    # TODO
+    return "WIP :)"
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1557,6 +1575,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
     },
     "sacrifice": IFW(None, sacrifice, "Sacrifice 75% of HP for XP."),
+    "ascension": IFW(None, ascension, "Use 10 artifact pieces to ascend"),
     "raid": IFW([integer_arg("Zone number")], start_raid, "Start a raid with your guild members"),
     "crypt": IFW(None, crypt, "Enter the crypt"),
     "cancel": {
@@ -1678,6 +1697,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "raid start": (
         ("confirm", process_start_raid_confirm),
+    ),
+    "ascension": (
+        ("confirm", process_ascension_confirm),
     )
 }
 

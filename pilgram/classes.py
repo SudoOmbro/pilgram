@@ -40,7 +40,7 @@ from pilgram.flags import (
     SwiftBuff3,
 )
 from pilgram.globals import ContentMeta, GlobalSettings
-from pilgram.listables import Listable
+from pilgram.listables import Listable, DEFAULT_TAG
 from pilgram.strings import MONEY, Strings
 from pilgram.utils import (
     FuncWithParam,
@@ -669,6 +669,13 @@ class Player(CombatActor):
             (((self.level * 1.5) + self.gear_level) * 10) * self.vocation.hp_mult
         ) + self.vocation.hp_bonus
 
+    def get_insanity_scaling(self) -> float:
+        if self.sanity > 50:
+            return 1.0
+        elif self.sanity > 0:
+            return 1.15
+        return 1.15 - (self.sanity / 100)
+
     def get_base_attack_damage(self) -> Damage:
         base_damage = self.vocation.damage.scale(self.level)
         slots = []
@@ -700,13 +707,13 @@ class Player(CombatActor):
             int(MightBuff3.is_set(self.flags))
         )
         base_damage = base_damage.scale(1 + (0.5 * spell_buff))
-        return base_damage
+        return base_damage.scale(self.get_insanity_scaling())
 
     def get_base_attack_resistance(self) -> Damage:
         base_resistance = self.vocation.resist.scale(self.level)
         for _, item in self.equipped_items.items():
             base_resistance += item.resist
-        return base_resistance
+        return base_resistance.scale(1 / self.get_insanity_scaling())
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
         result: list[m.Modifier] = []
@@ -1588,14 +1595,14 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
 
     @classmethod
     def get_correct_vocation_tier(cls, vocation_id: int, player: Player) -> Vocation:
-        for vocation in Vocation.LIST[1:]:
+        for vocation in Vocation.LISTS[DEFAULT_TAG][1:]:
             if (vocation.vocation_id == vocation_id) and (vocation.level == player.get_vocation_level(vocation_id)):
                 return vocation
         raise ValueError(f"Vocation with id {vocation_id} does not exist")
 
     @classmethod
     def get_correct_vocation_tier_no_player(cls, vocation_id: int, vocation_progress: dict[int, int]) -> Vocation:
-        for vocation in Vocation.LIST[1:]:
+        for vocation in Vocation.LISTS[DEFAULT_TAG][1:]:
             if (vocation.vocation_id == vocation_id) and (vocation.level == vocation_progress.get(vocation_id, 1)):
                 return vocation
         raise ValueError(f"Vocation with id {vocation_id} does not exist")
