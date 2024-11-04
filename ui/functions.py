@@ -37,6 +37,7 @@ from pilgram.globals import (
     SPELL_NAME_REGEX,
     ContentMeta,
 )
+from pilgram.listables import DEFAULT_TAG
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
 from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name
@@ -705,7 +706,7 @@ def __list_spells() -> str:
 def list_vocations(context: UserContext) -> str:
     player = get_player(db, context)
     string: str = "Here are all your vocations:\n\n"
-    for vocation in Vocation.LIST[1:]:
+    for vocation in Vocation.LISTS[DEFAULT_TAG][1:]:
         if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
             string += f"{"✅ " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
     return string
