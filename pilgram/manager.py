@@ -26,6 +26,7 @@ from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pit
     Cheater, QuestCanceled, Explore, InCrypt, Raiding
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
+from pilgram.listables import DEFAULT_TAG
 from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
 from pilgram.strings import Strings, rewards_string
 from pilgram.utils import generate_random_eldritch_name
@@ -284,7 +285,7 @@ class QuestManager(Manager):
                     player.unset_flag(Explore)
             elif Explore.is_set(player.flags) or (random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus)):
                 # log.info(f"Player '{player.name}' encountered a QTE.")
-                qte = random.choice(QuickTimeEvent.LIST)
+                qte = random.choice(QuickTimeEvent.LISTS[DEFAULT_TAG])
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
                 if Explore.is_set(player.flags):
