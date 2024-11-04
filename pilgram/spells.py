@@ -296,6 +296,7 @@ def __terrifying_presence(caster: Player, args: list[str]) -> str:
     target, self_cast = get_spell_target(caster, args)
     amount = caster.get_spell_charge()
     target.add_sanity(-amount)
+    _db().create_and_add_notification(target, f"An unknown presence terrifies you. You lose {amount} sanity.")
     if not self_cast:
         _db().update_player_data(target)
     return get_cast_string(target, self_cast)
@@ -311,6 +312,10 @@ def __blood_boil(caster: Player, args: list[str]) -> str:
     target.modify_hp(-amount)
     if target.hp < 1:
         target.hp = 1
+    _db().create_and_add_notification(
+        target,
+        f"You feel dizzy & you pass out for a moment. You wake up in a pool of blood. You lost {amount} HP."
+    )
     if not self_cast:
         _db().update_player_data(target)
     return get_cast_string(target, self_cast)
