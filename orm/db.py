@@ -895,7 +895,8 @@ class PilgramORMDatabase(PilgramDatabase):
             its.damage_seed,
             damage,
             resist,
-            decode_modifiers(its.modifiers)
+            decode_modifiers(its.modifiers),
+            its.rerolls
         )
 
     def get_item(self, item_id: int) -> Equipment:
@@ -919,12 +920,13 @@ class PilgramORMDatabase(PilgramDatabase):
     def update_item(self, item: Equipment, owner: Player):
         try:
             with db.atomic():
-                its = EquipmentModel.get(EquipmentModel.id == item.equipment_id)
+                its: EquipmentModel = EquipmentModel.get(EquipmentModel.id == item.equipment_id)
                 its.owner = owner.player_id
                 its.name = item.name
                 its.modifiers = encode_modifiers(item.modifiers)
                 its.damage_seed = item.seed
                 its.level = item.level
+                its.rerolls = item.rerolls
                 its.save()
         except EquipmentModel.DoesNotExist:
             raise KeyError(f"Could not find item with id {item.equipment_id}")

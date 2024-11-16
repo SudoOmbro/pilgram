@@ -249,7 +249,7 @@ def __migrate_v9_to_v10():
     os.rename("pilgram_v9.db", "pilgram_v10.db")
 
 
-# TODO @__add_to_migration_list("pilgram_v10.db")
+@__add_to_migration_list("pilgram_v10.db")
 def __migrate_v10_to_v11():
     from playhouse.migrate import SqliteMigrator, migrate
     from ._models_v10 import db as previous_db
@@ -257,7 +257,7 @@ def __migrate_v10_to_v11():
     previous_db.connect()
     migrator = SqliteMigrator(previous_db)
     migrate(
-        # TODO
+        migrator.add_column('equipmentmodel', 'rerolls', IntegerField(default=0))
     )
     previous_db.commit()
     previous_db.close()

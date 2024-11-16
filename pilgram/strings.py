@@ -326,17 +326,17 @@ class Strings:
     raid_success = "You completed the raid successfully."
 
     sanity_lines: dict[int, tuple[str, ...]] = {
-        50: (
+        0: (
             "You see shadows move at the edge of your vision...",
             "You hear voices whisper unintelligibly...",
             "The smell of blood makes your mind go blank..."
         ),
-        25: (
+        -100: (
             "There's a jester in your ear telling you to cause funny times.",
             "And you dance, dance. And you say you'll never die.",
             "You struggle to remember your name."
         ),
-        0: (
+        -200: (
             "DO YOU THINK YOU ARE IN CONTROL?",
             "MAGNIFICENT SLAUGHTER",
             "AHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAH"

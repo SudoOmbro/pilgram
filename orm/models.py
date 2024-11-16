@@ -14,7 +14,7 @@ from peewee import (
     SqliteDatabase,
 )
 
-DB_FILENAME: str = "pilgram_v10.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v11.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -118,6 +118,7 @@ class EquipmentModel(BaseModel):
     owner = ForeignKeyField(PlayerModel, backref="items", index=True)
     damage_seed = FloatField(null=False)  # used to generate the damage value at load time
     modifiers = CharField(null=False, default="")  # modifiers are stored as a 16bit int for the modifier id + a 32bit int for the strength of the modifier
+    rerolls = IntegerField(default=0)
 
 
 class EnemyTypeModel(BaseModel):

@@ -96,7 +96,8 @@ class Equipment:
             seed: float,
             damage: Damage,
             resist: Damage,
-            modifiers: list[m.Modifier]
+            modifiers: list[m.Modifier],
+            rerolls: int
     ) -> None:
         self.equipment_id = equipment_id
         self.level = level
@@ -106,6 +107,7 @@ class Equipment:
         self.damage = damage + self.equipment_type.damage.scale(level)
         self.resist = resist + self.equipment_type.resist.scale(level)
         self.modifiers = modifiers
+        self.rerolls = rerolls
 
     def get_modifiers(self, type_filters: tuple[int, ...] | None) -> list[m.Modifier]:
         if not type_filters:
@@ -132,6 +134,7 @@ class Equipment:
         self.modifiers = self.generate_modifiers(rarity, self.level, bias=modifier_bias)
         self.damage = self.equipment_type.damage.scale(self.level) + damage
         self.resist = self.equipment_type.resist.scale(self.level) + resist
+        self.rerolls += 1
 
     def enchant(self) -> None:
         self.name += Strings.enchant_symbol

@@ -132,18 +132,24 @@ class QuestManager(Manager):
         self.player_shades: dict[int, list[Player]] = {}
 
     @staticmethod
-    def _create_shade(player: Player) -> Player:
+    def _create_shade(
+            player: Player,
+            max_equipped_items: int = 3,
+            empty_satchel: bool = True,
+            suffix: str = "'s Shade"
+    ) -> Player:
         # deepcopy a player
         shade: Player = deepcopy(player)
-        shade.name = player.name + "'s Shade"
+        shade.name = player.name + suffix
         shade.hp_percent = 1.0
         shade.team = 1
         # remove some equipped items if necessary
-        while len(list(shade.equipped_items.values())) > 3:
+        while len(list(shade.equipped_items.values())) > max_equipped_items:
             key = random.choice(list(shade.equipped_items.keys()))
             del shade.equipped_items[key]
         # empty satchel
-        shade.satchel = []
+        if empty_satchel:
+            shade.satchel = []
         return shade
 
     def create_shade(self, player: Player, zone: Zone | None) -> None:
@@ -392,7 +398,20 @@ class QuestManager(Manager):
                 if player.sanity <= 50:
                     modifiers_amount += 1
                     enemy_level_modifier += 5 + ((player.get_max_sanity() - player.sanity)/5)
-                enemy = self._create_enemy(ac, modifiers_amount, enemy_level_modifier)
+                if player.sanity <= 0:
+                    modifiers_amount += int((-player.sanity) / 20)
+                    if random.randint(0, -player.sanity) > 145:
+                        self.db().create_and_add_notification(player, "Your mind goes blank, overwhelmed by insanity. You find yourself face to face with a distorted version of you.")
+                        enemy = self._create_shade(
+                            player,
+                            max_equipped_items=7,
+                            empty_satchel=False,
+                            suffix="'s Nightmare"
+                        )
+                    else:
+                        enemy = self._create_enemy(ac, modifiers_amount, enemy_level_modifier)
+                else:
+                    enemy = self._create_enemy(ac, modifiers_amount, enemy_level_modifier)
             elif random.randint(1, 100) < 20:
                 # 20% chance of randomly getting a monster with a modifier
                 enemy = self._create_enemy(ac, 1, enemy_level_modifier)
@@ -433,6 +452,7 @@ class QuestManager(Manager):
                 text += f"\n\n{enemy.meta.win_text}{rewards_string(xp_am, money_am, renown)}"
             else:
                 text += f"\n\n{Strings.shade_win}{rewards_string(xp_am, money_am, renown)}"
+                player.sanity += 50
             # more rewards if combat was forced
             if ForcedCombat.is_set(player.flags) and (
                 random.random() <= 0.5

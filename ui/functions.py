@@ -908,7 +908,7 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier)
+    price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier * (1 + item.rerolls))
     if player.money < price:
         return Strings.not_enough_money.format(amount=price - player.money)
     context.set("item pos", item_pos)
@@ -923,7 +923,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier)
+        price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier * (1 + item.rerolls))
         old_name = item.name
         item.reroll(player.vocation.reroll_stats_bonus, player.vocation.perk_rarity_bonus)
         if player.is_item_equipped(item):
@@ -931,7 +931,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         player.money -= price
         text = ""
         if player.vocation.xp_on_reroll > 0:
-            xp_am = player.add_xp(player.vocation.xp_on_reroll * item.level)
+            xp_am = player.add_xp(player.vocation.xp_on_reroll * max(item.level - item.rerolls, 0))
             text = rewards_string(xp_am, 0, 0)
         db().update_player_data(player)
         db().update_item(item, player)
@@ -1050,7 +1050,7 @@ def show_market(context: UserContext) -> str:
 
 
 def __get_item_type_value(item_type: EquipmentType, player: Player):
-    return (item_type.value + player.level) * 25
+    return item_type.value * player.level * 25
 
 
 def show_smithy(context: UserContext) -> str:
@@ -1117,10 +1117,7 @@ def force_combat(context: UserContext) -> str:
         return Strings.already_hunting
     if Explore.is_set(player.flags):
         return Strings.already_exploring
-    if player.sanity >= HUNT_SANITY_COST:
-        player.add_sanity(-HUNT_SANITY_COST - player.vocation.hunt_sanity_loss)
-    else:
-        return Strings.sanity_too_low
+    player.add_sanity(-HUNT_SANITY_COST - player.vocation.hunt_sanity_loss)
     player.set_flag(ForcedCombat)
     db().update_player_data(player)
     return Strings.force_combat
@@ -1448,7 +1445,7 @@ def sacrifice(context: UserContext) -> str:
     for _ in range(random.randint(5, 10)):
         eldritch_truth += f"{generate_random_eldritch_name()} "
     player.hp_percent -= 0.75
-    player.add_sanity(-50)
+    player.add_sanity(-25)
     amount: int = int((player.get_max_hp() * 0.2) * player.level)
     amount_am = player.add_xp(amount)
     db().update_player_data(player)

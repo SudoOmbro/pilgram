@@ -37,7 +37,7 @@
     "reroll_mult": 18
   },
   "hunt": {
-    "sanity_cost": 20
+    "sanity_cost": 50
   },
   "minigames": {
     "hands": {
