@@ -237,7 +237,8 @@ class Equipment:
             seed,
             damage,
             resist,
-            modifiers
+            modifiers,
+            0
         )
 
 
