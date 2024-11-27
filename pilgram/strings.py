@@ -213,19 +213,19 @@ class Strings:
         "Eldritch"
     )
     weapon_modifiers: dict[str, tuple[str, ...]] = {
-        "slash": ("Sharp", "-Slashing", "Barbed", "Keen", "Edged"),
-        "pierce": ("Piercing", "-Thrusting", "Pointed", "Tipped"),
-        "blunt": ("Heavy", "-Crushing", "Devastating", "Denting"),
-        "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones", "Heretical"),
+        "slash": ("Sharp", "-Slashing", "Barbed", "Keen", "Edged", "Serrated"),
+        "pierce": ("Piercing", "-Thrusting", "Pointed", "Tipped", "-the Phalanx"),
+        "blunt": ("Heavy", "-Crushing", "Devastating", "Denting", "Big"),
+        "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones", "Heretical", "Unholy"),
         "fire": ("Flaming", "-Flame", "Draconic", "-Fire", "Blazing", "-Wildfire", "Flaring", "Hot"),
         "acid": ("-Acid", "Melting", "Corroding", "Oozing", "-Rot", "Rotten"),
-        "freeze": ("-Ice", "Freezing", "Chilling", "-Frostbite", "Hailing", "-the Glacier"),
+        "freeze": ("-Ice", "Freezing", "Chilling", "-Frostbite", "Hailing", "-the Glacier", "Cold"),
         "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel", "Voltaic")
     }
     armor_modifiers: dict[str, tuple[str, ...]] = {
-        "slash": ("Plated", "-the Bulwark", "Meshed", "Rounded"),
-        "pierce": ("Reinforced", "-the Cataphract", "Thick"),
-        "blunt": ("Heavy", "Stable", "Well-built", "Sturdy"),
+        "slash": ("Plated", "-the Bulwark", "Meshed", "Rounded", "Smooth"),
+        "pierce": ("Reinforced", "-the Cataphract", "Shielding"),
+        "blunt": ("Heavy", "Stable", "Well-built", "Sturdy", "-the Bulwark"),
         "occult": ("Occult", "Eldritch", "Warded", "Runic", "-the Inquisitor"),
         "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
         "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant"),
