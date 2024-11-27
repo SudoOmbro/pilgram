@@ -239,6 +239,79 @@ class Damage:
         return cls.generate_from_seed(time(), iterations, exclude_params)
 
 
+class Stats:
+
+    def __init__(
+        self,
+        vitality: int,
+        strength: int,
+        skill: int,
+        toughness: int,
+        attunement: int,
+        mind: int,
+        agility: int
+    ):
+        self.vitality = vitality
+        self.strength = strength
+        self.skill = skill
+        self.toughness = toughness
+        self.attunement = attunement
+        self.mind = mind
+        self.agility = agility
+
+    def scale_single_value(self, key: str, scaling_factor: float) -> Stats:
+        new_stats = copy(self)
+        new_stats.__dict__[key] = int(new_stats.__dict__[key] * scaling_factor)
+        return new_stats
+
+    def add_single_value(self, key: str, value: int) -> Stats:
+        new_stats = copy(self)
+        new_stats.__dict__[key] = new_stats.__dict__[key] + value
+        return new_stats
+
+    def __add__(self, other):
+        if not isinstance(other, Stats):
+            raise NotImplemented
+        return Stats(
+            self.vitality + other.vitality,
+            self.strength + other.strength,
+            self.skill + other.skill,
+            self.toughness + other.toughness,
+            self.attunement + other.attunement,
+            self.mind + other.mind,
+            self.agility + other.agility,
+        )
+
+    def __mul__(self, other):
+        if not isinstance(other, Stats):
+            raise NotImplemented
+        return Stats(
+            self.vitality * other.vitality,
+            self.strength * other.strength,
+            self.skill * other.skill,
+            self.toughness * other.toughness,
+            self.attunement * other.attunement,
+            self.mind * other.mind,
+            self.agility * other.agility,
+        )
+
+    @classmethod
+    def load_from_json(cls, stats_json: dict[str, int]) -> Stats:
+        return cls(
+            stats_json.get("vitality", 0),
+            stats_json.get("strength", 0),
+            stats_json.get("skill", 0),
+            stats_json.get("toughness", 0),
+            stats_json.get("attunement", 0),
+            stats_json.get("mind", 0),
+            stats_json.get("agility", 0)
+        )
+
+    @classmethod
+    def create_default(cls) -> Stats:
+        return cls(1, 1, 1, 1, 1, 1, 1)
+
+
 class CombatActor(ABC):
     def __init__(self, hp_percent: float, team: int) -> None:
         self.hp_percent = hp_percent  # used out of fights
@@ -365,6 +438,9 @@ class CombatActor(ABC):
         if level > player.level:
             multiplier += 5 * (level - player.level)
         return multiplier * level, multiplier * level
+
+    def get_stats(self) -> Stats:
+        raise NotImplementedError
 
     @staticmethod
     def get_stamina_regeneration() -> float:

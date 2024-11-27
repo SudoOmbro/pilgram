@@ -15,7 +15,7 @@ from typing import Any
 import numpy as np
 
 import pilgram.modifiers as m
-from pilgram.combat_classes import CombatActions, CombatActor, Damage
+from pilgram.combat_classes import CombatActions, CombatActor, Damage, Stats
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType, Slots
 from pilgram.flags import (
     AcidBuff,
@@ -460,7 +460,10 @@ class Player(CombatActor):
         completed_quests: int,
         last_guild_switch: datetime,
         vocations_progress: dict[int, int],
-        sanity: int
+        sanity: int,
+        ascension: int,
+        stats: Stats,
+        essences: dict[int, int]
     ) -> None:
         """
         :param player_id (int): unique id of the player
@@ -512,6 +515,9 @@ class Player(CombatActor):
         self.last_guild_switch = last_guild_switch
         self.vocations_progress = vocations_progress
         self.sanity = sanity
+        self.ascension = ascension
+        self.stats = stats
+        self.essences = essences
 
     def equip_vocations(self, vocations: list[Vocation]) -> None:
         self.vocation: Vocation = Vocation.empty()
@@ -873,6 +879,9 @@ class Player(CombatActor):
         if (amount < 0) and (self.sanity <= 50):
             InternalEventBus().notify(Event("sanity low", self, {"sanity": self.sanity}))
 
+    def get_stats(self) -> Stats:
+        return self.stats
+
     # utility
 
     def __str__(self) -> str:
@@ -940,7 +949,10 @@ class Player(CombatActor):
             0,
             datetime.now() - timedelta(days=1),
             {},
-            100
+            100,
+            0,
+            Stats.create_default(),
+            {}
         )
 
 
@@ -1766,6 +1778,9 @@ class Enemy(CombatActor):
                 CombatActions.lick_wounds,
             )
         )
+
+    def get_stats(self) -> Stats:
+        return Stats.create_default()  # TODO change
 
     def __str__(self) -> str:
         return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"

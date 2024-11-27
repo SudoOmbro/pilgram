@@ -262,3 +262,26 @@ def __migrate_v10_to_v11():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v10.db", "pilgram_v11.db")
+
+
+@__add_to_migration_list("pilgram_v11.db")
+def __migrate_v11_to_v12():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v11 import db as previous_db
+    log.info("Migrating v11 to v12...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('playermodel', 'ascension', IntegerField(default=0)),
+        migrator.add_column('playermodel', 'vitality', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'strength', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'skill', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'toughness', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'attunement', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'mind', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'agility', IntegerField(default=1)),
+        migrator.add_column('playermodel', 'essences', CharField(null=False, default=""))
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v11.db", "pilgram_v12.db")

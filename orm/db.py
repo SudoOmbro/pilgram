@@ -40,7 +40,7 @@ from pilgram.classes import (
     Zone,
     ZoneEvent, Notification, Anomaly,
 )
-from pilgram.combat_classes import Damage
+from pilgram.combat_classes import Damage, Stats
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.modifiers import Modifier, get_modifier
@@ -176,6 +176,17 @@ def encode_vocation_progress(vocation_progress: dict[int, int]) -> str:
     return packed_array.tobytes().decode(encoding=ENCODING)
 
 
+def encode_essences(essences: dict[int, int]) -> str:
+    # TODO
+    pass
+
+
+def decode_essences(data: str | None) -> dict[int, int]:
+    if not data:
+        return {}
+    # TODO
+
+
 def _load_json(json_string: str) -> dict:
     try:
         return json.loads(json_string)
@@ -274,7 +285,10 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.completed_quests,
                 pls.last_guild_switch,
                 vocations_progress,
-                pls.sanity
+                pls.sanity,
+                pls.ascension,
+                Stats(pls.vitality, pls.strength, pls.skill, pls.toughness, pls.attunement, pls.mind, pls.agility),
+                decode_essences(pls.essences)
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -329,6 +343,15 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.completed_quests = player.completed_quests
                 pls.last_guild_switch = player.last_guild_switch
                 pls.vocation_progress = encode_vocation_progress(player.vocations_progress)
+                pls.ascension = player.ascension
+                pls.vitality = player.stats.vitality
+                pls.strength = player.stats.strength
+                pls.skill = player.stats.skill
+                pls.toughness = player.stats.toughness
+                pls.attunement = player.stats.attunement
+                pls.mind = player.stats.mind
+                pls.agility = player.stats.agility
+                pls.essences = encode_essences(player.essences)
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

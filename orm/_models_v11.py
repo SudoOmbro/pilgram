@@ -14,7 +14,7 @@ from peewee import (
     SqliteDatabase,
 )
 
-DB_FILENAME: str = "pilgram_v12.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v11.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -74,15 +74,6 @@ class PlayerModel(BaseModel):
     last_guild_switch = DateTimeField(default=datetime.now() - timedelta(days=1))
     vocation_progress = CharField(null=False, default="")  # vocation progress is stored as a byte for profession id & a byte for progress
     sanity = IntegerField(default=100)
-    ascension = IntegerField(default=0)
-    vitality = IntegerField(default=1)
-    strength = IntegerField(default=1)
-    skill = IntegerField(default=1)
-    toughness = IntegerField(default=1)
-    attunement = IntegerField(default=1)
-    mind = IntegerField(default=1)
-    agility = IntegerField(default=1)
-    essences = CharField(null=False, default="")
 
 
 class GuildModel(BaseModel):
