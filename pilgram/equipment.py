@@ -5,6 +5,7 @@ from random import Random, choice
 from typing import Any
 
 import pilgram.modifiers as m
+import pilgram.classes as c
 from pilgram.combat_classes import Damage
 from pilgram.flags import (
     AcidBuff,
@@ -19,7 +20,9 @@ from pilgram.globals import ContentMeta, Slots
 from pilgram.listables import Listable
 from pilgram.strings import Strings
 
+
 MONEY = ContentMeta.get("money.name")
+REROLL_MULT: int = ContentMeta.get("crafting.reroll_mult")
 
 
 def _get_slot(value: str | int) -> int:
@@ -123,6 +126,9 @@ class Equipment:
 
     def get_value(self) -> int:
         return (self.equipment_type.value + self.level) * (self.get_rarity() + 1)
+
+    def get_reroll_price(self, player: c.Player) -> int:
+        return int(self.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier * (1 + self.rerolls))
 
     def reroll(self, stats_bonus: int, modifier_bias: int) -> None:
         seed = time.time()

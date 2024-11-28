@@ -280,8 +280,19 @@ def __migrate_v11_to_v12():
         migrator.add_column('playermodel', 'attunement', IntegerField(default=1)),
         migrator.add_column('playermodel', 'mind', IntegerField(default=1)),
         migrator.add_column('playermodel', 'agility', IntegerField(default=1)),
-        migrator.add_column('playermodel', 'essences', CharField(null=False, default=""))
+        migrator.add_column('playermodel', 'essences', CharField(null=False, default="")),
+        migrator.add_column('playermodel', 'max_level_reached', IntegerField(default=0)),
+        migrator.add_column('playermodel', 'max_money_reached', IntegerField(default=0))
     )
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v11.db", "pilgram_v12.db")
+    from .models import db, PlayerModel
+    db.connect()
+    with db.atomic():
+        for ps in PlayerModel.select():
+            ps.max_level_reached = ps.level
+            ps.max_money_reached = ps.money
+            ps.save()
+    db.commit()
+    db.close()

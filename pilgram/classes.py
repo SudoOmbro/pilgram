@@ -400,7 +400,7 @@ class Spell:
         required_power: int,
         required_artifacts: int,
         required_args: int,
-        function: Callable[[Player, list[str]], str],
+        function: Callable[[Player, list[str] | tuple[str, ...]], str],
     ) -> None:
         self.name = name
         self.description = description
@@ -463,7 +463,9 @@ class Player(CombatActor):
         sanity: int,
         ascension: int,
         stats: Stats,
-        essences: dict[int, int]
+        essences: dict[int, int],
+        max_level_reached: int,
+        max_money_reached: int
     ) -> None:
         """
         :param player_id (int): unique id of the player
@@ -509,15 +511,16 @@ class Player(CombatActor):
         self.equip_vocations(vocations)
         self.satchel = satchel
         self.equipped_items = equipped_items
-        super().__init__(hp_percent, 0)
+        super().__init__(hp_percent, 0, stats)
         self.stance = stance
         self.completed_quests = completed_quests
         self.last_guild_switch = last_guild_switch
         self.vocations_progress = vocations_progress
         self.sanity = sanity
         self.ascension = ascension
-        self.stats = stats
         self.essences = essences
+        self.max_level_reached = max_level_reached
+        self.max_money_reached = max_money_reached
 
     def equip_vocations(self, vocations: list[Vocation]) -> None:
         self.vocation: Vocation = Vocation.empty()
@@ -575,6 +578,8 @@ class Player(CombatActor):
             self.xp -= req_xp
             req_xp = self.get_required_xp()
             InternalEventBus().notify(Event("level up", self, {"level": self.level}))
+        if self.level > self.max_level_reached:
+            self.max_level_reached = self.level
 
     def add_xp(self, amount: float) -> int:
         """adds xp to the player & returns how much was actually added to the player"""
@@ -593,6 +598,8 @@ class Player(CombatActor):
                 self.unset_flag(flag)
         amount = int(amount)
         self.money += amount
+        if self.money >= self.max_money_reached:
+            self.max_money_reached = self.money
         return amount
 
     def add_artifact_pieces(self, amount: int) -> None:
@@ -767,7 +774,7 @@ class Player(CombatActor):
         best_healing: int = 0
         for i, item in enumerate(self.satchel):
             if item.is_healing_item():
-                item_healing = item.hp_restored + (item.hp_percent_restored * max_hp)
+                item_healing = int(item.hp_restored + (item.hp_percent_restored * max_hp))
                 if item_healing > best_healing:
                     best_healing = item_healing
                     pos = i
@@ -879,8 +886,10 @@ class Player(CombatActor):
         if (amount < 0) and (self.sanity <= 50):
             InternalEventBus().notify(Event("sanity low", self, {"sanity": self.sanity}))
 
-    def get_stats(self) -> Stats:
-        return self.stats
+    def add_essence(self, zone_id: int, amount: int):
+        if self.essences.get(zone_id, None) is None:
+            self.essences[zone_id] = 0
+        self.essences[zone_id] += amount
 
     # utility
 
@@ -952,7 +961,9 @@ class Player(CombatActor):
             100,
             0,
             Stats.create_default(),
-            {}
+            {},
+            0,
+            0
         )
 
 
@@ -1719,7 +1730,7 @@ class Enemy(CombatActor):
         self.level_modifier = level_modifier + random.randint(-5, 2)
         self.delay = 7 + meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
         self.stance = self.meta.zone.extra_data.get("stance", "r")
-        super().__init__(1.0, 1)
+        super().__init__(1.0, 1, Stats.create_default())
 
     def roll(self, dice_faces: int) -> int:
         return random.randint(1, dice_faces)
@@ -1778,9 +1789,6 @@ class Enemy(CombatActor):
                 CombatActions.lick_wounds,
             )
         )
-
-    def get_stats(self) -> Stats:
-        return Stats.create_default()  # TODO change
 
     def __str__(self) -> str:
         return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"

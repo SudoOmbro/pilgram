@@ -57,6 +57,7 @@ ENCODING = "cp437"  # we use this encoding since we are working with raw bytes &
 
 NP_MD = np.dtype([('id', np.uint16), ('strength', np.uint32)])  # 'NumPy Modifiers Data'
 NP_VP = np.dtype([('id', np.uint8), ('progress', np.uint8)])  # 'NumPy Vocations Progress'
+NP_ED = np.dtype([('id', np.uint8), ('amount', np.uint16)])  # 'NumPy Essence Data'
 
 _NOTIFICATIONS_LIST: list[Notification] = []
 
@@ -177,14 +178,21 @@ def encode_vocation_progress(vocation_progress: dict[int, int]) -> str:
 
 
 def encode_essences(essences: dict[int, int]) -> str:
-    # TODO
-    pass
+    packed_array = np.empty(int(len(essences)), NP_ED)
+    for i, (zone_id, amount) in enumerate(essences.items()):
+        packed_array[i]["id"] = zone_id
+        packed_array[i]["amount"] = amount
+    return packed_array.tobytes().decode(encoding=ENCODING)
 
 
 def decode_essences(data: str | None) -> dict[int, int]:
     if not data:
         return {}
-    # TODO
+    encoded_data = bytes(data, ENCODING)
+    essences_dict: dict[int, int] = {}
+    for item in np.frombuffer(encoded_data, dtype=NP_ED):
+        essences_dict[item["id"].item()] = item["amount"].item()
+    return essences_dict
 
 
 def _load_json(json_string: str) -> dict:
@@ -288,7 +296,9 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.sanity,
                 pls.ascension,
                 Stats(pls.vitality, pls.strength, pls.skill, pls.toughness, pls.attunement, pls.mind, pls.agility),
-                decode_essences(pls.essences)
+                decode_essences(pls.essences),
+                pls.max_level_reached,
+                pls.max_money_reached
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -352,6 +362,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.mind = player.stats.mind
                 pls.agility = player.stats.agility
                 pls.essences = encode_essences(player.essences)
+                pls.max_level_reached = player.max_level_reached,
+                pls.max_money_reached = player.max_money_reached
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

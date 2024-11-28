@@ -82,7 +82,9 @@ class PlayerModel(BaseModel):
     attunement = IntegerField(default=1)
     mind = IntegerField(default=1)
     agility = IntegerField(default=1)
-    essences = CharField(null=False, default="")
+    essences = CharField(null=False, default="")  # essences are stored as a char string, 1 + 2 bytes per essence
+    max_level_reached = IntegerField(default=0)
+    max_money_reached = IntegerField(default=0)
 
 
 class GuildModel(BaseModel):

@@ -313,12 +313,13 @@ class Stats:
 
 
 class CombatActor(ABC):
-    def __init__(self, hp_percent: float, team: int) -> None:
+    def __init__(self, hp_percent: float, team: int, stats: Stats) -> None:
         self.hp_percent = hp_percent  # used out of fights
         self.hp: int = int(self.get_max_hp() * hp_percent)  # only used during fights
         # list of timed modifiers inflicted on the CombatActor
         self.timed_modifiers: list[m.Modifier] = []
         self.team = team
+        self.stats = stats
 
     def get_name(self) -> str:
         """returns the name of the entity"""
@@ -385,6 +386,14 @@ class CombatActor(ABC):
             )
         return int(max_hp)
 
+    def get_stats(self) -> Stats:
+        stats = copy(self.stats)
+        for modifier in self.get_entity_modifiers(m.ModifierType.MODIFY_STATS):
+            stats = modifier.apply(
+                m.ModifierContext({"entity": self, "stats": stats})
+            )
+        return stats
+
     def get_hp_string(self) -> str:
         return f"HP: {self.hp}/{self.get_max_hp()}"
 
@@ -438,9 +447,6 @@ class CombatActor(ABC):
         if level > player.level:
             multiplier += 5 * (level - player.level)
         return multiplier * level, multiplier * level
-
-    def get_stats(self) -> Stats:
-        raise NotImplementedError
 
     @staticmethod
     def get_stamina_regeneration() -> float:

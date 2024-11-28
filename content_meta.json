@@ -39,6 +39,9 @@
   "hunt": {
     "sanity_cost": 50
   },
+  "ascension": {
+    "cost": 10
+  },
   "minigames": {
     "hands": {
       "min_buy_in": 5,

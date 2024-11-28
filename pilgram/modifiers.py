@@ -23,6 +23,7 @@ class ModifierType:
     TURN_START = 9  # applied at the start of the turn
     STAMINA_REGEN = 10  # applied during the stamina regen phase
     ON_DEATH = 11  # applied on death
+    MODIFY_STATS = 12  # applied when getting stats
 
 
 class Rarity:

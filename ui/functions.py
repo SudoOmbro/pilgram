@@ -20,7 +20,7 @@ from pilgram.classes import (
     Guild,
     Player,
     SpellError,
-    Zone, Quest,
+    Zone, Quest, Progress,
 )
 from pilgram.combat_classes import CombatContainer
 from pilgram.equipment import Equipment, EquipmentType
@@ -35,7 +35,7 @@ from pilgram.globals import (
     PLAYER_NAME_REGEX,
     POSITIVE_INTEGER_REGEX,
     SPELL_NAME_REGEX,
-    ContentMeta,
+    ContentMeta, Slots,
 )
 from pilgram.listables import DEFAULT_TAG
 from pilgram.spells import SPELLS
@@ -53,8 +53,8 @@ MODIFY_COST: int = ContentMeta.get("modify_cost")
 MAX_TAX: int = ContentMeta.get("guilds.max_tax")
 REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
 SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
-REROLL_MULT: int = ContentMeta.get("crafting.reroll_mult")
 HUNT_SANITY_COST: int = ContentMeta.get("hunt.sanity_cost")
+ASCENSION_COST: int = ContentMeta.get("ascension.cost")
 
 
 def db() -> PilgramDatabase:
@@ -908,7 +908,7 @@ def reroll_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier * (1 + item.rerolls))
+    price = item.get_reroll_price(player)
     if player.money < price:
         return Strings.not_enough_money.format(amount=price - player.money)
     context.set("item pos", item_pos)
@@ -923,7 +923,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         items = __get_items(player)
         item_pos = context.get("item pos")
         item = items[item_pos - 1]
-        price = int(item.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier * (1 + item.rerolls))
+        price = item.get_reroll_price(player)
         old_name = item.name
         item.reroll(player.vocation.reroll_stats_bonus, player.vocation.perk_rarity_bonus)
         if player.is_item_equipped(item):
@@ -1536,10 +1536,13 @@ def crypt(context: UserContext) -> str:
 
 def ascension(context: UserContext) -> str:
     player = get_player(db, context)
-    if player.artifact_pieces < 10:
+    if player.artifact_pieces < ASCENSION_COST:
         return "You don't have enough artifact pieces!"
+    ac = db().get_player_adventure_container(player)
+    if ac.is_on_a_quest():
+        return "You can't ascend while you are on a quest!"
     context.start_process("ascension")
-    return "Are you sure you want to spend 10 artifact pieces to ascend?"
+    return f"Are you sure you want to spend {ASCENSION_COST} artifact pieces to ascend?"
 
 
 def process_ascension_confirm(context: UserContext, user_input: str) -> str:
@@ -1547,8 +1550,35 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
     if not get_yes_or_no(user_input):
         return Strings.action_canceled.format(action="Guild deletion")
     player = get_player(db, context)
-    # TODO
-    return "WIP :)"
+    player.artifact_pieces -= ASCENSION_COST
+    # reset player to level 1 & increase ascension level
+    player.level = 1
+    player.money = 100
+    player.ascension += 1
+    # increase player stats by using essences
+    for zone_id, amount in player.essences.items():
+        # TODO increase player stats
+        pass
+    player.essences = {}
+    # remove all items except for relics
+    unequip_all_items(context)
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    for pos in reversed(range(len(items))):
+        item = items[pos - 1]
+        if item.equipment_type.slot == Slots.RELIC:
+            continue
+        auction: Auction = db().get_auction_from_item(item)
+        if auction:
+            db().delete_auction(auction)
+        items.pop(pos - 1)
+        try:
+            db().delete_item(item)
+        except KeyError as e:
+            return f"Error: {e}"
+    db().update_player_data(player)
+    return f"You are born anew. (reached ascension level {player.ascension})"
 
 
 USER_COMMANDS: dict[str, str | IFW | dict] = {

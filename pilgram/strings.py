@@ -224,7 +224,7 @@ class Strings:
     }
     armor_modifiers: dict[str, tuple[str, ...]] = {
         "slash": ("Plated", "-the Bulwark", "Meshed", "Rounded", "Smooth"),
-        "pierce": ("Reinforced", "-the Cataphract", "Shielding"),
+        "pierce": ("Reinforced", "-the Cataphract", "Shielding", "Thick"),
         "blunt": ("Heavy", "Stable", "Well-built", "Sturdy", "-the Bulwark"),
         "occult": ("Occult", "Eldritch", "Warded", "Runic", "-the Inquisitor"),
         "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
