@@ -1020,4 +1020,72 @@ class CommandingPresence(Modifier, rarity=Rarity.RARE):
         return damage.scale(1 + ((self.strength / 100) * turn))
 
 
-print(f"Loaded {len(_LIST)} modifiers")  # Always keep at the end
+class _GenericStatIncrease(Modifier):
+    TYPE = ModifierType.MODIFY_STATS
+
+    MIN_STRENGTH = 1
+    SCALING = 1.2
+
+    DESCRIPTION = "increase STAT by {str}"
+    STAT: str
+
+    def __init_subclass__(cls, stat: str = None, **kwargs) -> None:
+        if stat is None:
+            raise ValueError("dmg_type cannot be None")
+        cls.NAME = f"{stat.capitalize()} imbued"
+        super().__init_subclass__(rarity=Rarity.COMMON)
+        cls.STAT = stat
+        cls.DESCRIPTION = cls.DESCRIPTION.replace("STAT", stat)
+
+    def function(self, context: ModifierContext) -> cc.Stats:
+        entity: cc.CombatActor = context.get("entity")
+        stats: cc.Stats = context.get("stats")
+        stats.add_single_value(self.STAT, self.strength)
+        return stats
+
+
+class IncreaseVitality(_GenericStatIncrease, stat="vitality"):
+    pass
+
+
+class IncreaseStrength(_GenericStatIncrease, stat="strength"):
+    pass
+
+
+class IncreaseSkill(_GenericStatIncrease, stat="skill"):
+    pass
+
+
+class IncreaseToughness(_GenericStatIncrease, stat="toughness"):
+    pass
+
+
+class IncreaseAttunement(_GenericStatIncrease, stat="attunement"):
+    pass
+
+
+class IncreaseMind(_GenericStatIncrease, stat="mind"):
+    pass
+
+
+class IncreaseAgility(_GenericStatIncrease, stat="agility"):
+    pass
+
+
+class ScaleAllStats(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.MODIFY_STATS
+
+    MAX_STRENGTH = 200
+    MIN_STRENGTH = 100
+    SCALING = 1
+
+    NAME = "Intensive Training"
+    DESCRIPTION = "Scale all stats ny {str}%"
+
+    def function(self, context: ModifierContext) -> Any:
+        entity: cc.CombatActor = context.get("entity")
+        stats: cc.Stats = context.get("stats")
+        return stats.scale(self.strength / 100)
+
+
+print(f"Loaded {len(_LIST)} perks")  # Always keep at the end

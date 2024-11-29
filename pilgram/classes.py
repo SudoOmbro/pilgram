@@ -491,6 +491,11 @@ class Player(CombatActor):
         :param last_guild_switch: The time in which the player last changed guild
         :param vocations_progress: the player's vocations progress
         :param sanity: the player's sanity, used to hunt/explore
+        :param ascension: the player's ascension level
+        :param stats: the player's stats
+        :param essences: the player's essences
+        :param max_level_reached: the maximum level the player has ever reached
+        :param max_money_reached: the maximum money the player has ever reached
         """
         self.player_id = player_id
         self.name = name
@@ -679,7 +684,9 @@ class Player(CombatActor):
 
     def get_base_max_hp(self) -> int:
         return int(
-            (((self.level * 1.5) + self.gear_level) * 10) * self.vocation.hp_mult
+            (
+                (self.level * 10) + (self.gear_level * 5) + (self.get_stats().vitality * 5)
+            ) * self.vocation.hp_mult
         ) + self.vocation.hp_bonus
 
     def get_insanity_scaling(self) -> float:
@@ -897,6 +904,8 @@ class Player(CombatActor):
         max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
         string = f"{self.print_username()} | lv. {self.level}{guild}\n`{self.xp}/{self.get_required_xp()} xp`\n"
+        if self.ascension != 0:
+            string += f"Ascension level: {self.ascension}\n"
         if self.vocation.name:
             string += f"{self.vocation.name}\n"
         string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"

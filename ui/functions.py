@@ -22,7 +22,7 @@ from pilgram.classes import (
     SpellError,
     Zone, Quest, Progress,
 )
-from pilgram.combat_classes import CombatContainer
+from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
@@ -942,6 +942,8 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
 def enchant_item(context: UserContext, item_pos_str: str) -> str:
     item_pos = int(item_pos_str)
     player = get_player(db, context)
+    if player.ascension == 0:
+        return Strings.enchant_ascension_required
     if player.artifact_pieces < 1:
         return Strings.no_items_yet
     items = __get_items(player)
@@ -1305,7 +1307,8 @@ def duel_reject(context: UserContext, player_name: str) -> str:
 
 def __get_player_stats_string(player: Player) -> str:
     # add base stats
-    string = f"*{player.name}'s stats*\n\nTotal Base Damage:\n_{player.get_base_attack_damage()}_\n\nTotal Base Resist:\n_{player.get_base_attack_resistance()}_\n\nTotal Weight: {player.get_delay()} Kg"
+    string = f"*{player.name}'s stats*\n\n{player.stats}\n\n"
+    string += f"Total Base Damage:\n_{player.get_base_attack_damage()}_\n\nTotal Base Resist:\n_{player.get_base_attack_resistance()}_\n\nTotal Weight: {player.get_delay()} Kg"
     # add temporary buffs / de-buffs
     if CursedFlag.is_set(player.flags):
         string += "\n\nCursed: -2 to quest rolls."
@@ -1476,7 +1479,6 @@ def process_start_raid_confirm(context: UserContext, user_input: str) -> str:
     player = get_player(db, context)
     guild = db().get_owned_guild(player)
     available_members = db().get_avaible_players_for_raid(guild)
-    return "WIP :)"
     # get zone & quest
     zone_id: int = context.get("zone")
     quest = db().get_quest(-zone_id)
@@ -1551,14 +1553,26 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
         return Strings.action_canceled.format(action="Guild deletion")
     player = get_player(db, context)
     player.artifact_pieces -= ASCENSION_COST
-    # reset player to level 1 & increase ascension level
+    # reset player level and gear level to 1 & increase ascension level
     player.level = 1
     player.money = 100
+    player.gear_level = 1
     player.ascension += 1
     # increase player stats by using essences
     for zone_id, amount in player.essences.items():
-        # TODO increase player stats
-        pass
+        zone = db().get_zone(zone_id)
+        if zone.extra_data["essence"]:
+            # if the zone the essences came from has defined essence values, then increase the stats defined there
+            new_stats = Stats.create_default(base=0)
+            for stat, value in zone.extra_data["essence"].items():
+                if stat not in new_stats.__dict__:
+                    log.error(f"Stat '{stat}' as defined in zone {zone_id} essence dict does not exist")
+                    continue
+                new_stats.add_single_value(stat, int(value * amount))
+        else:
+            # if the zone the essences came from does not have defined essence values, then add random stats
+            new_stats = Stats.generate_random(0, amount)
+            player.stats += new_stats
     player.essences = {}
     # remove all items except for relics
     unequip_all_items(context)

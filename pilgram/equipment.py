@@ -128,7 +128,7 @@ class Equipment:
         return (self.equipment_type.value + self.level) * (self.get_rarity() + 1)
 
     def get_reroll_price(self, player: c.Player) -> int:
-        return int(self.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier * (1 + self.rerolls))
+        return int(self.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier + (self.rerolls * self.get_value()))
 
     def reroll(self, stats_bonus: int, modifier_bias: int) -> None:
         seed = time.time()

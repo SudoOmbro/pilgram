@@ -258,6 +258,7 @@ class Strings:
     no_ap_to_enchant = "You don't have any artifact pieces to enchant with."
     max_enchants_reached = "You have reached the maximum amount of perks on this item."
     action_canceled = "{action} canceled."
+    enchant_ascension_required = "You must be at least ascension level 1 to enchant items."
 
     # auctions
     no_auctions_yet = "No auctions yet"

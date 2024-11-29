@@ -269,6 +269,18 @@ class Stats:
         new_stats.__dict__[key] = new_stats.__dict__[key] + value
         return new_stats
 
+    def scale(self, value: float):
+        return Stats(
+            int(self.vitality * value),
+            int(self.strength * value),
+            int(self.skill * value),
+            int(self.toughness * value),
+            int(self.attunement * value),
+            int(self.mind * value),
+            int(self.agility * value)
+        )
+
+
     def __add__(self, other):
         if not isinstance(other, Stats):
             raise NotImplemented
@@ -295,6 +307,11 @@ class Stats:
             self.agility * other.agility,
         )
 
+    def __str__(self) -> str:
+        return "\n".join(
+            [f"{key}: {value}" for key, value in self.__dict__.items()]
+        )
+
     @classmethod
     def load_from_json(cls, stats_json: dict[str, int]) -> Stats:
         return cls(
@@ -308,18 +325,28 @@ class Stats:
         )
 
     @classmethod
-    def create_default(cls) -> Stats:
-        return cls(1, 1, 1, 1, 1, 1, 1)
+    def create_default(cls, base: int = 1) -> Stats:
+        return cls(base, base, base, base, base, base, base)
+
+    @classmethod
+    def generate_random(cls, base: int, iterations: int) -> Stats:
+        stats = Stats.create_default(base)
+        stats_keys = list(stats.__dict__.keys())
+        for _ in range(iterations):
+            target = random.choice(stats_keys)
+            stats.__dict__[target] += 1
+        return stats
 
 
 class CombatActor(ABC):
+
     def __init__(self, hp_percent: float, team: int, stats: Stats) -> None:
         self.hp_percent = hp_percent  # used out of fights
+        self.stats = stats
         self.hp: int = int(self.get_max_hp() * hp_percent)  # only used during fights
         # list of timed modifiers inflicted on the CombatActor
         self.timed_modifiers: list[m.Modifier] = []
         self.team = team
-        self.stats = stats
 
     def get_name(self) -> str:
         """returns the name of the entity"""

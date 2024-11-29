@@ -339,11 +339,12 @@ class QuestManager(Manager):
             return "\n\nBy the grace of the God Emperor you are revived & continue your quest."
         else:
             lost_money: int = int(player.money * 0.1)
+            previous_quest = ac.quest  # use this otherwise the death notification will always say 'crypt exploration'
             ac.quest = None
             player.money -= lost_money  # lose 10% of money on death
             player.hp_percent = 1.0
             player.sanity = 55
-            return (Strings.quest_fail + Strings.lose_money).format(name=ac.quest.name if ac.quest else "Crypt exploration", money=lost_money)
+            return (Strings.quest_fail + Strings.lose_money).format(name=previous_quest.name if previous_quest else "Crypt exploration", money=lost_money)
 
     def _create_enemy(self, ac: AdventureContainer, modifiers_amount: int, level_modifier: int):
         anomaly = self.db().get_current_anomaly()
