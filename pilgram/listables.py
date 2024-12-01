@@ -12,7 +12,7 @@ DEFAULT_TAG: str = "default"
 
 class Listable(Generic[T], ABC):
     ALL_ITEMS: list[T]
-    LISTS: dict[str, dict[int, T]]
+    LISTS: dict[str, list[T]]
 
     def __init_subclass__(cls, meta_name: str = None, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
@@ -24,10 +24,10 @@ class Listable(Generic[T], ABC):
             for listable_json in ContentMeta.get(meta_name):
                 tag: str = listable_json.get("tag", DEFAULT_TAG)
                 if tag not in cls.LISTS:
-                    cls.LISTS[tag] = {}
+                    cls.LISTS[tag] = []
                     tags_counter += 1
                 item: T = cls.create_from_json(listable_json)
-                cls.LISTS[tag][items_counter] = item
+                cls.LISTS[tag].append(item)
                 cls.ALL_ITEMS.append(item)
                 items_counter += 1
             print(f"Loaded {items_counter} {meta_name}, {tags_counter} tag{"s" if tags_counter > 1 else ""} found")
