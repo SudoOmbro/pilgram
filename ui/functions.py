@@ -70,7 +70,7 @@ def check_board(context: UserContext) -> str:
         text += f"*Zone {zone.zone_id} - {zone.zone_name}* (lv. {zone.level})\n"
         player_progress = player.progress.get_zone_progress(zone)
         if player_progress != 0:
-            text += f"> progress: {player_progress}\n"
+            text += f"> progress: {player_progress}, essence: {player.essences.get(zone.zone_id, 0)}\n"
     return text + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}\n\n{anomaly}"
 
 
@@ -706,7 +706,8 @@ def __list_spells() -> str:
 def list_vocations(context: UserContext) -> str:
     player = get_player(db, context)
     string: str = "Here are all your vocations:\n\n"
-    for vocation in Vocation.LISTS[DEFAULT_TAG][1:]:
+    for vocation in Vocation.ALL_ITEMS[1:]:
+        print(vocation)
         if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
             string += f"{"✅ " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
     return string

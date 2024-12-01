@@ -106,6 +106,14 @@ class Damage:
             int(self.electric * scaling_factor),
         )
 
+    def scale_with_stats(self, stats: Stats, scaling: Stats) -> Damage:
+        stats_to_scale = scaling.get_all_non_zero_stats()
+        result: Damage = self
+        for stat in stats_to_scale:
+            result += stats.__dict__[stat] * (scaling.__dict__[stat] / 2)  # 0.5 -> 1 -> 1.5 -> 2 -> 2.5 -> 3
+        return result
+
+
     def apply_bonus(self, bonus: int) -> Damage:
         return Damage(
             (self.slash + bonus) if self.slash else 0,
@@ -196,7 +204,7 @@ class Damage:
         if self.is_zero():
             return "Empty"
         return "\n".join(
-            [f"{key}: {value}" for key, value in self.__dict__.items() if value > 0]
+            [f"{key}: {value}" for key, value in self.__dict__.items() if value != 0]
         )
 
     @classmethod
@@ -280,6 +288,13 @@ class Stats:
             int(self.agility * value)
         )
 
+    def get_all_non_zero_stats(self) -> list[str]:
+        result: list[str] = []
+        for stat, value in self.__dict__.items():
+            if value != 0:
+                result.append(stat)
+        return result
+
 
     def __add__(self, other):
         if not isinstance(other, Stats):
@@ -309,7 +324,7 @@ class Stats:
 
     def __str__(self) -> str:
         return "\n".join(
-            [f"{key}: {value}" for key, value in self.__dict__.items()]
+            [f"{key}: {value}" for key, value in self.__dict__.items() if value != 0]
         )
 
     @classmethod

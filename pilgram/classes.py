@@ -40,7 +40,7 @@ from pilgram.flags import (
     SwiftBuff3,
 )
 from pilgram.globals import ContentMeta, GlobalSettings
-from pilgram.listables import Listable, DEFAULT_TAG
+from pilgram.listables import Listable
 from pilgram.strings import MONEY, Strings
 from pilgram.utils import (
     FuncWithParam,
@@ -147,7 +147,9 @@ class Zone:
         return False
 
     def __str__(self):
-        return f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}\n\nDamage modifiers:\n{self.damage_modifiers}\n\nResist modifiers:\n{self.resist_modifiers}"
+        result = f"*{self.zone_name}* | lv. {self.level}\n\n{self.zone_description}\n\n*Damage modifiers*:\n{self.damage_modifiers}\n\n*Resist modifiers*:\n{self.resist_modifiers}"
+        result += f"\n\n*Essence effects*:\n{"Increase one random stat" if self.extra_data.get("essence", None) is None else "\n".join([f"Increase {stat} by {value}" for stat, value in self.extra_data["essence"].items()])}"
+        return result
 
     def __hash__(self):
         return hash(self.zone_id)
@@ -311,7 +313,7 @@ class Quest:
         )  # XP, Money
 
     def get_duration(self, player: Player) -> timedelta:
-        return (
+        duration: timedelta = (
             BASE_QUEST_DURATION
             + (
                 (DURATION_PER_ZONE_LEVEL * self.zone.level)
@@ -319,7 +321,10 @@ class Quest:
                 + (random.randint(0, self.zone.level) * RANDOM_DURATION)
             )
             * player.vocation.quest_time_multiplier
-        )
+        ) - timedelta(minutes=10 * player.stats.agility)
+        if duration < BASE_QUEST_DURATION:
+            return BASE_QUEST_DURATION
+        return duration
 
     def get_prestige(self) -> int:
         return self.zone.level + self.number
@@ -646,7 +651,7 @@ class Player(CombatActor):
                 len(self.progress.zone_progress)
                 * self.vocation.power_bonus_per_zone_visited
             )
-        return max_charge
+        return max_charge + self.stats.attunement
 
     def get_spell_charge(self) -> int:
         """
@@ -700,7 +705,7 @@ class Player(CombatActor):
         base_damage = self.vocation.damage.scale(self.level)
         slots = []
         for slot, item in self.equipped_items.items():
-            base_damage += item.damage
+            base_damage += item.damage.scale_with_stats(self.stats, item.equipment_type.scaling)
             slots.append(slot)
         if Slots.PRIMARY not in slots:
             base_damage += self.FIST_DAMAGE.scale(self.level)
@@ -732,7 +737,7 @@ class Player(CombatActor):
     def get_base_attack_resistance(self) -> Damage:
         base_resistance = self.vocation.resist.scale(self.level)
         for _, item in self.equipped_items.items():
-            base_resistance += item.resist
+            base_resistance += item.resist.scale_with_stats(self.stats, item.equipment_type.scaling)
         return base_resistance.scale(1 / self.get_insanity_scaling())
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
@@ -883,7 +888,7 @@ class Player(CombatActor):
         return self.vocations_progress.get(vocation_id, 1)
 
     def get_max_sanity(self):
-        return 100
+        return 99 + self.stats.mind
 
     def add_sanity(self, amount: int):
         self.sanity += amount
@@ -1627,14 +1632,14 @@ class Vocation(Listable["Vocation"], meta_name="vocations"):
 
     @classmethod
     def get_correct_vocation_tier(cls, vocation_id: int, player: Player) -> Vocation:
-        for vocation in Vocation.LISTS[DEFAULT_TAG][1:]:
+        for vocation in Vocation.ALL_ITEMS[1:]:
             if (vocation.vocation_id == vocation_id) and (vocation.level == player.get_vocation_level(vocation_id)):
                 return vocation
         raise ValueError(f"Vocation with id {vocation_id} does not exist")
 
     @classmethod
     def get_correct_vocation_tier_no_player(cls, vocation_id: int, vocation_progress: dict[int, int]) -> Vocation:
-        for vocation in Vocation.LISTS[DEFAULT_TAG][1:]:
+        for vocation in Vocation.ALL_ITEMS[1:]:
             if (vocation.vocation_id == vocation_id) and (vocation.level == vocation_progress.get(vocation_id, 1)):
                 return vocation
         raise ValueError(f"Vocation with id {vocation_id} does not exist")

@@ -204,6 +204,8 @@ class QuestManager(Manager):
             # add to completed quests & add renown
             player.completed_quests += 1
             player.renown += renown
+            # add zone essence
+            player.add_essence(quest.zone.zone_id, 1)
             # get artifact piece if lucky
             piece: bool = False
             if random.randint(1, 10) < (

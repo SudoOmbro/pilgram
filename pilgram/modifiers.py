@@ -1080,7 +1080,7 @@ class ScaleAllStats(Modifier, rarity=Rarity.LEGENDARY):
     SCALING = 1
 
     NAME = "Intensive Training"
-    DESCRIPTION = "Scale all stats ny {str}%"
+    DESCRIPTION = "Scale all stats by {str}%"
 
     def function(self, context: ModifierContext) -> Any:
         entity: cc.CombatActor = context.get("entity")
