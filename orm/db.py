@@ -362,7 +362,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.mind = player.stats.mind
                 pls.agility = player.stats.agility
                 pls.essences = encode_essences(player.essences)
-                pls.max_level_reached = player.max_level_reached,
+                pls.max_level_reached = player.max_level_reached
                 pls.max_money_reached = player.max_money_reached
                 pls.save()
         except PlayerModel.DoesNotExist:

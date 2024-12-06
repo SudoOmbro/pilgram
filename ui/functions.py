@@ -55,6 +55,7 @@ REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
 SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
 HUNT_SANITY_COST: int = ContentMeta.get("hunt.sanity_cost")
 ASCENSION_COST: int = ContentMeta.get("ascension.cost")
+MONEY = ContentMeta.get("money.name")
 
 
 def db() -> PilgramDatabase:
@@ -1002,6 +1003,16 @@ def sell_all(context: UserContext) -> str:
     items = __get_items(player)
     if not items:
         return Strings.no_items_yet
+    context.start_process("sell all confirm")
+    return Strings.sell_all_confirm
+
+
+def process_sell_all_confirm(context: UserContext, user_input: str) -> str:
+    context.end_process()
+    if not get_yes_or_no(user_input):
+        return Strings.action_canceled.format(action="sell all")
+    player = db().get_player_data(context.get("id"))
+    items = __get_items(player)
     result: str = ""
     total_money_gained: int = 0
     for pos in reversed(range(len(items))):
@@ -1017,6 +1028,7 @@ def sell_all(context: UserContext) -> str:
             db().delete_item(item)
         except KeyError as e:
             return f"Error: {e}"
+        print(item)
         result += f"Sold *{item.name}* for {money_am} {MONEY}\n"
     db().update_player_data(player)
     return result + f"\nTotal {MONEY} gained: {total_money_gained}"
@@ -1596,9 +1608,24 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
     return f"You are born anew. (reached ascension level {player.ascension})"
 
 
+def records(context: UserContext, *args) -> str:
+    if len(args) > 0:
+        try:
+            message, player = __get_player_from_name(args[0])
+            if message:
+                return message
+        except KeyError:
+            return Strings.named_object_not_exist.format(obj="player", name=args[0])
+    else:
+        player = get_player(db, context)
+    return f"{player.name}'s records:\n\nmax level: {player.max_level_reached}\nmax {MONEY}: {player.max_money_reached}"
+
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
+        "records": IFW(None, records, "Shows player records", optional_args=[player_arg("Player name")]),
         "board": IFW(None, check_board, "Shows the quest board."),
         "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration."),
         "zone": IFW([integer_arg("Zone number")], check_zone, "Describes a Zone."),
@@ -1734,6 +1761,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "sell confirm": (
         ("confirm", process_sell_confirm),
+    ),
+    "sell all confirm": (
+        ("confirm", process_sell_all_confirm),
     ),
     "delete guild": (
         ("confirm", process_delete_guild_confirm),

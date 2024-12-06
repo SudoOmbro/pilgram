@@ -1,4 +1,5 @@
 import logging
+import traceback
 from collections.abc import Callable
 from functools import cache
 
@@ -111,5 +112,6 @@ class CLIInterpreter:
         except CommandError as e:
             return str(e)
         except TypeError as e:
-            log.error(e)
+            log.error(str(e))
+            raise e
             return "Too many arguments given! Check help for instructions."

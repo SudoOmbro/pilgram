@@ -5,7 +5,6 @@ from abc import ABC
 from random import Random, randint
 from typing import Generic, TypeVar
 
-from pilgram.globals import ContentMeta
 
 T = TypeVar("T")
 DEFAULT_TAG: str = "default"

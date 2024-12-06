@@ -244,6 +244,7 @@ class Strings:
     no_items_yet = "You don't have any items yet"
     invalid_item = "Invalid item."
     item_sell_confirm = f"Are you sure you want to sell {{item}}? (y/n)"
+    sell_all_confirm = "Are you sure you want to sell all your items? (y/n)"
     item_sold = f"You sold '*{{item}}*' for *{{money}} {MONEY}*."
     item_bought = f"You bought '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
