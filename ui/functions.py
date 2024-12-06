@@ -20,7 +20,7 @@ from pilgram.classes import (
     Guild,
     Player,
     SpellError,
-    Zone, Quest, Progress,
+    Zone,
 )
 from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
@@ -37,7 +37,6 @@ from pilgram.globals import (
     SPELL_NAME_REGEX,
     ContentMeta, Slots,
 )
-from pilgram.listables import DEFAULT_TAG
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
 from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name
@@ -55,7 +54,6 @@ REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
 SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
 HUNT_SANITY_COST: int = ContentMeta.get("hunt.sanity_cost")
 ASCENSION_COST: int = ContentMeta.get("ascension.cost")
-MONEY = ContentMeta.get("money.name")
 
 
 def db() -> PilgramDatabase:

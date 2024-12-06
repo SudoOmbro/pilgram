@@ -112,6 +112,5 @@ class CLIInterpreter:
         except CommandError as e:
             return str(e)
         except TypeError as e:
-            log.error(str(e))
-            raise e
+            log.error(e)
             return "Too many arguments given! Check help for instructions."
