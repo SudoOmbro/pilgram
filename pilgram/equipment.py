@@ -32,7 +32,7 @@ def _get_slot(value: str | int) -> int:
     return int_value
 
 
-class EquipmentType(Listable, meta_name="equipment types"):
+class EquipmentType(Listable, base_filename="items"):
     """ Defines the type of the equipment, either weapons or armor """
 
     def __init__(
@@ -252,7 +252,7 @@ class Equipment:
         )
 
 
-class ConsumableItem(Listable, meta_name="consumables"):
+class ConsumableItem(Listable, base_filename="consumables"):
     """ consumables that can be used by the player or are used automatically in combat. """
 
     def __init__(

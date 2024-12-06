@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from abc import ABC
 from random import Random, randint
 from typing import Generic, TypeVar
@@ -14,14 +15,18 @@ class Listable(Generic[T], ABC):
     ALL_ITEMS: list[T]
     LISTS: dict[str, list[T]]
 
-    def __init_subclass__(cls, meta_name: str = None, **kwargs) -> None:
+    def __init_subclass__(cls, base_filename: str = None, **kwargs) -> None:
         super().__init_subclass__(**kwargs)
-        if meta_name and not hasattr(cls, "_initialized"):
+        if base_filename and not hasattr(cls, "_initialized"):
+            filename = f"content/{base_filename}.json"
             items_counter: int = 0
             tags_counter: int = 0
             cls.LISTS = {}
             cls.ALL_ITEMS = []
-            for listable_json in ContentMeta.get(meta_name):
+            items = json.load(open(filename)).get("items", None)
+            if not items:
+                raise ValueError(f"No items found in {filename}")
+            for listable_json in items:
                 tag: str = listable_json.get("tag", DEFAULT_TAG)
                 if tag not in cls.LISTS:
                     cls.LISTS[tag] = []
@@ -30,7 +35,7 @@ class Listable(Generic[T], ABC):
                 cls.LISTS[tag].append(item)
                 cls.ALL_ITEMS.append(item)
                 items_counter += 1
-            print(f"Loaded {items_counter} {meta_name}, {tags_counter} tag{"s" if tags_counter > 1 else ""} found")
+            print(f"Loaded {items_counter} {base_filename}, {tags_counter} tag{"s" if tags_counter > 1 else ""} found")
             cls._initialized = True
 
     @classmethod

@@ -1233,7 +1233,7 @@ class Artifact:
         return Artifact(0, "", "", None)
 
 
-class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
+class QuickTimeEvent(Listable["QuickTimeEvent"], base_filename="qtes"):
     def __init__(
         self,
         description: str,
@@ -1453,7 +1453,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], meta_name="quick time events"):
         return f"{self.description}\n{'\n'.join(f'{i + 1}. {s}' for i, (s, p) in enumerate(self.options))}"
 
 
-class Vocation(Listable["Vocation"], meta_name="vocations"):
+class Vocation(Listable["Vocation"], base_filename="vocations"):
     """a horrible way to implement modifiers but it works"""
 
     MAX_LEVEL = 5
