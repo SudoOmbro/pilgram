@@ -903,6 +903,12 @@ class Player(CombatActor):
             self.essences[zone_id] = 0
         self.essences[zone_id] += amount
 
+    def get_ascension_level(self) -> int:
+        return 50 + (self.ascension * 5)
+
+    def can_ascend(self) -> bool:
+        return self.level >= self.get_ascension_level()
+
     # utility
 
     def __str__(self) -> str:

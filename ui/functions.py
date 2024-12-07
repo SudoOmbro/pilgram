@@ -1549,8 +1549,10 @@ def crypt(context: UserContext) -> str:
 
 def ascension(context: UserContext) -> str:
     player = get_player(db, context)
+    if not player.can_ascend():
+        return f"You are too low level to ascend! (level {player.get_ascension_level()} required)"
     if player.artifact_pieces < ASCENSION_COST:
-        return "You don't have enough artifact pieces!"
+        return f"You don't have enough artifact pieces! ({ASCENSION_COST} needed)"
     ac = db().get_player_adventure_container(player)
     if ac.is_on_a_quest():
         return "You can't ascend while you are on a quest!"
@@ -1569,6 +1571,7 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
     player.money = 100
     player.gear_level = 1
     player.ascension += 1
+    player.equip_vocations([])
     # increase player stats by using essences
     for zone_id, amount in player.essences.items():
         zone = db().get_zone(zone_id)

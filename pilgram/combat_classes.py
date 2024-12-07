@@ -110,7 +110,7 @@ class Damage:
         stats_to_scale = scaling.get_all_non_zero_stats()
         result: Damage = self
         for stat in stats_to_scale:
-            result += stats.__dict__[stat] * (scaling.__dict__[stat] / 2)  # 0.5 -> 1 -> 1.5 -> 2 -> 2.5 -> 3
+            result = result.scale(1 + (stats.__dict__[stat] * scaling.__dict__[stat] * 0.2))
         return result
 
 
@@ -294,7 +294,6 @@ class Stats:
             if value != 0:
                 result.append(stat)
         return result
-
 
     def __add__(self, other):
         if not isinstance(other, Stats):
