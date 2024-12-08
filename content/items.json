@@ -469,6 +469,10 @@
       "slash": 2,
       "pierce": 2
     },
+    "scaling": {
+      "strength": 2,
+      "skill": 5
+    },
     "value": 7
   }, {
     "id": 31,
@@ -480,6 +484,10 @@
     "damage": {
       "slash": 4
     },
+    "scaling": {
+      "strength": 2,
+      "skill": 4
+    },
     "value": 8
   }, {
     "id": 32,
@@ -487,6 +495,10 @@
     "slot": "arms",
     "weapon": false,
     "delay": 0,
+    "scaling": {
+      "toughness": 2,
+      "agility": 2
+    },
     "value": 2
   }, {
     "id": 33,
@@ -496,6 +508,9 @@
     "delay": 5,
     "resist": {
       "slash": 5
+    },
+    "scaling": {
+      "toughness": 5
     },
     "value": 10
   }, {
@@ -507,6 +522,9 @@
     "resist": {
       "slash": 2,
       "blunt": 1
+    },
+    "scaling": {
+      "toughness": 4
     },
     "value": 8
   }, {
@@ -520,6 +538,10 @@
       "pierce": 2,
       "occult": 2
     },
+    "scaling": {
+      "toughness": 6,
+      "mind": 2
+    },
     "value": 12
   }, {
     "id": 36,
@@ -530,6 +552,9 @@
     "resist": {
       "slash": 8,
       "pierce": 6
+    },
+    "scaling": {
+      "toughness": 15
     },
     "value": 20
   }, {
@@ -542,6 +567,9 @@
       "slash": 1,
       "blunt": 1
     },
+    "scaling": {
+      "agility": 1
+    },
     "value": 8
   }, {
     "id": 38,
@@ -553,6 +581,9 @@
       "slash": 6,
       "pierce": 3
     },
+    "scaling": {
+      "toughness": 8
+    },
     "value": 15
   }, {
     "id": 39,
@@ -563,6 +594,10 @@
     "resist": {
       "blunt": 3
     },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
+    },
     "value": 6
   }, {
     "id": 40,
@@ -572,6 +607,10 @@
     "delay": 1,
     "resist": {
       "blunt": 3
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
     },
     "value": 6
   }, {
@@ -585,6 +624,9 @@
       "pierce": 4,
       "blunt": 2
     },
+    "scaling": {
+      "toughness": 6
+    },
     "value": 20
   }, {
     "id": 42,
@@ -596,6 +638,10 @@
       "slash": 1,
       "pierce": 1,
       "blunt": 1
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
     },
     "value": 8
   }, {
@@ -609,6 +655,9 @@
       "pierce": 1,
       "blunt": 2
     },
+    "scaling": {
+      "toughness": 4
+    },
     "value": 8
   }, {
     "id": 44,
@@ -618,6 +667,10 @@
     "delay": 1,
     "resist": {
       "freeze": 1
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
     },
     "value": 8
   }, {
@@ -629,6 +682,9 @@
     "damage": {
       "blunt": 10
     },
+    "scaling": {
+      "strength": 10
+    },
     "value": 10
   }, {
     "id": 46,
@@ -638,6 +694,9 @@
     "delay": 9,
     "damage": {
       "pierce": 9
+    },
+    "scaling": {
+      "strength": 8
     },
     "value": 9
   }, {
@@ -649,6 +708,9 @@
     "resist": {
       "blunt": 1
     },
+    "scaling": {
+      "agility": 2
+    },
     "value": 5
   }, {
     "id": 48,
@@ -658,6 +720,9 @@
     "delay": 1,
     "damage": {
       "slash": 3
+    },
+    "scaling": {
+      "skill": 3
     },
     "value": 15
   }, {
@@ -669,6 +734,9 @@
     "resist": {
       "occult": 2
     },
+    "scaling": {
+      "mind": 2
+    },
     "value": 50
   }, {
     "id": 50,
@@ -679,6 +747,10 @@
     "resist": {
       "slash": 4,
       "pierce": 3
+    },
+    "scaling": {
+      "toughness": 5,
+      "agility": 1
     },
     "value": 15
   }, {
@@ -692,6 +764,9 @@
       "pierce": 2,
       "blunt": 1
     },
+    "scaling": {
+      "toughness": 7
+    },
     "value": 22
   }, {
     "id": 52,
@@ -703,6 +778,9 @@
       "slash": 2,
       "pierce": 2,
       "blunt": 2
+    },
+    "scaling": {
+      "toughness": 9
     },
     "value": 30
   }, {
@@ -716,6 +794,9 @@
       "pierce": 1,
       "blunt": 1
     },
+    "scaling": {
+      "toughness": 4
+    },
     "value": 15
   }, {
     "id": 54,
@@ -727,6 +808,9 @@
       "slash": 2,
       "pierce": 1
     },
+    "scaling": {
+      "toughness": 4
+    },
     "value": 15
   }, {
     "id": 55,
@@ -736,6 +820,9 @@
     "delay": 3,
     "damage": {
       "pierce": 3
+    },
+    "scaling": {
+      "skill": 2
     },
     "value": 8
   }, {
@@ -747,6 +834,9 @@
     "damage": {
       "slash": 1
     },
+    "scaling": {
+      "skill": 1
+    },
     "value": 8
   }, {
     "id": 57,
@@ -756,6 +846,9 @@
     "delay": 2,
     "damage": {
       "slash": 2
+    },
+    "scaling": {
+      "skill": 2
     },
     "value": 8
   }, {
@@ -767,6 +860,9 @@
     "damage": {
       "pierce": 2
     },
+    "scaling": {
+      "skill": 2
+    },
     "value": 8
   }, {
     "id": 59,
@@ -777,6 +873,10 @@
     "damage": {
       "pierce": 4
     },
+    "scaling": {
+      "strength": 3,
+      "skill": 2
+    },
     "value": 10
   }, {
     "id": 60,
@@ -785,8 +885,12 @@
     "weapon": true,
     "delay": 80,
     "damage": {
-      "pierce": 30,
-      "blunt": 10
+      "pierce": 10,
+      "blunt": 5
+    },
+    "scaling": {
+      "strength": 30,
+      "skill": 30
     },
     "value": 150
   }, {
@@ -798,6 +902,10 @@
     "damage": {
       "fire": 35
     },
+    "scaling": {
+      "strength": 10,
+      "skill": 30
+    },
     "value": 150
   }, {
     "id": 62,
@@ -808,6 +916,9 @@
     "damage": {
       "slash": 1
     },
+    "scaling": {
+      "skill": 1
+    },
     "value": 4
   }, {
     "id": 63,
@@ -817,6 +928,9 @@
     "delay": 0,
     "damage": {
       "blunt": 1
+    },
+    "scaling": {
+      "strength": 1
     },
     "value": 3
   }, {
@@ -829,6 +943,10 @@
       "blunt": 1,
       "fire": 5
     },
+    "scaling": {
+      "strength": 3,
+      "skill": 3
+    },
     "value": 10
   }, {
     "id": 65,
@@ -838,6 +956,10 @@
     "delay": 2,
     "damage": {
       "blunt": 2
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 2
     },
     "value": 6
   }, {
@@ -849,6 +971,10 @@
     "delay": 1,
     "resist": {
       "slash": 1
+    },
+    "scaling": {
+      "strength": 1,
+      "toughness": 1
     },
     "value": 12
   }, {
@@ -866,6 +992,11 @@
       "pierce": 5,
       "blunt": 1
     },
+    "scaling": {
+      "strength": 5,
+      "skill": 5,
+      "toughness": 4
+    },
     "value": 30
   }, {
     "id": 68,
@@ -881,6 +1012,10 @@
       "slash": 3,
       "pierce": 1
     },
+    "scaling": {
+      "strength": 3,
+      "toughness": 2
+    },
     "value": 6
   }, {
     "id": 69,
@@ -893,6 +1028,10 @@
       "slash": 4,
       "pierce": 4
     },
+    "scaling": {
+      "strength": 3,
+      "toughness": 3
+    },
     "value": 10
   }, {
     "id": 70,
@@ -904,6 +1043,10 @@
     "damage": {
       "slash": 3
     },
+    "scaling": {
+      "strength": 1,
+      "skill": 2
+    },
     "value": 6
   }, {
     "id": 71,
@@ -913,6 +1056,9 @@
     "delay": 0,
     "damage": {
       "pierce": 2
+    },
+    "scaling": {
+      "skill": 1
     },
     "value": 10
   }, {
@@ -925,6 +1071,10 @@
       "slash": 2,
       "pierce": 2
     },
+    "scaling": {
+      "strength": 2,
+      "skill": 2
+    },
     "value": 10
   }, {
     "id": 73,
@@ -935,6 +1085,10 @@
     "damage": {
       "pierce": 5,
       "blunt": 5
+    },
+    "scaling": {
+      "strength": 4,
+      "skill": 4
     },
     "value": 15
   }, {
@@ -952,6 +1106,11 @@
       "pierce": 5,
       "blunt": 5
     },
+    "scaling": {
+      "strength": 7,
+      "skill": 7,
+      "toughness": 8
+    },
     "value": 100
   }, {
     "id": 75,
@@ -962,15 +1121,21 @@
     "damage": {
       "pierce": 5
     },
+    "scaling": {
+      "skill": 5
+    },
     "value": 25
   }, {
     "id": 76,
     "name": "Repeating Crossbow",
     "slot": "primary",
     "weapon": true,
-    "delay": 1,
+    "delay": 2,
     "damage": {
       "pierce": 2
+    },
+    "scaling": {
+      "skill": 2
     },
     "value": 200
   }, {
@@ -981,8 +1146,11 @@
     "delay": 20,
     "damage": {
       "slash": 2,
-      "pierce": 8,
-      "blunt": 8
+      "pierce": 3,
+      "blunt": 3
+    },
+    "scaling": {
+      "skill": 20
     },
     "value": 100
   }, {
@@ -994,6 +1162,9 @@
     "resist": {
       "occult": 1
     },
+    "scaling": {
+      "agility": 1
+    },
     "value": 5
   }, {
     "id": 79,
@@ -1003,6 +1174,9 @@
     "delay": 1,
     "resist": {
       "occult": 4
+    },
+    "scaling": {
+      "mind": 1
     },
     "value": 30
   }, {
@@ -1015,6 +1189,9 @@
       "occult": 1,
       "freeze": 1
     },
+    "scaling": {
+      "agility": 1
+    },
     "value": 8
   }, {
     "id": 81,
@@ -1024,6 +1201,9 @@
     "delay": 1,
     "resist": {
       "occult": 20
+    },
+    "scaling": {
+      "mind": 1
     },
     "value": 100
   }, {
@@ -1035,6 +1215,9 @@
     "resist": {
       "acid": 5
     },
+    "scaling": {
+      "skill": 4
+    },
     "value": 20
   }, {
     "id": 83,
@@ -1044,6 +1227,9 @@
     "delay": 1,
     "resist": {
       "slash": 1
+    },
+    "scaling": {
+      "agility": 1
     },
     "value": 5
   }, {
@@ -1057,6 +1243,9 @@
     "damage": {
       "occult": 120
     },
+    "scaling": {
+      "attunement": 30
+    },
     "value": 5000
   }, {
     "id": 85,
@@ -1068,6 +1257,9 @@
     "delay": 2,
     "resist": {
       "occult": 120
+    },
+    "scaling": {
+      "attunement": 30
     },
     "value": 5000
   }]
