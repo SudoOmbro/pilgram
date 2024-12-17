@@ -553,6 +553,9 @@ class Player(CombatActor):
         value = (100 * (lv * lv)) + (1000 * lv)
         return int(value * self.vocation.upgrade_cost_multiplier)
 
+    def get_level_progress(self) -> float:
+        return (self.xp / self.get_required_xp()) * 100
+
     def get_gear_upgrade_required_money(self) -> int:
         lv = self.gear_level
         value = (50 * (lv * lv)) + (1000 * lv)
@@ -914,7 +917,7 @@ class Player(CombatActor):
     def __str__(self) -> str:
         max_hp = self.get_max_hp()
         guild = f" | {self.guild.name} (lv. {self.guild.level})" if self.guild else ""
-        string = f"{self.print_username()} | lv. {self.level}{guild}\n`{self.xp}/{self.get_required_xp()} xp`\n"
+        string = f"{self.print_username()} | lv. {self.level}{guild}\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`\n"
         if self.ascension != 0:
             string += f"Ascension level: {self.ascension}\n"
         if self.vocation.name:
