@@ -85,6 +85,7 @@ class PlayerModel(BaseModel):
     essences = CharField(null=False, default="")  # essences are stored as a char string, 1 + 2 bytes per essence
     max_level_reached = IntegerField(default=0)
     max_money_reached = IntegerField(default=0)
+    max_renown_reached = IntegerField(default=0)
 
 
 class GuildModel(BaseModel):

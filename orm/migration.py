@@ -282,7 +282,8 @@ def __migrate_v11_to_v12():
         migrator.add_column('playermodel', 'agility', IntegerField(default=1)),
         migrator.add_column('playermodel', 'essences', CharField(null=False, default="")),
         migrator.add_column('playermodel', 'max_level_reached', IntegerField(default=0)),
-        migrator.add_column('playermodel', 'max_money_reached', IntegerField(default=0))
+        migrator.add_column('playermodel', 'max_money_reached', IntegerField(default=0)),
+        migrator.add_column('playermodel', 'max_renown_reached', IntegerField(default=0))
     )
     previous_db.commit()
     previous_db.close()
@@ -293,6 +294,8 @@ def __migrate_v11_to_v12():
         for ps in PlayerModel.select():
             ps.max_level_reached = ps.level
             ps.max_money_reached = ps.money
+            ps.max_renown_reached = ps.renown
+            ps.equipped_items = ""
             ps.save()
     db.commit()
     db.close()

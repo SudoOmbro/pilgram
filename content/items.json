@@ -737,7 +737,8 @@
     "scaling": {
       "mind": 2
     },
-    "value": 50
+    "value": 50,
+    "max_perks": 3
   }, {
     "id": 50,
     "name": "Sabatons",
@@ -1234,6 +1235,19 @@
     "value": 5
   }, {
     "id": 84,
+    "name": "Quarterstaff",
+    "slot": "primary",
+    "weapon": false,
+    "delay": 5,
+    "damage": {
+      "blunt": 5
+    },
+    "scaling": {
+      "skill": 5
+    },
+    "value": 10
+  }, {
+    "id": 85,
     "name": "Hateful Heart",
     "description": "Still beating hearth of a legendary beast. It radiates an aura of hatred.",
     "slot": "relic",
@@ -1246,9 +1260,10 @@
     "scaling": {
       "attunement": 30
     },
-    "value": 5000
+    "value": 5000,
+    "max_perks": 4
   }, {
-    "id": 85,
+    "id": 86,
     "name": "Leaden Amygdala",
     "description": "The amygdala of a legendary hero, encased in damascus pattern Lead.",
     "slot": "relic",
@@ -1261,6 +1276,7 @@
     "scaling": {
       "attunement": 30
     },
-    "value": 5000
+    "value": 5000,
+    "max_perks": 4
   }]
 }

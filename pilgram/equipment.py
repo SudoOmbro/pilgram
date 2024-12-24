@@ -47,7 +47,8 @@ class EquipmentType(Listable, base_filename="items"):
             slot: int,
             value: int,
             equipment_class: str,
-            scaling: Stats
+            scaling: Stats,
+            max_perks: int
     ) -> None:
         """
         :param equipment_type_id: The id of the equipment type
@@ -70,6 +71,7 @@ class EquipmentType(Listable, base_filename="items"):
         self.value = value
         self.equipment_class = equipment_class
         self.scaling = scaling
+        self.max_perks = max_perks
 
     def __str__(self) -> str:
         return f"Type: {self.equipment_class}\nSlot: {Strings.slots[self.slot]} {Strings.get_item_icon(self.slot)}"
@@ -88,6 +90,7 @@ class EquipmentType(Listable, base_filename="items"):
             equipment_type_json["value"],
             equipment_type_json.get("class", "weapon" if equipment_type_json["weapon"] else "armor"),
             Stats.load_from_json(equipment_type_json.get("scaling", {"strength": 1, "skill": 1})),
+            equipment_type_json.get("max_perks", 2)
         )
 
 
@@ -145,9 +148,12 @@ class Equipment:
         self.resist = self.equipment_type.resist.scale(self.level) + resist
         self.rerolls += 1
 
-    def enchant(self) -> None:
+    def enchant(self) -> bool:
+        if len(self.modifiers) >= self.equipment_type.max_perks:
+            return False
         self.name += Strings.enchant_symbol
         self.modifiers.append(self._get_random_modifier(self.level))
+        return True
 
     def __str__(self) -> str:
         string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type}\nWeight: {self.equipment_type.delay} Kg\nValue: {self.get_value()} {MONEY}_"
@@ -160,7 +166,7 @@ class Equipment:
         string += f"\n\n*Scaling*:\n{str(self.equipment_type.scaling)}"
         if not self.modifiers:
             return string
-        return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
+        return string + f"\n\n*Perks ({len(self.modifiers)}/{self.equipment_type.max_perks})*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"
 
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Equipment):

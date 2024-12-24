@@ -2,6 +2,7 @@ import json
 import time
 from collections.abc import Callable
 from datetime import timedelta
+from math import sqrt
 from pathlib import Path
 from random import choice, randint
 from typing import Any
@@ -165,3 +166,13 @@ class FuncWithParam:
 
 def print_bonus(value: int) -> str:
     return f"{'+' if value > 0 else ''}{value}"
+
+
+def get_nth_triangle_number(n: int) -> int:
+    """ return 1 + 2 + 3 + 4 + ... + n """
+    return n * (n + 1) // 2
+
+
+def get_nth_triangle_number_inverse(n: int) -> int:
+    """ given the nth triangle number, returns the closest integer value to the generating number """
+    return int((sqrt(1 + (8 * n)) - 1) // 2)

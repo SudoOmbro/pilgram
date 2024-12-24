@@ -39,7 +39,8 @@ from pilgram.globals import (
 )
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
-from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name
+from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name, \
+    get_nth_triangle_number_inverse, get_nth_triangle_number
 from ui.utils import InterpreterFunctionWrapper as IFW, integer_arg, player_arg, guild_arg, get_yes_or_no, get_player
 from ui.utils import RegexWithErrorMessage as RWE
 from ui.utils import UserContext
@@ -887,6 +888,8 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
     item = items[item_pos - 1]
     if db().get_auction_from_item(item):
         return Strings.cannot_equip_auctioned_item
+    if item.level > player.level:
+        return Strings.cannot_equip_higher_level_item
     player.equip_item(item)
     db().update_player_data(player)
     return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
@@ -952,7 +955,7 @@ def enchant_item(context: UserContext, item_pos_str: str) -> str:
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
     item = items[item_pos - 1]
-    if item.get_rarity() >= 4:
+    if item.get_rarity() >= item.equipment_type.max_perks:
         return Strings.max_enchants_reached
     if db().get_auction_from_item(item):
         return Strings.cannot_enchant_auctioned_item
@@ -1573,7 +1576,10 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
     player.ascension += 1
     player.equip_vocations([])
     # increase player stats by using essences
+    remaining_essences: dict[int, int] = {}
     for zone_id, amount in player.essences.items():
+        levels = get_nth_triangle_number_inverse(amount)
+        remaining_essences[zone_id] = get_nth_triangle_number(levels)
         zone = db().get_zone(zone_id)
         if zone.extra_data["essence"]:
             # if the zone the essences came from has defined essence values, then increase the stats defined there
@@ -1582,12 +1588,12 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
                 if stat not in new_stats.__dict__:
                     log.error(f"Stat '{stat}' as defined in zone {zone_id} essence dict does not exist")
                     continue
-                new_stats.add_single_value(stat, int(value * amount))
+                new_stats.add_single_value(stat, int(value * levels))
         else:
             # if the zone the essences came from does not have defined essence values, then add random stats
-            new_stats = Stats.generate_random(0, amount)
+            new_stats = Stats.generate_random(0, levels)
             player.stats += new_stats
-    player.essences = {}
+    player.essences = remaining_essences
     # remove all items except for relics
     unequip_all_items(context)
     items = __get_items(player)

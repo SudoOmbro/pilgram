@@ -267,6 +267,7 @@ class Strings:
     bid_placed = f"You placed a bid of {{amount}} {MONEY} on item {{item}}."
     auction_already_exists = "Auction for item {item} exists."
     cannot_equip_auctioned_item = "You cannot equip an auctioned item."
+    cannot_equip_higher_level_item = "You cannot equip an item that is higher level than you."
     cannot_sell_auctioned_item = "You cannot sell an auctioned item."
     cannot_enchant_auctioned_item = "You cannot enchant an auctioned item."
     bid_too_low = "You bid is too low! the minimum is "
