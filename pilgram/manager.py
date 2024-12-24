@@ -203,7 +203,7 @@ class QuestManager(Manager):
                 guild.create_bank_log("deposit", player.player_id, amount)
             # add to completed quests & add renown
             player.completed_quests += 1
-            player.renown += renown
+            player.add_renown(renown)
             # add zone essence
             player.add_essence(quest.zone.zone_id, 1)
             # get artifact piece if lucky
@@ -448,7 +448,7 @@ class QuestManager(Manager):
             renown = (enemy.get_level() + ac.quest.number + 1) * 10
             # add rewards
             xp_am = player.add_xp(xp)
-            player.renown += renown
+            player.add_renown(renown)
             money_am = player.add_money(money)
             # create notification text
             if isinstance(enemy, Enemy):
@@ -499,7 +499,7 @@ class QuestManager(Manager):
             renown = shade.get_level() * 10
             # add rewards
             xp_am = player.add_xp(xp)
-            player.renown += renown
+            player.add_renown(renown)
             money_am = player.add_money(money)
             text += f"\n\n{Strings.shade_win}{rewards_string(xp_am, money_am, renown)}"
         for flag in BUFF_FLAGS:

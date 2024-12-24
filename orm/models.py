@@ -28,6 +28,7 @@ class BaseModel(Model):
 
 
 class ZoneModel(BaseModel):
+    """ Table that contains all info about Zones """
     id = AutoField(primary_key=True, unique=True)
     name = CharField()
     level = IntegerField()
@@ -38,6 +39,7 @@ class ZoneModel(BaseModel):
 
 
 class QuestModel(BaseModel):
+    """ Table that contains all info about quests """
     id = AutoField(primary_key=True, unique=True)
     zone_id = ForeignKeyField(ZoneModel, backref="quests")
     number = IntegerField(default=0)  # the number of the quest in the quest order
@@ -51,6 +53,7 @@ class QuestModel(BaseModel):
 
 
 class PlayerModel(BaseModel):
+    """ Table that holds all the characters main stats """
     id = IntegerField(primary_key=True, unique=True)
     name = CharField(null=False, unique=True, index=True, max_length=40)
     description = CharField(null=False, max_length=320)
@@ -89,6 +92,7 @@ class PlayerModel(BaseModel):
 
 
 class GuildModel(BaseModel):
+    """ Table that holds all the main information about the guilds """
     id = AutoField(primary_key=True)
     name = CharField(null=False, unique=True, index=True, max_length=40)
     level = IntegerField(default=1)
@@ -102,6 +106,7 @@ class GuildModel(BaseModel):
 
 
 class ZoneEventModel(BaseModel):
+    """ Table that contains all the AI generated (or Admin written) Zone events """
     id = AutoField(primary_key=True)
     zone_id = ForeignKeyField(ZoneModel)
     event_text = CharField()
@@ -116,6 +121,7 @@ class QuestProgressModel(BaseModel):
 
 
 class ArtifactModel(BaseModel):
+    """ Table that contains all info about artifacts. This table scales with the amount of players """
     id = AutoField(primary_key=True)
     name = CharField(null=False, unique=True)
     description = CharField(null=False)
@@ -123,6 +129,10 @@ class ArtifactModel(BaseModel):
 
 
 class EquipmentModel(BaseModel):
+    """
+    Table that contains all info about equipments.
+    This table scales with the amount of players, it is pretty compressed tho.
+    """
     id = AutoField(primary_key=True)
     name = CharField(null=False, max_length=50)
     level = IntegerField(default=1)
@@ -134,6 +144,7 @@ class EquipmentModel(BaseModel):
 
 
 class EnemyTypeModel(BaseModel):
+    """ Table that contains all flavour information about enemies. """
     id = AutoField(primary_key=True)
     zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
     name = CharField(null=False, unique=True)
@@ -143,6 +154,7 @@ class EnemyTypeModel(BaseModel):
 
 
 class AuctionModel(BaseModel):
+    """ Table that contains all auctions. """
     id = AutoField(primary_key=True)
     auctioneer_id = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
     item_id = ForeignKeyField(EquipmentModel, null=False)
@@ -176,4 +188,5 @@ def create_tables():
         EnemyTypeModel,
         AuctionModel
     ], safe=True)
+    log.info("All tables created")
     db_disconnect()

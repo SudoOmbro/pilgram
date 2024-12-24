@@ -914,6 +914,11 @@ class Player(CombatActor):
     def can_ascend(self) -> bool:
         return self.level >= self.get_ascension_level()
 
+    def add_renown(self, amount: int) -> None:
+        self.renown += amount
+        if self.renown >= self.max_renown_reached:
+            self.max_renown_reached = self.renown
+
     # utility
 
     def __str__(self) -> str:
@@ -1335,7 +1340,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], base_filename="qtes"):
 
     @staticmethod
     def _add_renown(player: Player, amount: int) -> None:
-        player.renown += amount
+        player.add_renown(amount)
         return None
 
     @staticmethod
@@ -1368,7 +1373,7 @@ class QuickTimeEvent(Listable["QuickTimeEvent"], base_filename="qtes"):
 
     @staticmethod
     def _lose_renown(player: Player, amount: int) -> None:
-        player.renown -= amount
+        player.add_renown(-amount)
         return None
 
     @staticmethod
