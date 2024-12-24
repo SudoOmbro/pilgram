@@ -332,17 +332,25 @@ class Strings:
         0: (
             "You see shadows move at the edge of your vision...",
             "You hear voices whisper unintelligibly...",
-            "The smell of blood makes your mind go blank..."
+            "The smell of blood makes your mind go blank...",
+            "The voices aren't always there, but they're better than the silence.",
+            "The trees are watching you, they are! They watch, they watch, they watch from a far!"
         ),
-        -100: (
+        -125: (
             "There's a jester in your ear telling you to cause funny times.",
             "And you dance, dance. And you say you'll never die.",
             "You struggle to remember your name."
+            "You know, I once dug a pit and filled it with clouds....or was it clowns.... it doesn't matter, it didn't slow him down. But it really began to smell! Must have been clowns. Clouds don't smell, they taste of butter. And tears.",
+            "Your teeth itch.",
+            "My eyes... I cannot see my eyes!",
+            "Roses are red\nViolets are blue\nI’m a schizophrenic\nAnd so am I."
         ),
-        -200: (
+        -250: (
             "DO YOU THINK YOU ARE IN CONTROL?",
             "MAGNIFICENT SLAUGHTER",
-            "AHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAH"
+            "AHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAH",
+            "I AM THE GREAT TOMATO MAN, RED RIPENED WITH ANGER!!!",
+            "DO YOU SEE THEM TOO?"
         )
     }
 
