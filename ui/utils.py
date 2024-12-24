@@ -38,6 +38,7 @@ class YesNoError(CommandError):
 
 
 class CommandParsingResult:
+    """ Contains the result of the parsing of a command, which includes the function to be executed & the args. """
 
     def __init__(self, function: Callable, args: list[str] | None):
         self.function = function
@@ -252,7 +253,11 @@ def reconstruct_delimited_arguments(separated_strings: list[str], delimiter: str
 
 
 def get_yes_or_no(user_input: str) -> bool:
-    """ returns True if the input was yes, else returns False """
+    """
+    returns True if the input was yes, else returns False
+
+    :raises YesNoError
+    """
     processed_user_input = user_input[0].lower()
     if not re.match(YES_NO_REGEX, processed_user_input):
         raise YesNoError()
@@ -260,6 +265,11 @@ def get_yes_or_no(user_input: str) -> bool:
 
 
 def get_player(db: Callable[[], PilgramDatabase], context: UserContext) -> Player:
+    """
+    retrieve & return the player character
+
+    :raises CommandError
+    """
     try:
         return db().get_player_data(context.get("id"))
     except KeyError:
