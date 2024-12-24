@@ -1625,7 +1625,7 @@ def records(context: UserContext, *args) -> str:
             return Strings.named_object_not_exist.format(obj="player", name=args[0])
     else:
         player = get_player(db, context)
-    return f"{player.name}'s records:\n\nmax level: {player.max_level_reached}\nmax {MONEY}: {player.max_money_reached}"
+    return f"{player.name}'s records:\n\n*max level*: {player.max_level_reached}\n*max {MONEY}*: {player.max_money_reached}\n*max renown*: {player.max_renown_reached}"
 
 
 

@@ -298,7 +298,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 Stats(pls.vitality, pls.strength, pls.skill, pls.toughness, pls.attunement, pls.mind, pls.agility),
                 decode_essences(pls.essences),
                 pls.max_level_reached,
-                pls.max_money_reached
+                pls.max_money_reached,
+                pls.max_renown_reached
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -364,6 +365,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.essences = encode_essences(player.essences)
                 pls.max_level_reached = player.max_level_reached
                 pls.max_money_reached = player.max_money_reached
+                pls.max_renown_reached = player.max_renown_reached
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')

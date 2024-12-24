@@ -470,7 +470,8 @@ class Player(CombatActor):
         stats: Stats,
         essences: dict[int, int],
         max_level_reached: int,
-        max_money_reached: int
+        max_money_reached: int,
+        max_renown_reached: int
     ) -> None:
         """
         :param player_id (int): unique id of the player
@@ -531,6 +532,7 @@ class Player(CombatActor):
         self.essences = essences
         self.max_level_reached = max_level_reached
         self.max_money_reached = max_money_reached
+        self.max_renown_reached = max_renown_reached
 
     def equip_vocations(self, vocations: list[Vocation]) -> None:
         self.vocation: Vocation = Vocation.empty()
@@ -985,6 +987,7 @@ class Player(CombatActor):
             0,
             Stats.create_default(),
             {},
+            0,
             0,
             0
         )
