@@ -348,7 +348,7 @@ class QuestManager(Manager):
             player.sanity = 55
             return (Strings.quest_fail + Strings.lose_money).format(name=previous_quest.name if previous_quest else "Crypt exploration", money=lost_money)
 
-    def _create_enemy(self, ac: AdventureContainer, modifiers_amount: int, level_modifier: int):
+    def _create_enemy(self, ac: AdventureContainer, modifiers_amount: int, level_modifier: int, prefix: str = ""):
         anomaly = self.db().get_current_anomaly()
         modifiers: list[Modifier] = []
         enemy_level_modifier: int = level_modifier
@@ -361,7 +361,8 @@ class QuestManager(Manager):
         return Enemy(
             self.db().get_random_enemy_meta(ac.quest.zone),
             modifiers,
-            enemy_level_modifier
+            enemy_level_modifier,
+            name_prefix=prefix
         )
 
     def _process_combat(
@@ -514,8 +515,9 @@ class QuestManager(Manager):
         guild = self.db().get_owned_guild(leader)
         party = self.db().get_raid_participants(guild)
         # get combat participants
-        level_modifier = (ac.finish_time - datetime.now()).days
-        participants: list[CombatActor] = party + [self._create_enemy(ac, random.randint(0, 2), level_modifier + int(x.level / 3)) for x in party]
+        participants: list[CombatActor] = party + [self._create_enemy(ac, random.randint(0, 2), int(x.level / 3)) for x in party]
+        if is_boss:
+            participants.append(self._create_enemy(ac, 5, int(leader.level * 1.5), prefix="Legendary "))
         # process combat
         combat = CombatContainer(participants, {})
         combat_log = "Combat starts!\n\n" + combat.fight()
@@ -531,15 +533,35 @@ class QuestManager(Manager):
                     self.db().update_quest_progress(member_ac)
             else:
                 xp, money = member.get_rewards(member)
-                xp_am = member.add_xp(xp)
-                money_am = member.add_money(money)
-                renown = member.get_level() * 5
-                self.db().create_and_add_notification(
-                    member,
-                    combat_log + "\n\n" + Strings.raid_win + rewards_string(xp_am, money_am, renown)
-                )
+                if is_boss:
+                    # add money, xp & renown (x4)
+                    xp_am = member.add_xp(xp * 4)
+                    money_am = member.add_money(money * 4)
+                    renown = member.get_level() * 20
+                    guild.prestige += member.get_level() * 4
+                    # add relic
+                    item = Equipment.generate(member.level, EquipmentType.get_random("relic"), 3)
+                    items = self.db().get_player_items(member.player_id)
+                    item_id = self.db().add_item(item, member)
+                    item.equipment_id = item_id
+                    items.append(item)
+                    # notify player
+                    self.db().create_and_add_notification(
+                        member,
+                        combat_log + "\n\n" + Strings.raid_finished + rewards_string(xp_am, money_am, renown)
+                    )
+                else:
+                    # add money, xp & renown
+                    xp_am = member.add_xp(xp)
+                    money_am = member.add_money(money)
+                    renown = member.get_level() * 5
+                    guild.prestige += member.get_level()
+                    # notify player
+                    self.db().create_and_add_notification(
+                        member,
+                        combat_log + "\n\n" + Strings.raid_win + rewards_string(xp_am, money_am, renown)
+                    )
                 self.db().update_player_data(member)
-                guild.prestige += member.get_level()
         # if leader is dead then abort the raid
         if leader.is_dead():
             for member in party:
@@ -547,6 +569,7 @@ class QuestManager(Manager):
                     member_ac = self.db().get_player_adventure_container(member)
                     self.db().create_and_add_notification(member, Strings.raid_leader_died)
                     member.unset_flag(Raiding)
+                    member.hp_percent = 1.0
                     self.db().update_player_data(member)
                     self.db().update_quest_progress(member_ac)
         # update guild & leader adventure container
@@ -560,7 +583,7 @@ class QuestManager(Manager):
         if ac.is_on_a_quest():
             player: Player = self.db().get_player_data(ac.player.player_id)
             if Raiding.is_set(ac.player.flags):
-                self.process_raid_combat(ac, False)
+                self.process_raid_combat(ac, ac.is_quest_finished())
                 return False
             elif ac.is_quest_finished():
                 self._complete_quest(ac)

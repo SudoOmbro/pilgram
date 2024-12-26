@@ -1237,7 +1237,7 @@
     "id": 84,
     "name": "Quarterstaff",
     "slot": "primary",
-    "weapon": false,
+    "weapon": true,
     "delay": 5,
     "damage": {
       "blunt": 5
@@ -1248,6 +1248,19 @@
     "value": 10
   }, {
     "id": 85,
+    "name": "Nunchaku",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "blunt": 3
+    },
+    "scaling": {
+      "skill": 4
+    },
+    "value": 5
+  }, {
+    "id": 86,
     "name": "Hateful Heart",
     "description": "Still beating hearth of a legendary beast. It radiates an aura of hatred.",
     "slot": "relic",
@@ -1263,7 +1276,7 @@
     "value": 5000,
     "max_perks": 4
   }, {
-    "id": 86,
+    "id": 87,
     "name": "Leaden Amygdala",
     "description": "The amygdala of a legendary hero, encased in damascus pattern Lead.",
     "slot": "relic",

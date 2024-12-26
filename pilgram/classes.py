@@ -1756,20 +1756,21 @@ class Enemy(CombatActor):
     stance: str
 
     def __init__(
-        self, meta: EnemyMeta, modifiers: list[m.Modifier], level_modifier: int
+        self, meta: EnemyMeta, modifiers: list[m.Modifier], level_modifier: int, name_prefix: str = ""
     ) -> None:
         self.meta = meta
         self.modifiers = modifiers
         self.level_modifier = level_modifier + random.randint(-5, 2)
         self.delay = 7 + meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
         self.stance = self.meta.zone.extra_data.get("stance", "r")
+        self.name_prefix = name_prefix
         super().__init__(1.0, 1, Stats.create_default())
 
     def roll(self, dice_faces: int) -> int:
         return random.randint(1, dice_faces)
 
     def get_name(self) -> str:
-        return "the " + self.meta.name.rstrip().lstrip("The ")
+        return "the " + self.name_prefix + self.meta.name.rstrip().lstrip("The ")
 
     def get_level(self) -> int:
         value = self.meta.zone.level + self.level_modifier

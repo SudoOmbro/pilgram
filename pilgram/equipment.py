@@ -244,6 +244,8 @@ class Equipment:
     def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> Equipment:
         seed = time.time()
         dmg_type_string, damage, resist = cls.get_dmg_and_resist_values(level, seed, equipment_type.is_weapon)
+        if rarity > equipment_type.max_perks:
+            rarity = equipment_type.max_perks
         modifiers: list[m.Modifier] = cls.generate_modifiers(rarity, level)
         return cls(
             0,

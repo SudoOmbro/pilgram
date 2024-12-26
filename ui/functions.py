@@ -1628,7 +1628,6 @@ def records(context: UserContext, *args) -> str:
     return f"{player.name}'s records:\n\n*max level*: {player.max_level_reached}\n*max {MONEY}*: {player.max_money_reached}\n*max renown*: {player.max_renown_reached}"
 
 
-
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
