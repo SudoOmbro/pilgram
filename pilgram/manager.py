@@ -509,9 +509,9 @@ class QuestManager(Manager):
         self.db().update_quest_progress(ac)
         self.db().create_and_add_notification(ac.player, text, notification_type="Combat Log")
 
-    def process_raid_combat(self, ac: AdventureContainer):
-        player = self.db().get_player_data(ac.player.player_id)
-        guild = self.db().get_owned_guild(player)
+    def process_raid_combat(self, ac: AdventureContainer, is_boss: bool):
+        leader = self.db().get_player_data(ac.player.player_id)
+        guild = self.db().get_owned_guild(leader)
         party = self.db().get_raid_participants(guild)
         # get combat participants
         level_modifier = (ac.finish_time - datetime.now()).days
@@ -525,35 +525,46 @@ class QuestManager(Manager):
                 member_ac = self.db().get_player_adventure_container(member)
                 text = self._process_combat_death(member, member_ac)
                 self.db().create_and_add_notification(member, combat_log + text)
+                member.unset_flag(Raiding)
                 self.db().update_player_data(member)
                 if member.is_dead():
                     self.db().update_quest_progress(member_ac)
             else:
                 xp, money = member.get_rewards(member)
-                xp_am = player.add_xp(xp)
-                money_am = player.add_money(money)
+                xp_am = member.add_xp(xp)
+                money_am = member.add_money(money)
                 renown = member.get_level() * 5
                 self.db().create_and_add_notification(
                     member,
                     combat_log + "\n\n" + Strings.raid_win + rewards_string(xp_am, money_am, renown)
                 )
                 self.db().update_player_data(member)
-                guild.prestige += player.get_level()
+                guild.prestige += member.get_level()
         # if leader is dead then abort the raid
-        # TODO
+        if leader.is_dead():
+            for member in party:
+                if not member.is_dead():
+                    member_ac = self.db().get_player_adventure_container(member)
+                    self.db().create_and_add_notification(member, Strings.raid_leader_died)
+                    member.unset_flag(Raiding)
+                    self.db().update_player_data(member)
+                    self.db().update_quest_progress(member_ac)
         # update guild & leader adventure container
         self.db().update_guild(guild)
         self.db().update_quest_progress(ac)
 
     def process_update(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
-    ) -> None:
+    ) -> bool:
+        """ Process a player update & return whether the player can meet other players """
         if ac.is_on_a_quest():
             player: Player = self.db().get_player_data(ac.player.player_id)
             if Raiding.is_set(ac.player.flags):
-                self.process_raid_combat(ac)
+                self.process_raid_combat(ac, False)
+                return False
             elif ac.is_quest_finished():
                 self._complete_quest(ac)
+                return False
             elif QuestCanceled.is_set(player.flags):
                 player.unset_flag(QuestCanceled)
                 ac.player = player
@@ -561,16 +572,20 @@ class QuestManager(Manager):
                 self.db().update_quest_progress(ac)
                 self.db().update_player_data(player)
                 self.db().create_and_add_notification(player, "You are back in town after abandoning the quest.")
+                return False
             elif ForcedCombat.is_set(player.flags) or (
-                random.randint(1, 100) <= 10
+                (random.randint(1, 100) + player.vocation.combat_frequency) >= 85
             ):  # 10% base chance of combat
                 self._process_combat(ac, updates)
+                return False
             else:
                 self._process_event(ac)
         elif InCrypt.is_set(ac.player.flags):
             self._process_crypt_update(ac)
+            return False
         else:
             self._process_event(ac)
+        return True
 
     def get_updates(self) -> list[AdventureContainer]:
         return self.db().get_all_pending_updates(self.update_interval)
@@ -624,9 +639,8 @@ class QuestManager(Manager):
         zones_players_map: dict[int, list[Player]] = {}
         updates = self.get_updates()
         for update in updates:
-            if update.player.vocation.can_meet_players:
+            if self.process_update(update, updates) and update.player.vocation.can_meet_players:
                 add_to_zones_players_map(zones_players_map, update)
-            self.process_update(update, updates)
         self.handle_players_meeting(zones_players_map)
 
 

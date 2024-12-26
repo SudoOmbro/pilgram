@@ -327,6 +327,7 @@ class Strings:
     raid_started = "Raid in {zone} started. Godspeed."
     raid_win = "You manage to vanquish the group of enemies."
     raid_success = "You completed the raid successfully."
+    raid_leader_died = "The leader of the raid died. Hope abandons you & you decide to go back to town."
 
     sanity_lines: dict[int, tuple[str, ...]] = {
         0: (

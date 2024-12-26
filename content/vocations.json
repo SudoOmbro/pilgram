@@ -476,5 +476,67 @@
       "reroll_stats_bonus": 40,
       "perk_rarity_bonus": 3
     }
+  }, {
+    "vocation_id": 8,
+    "id": 36,
+    "name": "Rogue",
+    "level": 1,
+    "description": "Hunger makes a thief of any man.",
+    "modifiers": {
+      "combat_frequency": -2,
+      "quest_money_mult": 1.1,
+      "event_money_mult": 1.1
+    }
+  }, {
+    "vocation_id": 8,
+    "id": 37,
+    "name": "Rogue",
+    "level": 2,
+    "description": "Opportunity makes a thief.",
+    "modifiers": {
+      "combat_frequency": -3,
+      "quest_money_mult": 1.2,
+      "event_money_mult": 1.2,
+      "discovery_bonus": 1
+    }
+  }, {
+    "vocation_id": 8,
+    "id": 38,
+    "name": "Rogue",
+    "level": 3,
+    "description": "I shall not be present at my trial.",
+    "modifiers": {
+      "combat_frequency": -3,
+      "quest_money_mult": 1.3,
+      "event_money_mult": 1.3,
+      "discovery_bonus": 1,
+      "gain_money_on_player_meet": true
+    }
+  }, {
+    "vocation_id": 8,
+    "id": 39,
+    "name": "Rogue",
+    "level": 4,
+    "description": "I’m not a thief. I’m a fan.",
+    "modifiers": {
+      "combat_frequency": -5,
+      "quest_money_mult": 1.4,
+      "event_money_mult": 1.4,
+      "discovery_bonus": 1,
+      "gain_money_on_player_meet": true
+    }
+  }, {
+    "vocation_id": 8,
+    "id": 40,
+    "name": "Rogue",
+    "level": 5,
+    "description": "The guards are either incompetent or corrupt. Or both.",
+    "modifiers": {
+      "combat_frequency": -10,
+      "quest_money_mult": 1.6,
+      "event_money_mult": 1.6,
+      "discovery_bonus": 2,
+      "gain_money_on_player_meet": true
+    }
   }]
 }

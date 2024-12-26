@@ -1535,6 +1535,7 @@ class Vocation(Listable["Vocation"], base_filename="vocations"):
         self.reroll_stats_bonus: int = modifiers.get("reroll_stats_bonus", 0)
         self.perk_rarity_bonus: int = modifiers.get("perk_rarity_bonus", 0)
         self.hunt_sanity_loss: int = modifiers.get("hunt_sanity_loss", 0)
+        self.combat_frequency: int = modifiers.get("combat_frequency", 0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
@@ -1587,6 +1588,7 @@ class Vocation(Listable["Vocation"], base_filename="vocations"):
         result.reroll_stats_bonus = self.reroll_stats_bonus + other.reroll_stats_bonus
         result.perk_rarity_bonus = self.perk_rarity_bonus + other.perk_rarity_bonus
         result.hunt_sanity_loss = self.hunt_sanity_loss + other.hunt_sanity_loss
+        result.combat_frequency = self.combat_frequency + other.combat_frequency
         # setup applied modifiers
         result.modifiers_applied = copy(self.modifiers_applied)
         for modifier in other.modifiers_applied:
