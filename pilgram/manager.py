@@ -526,42 +526,46 @@ class QuestManager(Manager):
             if member.is_dead():
                 member_ac = self.db().get_player_adventure_container(member)
                 text = self._process_combat_death(member, member_ac)
-                self.db().create_and_add_notification(member, combat_log + text)
-                member.unset_flag(Raiding)
-                self.db().update_player_data(member)
-                if member.is_dead():
+                if not member_ac.is_on_a_quest():
+                    member.unset_flag(Raiding)
+                    self.db().update_player_data(member)
                     self.db().update_quest_progress(member_ac)
+                    self.db().create_and_add_notification(member, combat_log + text)
+                    continue
+            xp, money = member.get_rewards(member)
+            if is_boss:
+                member_ac = self.db().get_player_adventure_container(member)
+                # add money, xp & renown (x4)
+                xp_am = member.add_xp(xp * 4)
+                money_am = member.add_money(money * 4)
+                renown = member.get_level() * 20
+                member.add_renown(renown)
+                guild.prestige += member.get_level() * 4
+                # add relic
+                item = Equipment.generate(member.level, EquipmentType.get_random("relic"), 3)
+                items = self.db().get_player_items(member.player_id)
+                item_id = self.db().add_item(item, member)
+                item.equipment_id = item_id
+                items.append(item)
+                # notify player
+                self.db().create_and_add_notification(
+                    member,
+                    combat_log + "\n\n" + Strings.raid_finished + rewards_string(xp_am, money_am, renown)
+                )
+                self.db().update_quest_progress(member_ac)
             else:
-                xp, money = member.get_rewards(member)
-                if is_boss:
-                    # add money, xp & renown (x4)
-                    xp_am = member.add_xp(xp * 4)
-                    money_am = member.add_money(money * 4)
-                    renown = member.get_level() * 20
-                    guild.prestige += member.get_level() * 4
-                    # add relic
-                    item = Equipment.generate(member.level, EquipmentType.get_random("relic"), 3)
-                    items = self.db().get_player_items(member.player_id)
-                    item_id = self.db().add_item(item, member)
-                    item.equipment_id = item_id
-                    items.append(item)
-                    # notify player
-                    self.db().create_and_add_notification(
-                        member,
-                        combat_log + "\n\n" + Strings.raid_finished + rewards_string(xp_am, money_am, renown)
-                    )
-                else:
-                    # add money, xp & renown
-                    xp_am = member.add_xp(xp)
-                    money_am = member.add_money(money)
-                    renown = member.get_level() * 5
-                    guild.prestige += member.get_level()
-                    # notify player
-                    self.db().create_and_add_notification(
-                        member,
-                        combat_log + "\n\n" + Strings.raid_win + rewards_string(xp_am, money_am, renown)
-                    )
-                self.db().update_player_data(member)
+                # add money, xp & renown
+                xp_am = member.add_xp(xp)
+                money_am = member.add_money(money)
+                renown = member.get_level() * 4
+                member.add_renown(renown)
+                guild.prestige += member.get_level()
+                # notify player
+                self.db().create_and_add_notification(
+                    member,
+                    combat_log + "\n\n" + Strings.raid_win + rewards_string(xp_am, money_am, renown)
+                )
+            self.db().update_player_data(member)
         # if leader is dead then abort the raid
         if leader.is_dead():
             for member in party:
