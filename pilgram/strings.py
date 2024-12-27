@@ -195,6 +195,8 @@ class Strings:
         "reroll_stats_bonus": "Reroll stats bonus",
         "perk_rarity_bonus": "Reroll perk bonus",
         "hunt_sanity_loss": "Hunt sanity loss",
+        "combat_frequency": "Combat frequency",
+        "money_loss_on_death": "BA loss on death"
     }
 
     # items

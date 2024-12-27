@@ -708,7 +708,6 @@ def list_vocations(context: UserContext) -> str:
     player = get_player(db, context)
     string: str = "Here are all your vocations:\n\n"
     for vocation in Vocation.ALL_ITEMS[1:]:
-        print(vocation)
         if vocation.level == player.vocations_progress.get(vocation.vocation_id, 1):
             string += f"{"✅ " if vocation in player.vocation.original_vocations else ""}{vocation}\n"
     return string
