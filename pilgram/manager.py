@@ -338,15 +338,16 @@ class QuestManager(Manager):
         """ either revive the player or respawn them in town """
         if (player.vocation.revive_chance > 0) and (random.random() < player.vocation.revive_chance):
             player.hp_percent = 0.25
-            return "\n\nBy the grace of the God Emperor you are revived & continue your quest."
+            return Strings.post_combat_revive
         else:
-            lost_money: int = int(player.money * 0.1)
+            lost_money: int = int(player.money * 0.1 * player.vocation.money_loss_on_death)
             previous_quest = ac.quest  # use this otherwise the death notification will always say 'crypt exploration'
             ac.quest = None
             player.money -= lost_money  # lose 10% of money on death
             player.hp_percent = 1.0
             player.sanity = 55
-            return (Strings.quest_fail + Strings.lose_money).format(name=previous_quest.name if previous_quest else "Crypt exploration", money=lost_money)
+            player.renown = 0
+            return (Strings.quest_fail + Strings.lose_money).format(name=previous_quest.name if previous_quest else Strings.crypt_quest_name, money=lost_money)
 
     def _create_enemy(self, ac: AdventureContainer, modifiers_amount: int, level_modifier: int, prefix: str = ""):
         anomaly = self.db().get_current_anomaly()
@@ -405,7 +406,7 @@ class QuestManager(Manager):
                 if player.sanity <= 0:
                     modifiers_amount += int((-player.sanity) / 20)
                     if random.randint(0, -player.sanity) > 145:
-                        self.db().create_and_add_notification(player, "Your mind goes blank, overwhelmed by insanity. You find yourself face to face with a distorted version of you.")
+                        self.db().create_and_add_notification(player, Strings.insanity_meet_yourself)
                         enemy = self._create_shade(
                             player,
                             max_equipped_items=7,
@@ -514,6 +515,7 @@ class QuestManager(Manager):
         leader = self.db().get_player_data(ac.player.player_id)
         guild = self.db().get_owned_guild(leader)
         party = self.db().get_raid_participants(guild)
+        mult = _get_tourney_score_multiplier(len(party))
         # get combat participants
         participants: list[CombatActor] = party + [self._create_enemy(ac, random.randint(0, 2), int(x.level / 3)) for x in party]
         if is_boss:
@@ -534,13 +536,18 @@ class QuestManager(Manager):
                     continue
             xp, money = member.get_rewards(member)
             if is_boss:
+                # finish quest
                 member_ac = self.db().get_player_adventure_container(member)
+                member_ac.quest = None
+                member.unset_flag(Raiding)
+                member.hp_percent = 1.0
                 # add money, xp & renown (x4)
                 xp_am = member.add_xp(xp * 4)
                 money_am = member.add_money(money * 4)
                 renown = member.get_level() * 20
                 member.add_renown(renown)
                 guild.prestige += member.get_level() * 4
+                guild.tourney_score += int(renown * mult)
                 # add relic
                 item = Equipment.generate(member.level, EquipmentType.get_random("relic"), 3)
                 items = self.db().get_player_items(member.player_id)
@@ -560,6 +567,7 @@ class QuestManager(Manager):
                 renown = member.get_level() * 4
                 member.add_renown(renown)
                 guild.prestige += member.get_level()
+                guild.tourney_score += int(renown * mult)
                 # notify player
                 self.db().create_and_add_notification(
                     member,
@@ -598,7 +606,7 @@ class QuestManager(Manager):
                 ac.quest = None
                 self.db().update_quest_progress(ac)
                 self.db().update_player_data(player)
-                self.db().create_and_add_notification(player, "You are back in town after abandoning the quest.")
+                self.db().create_and_add_notification(player, Strings.quest_abandoned)
                 return False
             elif ForcedCombat.is_set(player.flags) or (
                 (random.randint(1, 100) + player.vocation.combat_frequency) >= 85

@@ -389,6 +389,17 @@ def restore_player_last_switch(context: UserContext, player_name: str) -> str:
     return f"Recharged last switch for player {player.name}"
 
 
+def set_player_essences(context: UserContext, player_name: str, essences_string: str) -> str:
+    player = db().get_player_from_name(player_name)
+    if player is None:
+        return Strings.obj_does_not_exist.format(obj="player")
+    for essence_string in essences_string.split(","):
+        zone_str, value_str = essence_string.split(":")
+        player.essences[int(zone_str)] = int(value_str)
+    db().update_player_data(player)
+    return f"set player {player.name} essences to {player.essences}"
+
+
 ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
     "add": {
         "player": {
@@ -420,6 +431,7 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "pieces": __generate_int_op_command("artifact_pieces", "player", "set"),
             "level": __generate_int_op_command("level", "player", "set"),
             "sanity": __generate_int_op_command("sanity", "player", "set"),
+            "essences": IFW([player_arg("player name"), RWE("essences", None, None)], set_player_essences, "Set player essences")
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "set"),

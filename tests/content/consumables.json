@@ -1,0 +1,170 @@
+{
+  "items": [{
+    "id": 0,
+    "name": "Rotten Strawberry",
+    "description": "The mold gives it a fuzzy texture.",
+    "verb": "consumed",
+    "value": 1,
+    "effects": {
+      "hp_restored": 1
+    }
+  }, {
+    "id": 1,
+    "name": "Rags",
+    "description": "A bundle of clean-ish rags to stop the bleeding with.",
+    "verb": "applied",
+    "value": 10,
+    "effects": {
+      "hp_restored": 10
+    }
+  }, {
+    "id": 2,
+    "name": "Bandage",
+    "description": "A sterilized bandage meant to be applied to wounds.",
+    "verb": "applied",
+    "value": 100,
+    "effects": {
+      "hp_restored": 40
+    }
+  }, {
+    "id": 3,
+    "name": "First Aid Kit",
+    "description": "A sterilized set of surgical tools & bandages to treat any serious injury.",
+    "verb": "applied",
+    "value": 400,
+    "effects": {
+      "hp_restored": 80
+    }
+  }, {
+    "id": 4,
+    "name": "Strange concoction",
+    "description": "A foul smelling concoction that glows orange.",
+    "verb": "drank",
+    "value": 1000,
+    "effects": {
+      "revive": true,
+      "hp_percent_restored": 0.1
+    }
+  }, {
+    "id": 5,
+    "name": "Mutated meat",
+    "description": "Pulsating meat that was harvested from something (or someone) mutated by eldritch forces.",
+    "verb": "consumed",
+    "value": 700,
+    "effects": {
+      "hp_percent_restored": 0.5,
+      "sanity_restored": -15
+    }
+  }, {
+    "id": 6,
+    "name": "Eye of the Idiot God",
+    "description": "Gelatinous black eyeball. It smells like death.",
+    "verb": "consumed",
+    "value": 1200,
+    "effects": {
+      "revive": true,
+      "hp_percent_restored": 0.5,
+      "sanity_restored": -50
+    }
+  }, {
+    "id": 7,
+    "name": "Black Apple",
+    "description": "Pitch black apple, it absorbs all light.",
+    "verb": "consumed",
+    "value": 8,
+    "effects": {
+      "hp_restored": 5
+    }
+  }, {
+    "id": 8,
+    "name": "God skin jerky",
+    "description": "Hard & crunchy. Fills you with power.",
+    "verb": "consumed",
+    "value": 600,
+    "effects": {
+      "buffs": ["strength"]
+    }
+  }, {
+    "id": 9,
+    "name": "Reaper Pepper",
+    "description": "Small, black & extremely hot.",
+    "verb": "ate",
+    "value": 400,
+    "effects": {
+      "buffs": ["fire"]
+    }
+  }, {
+    "id": 10,
+    "name": "Bone flavoured ice cream",
+    "description": "Ice cream made with the ground up bones of the dead.",
+    "verb": "ate",
+    "value": 400,
+    "effects": {
+      "buffs": ["ice"]
+    }
+  }, {
+    "id": 11,
+    "name": "Bottled madness",
+    "description": "bottled scream of a mad god.",
+    "verb": "Inhaled",
+    "value": 400,
+    "effects": {
+      "buffs": ["occult"]
+    }
+  }, {
+    "id": 12,
+    "name": "Acidic grease",
+    "description": "grease that corrodes any living flesh it touches.",
+    "verb": "applied",
+    "value": 400,
+    "effects": {
+      "buffs": ["acid"]
+    }
+  }, {
+    "id": 13,
+    "name": "Abyssal Eel entrails",
+    "description": "Jar of Abyssal Eel entrails, salted for conservation.",
+    "verb": "consumed",
+    "value": 400,
+    "effects": {
+      "buffs": ["electric"]
+    }
+  }, {
+    "id": 14,
+    "name": "Golden Strawberry",
+    "description": "A Juicy strawberry with a peculiar golden color.",
+    "verb": "consumed",
+    "value": 77,
+    "effects": {
+      "hp_percent_restored": 0.13
+    }
+  }, {
+    "id": 15,
+    "name": "God Emperor's blessing",
+    "description": "A radiant gem that is warm to the touch. 'Ad Astra per Aspera' is carved on it.'",
+    "verb": "shattered",
+    "value": 1500,
+    "effects": {
+      "revive": true,
+      "hp_percent_restored": 1.0
+    }
+  }, {
+    "id": 16,
+    "name": "Happy Pills",
+    "description": "Grey, metallic looking pills. They make you feel a bit less depressed when ingested.",
+    "verb": "consumed",
+    "value": 500,
+    "effects": {
+      "sanity_restored": 20
+    }
+  }, {
+    "id": 17,
+    "name": "Shrooma",
+    "description": "A flask containing a potent juice made from hallucinogenic mushrooms.",
+    "verb": "consumed",
+    "value": 1200,
+    "effects": {
+      "sanity_restored": 100
+    }
+  }]
+}

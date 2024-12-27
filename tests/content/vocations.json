@@ -497,7 +497,7 @@
       "combat_frequency": -3,
       "quest_money_mult": 1.2,
       "event_money_mult": 1.2,
-      "money_loss_on_death": 0.9
+      "discovery_bonus": 1
     }
   }, {
     "vocation_id": 8,
@@ -509,7 +509,7 @@
       "combat_frequency": -3,
       "quest_money_mult": 1.3,
       "event_money_mult": 1.3,
-      "money_loss_on_death": 0.8,
+      "discovery_bonus": 1,
       "gain_money_on_player_meet": true
     }
   }, {
@@ -522,7 +522,7 @@
       "combat_frequency": -5,
       "quest_money_mult": 1.4,
       "event_money_mult": 1.4,
-      "money_loss_on_death": 0.65,
+      "discovery_bonus": 1,
       "gain_money_on_player_meet": true
     }
   }, {
@@ -535,7 +535,7 @@
       "combat_frequency": -10,
       "quest_money_mult": 1.6,
       "event_money_mult": 1.6,
-      "money_loss_on_death": 0.5,
+      "discovery_bonus": 2,
       "gain_money_on_player_meet": true
     }
   }]

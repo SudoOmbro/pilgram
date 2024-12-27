@@ -20,7 +20,7 @@ from pilgram.classes import (
     Guild,
     Player,
     SpellError,
-    Zone,
+    Zone, Progress,
 )
 from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
@@ -69,8 +69,9 @@ def check_board(context: UserContext) -> str:
     for zone in zones:
         text += f"*Zone {zone.zone_id} - {zone.zone_name}* (lv. {zone.level})\n"
         player_progress = player.progress.get_zone_progress(zone)
-        if player_progress != 0:
-            text += f"> progress: {player_progress}, essence: {player.essences.get(zone.zone_id, 0)}\n"
+        player_essences = player.essences.get(zone.zone_id, 0)
+        if (player_progress != 0) or (player_essences != 0):
+            text += f"> progress: {player_progress}, essence: {player_essences}\n"
     return text + "\n\n" + Strings.embark_underleveled + f"\n\n*Player*:\nlv. {player.level}, gear lv: {player.gear_level}\n\n{anomaly}"
 
 
@@ -1553,14 +1554,14 @@ def crypt(context: UserContext) -> str:
 def ascension(context: UserContext) -> str:
     player = get_player(db, context)
     if not player.can_ascend():
-        return f"You are too low level to ascend! (level {player.get_ascension_level()} required)"
+        return Strings.ascension_level_too_low + f" (lv >= {player.get_ascension_level()})"
     if player.artifact_pieces < ASCENSION_COST:
-        return f"You don't have enough artifact pieces! ({ASCENSION_COST} needed)"
+        return Strings.ascension_not_enough_artifacts
     ac = db().get_player_adventure_container(player)
     if ac.is_on_a_quest():
-        return "You can't ascend while you are on a quest!"
+        return Strings.ascension_on_quest
     context.start_process("ascension")
-    return f"Are you sure you want to spend {ASCENSION_COST} artifact pieces to ascend?"
+    return Strings.ascension_confirm
 
 
 def process_ascension_confirm(context: UserContext, user_input: str) -> str:
@@ -1569,19 +1570,23 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
         return Strings.action_canceled.format(action="Guild deletion")
     player = get_player(db, context)
     player.artifact_pieces -= ASCENSION_COST
-    # reset player level and gear level to 1 & increase ascension level
+    # reset & increase ascension level
     player.level = 1
-    player.money = 100
+    player.xp = 0
+    player.money = 1000
     player.gear_level = 1
     player.ascension += 1
+    player.renown = 0
     player.equip_vocations([])
+    player.progress = Progress({})
+    player.hp_percent = 1.0
     # increase player stats by using essences
     remaining_essences: dict[int, int] = {}
     for zone_id, amount in player.essences.items():
         levels = get_nth_triangle_number_inverse(amount)
-        remaining_essences[zone_id] = get_nth_triangle_number(levels)
+        remaining_essences[zone_id] = player.essences[zone_id] - get_nth_triangle_number(levels)
         zone = db().get_zone(zone_id)
-        if zone.extra_data["essence"]:
+        if zone.extra_data.get("essence", None):
             # if the zone the essences came from has defined essence values, then increase the stats defined there
             new_stats = Stats.create_default(base=0)
             for stat, value in zone.extra_data["essence"].items():

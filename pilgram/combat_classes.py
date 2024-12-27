@@ -113,7 +113,6 @@ class Damage:
             result = result.scale(1 + (stats.__dict__[stat] * scaling.__dict__[stat] * 0.2))
         return result
 
-
     def apply_bonus(self, bonus: int) -> Damage:
         return Damage(
             (self.slash + bonus) if self.slash else 0,

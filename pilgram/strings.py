@@ -5,6 +5,7 @@ WORLD = ContentMeta.get('world.name')
 MONEY = ContentMeta.get("money.name")
 TOWN = ContentMeta.get("world.city.name")
 MAX_TAX = ContentMeta.get("guilds.max_tax")
+ASCENSION_COST: int = ContentMeta.get("ascension.cost")
 
 
 def rewards_string(xp: int, money: int, renown: int, tax: float = 0) -> str:
@@ -60,6 +61,7 @@ class Strings:
     quest_fail = "\n\nYou have failed to complete the quest '*{name}*'. " + reappear
     lose_money = f"\n\nYou lose {{money}} {MONEY}"
     quest_roll = "(You rolled {roll}, Value to beat: {target})"
+    quest_abandoned = "You are back in town after abandoning the quest."
 
     # rank
     rank_guilds = "Here are the top guilds:\n\n*guild name | prestige*"
@@ -213,24 +215,24 @@ class Strings:
         "Eldritch"
     )
     weapon_modifiers: dict[str, tuple[str, ...]] = {
-        "slash": ("Sharp", "-Slashing", "Barbed", "Keen", "Edged", "Serrated"),
+        "slash": ("Sharp", "-Slashing", "Barbed", "Keen", "Edged", "Serrated", "Slicing", "-Chopping"),
         "pierce": ("Piercing", "-Thrusting", "Pointed", "Tipped", "-the Phalanx"),
-        "blunt": ("Heavy", "-Crushing", "Devastating", "Denting", "Big"),
+        "blunt": ("Heavy", "-Crushing", "Devastating", "Denting", "Big", "Bonking"),
         "occult": ("Occult", "Eldritch", "Hexed", "Runic", "-the Old Ones", "Heretical", "Unholy"),
         "fire": ("Flaming", "-Flame", "Draconic", "-Fire", "Blazing", "-Wildfire", "Flaring", "Hot"),
-        "acid": ("-Acid", "Melting", "Corroding", "Oozing", "-Rot", "Rotten"),
+        "acid": ("-Acid", "Melting", "Corroding", "Oozing", "-Rot", "Rotten", "Caustic"),
         "freeze": ("-Ice", "Freezing", "Chilling", "-Frostbite", "Hailing", "-the Glacier", "Cold"),
-        "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel", "Voltaic")
+        "electric": ("Electric", "Lightning", "-Thunder", "-the Abyssal Eel", "Voltaic", "Crackling")
     }
     armor_modifiers: dict[str, tuple[str, ...]] = {
         "slash": ("Plated", "-the Bulwark", "Meshed", "Rounded", "Smooth"),
-        "pierce": ("Reinforced", "-the Cataphract", "Shielding", "Thick"),
+        "pierce": ("Reinforced", "-the Cataphract", "Shielding", "Thick", "Hardened"),
         "blunt": ("Heavy", "Stable", "Well-built", "Sturdy", "-the Bulwark"),
         "occult": ("Occult", "Eldritch", "Warded", "Runic", "-the Inquisitor"),
         "fire": ("Flame retardant", "-the Drake slayer", "Fireproof", "Heat-resistant", "Cool", "Asbestos"),
-        "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant"),
+        "acid": ("-the Blackmarsh", "Unmelting", "Corrosion-resistant", "Basic"),
         "freeze": ("Insulated", "Warm", "-the Crags", "Fur-lined", "Cozy"),
-        "electric": ("-Thunder", "Grounded", "Rubber-lined", "-Faraday")
+        "electric": ("-Thunder", "Grounded", "Rubber-lined", "-Faraday", "Resistive")
     }
     slots: list[str] = [
         "Head",
@@ -297,6 +299,8 @@ class Strings:
     sanity_too_low = "Your sanity is too low to hunt now..."
     shade_win = "The shade crumbles and dissolves into nothingness."
     shade_loss = "The shade absorbs you into it's mass."
+    post_combat_revive = "\n\nBy the grace of the God Emperor you are revived & continue your quest."
+    insanity_meet_yourself = "Your mind goes blank, overwhelmed by insanity. You find yourself face to face with a distorted version of you."
 
     # duels
     no_self_duel = "You can't duel yourself. Weirdo."
@@ -311,6 +315,7 @@ class Strings:
     max_number_of_artifacts_reached = "You reached the maximum amount of artifacts you can have ({num}). Upgrade your home to hold more."
 
     # crypt
+    crypt_quest_name = "Crypt Exploration"
     no_crypt_while_questing = "You can't explore the crypt while you are on a quest!"
     already_in_crypt = "You are already exploring the crypt!"
     entered_crypt = f"You enter the crpyt below {TOWN}..."
@@ -355,6 +360,13 @@ class Strings:
             "DO YOU SEE THEM TOO?"
         )
     }
+
+    # ascension
+
+    ascension_level_too_low = "You are too low level to ascend!"
+    ascension_not_enough_artifacts = f"You don't have enough artifact pieces! ({ASCENSION_COST} needed)"
+    ascension_confirm = f"Are you sure you want to spend {ASCENSION_COST} artifact pieces to ascend? This will reset your level, gear level, {MONEY} & destroy all your items (except for relics)."
+    ascension_on_quest = "You can't ascend while you are on a quest!"
 
     # errors
     no_character_yet = "You haven't made a character yet!"

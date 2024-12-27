@@ -42,7 +42,8 @@ def _generate_equipment(player: Player, equipment_type: EquipmentType, modifiers
         time.time(),
         damage,
         resist,
-        modifiers
+        modifiers,
+        0
     )
 
 
@@ -94,11 +95,11 @@ class TestClasses(unittest.TestCase):
         self.assertTrue(rewards_normal[0] > rewards_under_leveled[0])
 
     def test_print_quick_time_events(self):
-        for qte in QuickTimeEvent.LIST:
+        for qte in QuickTimeEvent.ALL_ITEMS:
             print(qte)
 
     def test_qte_resolve(self):
-        for qte in QuickTimeEvent.LIST:
+        for qte in QuickTimeEvent.ALL_ITEMS:
             print(qte.resolve(randint(0, len(qte.options)-1)))
 
     def test_print_modifiers(self):
@@ -115,15 +116,15 @@ class TestClasses(unittest.TestCase):
         player = Player.create_default(0, "Ombro", "")
         player.level = 14
         player.gear_level = 13
-        player.stance = "a"
+        player.stance = "b"
         # setup zone
         zone = Zone(
             1,
             "zone name",
             15,
             "AAAA",
-            Damage(2, 2, 1, 0, 0, 0, 0, 0),
-            Damage(0, 2, 0, 0, 0, 0, 0, 0),
+            Damage(5, 5, 1, 0, 5, 0, 0, 0),
+            Damage(3, 3, 3, 3, 3, 1, 0, 0),
             {}
         )
         # setup equipment
@@ -190,6 +191,6 @@ class TestClasses(unittest.TestCase):
             )
         )
         # create & do fight
-        combat = CombatContainer([player, player2, enemy, enemy_player], {player: None, enemy: None})
+        combat = CombatContainer([player, enemy], {player: None, enemy: None})
         result = combat.fight()
         print(result)

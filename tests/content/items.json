@@ -1,0 +1,1295 @@
+{
+  "items": [{
+    "id": 0,
+    "name": "Longsword",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 3,
+    "damage": {
+      "slash": 3,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 2
+    },
+    "value": 5
+  }, {
+    "id": 1,
+    "name": "Spear",
+    "slot": "primary",
+    "weapon": true,
+    "class": "polearm",
+    "delay": 3,
+    "damage": {
+      "pierce": 3
+    },
+    "scaling": {
+      "strength": 1,
+      "skill": 3
+    },
+    "value": 4
+  }, {
+    "id": 2,
+    "name": "Dagger",
+    "slot": "secondary",
+    "weapon": true,
+    "class": "dagger",
+    "delay": 0,
+    "damage": {
+      "pierce": 1
+    },
+    "scaling": {
+      "skill": 5
+    },
+    "value": 1
+  }, {
+    "id": 3,
+    "name": "Round Shield",
+    "slot": "secondary",
+    "weapon": false,
+    "class": "shield",
+    "delay": 2,
+    "damage": {
+      "blunt": 1
+    },
+    "resist": {
+      "slash": 1
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 3
+    },
+    "value": 2
+  }, {
+    "id": 4,
+    "name": "Tower Shield",
+    "slot": "secondary",
+    "weapon": false,
+    "class": "shield",
+    "delay": 6,
+    "damage": {
+      "blunt": 1
+    },
+    "resist": {
+      "slash": 4
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 3
+    },
+    "value": 5
+  }, {
+    "id": 5,
+    "name": "FLint lock pistol",
+    "slot": "secondary",
+    "weapon": true,
+    "class": "firearm",
+    "delay": 11,
+    "damage": {
+      "pierce": 5,
+      "blunt": 2
+    },
+    "scaling": {
+      "skill": 2
+    },
+    "value": 6
+  }, {
+    "id": 6,
+    "name": "Halberd",
+    "slot": "primary",
+    "weapon": true,
+    "class": "polearm",
+    "delay": 8,
+    "damage": {
+      "slash": 4,
+      "pierce": 3
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 4
+    },
+    "value": 4
+  }, {
+    "id": 7,
+    "name": "Gladius",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 1,
+    "damage": {
+      "slash": 2,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 6,
+      "skill": 6
+    },
+    "value": 3
+  }, {
+    "id": 8,
+    "name": "Brimmed hat",
+    "slot": "head",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "blunt": 1
+    },
+    "scaling": {
+      "toughness": 3,
+      "agility": 3
+    },
+    "value": 1
+  }, {
+    "id": 9,
+    "name": "Poncho",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "slash": 1,
+      "blunt": 1
+    },
+    "scaling": {
+      "toughness": 3,
+      "agility": 3
+    },
+    "value": 1
+  }, {
+    "id": 10,
+    "name": "Boots",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 1,
+      "slash": 1
+    },
+    "scaling": {
+      "toughness": 3,
+      "agility": 3
+    },
+    "value": 1
+  }, {
+    "id": 11,
+    "name": "Gloves",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1
+    },
+    "scaling": {
+      "strength": 2,
+      "toughness": 3,
+      "agility": 3
+    },
+    "value": 1
+  }, {
+    "id": 12,
+    "name": "Chest plate",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 12,
+    "resist": {
+      "slash": 6,
+      "pierce": 2
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 3
+    },
+    "value": 15
+  }, {
+    "id": 13,
+    "name": "Horned helmet",
+    "slot": "head",
+    "weapon": false,
+    "delay": 3,
+    "resist": {
+      "slash": 2,
+      "blunt": 1
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 2
+    },
+    "value": 4
+  }, {
+    "id": 14,
+    "name": "Mace",
+    "slot": "primary",
+    "weapon": true,
+    "class": "mace",
+    "delay": 3,
+    "damage": {
+      "blunt": 3
+    },
+    "scaling": {
+      "strength": 8
+    },
+    "value": 3
+  }, {
+    "id": 15,
+    "name": "Morning star",
+    "slot": "primary",
+    "weapon": true,
+    "class": "mace",
+    "delay": 5,
+    "damage": {
+      "blunt": 3,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 7,
+      "skill": 1
+    },
+    "value": 5
+  }, {
+    "id": 16,
+    "name": "Scythe",
+    "slot": "primary",
+    "weapon": true,
+    "class": "scythe",
+    "delay": 6,
+    "damage": {
+      "slash": 6
+    },
+    "scaling": {
+      "strength": 1,
+      "skill": 3
+    },
+    "value": 7
+  }, {
+    "id": 17,
+    "name": "Hand cannon",
+    "slot": "primary",
+    "weapon": true,
+    "class": "firearm",
+    "delay": 16,
+    "damage": {
+      "blunt": 2,
+      "pierce": 5
+    },
+    "scaling": {
+      "skill": 30
+    },
+    "value": 20
+  }, {
+    "id": 18,
+    "name": "Zweihander",
+    "slot": "primary",
+    "weapon": true,
+    "class": "greatsword",
+    "delay": 10,
+    "damage": {
+      "slash": 5,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 20,
+      "skill": 4
+    },
+    "value": 20
+  }, {
+    "id": 19,
+    "name": "Spiked Club",
+    "slot": "primary",
+    "weapon": true,
+    "class": "mace",
+    "delay": 6,
+    "damage": {
+      "blunt": 1,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 8,
+      "skill": 3
+    },
+    "value": 1
+  }, {
+    "id": 20,
+    "name": "Chainmail",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 6,
+    "resist": {
+      "slash": 3,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 3
+    },
+    "value": 10
+  }, {
+    "id": 21,
+    "name": "Lorica segmentata",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 7,
+    "resist": {
+      "slash": 4,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 4,
+      "toughness": 4
+    },
+    "value": 12
+  }, {
+    "id": 22,
+    "name": "Fetish",
+    "slot": "secondary",
+    "weapon": true,
+    "class": "magic",
+    "delay": 2,
+    "damage": {
+      "occult": 2
+    },
+    "scaling": {
+      "attunement": 5,
+      "mind": 2
+    },
+    "value": 10
+  }, {
+    "id": 23,
+    "name": "Sorcery staff",
+    "slot": "primary",
+    "weapon": true,
+    "class": "staff",
+    "delay": 8,
+    "damage": {
+      "blunt": 1,
+      "occult": 4
+    },
+    "scaling": {
+      "attunement": 10,
+      "mind": 2
+    },
+    "value": 15
+  }, {
+    "id": 24,
+    "name": "Robe",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 6,
+    "resist": {
+      "occult": 2
+    },
+    "scaling": {
+      "toughness": 2,
+      "agility": 1
+    },
+    "value": 4
+  }, {
+    "id": 25,
+    "name": "Flail",
+    "slot": "primary",
+    "weapon": true,
+    "class": "mace",
+    "delay": 5,
+    "damage": {
+      "blunt": 3,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 3,
+      "skill": 4
+    },
+    "value": 6
+  }, {
+    "id": 26,
+    "name": "Ballista",
+    "slot": "primary",
+    "weapon": true,
+    "class": "crossbow",
+    "delay": 30,
+    "damage": {
+      "pierce": 15
+    },
+    "scaling": {
+      "strength": 5,
+      "skill": 25
+    },
+    "value": 40
+  }, {
+    "id": 27,
+    "name": "Scimitar",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 2,
+    "damage": {
+      "slash": 4
+    },
+    "scaling": {
+      "skill": 4
+    },
+    "value": 10
+  }, {
+    "id": 28,
+    "name": "Urumi",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 8,
+    "damage": {
+      "slash": 8
+    },
+    "scaling": {
+      "skill": 8
+    },
+    "value": 18
+  }, {
+    "id": 29,
+    "name": "Spell book",
+    "slot": "secondary",
+    "weapon": true,
+    "class": "magic",
+    "delay": 2,
+    "damage": {
+      "blunt": 1,
+      "occult": 2
+    },
+    "scaling": {
+      "attunement": 1,
+      "mind": 3
+    },
+    "value": 10
+  }, {
+    "id": 30,
+    "name": "Naginata",
+    "slot": "primary",
+    "weapon": true,
+    "class": "polearm",
+    "delay": 4,
+    "damage": {
+      "slash": 2,
+      "pierce": 2
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 5
+    },
+    "value": 7
+  }, {
+    "id": 31,
+    "name": "Katana",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 3,
+    "damage": {
+      "slash": 4
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 4
+    },
+    "value": 8
+  }, {
+    "id": 32,
+    "name": "Bracelets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "scaling": {
+      "toughness": 2,
+      "agility": 2
+    },
+    "value": 2
+  }, {
+    "id": 33,
+    "name": "Spauldrons",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 5
+    },
+    "scaling": {
+      "toughness": 5
+    },
+    "value": 10
+  }, {
+    "id": 34,
+    "name": "Gauntlets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "slash": 2,
+      "blunt": 1
+    },
+    "scaling": {
+      "toughness": 4
+    },
+    "value": 8
+  }, {
+    "id": 35,
+    "name": "Inquisitor Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 5,
+      "pierce": 2,
+      "occult": 2
+    },
+    "scaling": {
+      "toughness": 6,
+      "mind": 2
+    },
+    "value": 12
+  }, {
+    "id": 36,
+    "name": "Great Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 15,
+    "resist": {
+      "slash": 8,
+      "pierce": 6
+    },
+    "scaling": {
+      "toughness": 15
+    },
+    "value": 20
+  }, {
+    "id": 37,
+    "name": "Spirals",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1,
+      "blunt": 1
+    },
+    "scaling": {
+      "agility": 1
+    },
+    "value": 8
+  }, {
+    "id": 38,
+    "name": "Greaves",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 10,
+    "resist": {
+      "slash": 6,
+      "pierce": 3
+    },
+    "scaling": {
+      "toughness": 8
+    },
+    "value": 15
+  }, {
+    "id": 39,
+    "name": "Knee pads",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 3
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
+    },
+    "value": 6
+  }, {
+    "id": 40,
+    "name": "Elbow pads",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 3
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
+    },
+    "value": 6
+  }, {
+    "id": 41,
+    "name": "Curiass",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 4,
+      "pierce": 4,
+      "blunt": 2
+    },
+    "scaling": {
+      "toughness": 6
+    },
+    "value": 20
+  }, {
+    "id": 42,
+    "name": "Bracers",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 3,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 1
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
+    },
+    "value": 8
+  }, {
+    "id": 43,
+    "name": "Gambeson",
+    "slot": "chest",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 2
+    },
+    "scaling": {
+      "toughness": 4
+    },
+    "value": 8
+  }, {
+    "id": 44,
+    "name": "Hood",
+    "slot": "head",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "freeze": 1
+    },
+    "scaling": {
+      "toughness": 1,
+      "agility": 1
+    },
+    "value": 8
+  }, {
+    "id": 45,
+    "name": "War hammer",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "blunt": 10
+    },
+    "scaling": {
+      "strength": 10
+    },
+    "value": 10
+  }, {
+    "id": 46,
+    "name": "Pike",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 9,
+    "damage": {
+      "pierce": 9
+    },
+    "scaling": {
+      "strength": 8
+    },
+    "value": 9
+  }, {
+    "id": 47,
+    "name": "Fingerless gloves",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "blunt": 1
+    },
+    "scaling": {
+      "agility": 2
+    },
+    "value": 5
+  }, {
+    "id": 48,
+    "name": "Claws",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 3
+    },
+    "scaling": {
+      "skill": 3
+    },
+    "value": 15
+  }, {
+    "id": 49,
+    "name": "Pure Gold bracelets",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "occult": 2
+    },
+    "scaling": {
+      "mind": 2
+    },
+    "value": 50,
+    "max_perks": 3
+  }, {
+    "id": 50,
+    "name": "Sabatons",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 7,
+    "resist": {
+      "slash": 4,
+      "pierce": 3
+    },
+    "scaling": {
+      "toughness": 5,
+      "agility": 1
+    },
+    "value": 15
+  }, {
+    "id": 51,
+    "name": "Kettle Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 8,
+    "resist": {
+      "slash": 2,
+      "pierce": 2,
+      "blunt": 1
+    },
+    "scaling": {
+      "toughness": 7
+    },
+    "value": 22
+  }, {
+    "id": 52,
+    "name": "Sallet Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 10,
+    "resist": {
+      "slash": 2,
+      "pierce": 2,
+      "blunt": 2
+    },
+    "scaling": {
+      "toughness": 9
+    },
+    "value": 30
+  }, {
+    "id": 53,
+    "name": "Pot Helm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 1
+    },
+    "scaling": {
+      "toughness": 4
+    },
+    "value": 15
+  }, {
+    "id": 54,
+    "name": "Spangenhelm",
+    "slot": "head",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "slash": 2,
+      "pierce": 1
+    },
+    "scaling": {
+      "toughness": 4
+    },
+    "value": 15
+  }, {
+    "id": 55,
+    "name": "Pistil",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 3,
+    "damage": {
+      "pierce": 3
+    },
+    "scaling": {
+      "skill": 2
+    },
+    "value": 8
+  }, {
+    "id": 56,
+    "name": "Chakrams",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 1
+    },
+    "scaling": {
+      "skill": 1
+    },
+    "value": 8
+  }, {
+    "id": 57,
+    "name": "Franciscas",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "slash": 2
+    },
+    "scaling": {
+      "skill": 2
+    },
+    "value": 8
+  }, {
+    "id": 58,
+    "name": "Kunais",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "pierce": 2
+    },
+    "scaling": {
+      "skill": 2
+    },
+    "value": 8
+  }, {
+    "id": 59,
+    "name": "Javelins",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "pierce": 4
+    },
+    "scaling": {
+      "strength": 3,
+      "skill": 2
+    },
+    "value": 10
+  }, {
+    "id": 60,
+    "name": "Ribauldequin",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 80,
+    "damage": {
+      "pierce": 10,
+      "blunt": 5
+    },
+    "scaling": {
+      "strength": 30,
+      "skill": 30
+    },
+    "value": 150
+  }, {
+    "id": 61,
+    "name": "Flamethrower",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 40,
+    "damage": {
+      "fire": 35
+    },
+    "scaling": {
+      "strength": 10,
+      "skill": 30
+    },
+    "value": 150
+  }, {
+    "id": 62,
+    "name": "Knife",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "slash": 1
+    },
+    "scaling": {
+      "skill": 1
+    },
+    "value": 4
+  }, {
+    "id": 63,
+    "name": "Brass Knuckles",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 0,
+    "damage": {
+      "blunt": 1
+    },
+    "scaling": {
+      "strength": 1
+    },
+    "value": 3
+  }, {
+    "id": 64,
+    "name": "Fire bombs",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 6,
+    "damage": {
+      "blunt": 1,
+      "fire": 5
+    },
+    "scaling": {
+      "strength": 3,
+      "skill": 3
+    },
+    "value": 10
+  }, {
+    "id": 65,
+    "name": "Cane",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "blunt": 2
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 2
+    },
+    "value": 6
+  }, {
+    "id": 66,
+    "name": "Buckler",
+    "slot": "secondary",
+    "class": "shield",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1
+    },
+    "scaling": {
+      "strength": 1,
+      "toughness": 1
+    },
+    "value": 12
+  }, {
+    "id": 67,
+    "name": "Dueling shield",
+    "slot": "secondary",
+    "class": "shield",
+    "weapon": false,
+    "delay": 15,
+    "resist": {
+      "slash": 3,
+      "pierce": 3
+    },
+    "damage": {
+      "pierce": 5,
+      "blunt": 1
+    },
+    "scaling": {
+      "strength": 5,
+      "skill": 5,
+      "toughness": 4
+    },
+    "value": 30
+  }, {
+    "id": 68,
+    "name": "Pavise",
+    "slot": "secondary",
+    "weapon": false,
+    "class": "shield",
+    "delay": 6,
+    "damage": {
+      "blunt": 1
+    },
+    "resist": {
+      "slash": 3,
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 2
+    },
+    "value": 6
+  }, {
+    "id": 69,
+    "name": "Scutum",
+    "slot": "secondary",
+    "weapon": false,
+    "class": "shield",
+    "delay": 8,
+    "resist": {
+      "slash": 4,
+      "pierce": 4
+    },
+    "scaling": {
+      "strength": 3,
+      "toughness": 3
+    },
+    "value": 10
+  }, {
+    "id": 70,
+    "name": "Sabre",
+    "slot": "primary",
+    "weapon": true,
+    "class": "sword",
+    "delay": 1,
+    "damage": {
+      "slash": 3
+    },
+    "scaling": {
+      "strength": 1,
+      "skill": 2
+    },
+    "value": 6
+  }, {
+    "id": 71,
+    "name": "Rapier",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 0,
+    "damage": {
+      "pierce": 2
+    },
+    "scaling": {
+      "skill": 1
+    },
+    "value": 10
+  }, {
+    "id": 72,
+    "name": "Pata",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "slash": 2,
+      "pierce": 2
+    },
+    "scaling": {
+      "strength": 2,
+      "skill": 2
+    },
+    "value": 10
+  }, {
+    "id": 73,
+    "name": "Goedendag",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "pierce": 5,
+      "blunt": 5
+    },
+    "scaling": {
+      "strength": 4,
+      "skill": 4
+    },
+    "value": 15
+  }, {
+    "id": 74,
+    "name": "Gun shield",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 25,
+    "damage": {
+      "pierce": 10,
+      "blunt": 6
+    },
+    "resist": {
+      "slash": 5,
+      "pierce": 5,
+      "blunt": 5
+    },
+    "scaling": {
+      "strength": 7,
+      "skill": 7,
+      "toughness": 8
+    },
+    "value": 100
+  }, {
+    "id": 75,
+    "name": "Kpingas",
+    "slot": "secondary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "pierce": 5
+    },
+    "scaling": {
+      "skill": 5
+    },
+    "value": 25
+  }, {
+    "id": 76,
+    "name": "Repeating Crossbow",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "pierce": 2
+    },
+    "scaling": {
+      "skill": 2
+    },
+    "value": 200
+  }, {
+    "id": 77,
+    "name": "Blunderbuss",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 20,
+    "damage": {
+      "slash": 2,
+      "pierce": 3,
+      "blunt": 3
+    },
+    "scaling": {
+      "skill": 20
+    },
+    "value": 100
+  }, {
+    "id": 78,
+    "name": "Sandals",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 1
+    },
+    "scaling": {
+      "agility": 1
+    },
+    "value": 5
+  }, {
+    "id": 79,
+    "name": "Tiara",
+    "slot": "head",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 4
+    },
+    "scaling": {
+      "mind": 1
+    },
+    "value": 30
+  }, {
+    "id": 80,
+    "name": "Slippers",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 1,
+      "freeze": 1
+    },
+    "scaling": {
+      "agility": 1
+    },
+    "value": 8
+  }, {
+    "id": 81,
+    "name": "Ouroboros paired rings",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "occult": 20
+    },
+    "scaling": {
+      "mind": 1
+    },
+    "value": 100
+  }, {
+    "id": 82,
+    "name": "High heels",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "acid": 5
+    },
+    "scaling": {
+      "skill": 4
+    },
+    "value": 20
+  }, {
+    "id": 83,
+    "name": "Shoes",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "slash": 1
+    },
+    "scaling": {
+      "agility": 1
+    },
+    "value": 5
+  }, {
+    "id": 84,
+    "name": "Quarterstaff",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 5,
+    "damage": {
+      "blunt": 5
+    },
+    "scaling": {
+      "skill": 5
+    },
+    "value": 10
+  }, {
+    "id": 85,
+    "name": "Nunchaku",
+    "slot": "primary",
+    "weapon": true,
+    "delay": 2,
+    "damage": {
+      "blunt": 3
+    },
+    "scaling": {
+      "skill": 4
+    },
+    "value": 5
+  }, {
+    "id": 86,
+    "name": "Hateful Heart",
+    "description": "Still beating hearth of a legendary beast. It radiates an aura of hatred.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": true,
+    "delay": -10,
+    "damage": {
+      "occult": 120
+    },
+    "scaling": {
+      "attunement": 30
+    },
+    "value": 5000,
+    "max_perks": 4
+  }, {
+    "id": 87,
+    "name": "Leaden Amygdala",
+    "description": "The amygdala of a legendary hero, encased in damascus pattern Lead.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "occult": 120
+    },
+    "scaling": {
+      "attunement": 30
+    },
+    "value": 5000,
+    "max_perks": 4
+  }]
+}

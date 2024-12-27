@@ -12,13 +12,13 @@ that's you! Players are the most complex part of Pilgram in terms of stats, so h
 The amount of xp required to *level up* is calculated with the *formula*:
 `XP = 100 x lv^2 + 1000 x lv`, where `lv` is your current level.
 
-🔷 *Gear level*: You current gear level, influences your success rate on quests.
+🔷 *Gear level*: You current gear level, influences your success rate on quests & your HP.
 Upgrading your gear costs money, the *upgrade cost* is calculated with the following *formula*:
 `COST = 50 x lv^2 + 1000 x lv` where `lv` is the current level of your gear.
 
 🔷 *HP*: The amount of health you have. If it reaches zero during a quest you'll fail it.
 The amount of base hp you have is determined by:
-`HP = ((level + gear level) x 10) + [equipment bonuses]`
+`HP = (level x 10 + gear level x 5 + vitality x 5) + [equipment bonuses]`
 
 🔷 *Home level*: You current home level, influences events rewards (formula follows later).
 Upgrading your home costs money, the *upgrade cost* is calculated with the *formula*:
@@ -38,6 +38,8 @@ Upgrading your home costs money, the *upgrade cost* is calculated with the *form
 🔷 *Total Base Damage/Resist*: The sum of all your equipment contributions for damage & resistance. Not affected by modifiers.
 
 🔷 *Sanity*: Used to hunt. The more you hunt the lower it goes. If you get it too low bad stuff starts to happen...
+
+🔷 *Stats*: Used to scale the damage/resistance of most equipments, your HP, your eldritch power & the time taken to complete quests.
 
 ♦️♦️*Quests*♦️♦️
 Your main source of income & xp. *Succeeding in a quest* depends on a D20 throw:
@@ -70,6 +72,7 @@ Quest duration follows the formula:
 `DURATION = 1 day + (1 hour x zone level) + (2 hours x quest number) + (3 hours x rand(0 to zone level))`
 
 On quest success you have a 20% chance of finding a piece of an artifact (explained later).
+Completing quests also grants you essences, which can be used when ascending (explained later).
 
 ----
 
@@ -193,3 +196,24 @@ Remember to bring plenty of healing items on quests as HP automatically regenera
 
 ♦️♦️*Auctions*♦️♦️
 The auctions house is available in town, use it to auction your powerful items or bid on other player's powerful items.
+
+----
+
+♦️♦️*Ascension*♦️♦️
+Endgame mechanic, use 10 artifact pieces to Ascend, which resets your level, gear level, Boromian Alloy & destroys all of your equipment (except for relics).
+Ascending uses up your essences to permanently increase your stats and it also gives you a flat 25% XP bonus per ascension.
+Essences aren't used in a linear way when ascending, the way they are used follows the nth triangle number formula (1 + 2 + 3 + 4 + ... + n) so:
+
+When ascending
+to increase a stat by 1 you only use 1 essence
+to increase a stat by 2 you use 3 essences
+to increase a stats by 3 you use 6 essences
+and so on
+
+You keep the leftover essences.
+This encourages not grinding too much in a single ascension.
+
+Ascending requires you to be at least level 30 + 10 * ascension level.
+
+♦️♦️*Raids*♦️♦️
+Endgame mechanic, Co-op missions that you can only do with your guild which involve group combat & rewards participants with relics.

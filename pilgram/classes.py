@@ -56,19 +56,13 @@ log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
 
-BASE_QUEST_DURATION: timedelta = read_update_interval(
-    GlobalSettings.get("quest.base duration")
-)
-DURATION_PER_ZONE_LEVEL: timedelta = read_update_interval(
-    GlobalSettings.get("quest.duration per level")
-)
-DURATION_PER_QUEST_NUMBER: timedelta = read_update_interval(
-    GlobalSettings.get("quest.duration per number")
-)
-RANDOM_DURATION: timedelta = read_update_interval(
-    GlobalSettings.get("quest.random duration")
-)
+BASE_QUEST_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.base duration"))
+DURATION_PER_ZONE_LEVEL: timedelta = read_update_interval(GlobalSettings.get("quest.duration per level"))
+DURATION_PER_QUEST_NUMBER: timedelta = read_update_interval(GlobalSettings.get("quest.duration per number"))
+RANDOM_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.random duration"))
 POWER_PER_ARTIFACT: int = ContentMeta.get("artifacts.power_per_artifact")
+MINIMUM_ASCENSION_LEVEL: int = ContentMeta.get("ascension.minimum_level")
+LEVEL_INCREASE_PER_ASCENSION: int = ContentMeta.get("ascension.level_increase_per_ascension")
 
 QTE_CACHE: dict[
     int, QuickTimeEvent
@@ -502,6 +496,7 @@ class Player(CombatActor):
         :param essences: the player's essences
         :param max_level_reached: the maximum level the player has ever reached
         :param max_money_reached: the maximum money the player has ever reached
+        :param max_renown_reached: the maximum renown the player has ever reached
         """
         self.player_id = player_id
         self.name = name
@@ -598,7 +593,7 @@ class Player(CombatActor):
 
     def add_xp(self, amount: float) -> int:
         """adds xp to the player & returns how much was actually added to the player"""
-        amount *= self.vocation.general_xp_mult
+        amount *= self.vocation.general_xp_mult + (self.ascension / 4)
         self.xp += int(amount)
         if self.xp >= self.get_required_xp():
             self.level_up()
@@ -700,7 +695,7 @@ class Player(CombatActor):
         ) + self.vocation.hp_bonus
 
     def get_insanity_scaling(self) -> float:
-        if self.sanity > 50:
+        if self.sanity > 25:
             return 1.0
         elif self.sanity > 0:
             return 1.15
@@ -743,7 +738,10 @@ class Player(CombatActor):
         base_resistance = self.vocation.resist.scale(self.level)
         for _, item in self.equipped_items.items():
             base_resistance += item.resist.scale_with_stats(self.stats, item.equipment_type.scaling)
-        return base_resistance.scale(1 / self.get_insanity_scaling())
+        insanity_scaling = 1 / self.get_insanity_scaling()
+        if insanity_scaling > 2:
+            insanity_scaling = 2
+        return base_resistance.scale(insanity_scaling)
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
         result: list[m.Modifier] = []
@@ -900,7 +898,7 @@ class Player(CombatActor):
         max_sanity = self.get_max_sanity()
         if self.sanity > max_sanity:
             self.sanity = max_sanity
-        if (amount < 0) and (self.sanity <= 50):
+        if (amount < 0) and (self.sanity <= 25):
             InternalEventBus().notify(Event("sanity low", self, {"sanity": self.sanity}))
 
     def add_essence(self, zone_id: int, amount: int):
@@ -909,7 +907,7 @@ class Player(CombatActor):
         self.essences[zone_id] += amount
 
     def get_ascension_level(self) -> int:
-        return 50 + (self.ascension * 5)
+        return MINIMUM_ASCENSION_LEVEL + (self.ascension * LEVEL_INCREASE_PER_ASCENSION)
 
     def can_ascend(self) -> bool:
         return self.level >= self.get_ascension_level()
@@ -1536,6 +1534,7 @@ class Vocation(Listable["Vocation"], base_filename="vocations"):
         self.perk_rarity_bonus: int = modifiers.get("perk_rarity_bonus", 0)
         self.hunt_sanity_loss: int = modifiers.get("hunt_sanity_loss", 0)
         self.combat_frequency: int = modifiers.get("combat_frequency", 0)
+        self.money_loss_on_death: float = modifiers.get("money_loss_on_death", 1.0)
         # internal vars
         self.modifiers_applied = list(modifiers.keys())  # used to build descriptions
         self.damage_modifiers_applied = {
@@ -1589,6 +1588,7 @@ class Vocation(Listable["Vocation"], base_filename="vocations"):
         result.perk_rarity_bonus = self.perk_rarity_bonus + other.perk_rarity_bonus
         result.hunt_sanity_loss = self.hunt_sanity_loss + other.hunt_sanity_loss
         result.combat_frequency = self.combat_frequency + other.combat_frequency
+        result.money_loss_on_death = self.money_loss_on_death * other.money_loss_on_death
         # setup applied modifiers
         result.modifiers_applied = copy(self.modifiers_applied)
         for modifier in other.modifiers_applied:
@@ -1764,7 +1764,7 @@ class Enemy(CombatActor):
         self.delay = 7 + meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
         self.stance = self.meta.zone.extra_data.get("stance", "r")
         self.name_prefix = name_prefix
-        super().__init__(1.0, 1, Stats.create_default())
+        super().__init__(1.0, 1, Stats.generate_random(0, self.get_level()))
 
     def roll(self, dice_faces: int) -> int:
         return random.randint(1, dice_faces)
@@ -1777,13 +1777,13 @@ class Enemy(CombatActor):
         return max(1, value)
 
     def get_base_max_hp(self) -> int:
-        return (45 + self.level_modifier) * self.meta.zone.level
+        return (45 + self.stats.vitality + self.level_modifier) * self.meta.zone.level
 
     def get_base_attack_damage(self) -> Damage:
-        return self.meta.zone.damage_modifiers.scale(1 + self.get_level()).apply_bonus(self.meta.zone.level)
+        return self.meta.zone.damage_modifiers.scale(self.stats.strength + self.stats.skill + self.stats.attunement + self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_base_attack_resistance(self) -> Damage:
-        return self.meta.zone.resist_modifiers.scale(1 + self.get_level()).apply_bonus(self.meta.zone.level)
+        return self.meta.zone.resist_modifiers.scale(self.stats.toughness + self.stats.agility + self.stats.mind + self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
         if not type_filters:

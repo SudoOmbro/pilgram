@@ -4,7 +4,8 @@ from datetime import timedelta
 import numpy as np
 
 from pilgram.strings import rewards_string
-from pilgram.utils import PathDict, generate_random_eldritch_name, read_update_interval
+from pilgram.utils import PathDict, generate_random_eldritch_name, read_update_interval, get_nth_triangle_number, \
+    get_nth_triangle_number_inverse
 
 
 class TestUtils(unittest.TestCase):
@@ -38,3 +39,21 @@ class TestUtils(unittest.TestCase):
         print(rewards_string(100, 100, 0))
         print(rewards_string(0, 100, 100))
         print(rewards_string(0, 100, 0, tax=0.5))
+
+    def test_get_nth_triangle_number(self):
+        self.assertEqual(get_nth_triangle_number(3), 6)
+        self.assertEqual(get_nth_triangle_number(1), 1)
+        self.assertEqual(get_nth_triangle_number(2), 3)
+        self.assertEqual(get_nth_triangle_number(6), 21)
+
+    def test_get_nth_triangle_number_inverse(self):
+        self.assertEqual(get_nth_triangle_number_inverse(6), 3)
+        self.assertEqual(get_nth_triangle_number_inverse(7), 3)
+        self.assertEqual(get_nth_triangle_number_inverse(3), 2)
+        self.assertEqual(get_nth_triangle_number_inverse(8), 3)
+        self.assertEqual(get_nth_triangle_number_inverse(9), 3)
+        self.assertEqual(get_nth_triangle_number_inverse(10), 4)
+        self.assertEqual(get_nth_triangle_number_inverse(11), 4)
+        self.assertEqual(get_nth_triangle_number_inverse(22), 6)
+
+

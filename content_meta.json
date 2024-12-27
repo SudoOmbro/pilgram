@@ -41,7 +41,9 @@
     "sanity_cost": 50
   },
   "ascension": {
-    "cost": 10
+    "cost": 10,
+    "minimum_level": 30,
+    "level_increase_per_ascension": 10
   },
   "minigames": {
     "hands": {
