@@ -194,3 +194,11 @@ class TestClasses(unittest.TestCase):
         combat = CombatContainer([player, enemy], {player: None, enemy: None})
         result = combat.fight()
         print(result)
+
+    def test_stats(self):
+        player = Player.create_default(0, "Ombro", "")
+        self.assertEqual(player.get_stats().vitality, 1)
+        modifier = get_modifier_from_name("Vitality imbued", 10)
+        item = _generate_equipment(player, EquipmentType.get(0), [modifier])
+        player.equip_item(item)
+        self.assertEqual(player.get_stats().vitality, 11)

@@ -1040,8 +1040,7 @@ class _GenericStatIncrease(Modifier):
     def function(self, context: ModifierContext) -> cc.Stats:
         entity: cc.CombatActor = context.get("entity")
         stats: cc.Stats = context.get("stats")
-        stats.add_single_value(self.STAT, self.strength)
-        return stats
+        return stats.add_single_value(self.STAT, self.strength)
 
 
 class IncreaseVitality(_GenericStatIncrease, stat="vitality"):

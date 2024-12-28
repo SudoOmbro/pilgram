@@ -427,7 +427,7 @@ class CombatActor(ABC):
         return int(max_hp)
 
     def get_stats(self) -> Stats:
-        stats = copy(self.stats)
+        stats = self.stats
         for modifier in self.get_entity_modifiers(m.ModifierType.MODIFY_STATS):
             stats = modifier.apply(
                 m.ModifierContext({"entity": self, "stats": stats})

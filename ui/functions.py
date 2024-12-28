@@ -1321,7 +1321,7 @@ def duel_reject(context: UserContext, player_name: str) -> str:
 
 def __get_player_stats_string(player: Player) -> str:
     # add base stats
-    string = f"*{player.name}'s stats*\n\n{player.stats}\n\n"
+    string = f"*{player.name}'s stats*\n\n{player.get_stats()}\n\n"
     string += f"Total Base Damage:\n_{player.get_base_attack_damage()}_\n\nTotal Base Resist:\n_{player.get_base_attack_resistance()}_\n\nTotal Weight: {player.get_delay()} Kg"
     # add temporary buffs / de-buffs
     if CursedFlag.is_set(player.flags):
