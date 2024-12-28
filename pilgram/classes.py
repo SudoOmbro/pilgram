@@ -315,7 +315,7 @@ class Quest:
                 + (random.randint(0, self.zone.level) * RANDOM_DURATION)
             )
             * player.vocation.quest_time_multiplier
-        ) - timedelta(minutes=10 * player.stats.agility)
+        ) - timedelta(minutes=10 * player.get_stats().agility)
         if duration < BASE_QUEST_DURATION:
             return BASE_QUEST_DURATION
         return duration
@@ -651,7 +651,7 @@ class Player(CombatActor):
                 len(self.progress.zone_progress)
                 * self.vocation.power_bonus_per_zone_visited
             )
-        return max_charge + self.stats.attunement
+        return max_charge + self.get_stats().attunement
 
     def get_spell_charge(self) -> int:
         """
@@ -704,8 +704,9 @@ class Player(CombatActor):
     def get_base_attack_damage(self) -> Damage:
         base_damage = self.vocation.damage.scale(self.level)
         slots = []
+        stats = self.get_stats()
         for slot, item in self.equipped_items.items():
-            base_damage += item.damage.scale_with_stats(self.stats, item.equipment_type.scaling)
+            base_damage += item.damage.scale_with_stats(stats, item.equipment_type.scaling)
             slots.append(slot)
         if Slots.PRIMARY not in slots:
             base_damage += self.FIST_DAMAGE.scale(self.level)
@@ -736,8 +737,9 @@ class Player(CombatActor):
 
     def get_base_attack_resistance(self) -> Damage:
         base_resistance = self.vocation.resist.scale(self.level)
+        stats = self.get_stats()
         for _, item in self.equipped_items.items():
-            base_resistance += item.resist.scale_with_stats(self.stats, item.equipment_type.scaling)
+            base_resistance += item.resist.scale_with_stats(stats, item.equipment_type.scaling)
         insanity_scaling = 1 / self.get_insanity_scaling()
         if insanity_scaling > 2:
             insanity_scaling = 2
@@ -891,7 +893,7 @@ class Player(CombatActor):
         return self.vocations_progress.get(vocation_id, 1)
 
     def get_max_sanity(self):
-        return 99 + self.stats.mind
+        return 99 + self.get_stats().mind
 
     def add_sanity(self, amount: int):
         self.sanity += amount
@@ -1777,13 +1779,15 @@ class Enemy(CombatActor):
         return max(1, value)
 
     def get_base_max_hp(self) -> int:
-        return (45 + self.stats.vitality + self.level_modifier) * self.meta.zone.level
+        return (45 + self.get_stats().vitality + self.level_modifier) * self.meta.zone.level
 
     def get_base_attack_damage(self) -> Damage:
-        return self.meta.zone.damage_modifiers.scale(self.stats.strength + self.stats.skill + self.stats.attunement + self.get_level()).apply_bonus(self.meta.zone.level)
+        stats = self.get_stats()
+        return self.meta.zone.damage_modifiers.scale(stats.strength + stats.skill + stats.attunement + self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_base_attack_resistance(self) -> Damage:
-        return self.meta.zone.resist_modifiers.scale(self.stats.toughness + self.stats.agility + self.stats.mind + self.get_level()).apply_bonus(self.meta.zone.level)
+        stats = self.get_stats()
+        return self.meta.zone.resist_modifiers.scale(stats.toughness + stats.agility + stats.mind + self.get_level()).apply_bonus(self.meta.zone.level)
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
         if not type_filters:
