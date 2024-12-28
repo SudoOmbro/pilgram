@@ -40,6 +40,15 @@ Upgrading your home costs money, the *upgrade cost* is calculated with the *form
 🔷 *Sanity*: Used to hunt. The more you hunt the lower it goes. If you get it too low bad stuff starts to happen...
 
 🔷 *Stats*: Used to scale the damage/resistance of most equipments, your HP, your eldritch power & the time taken to complete quests.
+Here's what each stat influences:
+- Vitality: your HP
+- Strength: damage with certain weapons
+- Skill: damage with certain weapons
+- Toughness: defence with certain armor pieces
+- Attunement eldritch power & damage with certain weapons
+- Mind: sanity & defence with certain armor pieces
+- Agility: time you take to finish quests & defence with certain armor pieces
+
 
 ♦️♦️*Quests*♦️♦️
 Your main source of income & xp. *Succeeding in a quest* depends on a D20 throw:

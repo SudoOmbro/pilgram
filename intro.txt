@@ -11,8 +11,6 @@ Wait a day or two and you'll be notified if you managed to finish the quest. In 
 
 While you wait i highly suggest you check out the manual for the game. Bring it up with the `man 1` command.
 
-I also highly recommend to check out the [beginner's guide](https://telegra.ph/Newbies-guide-to-everything-Pilgram-08-01) by Luca
-
 Enjoy!
 
 Use the `help` command to see all the commands you can use.
