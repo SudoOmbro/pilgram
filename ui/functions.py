@@ -812,7 +812,6 @@ def explain_minigame(context: UserContext, user_input: str) -> str:
 @cache
 def __get_mechanics(page_id: int):
     pages = read_text_file("mechanics.txt").split("\n\n----\n\n")
-    print(len(pages))
     if (page_id == 0) or (page_id > len(pages)):
         return Strings.invalid_page.format(pl=len(pages))
     text = pages[page_id - 1] + (f"\n\nUse command `man {page_id + 1}` to continue reading" if page_id != len(pages) else "")
@@ -1029,7 +1028,6 @@ def process_sell_all_confirm(context: UserContext, user_input: str) -> str:
             db().delete_item(item)
         except KeyError as e:
             return f"Error: {e}"
-        print(item)
         result += f"Sold *{item.name}* for {money_am} {MONEY}\n"
     db().update_player_data(player)
     return result + f"\nTotal {MONEY} gained: {total_money_gained}"
