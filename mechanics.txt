@@ -78,7 +78,7 @@ The amount of prestige a quest gives upon successful completion is determined by
 
 Quest duration follows the formula:
 
-`DURATION = 1 day + (1 hour x zone level) + (2 hours x quest number) + (3 hours x rand(0 to zone level))`
+`DURATION = 1 day + (1 hour x zone level) + (2 hours x quest number) + (3 hours x rand(0 to zone level)) - (30 min x agility)`
 
 On quest success you have a 20% chance of finding a piece of an artifact (explained later).
 Completing quests also grants you essences, which can be used when ascending (explained later).
@@ -226,3 +226,4 @@ Ascending requires you to be at least level 30 + 10 * ascension level.
 
 ♦️♦️*Raids*♦️♦️
 Endgame mechanic, Co-op missions that you can only do with your guild which involve group combat & rewards participants with relics.
+If the guild leader dies then the raid fails.

@@ -1467,7 +1467,7 @@ def sacrifice(context: UserContext) -> str:
     return f"You stab yourself with your ritual knife. Some eldritch truth is revealed to you:\n\n_{eldritch_truth}_\n\nYou gain {amount_am} XP."
 
 
-def start_raid(context: UserContext, zone_id: int) -> str:
+def start_raid(context: UserContext, zone_id_str: str) -> str:
     player = get_player(db, context)
     # do basic checks
     guild = db().get_owned_guild(player)
@@ -1479,7 +1479,7 @@ def start_raid(context: UserContext, zone_id: int) -> str:
     if len(available_members) < 3:
         return Strings.raid_not_enough_players
     # confirm
-    context.set("zone", zone_id)
+    context.set("zone", int(zone_id_str))
     context.start_process("raid start")
     return f"The following players are avaiable for a raid:\n\n{"\n".join(x.name for x in available_members)}\n\nDo you confirm?"
 

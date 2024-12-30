@@ -113,4 +113,5 @@ class CLIInterpreter:
             return str(e)
         except TypeError as e:
             log.error(e)
+            # raise(e)  # enable if there is some weird error that returns the below expression
             return "Too many arguments given! Check help for instructions."

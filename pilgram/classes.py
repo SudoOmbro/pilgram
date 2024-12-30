@@ -315,7 +315,7 @@ class Quest:
                 + (random.randint(0, self.zone.level) * RANDOM_DURATION)
             )
             * player.vocation.quest_time_multiplier
-        ) - timedelta(minutes=10 * player.get_stats().agility)
+        ) - timedelta(minutes=30 * player.get_stats().agility)
         if duration < BASE_QUEST_DURATION:
             return BASE_QUEST_DURATION
         return duration
