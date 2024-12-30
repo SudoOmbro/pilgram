@@ -222,7 +222,7 @@ and so on
 You keep the leftover essences.
 This encourages not grinding too much in a single ascension.
 
-Ascending requires you to be at least level 30 + 10 * ascension level.
+Ascending requires you to be at least level 30 + (10 x ascension level).
 
 ♦️♦️*Raids*♦️♦️
 Endgame mechanic, Co-op missions that you can only do with your guild which involve group combat & rewards participants with relics.
