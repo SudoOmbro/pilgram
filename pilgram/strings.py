@@ -369,6 +369,7 @@ class Strings:
     ascension_not_enough_artifacts = f"You don't have enough artifact pieces! ({ASCENSION_COST} needed)"
     ascension_confirm = f"Are you sure you want to spend {ASCENSION_COST} artifact pieces to ascend? This will reset your level, gear level, {MONEY} & destroy all your items (except for relics)."
     ascension_on_quest = "You can't ascend while you are on a quest!"
+    ascension_success = "You consume all the essence you collected and your body morphs into a new inhuman form.\n\nYou are born anew.\n(reached ascension level {level})"
 
     # errors
     no_character_yet = "You haven't made a character yet!"

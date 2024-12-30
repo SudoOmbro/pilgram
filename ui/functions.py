@@ -933,7 +933,7 @@ def process_reroll_confirm(context: UserContext, user_input: str) -> str:
         player.money -= price
         text = ""
         if player.vocation.xp_on_reroll > 0:
-            xp_am = player.add_xp(player.vocation.xp_on_reroll * max(item.level - item.rerolls, 0))
+            xp_am = player.add_xp(player.vocation.xp_on_reroll * max(item.level - item.rerolls, 1))
             text = rewards_string(xp_am, 0, 0)
         db().update_player_data(player)
         db().update_item(item, player)
@@ -1597,24 +1597,23 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
             player.stats += new_stats
     player.essences = remaining_essences
     # remove all items except for relics
-    unequip_all_items(context)
+    player.equipped_items = {}
     items = __get_items(player)
-    if not items:
-        return Strings.no_items_yet
-    for pos in reversed(range(len(items))):
-        item = items[pos - 1]
-        if item.equipment_type.slot == Slots.RELIC:
-            continue
-        auction: Auction = db().get_auction_from_item(item)
-        if auction:
-            db().delete_auction(auction)
-        items.pop(pos - 1)
-        try:
-            db().delete_item(item)
-        except KeyError as e:
-            return f"Error: {e}"
+    if items:
+        for pos in reversed(range(len(items))):
+            item = items[pos - 1]
+            if item.equipment_type.slot == Slots.RELIC:
+                continue
+            auction: Auction = db().get_auction_from_item(item)
+            if auction:
+                db().delete_auction(auction)
+            items.pop(pos - 1)
+            try:
+                db().delete_item(item)
+            except KeyError as e:
+                return f"Error: {e}"
     db().update_player_data(player)
-    return f"You are born anew. (reached ascension level {player.ascension})"
+    return Strings.ascension_success.format(level=player.ascension)
 
 
 def records(context: UserContext, *args) -> str:
