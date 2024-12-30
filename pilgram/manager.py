@@ -362,7 +362,7 @@ class QuestManager(Manager):
         return Enemy(
             self.db().get_random_enemy_meta(ac.quest.zone),
             modifiers,
-            enemy_level_modifier,
+            int(enemy_level_modifier),
             name_prefix=prefix
         )
 
