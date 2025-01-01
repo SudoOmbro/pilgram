@@ -1494,7 +1494,7 @@ def process_start_raid_confirm(context: UserContext, user_input: str) -> str:
     # get zone & quest
     zone_id: int = context.get("zone")
     quest = db().get_quest(-zone_id)
-    finish_time = datetime.now() + timedelta(hours=12 * zone_id)
+    finish_time = datetime.now() + timedelta(days=1)
     # actually start the raid
     for member in available_members:
         ac = db().get_player_adventure_container(member)
@@ -1506,6 +1506,7 @@ def process_start_raid_confirm(context: UserContext, user_input: str) -> str:
             db().update_quest_progress(ac)
         else:
             db().update_quest_progress(ac, last_update=finish_time + timedelta(hours=1) + timedelta(minutes=random.randint(-30, 30)))
+    log.info(f"Player {player.name} started raid in zone {zone_id}")
     return Strings.raid_started.format(zone=quest.zone.zone_name)
 
 

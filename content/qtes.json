@@ -364,27 +364,62 @@
       "rewards": "xp 70, sa 5",
       "maluses": "hp 10"
     }]
-},
-    {
-      "description": "At the edge of a mysterious lake, you see a shining weapon floating in the water. Legends say it belongs to a long-dead king.",
+}, {
+    "description": "At the edge of a mysterious lake, you see a shining weapon floating in the water. Legends say it belongs to a long-dead king.",
+    "choices": [
+      {
+        "option": "Try to take the sword",
+        "chance": 15,
+        "success": "The weapon grants you immense power, recognizing you as its rightful wielder.",
+        "failure": "As you reach for the sword, the lake pulls you under, leaving you gasping for air.",
+        "rewards": "item (Eldritch)",
+        "maluses": "hp 100"
+      },
+      {
+        "option": "Leave the sword",
+        "chance": 85,
+        "success": "You leave the ancient relic undisturbed, avoiding whatever curse or challenge it may bring.",
+        "failure": "Later, you hear of a hero who claimed the sword and became a legend.",
+        "rewards": "xp 50, sa 5",
+        "maluses": "xp 50, sa 5"
+      }
+    ]
+    }, {
+      "description": "A wounded animal limps into your campfire light, whimpering for help. It looks unusual, almost enchated.",
+      "choices": [{
+        "option": "Help the animal",
+        "chance": 70,
+        "success": "The animal transforms into a magical being who blesses you with power as thanks.",
+        "failure": "The animal suddenly attacks, revealing itself to be a shapeshifter in disguise.",
+        "rewards": "xp 1000",
+        "maluses": "hp 100"
+      }, {
+        "option": "Drive the animal away",
+        "chance": 90,
+        "success": "You scare the creature off, ensuring your safety for the night.",
+        "failure": "The animal suddenly attacks, revealing itself to be a shapeshifter in disguise.",
+        "rewards": "xp 20",
+        "maluses": "hp 100"
+      }]
+    }, {
+      "description": "While traveling, you find an ornate necklace hanging from a tree branch. It hums with a strange energy.",
       "choices": [
         {
-          "option": "Try to take the sword",
-          "chance": 15,
-          "success": "The weapon grants you immense power, recognizing you as its rightful wielder.",
-          "failure": "As you reach for the sword, the lake pulls you under, leaving you gasping for air.",
-          "rewards": "item (Eldritch)",
+          "option": "Take the necklace",
+          "chance": 55,
+          "success": "The necklace enhances your abilities, resonating with your inner power.",
+          "failure": "The necklace burns in your hands, and you feel cursed for taking it.",
+          "rewards": "xp 1000",
           "maluses": "hp 100"
         },
         {
-          "option": "Leave the sword",
-          "chance": 85,
-          "success": "You leave the ancient relic undisturbed, avoiding whatever curse or challenge it may bring.",
-          "failure": "Later, you hear of a hero who claimed the sword and became a legend.",
-          "rewards": "xp 50, sa 5",
-          "maluses": "xp 50, sa 5"
+          "option": "Leave the necklace",
+          "chance": 80,
+          "success": "You avoid touching the strange object, ensuring your safety.",
+          "failure": "Later, you meet someone who gained immense strength from wearing the necklace.",
+          "rewards": "xp 20",
+          "maluses": "rn 100"
         }
       ]
-    }
-  ]
+    }]
 }

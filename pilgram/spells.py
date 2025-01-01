@@ -93,6 +93,8 @@ def __eldritch_displacement(caster: Player, args: list[str]) -> str:
     ac = _db().get_player_adventure_container(target)
     if not ac.quest:
         raise SpellError("You are not on a quest!")
+    if ac.quest.is_raid:
+        raise SpellError("This spell doesn't work on raids!")
     displacement = int(caster.get_spell_charge() / 20)
     ac.finish_time -= timedelta(hours=displacement)
     _db().update_quest_progress(ac)

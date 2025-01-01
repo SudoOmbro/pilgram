@@ -41,7 +41,7 @@ class ZoneModel(BaseModel):
 class QuestModel(BaseModel):
     """ Table that contains all info about quests """
     id = AutoField(primary_key=True, unique=True)
-    zone_id = ForeignKeyField(ZoneModel, backref="quests")
+    zone = ForeignKeyField(ZoneModel, backref="quests")
     number = IntegerField(default=0)  # the number of the quest in the quest order
     name = CharField(null=False)
     description = CharField(null=False)
@@ -114,10 +114,13 @@ class ZoneEventModel(BaseModel):
 
 class QuestProgressModel(BaseModel):
     """ Table that tracks the progress of player quests & controls when to send events/finish the quest """
-    player_id = ForeignKeyField(PlayerModel, unique=True, primary_key=True)
-    quest_id = ForeignKeyField(QuestModel, null=True, default=None)
+    player = ForeignKeyField(PlayerModel, unique=True, primary_key=True)
+    quest = ForeignKeyField(QuestModel, null=True, default=None, deferrable=True)
     end_time = DateTimeField(default=datetime.now)
     last_update = DateTimeField(default=datetime.now)
+
+    def is_on_a_quest(self):
+        return self.quest_id is not None
 
 
 class ArtifactModel(BaseModel):
@@ -146,7 +149,7 @@ class EquipmentModel(BaseModel):
 class EnemyTypeModel(BaseModel):
     """ Table that contains all flavour information about enemies. """
     id = AutoField(primary_key=True)
-    zone_id = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
+    zone = ForeignKeyField(ZoneModel, backref="enemies", index=True, null=False)
     name = CharField(null=False, unique=True)
     description = CharField(null=False)
     win_text = CharField(null=False)
@@ -156,9 +159,9 @@ class EnemyTypeModel(BaseModel):
 class AuctionModel(BaseModel):
     """ Table that contains all auctions. """
     id = AutoField(primary_key=True)
-    auctioneer_id = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
-    item_id = ForeignKeyField(EquipmentModel, null=False)
-    best_bidder_id = ForeignKeyField(PlayerModel, index=True, null=True, default=None)
+    auctioneer = ForeignKeyField(PlayerModel, backref="auctions", index=True, null=False)
+    item = ForeignKeyField(EquipmentModel, null=False)
+    best_bidder = ForeignKeyField(PlayerModel, index=True, null=True, default=None)
     best_bid = IntegerField(null=False, default=0)
     creation_date = DateTimeField(default=datetime.now)
 

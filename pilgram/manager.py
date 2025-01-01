@@ -27,7 +27,7 @@ from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pit
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.listables import DEFAULT_TAG
-from pilgram.modifiers import get_modifiers_by_rarity, Rarity, get_all_modifiers, Modifier
+from pilgram.modifiers import get_modifiers_by_rarity, Rarity, Modifier
 from pilgram.strings import Strings, rewards_string
 from pilgram.utils import generate_random_eldritch_name
 
@@ -595,8 +595,12 @@ class QuestManager(Manager):
         if ac.is_on_a_quest():
             player: Player = self.db().get_player_data(ac.player.player_id)
             if Raiding.is_set(ac.player.flags):
-                self.process_raid_combat(ac, ac.is_quest_finished())
-                return False
+                try:
+                    self.process_raid_combat(ac, ac.is_quest_finished())
+                    return False
+                except Exception as e:
+                    log.error(f"an error occurred while processing raid for player {player.name}: {e}")
+                    return False
             elif ac.is_quest_finished():
                 self._complete_quest(ac)
                 return False
@@ -694,7 +698,7 @@ class GeneratorManager(Manager):
         self, biases: dict[int, int]
     ) -> tuple[list[Zone], list[int]]:
         result: list[Zone] = []
-        zones = self.db().get_all_zones()
+        zones: list[Zone] = self.db().get_all_zones()
         hq = _HighestQuests.load_from_file()
         quest_counts = self.db().get_quests_counts()
         for zone, count in zip(zones, quest_counts, strict=False):
