@@ -182,3 +182,7 @@ class TestORMDB(unittest.TestCase):
     def test_encode_vocation_progress(self):
         result = encode_vocation_progress({2: 4, 6: 8})
         self.assertEqual(result.encode(ENCODING), b'\x02\x04\x06\x08')
+
+    def test_get_pending_updates(self):
+        db = PilgramORMDatabase.instance()
+        print(db.get_all_pending_updates(timedelta(hours=1)))
