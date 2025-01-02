@@ -100,7 +100,7 @@ def __eldritch_displacement(caster: Player, args: list[str]) -> str:
     _db().update_quest_progress(ac)
     _db().create_and_add_notification(
         target,
-        f"You find yourself in a different place, {displacement} hour{'s' if displacement == 1 else ''} closer to your target."
+        f"You find yourself in a different place, {displacement} hour{'s' if displacement != 1 else ''} closer to your target."
     )
     return get_cast_string(target, self_cast)
 
