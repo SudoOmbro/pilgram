@@ -8,7 +8,7 @@ from time import sleep
 from typing import Any
 
 import numpy as np
-from peewee import JOIN, fn
+from peewee import JOIN, fn, ModelSelect
 
 from orm.migration import migrate_older_dbs
 from orm.models import (
@@ -724,8 +724,8 @@ class PilgramORMDatabase(PilgramDatabase):
     # in progress quest management ----
 
     def build_adventure_container(self, qps: QuestProgressModel, owner: Player | None = None) -> AdventureContainer:
-        player = self.get_player_data(int(qps.player)) if owner is None else owner
-        quest = self.get_quest(int(qps.quest)) if (qps.quest is not None) else None
+        player = self.get_player_data(int(qps.player_id)) if owner is None else owner
+        quest = self.get_quest(int(qps.quest_id)) if qps.is_on_a_quest() else None
         return AdventureContainer(player, quest, qps.end_time, qps.last_update)
 
     @cache_sized_ttl_quick(size_limit=200, ttl=60)
@@ -742,7 +742,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def get_all_pending_updates(self, delta: timedelta) -> list[AdventureContainer]:
         try:
-            qps = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta).namedtuples()
+            qps: ModelSelect = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta)
             return [self.build_adventure_container(x) for x in qps]
         except QuestProgressModel.DoesNotExist:
             return []
