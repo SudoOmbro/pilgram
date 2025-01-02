@@ -849,7 +849,7 @@ class PilgramORMDatabase(PilgramDatabase):
     def __build_enemy_meta(self, ems: EnemyTypeModel) -> EnemyMeta:
         return EnemyMeta(
             ems.id,
-            self.get_zone(ems.zone_id),
+            self.get_zone(ems.zone),
             ems.name,
             ems.description,
             ems.win_text,
@@ -1059,7 +1059,7 @@ class PilgramORMDatabase(PilgramDatabase):
             with db.atomic():
                 ass: AuctionModel = AuctionModel.get(AuctionModel.id == auction.auction_id)
                 ass.best_bid = auction.best_bid
-                ass.best_bidder_id = auction.best_bidder.player_id
+                ass.best_bidder = auction.best_bidder.player_id
                 ass.save()
         except AuctionModel.DoesNotExist:
             raise KeyError("Could not find auction to update")
