@@ -596,7 +596,10 @@ def process_transactions(data):
 def check_bank_logs(context: UserContext) -> str:
     player = get_player(db, context)
     guild = player.guild
+    if not guild:
+        return Strings.not_in_a_guild
     return process_transactions(guild.get_bank_logs_data())
+
 
 def rank_guilds(context: UserContext) -> str:
     result = Strings.rank_guilds + "\n"
