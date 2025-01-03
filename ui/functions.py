@@ -1368,6 +1368,7 @@ def __get_player_stats_string(player: Player) -> str:
         perks.sort(key=lambda perk: (perk.RARITY, perk.NAME, perk.strength))
         if perks:
             perks_string += "\n\n".join(Strings.get_item_icon(item.equipment_type.slot) + " " + str(x) for x in perks)
+        perks_string += "\n\n"
     if perks_string:
         return f"{string}\n\n*Perks*:\n\n{perks_string}"
     return string
