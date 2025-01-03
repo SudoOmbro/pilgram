@@ -924,11 +924,11 @@ class NotificationsManager(Manager):
         if not result.get("ok", False):
             reason = result.get("reason", "")
             if reason == "blocked":
-                # log.info(f"User {notification.target.player_id} ({notification.target.name}) blocked the bot, adding to blocked list...")
                 self._tmp_blocked_users.append(notification.target.player_id)
         sleep(delay)
 
-    def get_internal_event_notification_text(self, event: Event) -> str:
+    @staticmethod
+    def get_internal_event_notification_text(event: Event) -> str:
         string = event.type
         if event.type == "level up":
             level: int = event.data["level"]
@@ -937,6 +937,8 @@ class NotificationsManager(Manager):
                 string += "\n\nYou unlocked the first profession slot!"
             elif level == 20:
                 string += "\n\nYou unlocked the second profession slot!"
+            if level == event.recipient.get_ascension_level():
+                string += "\n\nYou can now ascend (if you have 10 artifact pieces)."
         elif event.type == "sanity low":
             sanity = event.data["sanity"]
             for value, strings in Strings.sanity_lines.items():

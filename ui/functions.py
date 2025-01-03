@@ -55,6 +55,7 @@ REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
 SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
 HUNT_SANITY_COST: int = ContentMeta.get("hunt.sanity_cost")
 ASCENSION_COST: int = ContentMeta.get("ascension.cost")
+MAX_MARKET_ITEMS = ContentMeta.get("market.max_items")
 
 
 def db() -> PilgramDatabase:
@@ -1078,8 +1079,8 @@ def market_buy(context: UserContext, item_pos_str: str) -> str:
     if db().is_player_on_a_quest(player) and (not player.vocation.can_buy_on_a_quest):
         return Strings.cannot_shop_on_a_quest
     item_pos = int(item_pos_str)
-    if item_pos > 10:
-        return "Invalid item (max item: 10)"
+    if item_pos > MAX_MARKET_ITEMS:
+        return f"Invalid item (max item: {MAX_MARKET_ITEMS})"
     if len(player.satchel) >= player.get_max_satchel_items():
         return "Satchel already full!"
     item = db().get_market_items()[item_pos - 1]
@@ -1097,8 +1098,8 @@ def smithy_craft(context: UserContext, item_pos_str: str) -> str:
     if db().is_player_on_a_quest(player) and (not player.vocation.can_craft_on_a_quest):
         return Strings.cannot_shop_on_a_quest
     item_pos = int(item_pos_str)
-    if item_pos > 10:
-        return "Invalid item (max item: 10)"
+    if item_pos > MAX_MARKET_ITEMS:
+        return f"Invalid item (max item: {MAX_MARKET_ITEMS})"
     items = db().get_player_items(player.player_id)
     if len(items) >= player.get_inventory_size():
         return "Inventory already full!"
@@ -1361,11 +1362,15 @@ def __get_player_stats_string(player: Player) -> str:
     elif SwiftBuff1.is_set(player.flags):
         string += "\n\nSwift buff (1): weight -15 kg"
     # add perks (if the player has any)
-    perks = player.get_modifiers()
-    perks.sort(key=lambda perk: (perk.RARITY, perk.NAME, perk.strength))
-    if not perks:
-        return string
-    return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in perks)}"
+    perks_string = ""
+    for _, item in player.equipped_items.items():
+        perks = item.modifiers
+        perks.sort(key=lambda perk: (perk.RARITY, perk.NAME, perk.strength))
+        if perks:
+            perks_string += "\n\n".join(Strings.get_item_icon(item.equipment_type.slot) + " " + str(x) for x in perks)
+    if perks_string:
+        return f"{string}\n\n*Perks*:\n\n{perks_string}"
+    return string
 
 
 def check_player_stats(context: UserContext, *args) -> str:
@@ -1394,14 +1399,19 @@ def change_vocation(context: UserContext, vocation_id1_str: str, *args) -> str:
         time_since_last_switch = datetime.now() - player.last_guild_switch
         if time_since_last_switch < SWITCH_DELAY:
             return Strings.switched_too_recently.format(hours=(SWITCH_DELAY.total_seconds() - time_since_last_switch.total_seconds()) // 3600)
-        # convert strings to ints
+        # get default vocation 2 if not passed
         if len(args) > 0:
             vocation_id2_str = args[0]
         else:
-            vocation_id2_str = 1
-        vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
-        if vocation_ids[0] == vocation_ids[1]:
-            return "You can't use 2 of the same vocation!"
+            vocation_id2_str = "0"
+        # transform strings to integers
+        if vocation_id2_str == "0":
+            vocation_ids = [int(vocation_id1_str)]
+        else:
+            vocation_ids = [int(vocation_id1_str), int(vocation_id2_str)]
+            # duplication check
+            if vocation_ids[0] == vocation_ids[1]:
+                return "You can't use 2 of the same vocation!"
         # equip vocations
         vocations = [Vocation.get_correct_vocation_tier(vid, player) for vid in vocation_ids[:(player.get_vocation_limit())]]
         player.equip_vocations(vocations)
@@ -1417,6 +1427,8 @@ def upgrade_vocation(context: UserContext, vocation_id_str: str) -> str:
         player = get_player(db, context)
         # get basic inputs
         vocation_id: int = int(vocation_id_str)
+        if vocation_id == 0:
+            return "Vocation with id 0 does not exist"
         vocation = Vocation.get_correct_vocation_tier(vocation_id, player)
         # do checks
         if vocation.level == Vocation.MAX_LEVEL:

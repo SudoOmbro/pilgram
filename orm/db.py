@@ -43,6 +43,7 @@ from pilgram.classes import (
 from pilgram.combat_classes import Damage, Stats
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.generics import AlreadyExists, PilgramDatabase
+from pilgram.globals import ContentMeta
 from pilgram.modifiers import Modifier, get_modifier
 from pilgram.utils import save_json_to_file, read_json_file
 
@@ -60,6 +61,8 @@ NP_VP = np.dtype([('id', np.uint8), ('progress', np.uint8)])  # 'NumPy Vocations
 NP_ED = np.dtype([('id', np.uint8), ('amount', np.uint16)])  # 'NumPy Essence Data'
 
 _NOTIFICATIONS_LIST: list[Notification] = []
+
+MAX_MARKET_ITEMS = ContentMeta.get("market.max_items")
 
 
 def decode_progress(data: str | None) -> dict[int, int]:
@@ -993,11 +996,11 @@ class PilgramORMDatabase(PilgramDatabase):
 
     @cache_ttl_single_value(ttl=3600)
     def get_market_items(self) -> list[ConsumableItem]:
-        return ConsumableItem.get_random_selection(_get_daily_seed(), 10)
+        return ConsumableItem.get_random_selection(_get_daily_seed(), MAX_MARKET_ITEMS)
 
     @cache_ttl_single_value(ttl=3600)
     def get_smithy_items(self) -> list[EquipmentType]:
-        return EquipmentType.get_random_selection(_get_daily_seed(), 10)
+        return EquipmentType.get_random_selection(_get_daily_seed(), MAX_MARKET_ITEMS)
 
     # auctions ----
 

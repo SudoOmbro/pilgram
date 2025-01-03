@@ -45,6 +45,9 @@
     "minimum_level": 30,
     "level_increase_per_ascension": 10
   },
+  "market": {
+    "max_items": 12
+  },
   "minigames": {
     "hands": {
       "min_buy_in": 5,

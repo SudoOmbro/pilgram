@@ -1653,7 +1653,7 @@ class Vocation(Listable["Vocation"], base_filename="vocations"):
 
     @classmethod
     def get_correct_vocation_tier(cls, vocation_id: int, player: Player) -> Vocation:
-        for vocation in Vocation.ALL_ITEMS[1:]:
+        for vocation in Vocation.ALL_ITEMS:
             if (vocation.vocation_id == vocation_id) and (vocation.level == player.get_vocation_level(vocation_id)):
                 return vocation
         raise ValueError(f"Vocation with id {vocation_id} does not exist")
