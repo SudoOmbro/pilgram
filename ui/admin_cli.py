@@ -431,7 +431,8 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "pieces": __generate_int_op_command("artifact_pieces", "player", "set"),
             "level": __generate_int_op_command("level", "player", "set"),
             "sanity": __generate_int_op_command("sanity", "player", "set"),
-            "essences": IFW([player_arg("player name"), RWE("essences", None, None)], set_player_essences, "Set player essences")
+            "essences": IFW([player_arg("player name"), RWE("essences", None, None)], set_player_essences, "Set player essences"),
+            "flags": __generate_int_op_command("flags", "player", "set"),
         },
         "guild": {
             "level": __generate_int_op_command("level", "guild", "set"),
