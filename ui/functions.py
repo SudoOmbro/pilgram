@@ -862,7 +862,7 @@ def inventory(context: UserContext) -> str:
     items = __get_items(player)
     if not items:
         return Strings.no_items_yet
-    return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if player.is_item_equipped(x) else ''}| *{x.name}*' for i, x in enumerate(items)])}"
+    return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if player.is_item_equipped(x) else ''}| *{x.name}* (lv. {x.level})' for i, x in enumerate(items)])}"
 
 
 def __item_id_is_valid(item_id: int, items: list[Equipment]) -> bool:
