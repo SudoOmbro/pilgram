@@ -645,6 +645,9 @@ class Player(CombatActor):
         return self.name
 
     def get_max_charge(self) -> int:
+        """ return eldritch power charge """
+        if not self.artifacts:
+            return 0
         max_charge = (len(self.artifacts) * POWER_PER_ARTIFACT) + self.vocation.power_bonus
         if self.vocation.power_bonus_per_zone_visited:
             max_charge += (
@@ -654,10 +657,7 @@ class Player(CombatActor):
         return max_charge + self.get_stats().attunement
 
     def get_spell_charge(self) -> int:
-        """
-        returns spell charge of the player, calculated as the amount of time passed since the last spell cast.
-        max charge = 10 * number of artifacts; 1 day = max charge; max charge possible = 100
-        """
+        """returns spell charge of the player"""
         max_charge = self.get_max_charge()
         charge = int(
             ((datetime.now() - self.last_cast).total_seconds() / 86400) * max_charge

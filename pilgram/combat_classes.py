@@ -110,7 +110,9 @@ class Damage:
         stats_to_scale = scaling.get_all_non_zero_stats()
         result: Damage = self
         for stat in stats_to_scale:
-            result = result.scale(1 + (stats.__dict__[stat] * scaling.__dict__[stat] * 0.2))
+            result = result.scale(
+                1 + (stats.__dict__[stat] * (scaling.__dict__[stat] / 100))
+            )
         return result
 
     def apply_bonus(self, bonus: int) -> Damage:
@@ -323,6 +325,11 @@ class Stats:
     def __str__(self) -> str:
         return "\n".join(
             [f"{key}: {value}" for key, value in self.__dict__.items() if value != 0]
+        )
+
+    def get_scaling_string(self) -> str:
+        return "\n".join(
+            [f"{key}: {value}%" for key, value in self.__dict__.items() if value != 0]
         )
 
     @classmethod

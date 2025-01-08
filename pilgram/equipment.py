@@ -84,7 +84,7 @@ class EquipmentType(Listable, base_filename="items"):
             Damage.load_from_json(equipment_type_json.get("resist", {})),
             equipment_type_json["name"],
             equipment_type_json.get("description"),
-            equipment_type_json["weapon"],
+            equipment_type_json.get("weapon", True),
             equipment_type_json["delay"],
             _get_slot(equipment_type_json["slot"]),
             equipment_type_json["value"],
@@ -160,10 +160,10 @@ class Equipment:
         if self.equipment_type.description:
             string += f"\n_{self.equipment_type.description}_"
         if self.damage:
-            string += f"\n\n*Damage*:\n{str(self.damage)}"
+            string += f"\n\n*Damage ({self.damage.get_total_damage()})*:\n{str(self.damage)}"
         if self.resist:
-            string += f"\n\n*Resist*:\n{str(self.resist)}"
-        string += f"\n\n*Scaling*:\n{str(self.equipment_type.scaling)}"
+            string += f"\n\n*Resist ({self.resist.get_total_damage()})*:\n{str(self.resist)}"
+        string += f"\n\n*Scaling*:\n{str(self.equipment_type.scaling.get_scaling_string())}"
         if not self.modifiers:
             return string
         return string + f"\n\n*Perks ({len(self.modifiers)}/{self.equipment_type.max_perks})*:\n\n{'\n\n'.join(str(x) for x in self.modifiers)}"

@@ -149,7 +149,7 @@ class TestClasses(unittest.TestCase):
             [
                 get_modifier_from_name("Slash Optimized", 25),
                 get_modifier_from_name("Slash Affinity", 50),
-                get_modifier_from_name("Shade Helper", 50)
+                get_modifier_from_name("Sword Proficiency", 50)
             ]
         )),
         player.equip_item(_generate_equipment(

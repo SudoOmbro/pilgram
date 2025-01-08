@@ -11,8 +11,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 2,
-      "skill": 2
+      "strength": 10,
+      "skill": 10
     },
     "value": 5
   }, {
@@ -26,8 +26,8 @@
       "pierce": 3
     },
     "scaling": {
-      "strength": 1,
-      "skill": 3
+      "strength": 5,
+      "skill": 15
     },
     "value": 4
   }, {
@@ -41,7 +41,7 @@
       "pierce": 1
     },
     "scaling": {
-      "skill": 5
+      "skill": 50
     },
     "value": 1
   }, {
@@ -58,8 +58,8 @@
       "slash": 1
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 3
+      "strength": 5,
+      "toughness": 15
     },
     "value": 2
   }, {
@@ -76,8 +76,8 @@
       "slash": 4
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 3
+      "strength": 15,
+      "toughness": 20
     },
     "value": 5
   }, {
@@ -92,7 +92,7 @@
       "blunt": 2
     },
     "scaling": {
-      "skill": 2
+      "skill": 50
     },
     "value": 6
   }, {
@@ -107,8 +107,8 @@
       "pierce": 3
     },
     "scaling": {
-      "strength": 2,
-      "skill": 4
+      "strength": 10,
+      "skill": 20
     },
     "value": 4
   }, {
@@ -123,8 +123,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 6,
-      "skill": 6
+      "strength": 20,
+      "skill": 20
     },
     "value": 3
   }, {
@@ -137,8 +137,7 @@
       "blunt": 1
     },
     "scaling": {
-      "toughness": 3,
-      "agility": 3
+      "agility": 5
     },
     "value": 1
   }, {
@@ -152,8 +151,8 @@
       "blunt": 1
     },
     "scaling": {
-      "toughness": 3,
-      "agility": 3
+      "toughness": 5,
+      "agility": 10
     },
     "value": 1
   }, {
@@ -167,8 +166,8 @@
       "slash": 1
     },
     "scaling": {
-      "toughness": 3,
-      "agility": 3
+      "toughness": 10,
+      "agility": 10
     },
     "value": 1
   }, {
@@ -181,9 +180,9 @@
       "slash": 1
     },
     "scaling": {
-      "strength": 2,
-      "toughness": 3,
-      "agility": 3
+      "strength": 10,
+      "toughness": 10,
+      "agility": 10
     },
     "value": 1
   }, {
@@ -197,8 +196,8 @@
       "pierce": 2
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 3
+      "strength": 15,
+      "toughness": 30
     },
     "value": 15
   }, {
@@ -212,8 +211,8 @@
       "blunt": 1
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 2
+      "strength": 5,
+      "toughness": 15
     },
     "value": 4
   }, {
@@ -227,7 +226,7 @@
       "blunt": 3
     },
     "scaling": {
-      "strength": 8
+      "strength": 20
     },
     "value": 3
   }, {
@@ -242,8 +241,7 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 7,
-      "skill": 1
+      "strength": 30
     },
     "value": 5
   }, {
@@ -251,14 +249,13 @@
     "name": "Scythe",
     "slot": "primary",
     "weapon": true,
-    "class": "scythe",
     "delay": 6,
     "damage": {
       "slash": 6
     },
     "scaling": {
-      "strength": 1,
-      "skill": 3
+      "strength": 15,
+      "skill": 15
     },
     "value": 7
   }, {
@@ -273,7 +270,7 @@
       "pierce": 5
     },
     "scaling": {
-      "skill": 30
+      "skill": 50
     },
     "value": 20
   }, {
@@ -288,8 +285,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 20,
-      "skill": 4
+      "strength": 40,
+      "skill": 10
     },
     "value": 20
   }, {
@@ -304,8 +301,7 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 8,
-      "skill": 3
+      "strength": 30
     },
     "value": 1
   }, {
@@ -319,8 +315,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 3
+      "strength": 5,
+      "toughness": 25
     },
     "value": 10
   }, {
@@ -334,8 +330,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 4,
-      "toughness": 4
+      "strength": 40,
+      "toughness": 40
     },
     "value": 12
   }, {
@@ -349,8 +345,8 @@
       "occult": 2
     },
     "scaling": {
-      "attunement": 5,
-      "mind": 2
+      "attunement": 50,
+      "mind": 20
     },
     "value": 10
   }, {
@@ -358,15 +354,15 @@
     "name": "Sorcery staff",
     "slot": "primary",
     "weapon": true,
-    "class": "staff",
+    "class": "magic",
     "delay": 8,
     "damage": {
       "blunt": 1,
       "occult": 4
     },
     "scaling": {
-      "attunement": 10,
-      "mind": 2
+      "attunement": 50,
+      "mind": 20
     },
     "value": 15
   }, {
@@ -379,8 +375,8 @@
       "occult": 2
     },
     "scaling": {
-      "toughness": 2,
-      "agility": 1
+      "toughness": 20,
+      "agility": 10
     },
     "value": 4
   }, {
@@ -395,8 +391,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 3,
-      "skill": 4
+      "strength": 10,
+      "skill": 15
     },
     "value": 6
   }, {
@@ -410,8 +406,8 @@
       "pierce": 15
     },
     "scaling": {
-      "strength": 5,
-      "skill": 25
+      "strength": 20,
+      "skill": 40
     },
     "value": 40
   }, {
@@ -425,7 +421,7 @@
       "slash": 4
     },
     "scaling": {
-      "skill": 4
+      "skill": 30
     },
     "value": 10
   }, {
@@ -439,7 +435,7 @@
       "slash": 8
     },
     "scaling": {
-      "skill": 8
+      "skill": 40
     },
     "value": 18
   }, {
@@ -454,8 +450,8 @@
       "occult": 2
     },
     "scaling": {
-      "attunement": 1,
-      "mind": 3
+      "attunement": 10,
+      "mind": 15
     },
     "value": 10
   }, {
@@ -470,8 +466,8 @@
       "pierce": 2
     },
     "scaling": {
-      "strength": 2,
-      "skill": 5
+      "strength": 15,
+      "skill": 15
     },
     "value": 7
   }, {
@@ -480,13 +476,13 @@
     "slot": "primary",
     "weapon": true,
     "class": "sword",
-    "delay": 3,
+    "delay": 4,
     "damage": {
-      "slash": 4
+      "slash": 5
     },
     "scaling": {
-      "strength": 2,
-      "skill": 4
+      "strength": 10,
+      "skill": 25
     },
     "value": 8
   }, {
@@ -510,7 +506,7 @@
       "slash": 5
     },
     "scaling": {
-      "toughness": 5
+      "toughness": 30
     },
     "value": 10
   }, {
@@ -524,7 +520,7 @@
       "blunt": 1
     },
     "scaling": {
-      "toughness": 4
+      "toughness": 25
     },
     "value": 8
   }, {
@@ -539,8 +535,8 @@
       "occult": 2
     },
     "scaling": {
-      "toughness": 6,
-      "mind": 2
+      "toughness": 30,
+      "mind": 15
     },
     "value": 12
   }, {
@@ -554,7 +550,7 @@
       "pierce": 6
     },
     "scaling": {
-      "toughness": 15
+      "toughness": 60
     },
     "value": 20
   }, {
@@ -568,7 +564,7 @@
       "blunt": 1
     },
     "scaling": {
-      "agility": 1
+      "agility": 10
     },
     "value": 8
   }, {
@@ -582,7 +578,7 @@
       "pierce": 3
     },
     "scaling": {
-      "toughness": 8
+      "toughness": 40
     },
     "value": 15
   }, {
@@ -595,8 +591,8 @@
       "blunt": 3
     },
     "scaling": {
-      "toughness": 1,
-      "agility": 1
+      "toughness": 5,
+      "agility": 5
     },
     "value": 6
   }, {
@@ -609,8 +605,8 @@
       "blunt": 3
     },
     "scaling": {
-      "toughness": 1,
-      "agility": 1
+      "toughness": 5,
+      "agility": 5
     },
     "value": 6
   }, {
@@ -625,7 +621,7 @@
       "blunt": 2
     },
     "scaling": {
-      "toughness": 6
+      "toughness": 30
     },
     "value": 20
   }, {
@@ -633,15 +629,15 @@
     "name": "Bracers",
     "slot": "arms",
     "weapon": false,
-    "delay": 3,
+    "delay": 4,
     "resist": {
       "slash": 1,
       "pierce": 1,
       "blunt": 1
     },
     "scaling": {
-      "toughness": 1,
-      "agility": 1
+      "toughness": 10,
+      "agility": 10
     },
     "value": 8
   }, {
@@ -656,7 +652,7 @@
       "blunt": 2
     },
     "scaling": {
-      "toughness": 4
+      "toughness": 30
     },
     "value": 8
   }, {
@@ -669,34 +665,36 @@
       "freeze": 1
     },
     "scaling": {
-      "toughness": 1,
-      "agility": 1
+      "toughness": 5,
+      "agility": 5
     },
     "value": 8
   }, {
     "id": 45,
     "name": "War hammer",
     "slot": "primary",
+    "class": "hammer",
     "weapon": true,
     "delay": 10,
     "damage": {
       "blunt": 10
     },
     "scaling": {
-      "strength": 10
+      "strength": 50
     },
     "value": 10
   }, {
     "id": 46,
     "name": "Pike",
     "slot": "primary",
+    "class": "polearm",
     "weapon": true,
     "delay": 9,
     "damage": {
       "pierce": 9
     },
     "scaling": {
-      "strength": 8
+      "strength": 50
     },
     "value": 9
   }, {
@@ -709,20 +707,21 @@
       "blunt": 1
     },
     "scaling": {
-      "agility": 2
+      "agility": 5
     },
     "value": 5
   }, {
     "id": 48,
     "name": "Claws",
     "slot": "secondary",
+    "class": "fist",
     "weapon": true,
     "delay": 1,
     "damage": {
       "slash": 3
     },
     "scaling": {
-      "skill": 3
+      "skill": 20
     },
     "value": 15
   }, {
@@ -735,7 +734,7 @@
       "occult": 2
     },
     "scaling": {
-      "mind": 2
+      "mind": 15
     },
     "value": 50,
     "max_perks": 3
@@ -750,8 +749,8 @@
       "pierce": 3
     },
     "scaling": {
-      "toughness": 5,
-      "agility": 1
+      "toughness": 25,
+      "agility": 10
     },
     "value": 15
   }, {
@@ -766,7 +765,7 @@
       "blunt": 1
     },
     "scaling": {
-      "toughness": 7
+      "toughness": 40
     },
     "value": 22
   }, {
@@ -781,7 +780,7 @@
       "blunt": 2
     },
     "scaling": {
-      "toughness": 9
+      "toughness": 40
     },
     "value": 30
   }, {
@@ -796,7 +795,7 @@
       "blunt": 1
     },
     "scaling": {
-      "toughness": 4
+      "toughness": 30
     },
     "value": 15
   }, {
@@ -810,65 +809,70 @@
       "pierce": 1
     },
     "scaling": {
-      "toughness": 4
+      "toughness": 50
     },
     "value": 15
   }, {
     "id": 55,
     "name": "Pistil",
     "slot": "secondary",
+    "class": "dagger",
     "weapon": true,
     "delay": 3,
     "damage": {
       "pierce": 3
     },
     "scaling": {
-      "skill": 2
+      "skill": 20
     },
     "value": 8
   }, {
     "id": 56,
     "name": "Chakrams",
     "slot": "secondary",
+    "class": "thrown",
     "weapon": true,
     "delay": 1,
     "damage": {
       "slash": 1
     },
     "scaling": {
-      "skill": 1
+      "skill": 10
     },
     "value": 8
   }, {
     "id": 57,
     "name": "Franciscas",
     "slot": "secondary",
+    "class": "thrown",
     "weapon": true,
     "delay": 2,
     "damage": {
       "slash": 2
     },
     "scaling": {
-      "skill": 2
+      "skill": 20
     },
     "value": 8
   }, {
     "id": 58,
     "name": "Kunais",
     "slot": "secondary",
+    "class": "thrown",
     "weapon": true,
     "delay": 2,
     "damage": {
       "pierce": 2
     },
     "scaling": {
-      "skill": 2
+      "skill": 20
     },
     "value": 8
   }, {
     "id": 59,
     "name": "Javelins",
     "slot": "secondary",
+    "class": "thrown",
     "weapon": true,
     "delay": 5,
     "damage": {
@@ -878,66 +882,71 @@
       "strength": 3,
       "skill": 2
     },
-    "value": 10
+    "value": 30
   }, {
     "id": 60,
     "name": "Ribauldequin",
     "slot": "primary",
+    "class": "firearm",
     "weapon": true,
     "delay": 80,
     "damage": {
-      "pierce": 10,
-      "blunt": 5
+      "pierce": 9,
+      "blunt": 9
     },
     "scaling": {
-      "strength": 30,
-      "skill": 30
+      "strength": 50,
+      "skill": 50
     },
     "value": 150
   }, {
     "id": 61,
     "name": "Flamethrower",
     "slot": "primary",
+    "class": "firearm",
     "weapon": true,
     "delay": 40,
     "damage": {
-      "fire": 35
+      "fire": 20
     },
     "scaling": {
-      "strength": 10,
-      "skill": 30
+      "strength": 15,
+      "skill": 35
     },
     "value": 150
   }, {
     "id": 62,
     "name": "Knife",
     "slot": "secondary",
+    "class": "dagger",
     "weapon": true,
     "delay": 1,
     "damage": {
       "slash": 1
     },
     "scaling": {
-      "skill": 1
+      "skill": 10
     },
     "value": 4
   }, {
     "id": 63,
     "name": "Brass Knuckles",
     "slot": "secondary",
+    "class": "fist",
     "weapon": true,
     "delay": 0,
     "damage": {
       "blunt": 1
     },
     "scaling": {
-      "strength": 1
+      "strength": 10
     },
     "value": 3
   }, {
     "id": 64,
     "name": "Fire bombs",
     "slot": "secondary",
+    "class": "thrown",
     "weapon": true,
     "delay": 6,
     "damage": {
@@ -945,22 +954,23 @@
       "fire": 5
     },
     "scaling": {
-      "strength": 3,
-      "skill": 3
+      "strength": 20,
+      "skill": 15
     },
     "value": 10
   }, {
     "id": 65,
     "name": "Cane",
     "slot": "secondary",
+    "class": "stick",
     "weapon": true,
     "delay": 2,
     "damage": {
       "blunt": 2
     },
     "scaling": {
-      "strength": 2,
-      "skill": 2
+      "strength": 15,
+      "skill": 15
     },
     "value": 6
   }, {
@@ -974,8 +984,8 @@
       "slash": 1
     },
     "scaling": {
-      "strength": 1,
-      "toughness": 1
+      "strength": 5,
+      "toughness": 5
     },
     "value": 12
   }, {
@@ -994,9 +1004,9 @@
       "blunt": 1
     },
     "scaling": {
-      "strength": 5,
-      "skill": 5,
-      "toughness": 4
+      "strength": 20,
+      "skill": 20,
+      "toughness": 15
     },
     "value": 30
   }, {
@@ -1014,8 +1024,8 @@
       "pierce": 1
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 2
+      "strength": 20,
+      "toughness": 20
     },
     "value": 6
   }, {
@@ -1030,8 +1040,8 @@
       "pierce": 4
     },
     "scaling": {
-      "strength": 3,
-      "toughness": 3
+      "strength": 25,
+      "toughness": 25
     },
     "value": 10
   }, {
@@ -1045,27 +1055,29 @@
       "slash": 3
     },
     "scaling": {
-      "strength": 1,
-      "skill": 2
+      "strength": 5,
+      "skill": 10
     },
     "value": 6
   }, {
     "id": 71,
     "name": "Rapier",
     "slot": "secondary",
+    "class": "sword",
     "weapon": true,
     "delay": 0,
     "damage": {
       "pierce": 2
     },
     "scaling": {
-      "skill": 1
+      "skill": 10
     },
     "value": 10
   }, {
     "id": 72,
     "name": "Pata",
     "slot": "secondary",
+    "class": "fist",
     "weapon": true,
     "delay": 5,
     "damage": {
@@ -1073,14 +1085,15 @@
       "pierce": 2
     },
     "scaling": {
-      "strength": 2,
-      "skill": 2
+      "strength": 15,
+      "skill": 15
     },
     "value": 10
   }, {
     "id": 73,
     "name": "Goedendag",
     "slot": "primary",
+    "class": "polearm",
     "weapon": true,
     "delay": 10,
     "damage": {
@@ -1088,14 +1101,15 @@
       "blunt": 5
     },
     "scaling": {
-      "strength": 4,
-      "skill": 4
+      "strength": 20,
+      "skill": 20
     },
     "value": 15
   }, {
     "id": 74,
     "name": "Gun shield",
     "slot": "secondary",
+    "class": "firearm",
     "weapon": true,
     "delay": 25,
     "damage": {
@@ -1108,41 +1122,44 @@
       "blunt": 5
     },
     "scaling": {
-      "strength": 7,
-      "skill": 7,
-      "toughness": 8
+      "strength": 20,
+      "skill": 20,
+      "toughness": 10
     },
     "value": 100
   }, {
     "id": 75,
     "name": "Kpingas",
     "slot": "secondary",
+    "class": "thrown",
     "weapon": true,
     "delay": 5,
     "damage": {
       "pierce": 5
     },
     "scaling": {
-      "skill": 5
+      "skill": 20
     },
     "value": 25
   }, {
     "id": 76,
     "name": "Repeating Crossbow",
     "slot": "primary",
+    "class": "crossbow",
     "weapon": true,
     "delay": 2,
     "damage": {
       "pierce": 2
     },
     "scaling": {
-      "skill": 2
+      "skill": 15
     },
     "value": 200
   }, {
     "id": 77,
     "name": "Blunderbuss",
     "slot": "primary",
+    "class": "firearm",
     "weapon": true,
     "delay": 20,
     "damage": {
@@ -1151,7 +1168,7 @@
       "blunt": 3
     },
     "scaling": {
-      "skill": 20
+      "skill": 60
     },
     "value": 100
   }, {
@@ -1164,7 +1181,7 @@
       "occult": 1
     },
     "scaling": {
-      "agility": 1
+      "agility": 10
     },
     "value": 5
   }, {
@@ -1177,7 +1194,7 @@
       "occult": 4
     },
     "scaling": {
-      "mind": 1
+      "mind": 5
     },
     "value": 30
   }, {
@@ -1191,7 +1208,7 @@
       "freeze": 1
     },
     "scaling": {
-      "agility": 1
+      "agility": 5
     },
     "value": 8
   }, {
@@ -1204,7 +1221,7 @@
       "occult": 20
     },
     "scaling": {
-      "mind": 1
+      "mind": 5
     },
     "value": 100
   }, {
@@ -1217,7 +1234,7 @@
       "acid": 5
     },
     "scaling": {
-      "skill": 4
+      "skill": 20
     },
     "value": 20
   }, {
@@ -1230,20 +1247,21 @@
       "slash": 1
     },
     "scaling": {
-      "agility": 1
+      "agility": 5
     },
     "value": 5
   }, {
     "id": 84,
     "name": "Quarterstaff",
     "slot": "primary",
+    "class": "stick",
     "weapon": true,
     "delay": 5,
     "damage": {
       "blunt": 5
     },
     "scaling": {
-      "skill": 5
+      "skill": 25
     },
     "value": 10
   }, {
@@ -1251,12 +1269,12 @@
     "name": "Nunchaku",
     "slot": "primary",
     "weapon": true,
-    "delay": 2,
+    "delay": 3,
     "damage": {
       "blunt": 3
     },
     "scaling": {
-      "skill": 4
+      "skill": 40
     },
     "value": 5
   }, {
@@ -1271,7 +1289,7 @@
       "occult": 120
     },
     "scaling": {
-      "attunement": 30
+      "attunement": 200
     },
     "value": 5000,
     "max_perks": 4
@@ -1287,7 +1305,7 @@
       "occult": 120
     },
     "scaling": {
-      "attunement": 30
+      "attunement": 200
     },
     "value": 5000,
     "max_perks": 4

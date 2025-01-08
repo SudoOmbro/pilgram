@@ -996,7 +996,7 @@ class Flinching(Modifier, rarity=Rarity.UNCOMMON):
             damage: cc.Damage = context.get("damage")
             return damage.scale(0.5)
 
-    def function(self, context: ModifierContext) -> Any:
+    def function(self, context: ModifierContext) -> cc.Damage:
         target: cc.CombatActor = context.get("other")
         if random.random() < (self.strength / 100):
             target.timed_modifiers.append(self.FlinchedEffect(0, duration=1))
@@ -1031,7 +1031,7 @@ class _GenericStatIncrease(Modifier):
 
     def __init_subclass__(cls, stat: str = None, **kwargs) -> None:
         if stat is None:
-            raise ValueError("dmg_type cannot be None")
+            raise ValueError("stat cannot be None")
         cls.NAME = f"{stat.capitalize()} imbued"
         super().__init_subclass__(rarity=Rarity.COMMON)
         cls.STAT = stat
@@ -1085,6 +1085,88 @@ class ScaleAllStats(Modifier, rarity=Rarity.LEGENDARY):
         entity: cc.CombatActor = context.get("entity")
         stats: cc.Stats = context.get("stats")
         return stats.scale(self.strength / 100)
+
+
+class _GenericWeaponProficiency(Modifier):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MIN_STRENGTH = 10
+    SCALING = 1.2
+
+    DESCRIPTION = "increases your damage with WPN type weapons by {str}%"
+    WPN: str
+
+    def __init_subclass__(cls, weapon_type: str = None, **kwargs) -> None:
+        if weapon_type is None:
+            raise ValueError("weapon_type cannot be None")
+        cls.NAME = f"{weapon_type.capitalize()} Proficiency"
+        super().__init_subclass__(rarity=Rarity.UNCOMMON)
+        cls.WPN = weapon_type
+        cls.DESCRIPTION = cls.DESCRIPTION.replace("WPN", weapon_type)
+
+    def function(self, context: ModifierContext) -> cc.Damage:
+        attacker: cc.CombatActor = context.get("supplier")
+        damage: cc.Damage = context.get("damage")
+        if isinstance(attacker, classes.Player):
+            primary = attacker.equipped_items.get(equipment.Slots.PRIMARY, None)
+            secondary = attacker.equipped_items.get(equipment.Slots.SECONDARY, None)
+            if (
+                    (primary is not None)
+                    and (primary.equipment_type.equipment_class == self.WPN)
+            ):
+                damage = damage.scale(1 + (self.get_fstrength()))
+            if (
+                    (secondary is not None)
+                    and secondary.equipment_type.is_weapon
+                    and (secondary.equipment_type.equipment_class == self.WPN)
+            ):
+                damage = damage.scale(1 + (self.get_fstrength()))
+            return damage
+        return damage.scale(1 + (2 * self.get_fstrength()))
+
+
+class SwordProficiency(_GenericWeaponProficiency, weapon_type="sword"):
+    pass
+
+
+class PolearmProficiency(_GenericWeaponProficiency, weapon_type="polearm"):
+    pass
+
+
+class DaggerProficiency(_GenericWeaponProficiency, weapon_type="dagger"):
+    pass
+
+
+class FirearmProficiency(_GenericWeaponProficiency, weapon_type="firearm"):
+    pass
+
+
+class ThrownProficiency(_GenericWeaponProficiency, weapon_type="thrown"):
+    pass
+
+
+class FistProficiency(_GenericWeaponProficiency, weapon_type="fist"):
+    pass
+
+
+class MagicProficiency(_GenericWeaponProficiency, weapon_type="magic"):
+    pass
+
+
+class CrossbowProficiency(_GenericWeaponProficiency, weapon_type="crossbow"):
+    pass
+
+
+class MaceProficiency(_GenericWeaponProficiency, weapon_type="mace"):
+    pass
+
+
+class HammerProficiency(_GenericWeaponProficiency, weapon_type="hammer"):
+    pass
+
+
+class GreatswordProficiency(_GenericWeaponProficiency, weapon_type="greatsword"):
+    pass
 
 
 print(f"Loaded {len(_LIST)} perks")  # Always keep at the end

@@ -544,7 +544,7 @@ class QuestManager(Manager):
                 # add money, xp & renown (x4)
                 xp_am = member.add_xp(xp * 4)
                 money_am = member.add_money(money * 4)
-                renown = member.get_level() * 20
+                renown = member.get_level() * 4
                 member.add_renown(renown)
                 guild.prestige += member.get_level() * 4
                 guild.tourney_score += int(renown * mult)
@@ -564,7 +564,7 @@ class QuestManager(Manager):
                 # add money, xp & renown
                 xp_am = member.add_xp(xp)
                 money_am = member.add_money(money)
-                renown = member.get_level() * 4
+                renown = member.get_level()
                 member.add_renown(renown)
                 guild.prestige += member.get_level()
                 guild.tourney_score += int(renown * mult)
