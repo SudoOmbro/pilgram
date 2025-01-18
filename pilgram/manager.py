@@ -470,7 +470,7 @@ class QuestManager(Manager):
             if player.guild:
                 guild = self.db().get_guild(player.guild.guild_id)  # get the most up-to-date object
                 guild.tourney_score += enemy.get_level()
-                prestige = int((enemy.get_level() - ac.quest.zone.level) / 2)
+                prestige = enemy.get_prestige(ac.quest.zone.level)
                 guild.prestige += max(1, prestige)
                 self.db().update_guild(guild)
         # unset player flags
@@ -544,9 +544,9 @@ class QuestManager(Manager):
                 # add money, xp & renown (x4)
                 xp_am = member.add_xp(xp * 4)
                 money_am = member.add_money(money * 4)
-                renown = member.get_level() * 4
+                renown = member.get_prestige(ac.quest.zone.level) * 4
                 member.add_renown(renown)
-                guild.prestige += member.get_level() * 4
+                guild.prestige += renown
                 guild.tourney_score += int(renown * mult)
                 # add relic
                 item = Equipment.generate(member.level, EquipmentType.get_random("relic"), 3)
@@ -564,10 +564,9 @@ class QuestManager(Manager):
                 # add money, xp & renown
                 xp_am = member.add_xp(xp)
                 money_am = member.add_money(money)
-                renown = member.get_level()
+                renown = member.get_prestige(ac.quest.zone.level)
                 member.add_renown(renown)
-                guild.prestige += member.get_level()
-                guild.tourney_score += int(renown * mult)
+                guild.prestige += renown
                 # notify player
                 self.db().create_and_add_notification(
                     member,

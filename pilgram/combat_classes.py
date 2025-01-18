@@ -499,6 +499,10 @@ class CombatActor(ABC):
     def get_stamina_regeneration() -> float:
         return 0.2 + random.choice((-0.02, -0.01, 0.0, 0.01, 0.02))
 
+    def get_prestige(self, zone_level: int) -> int:
+        """Returns the prestige given by killing this actor"""
+        return int((self.get_level() - zone_level) / 2)
+
 
 class CombatContainer:
     MAX_TURNS: int = 1000

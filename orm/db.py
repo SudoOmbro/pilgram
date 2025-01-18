@@ -728,7 +728,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def build_adventure_container(self, qps: QuestProgressModel, owner: Player | None = None) -> AdventureContainer:
         player = self.get_player_data(int(qps.player_id)) if owner is None else owner
-        quest = self.get_quest(int(qps.quest_id)) if qps.is_on_a_quest() else None
+        quest = self.get_quest(int(qps.quest_id)) if qps.is_on_a_update_quest_progressquest() else None
         return AdventureContainer(player, quest, qps.end_time, qps.last_update)
 
     @cache_sized_ttl_quick(size_limit=200, ttl=60)
@@ -757,7 +757,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 qps = QuestProgressModel.get(QuestProgressModel.player_id == adventure_container.player_id())
                 qps.quest_id = adventure_container.quest_id()
                 # stagger updates using randomness
-                qps.last_update = datetime.now() + timedelta(minutes=random.randint(0, 40)) if last_update is None else last_update
+                qps.last_update = (datetime.now() + timedelta(minutes=random.randint(0, 40))) if last_update is None else last_update
                 qps.end_time = adventure_container.finish_time
                 qps.save()
         except QuestProgressModel.DoesNotExist:
