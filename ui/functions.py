@@ -1608,6 +1608,7 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
                     log.error(f"Stat '{stat}' as defined in zone {zone_id} essence dict does not exist")
                     continue
                 new_stats.add_single_value(stat, int(value * levels))
+            player.stats += new_stats
         else:
             # if the zone the essences came from does not have defined essence values, then add random stats
             new_stats = Stats.generate_random(0, levels)

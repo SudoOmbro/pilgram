@@ -400,6 +400,17 @@ def set_player_essences(context: UserContext, player_name: str, essences_string:
     return f"set player {player.name} essences to {player.essences}"
 
 
+def set_player_stats(context: UserContext, player_name: str, stat_string: str) -> str:
+    player = db().get_player_from_name(player_name)
+    if player is None:
+        return Strings.obj_does_not_exist.format(obj="player")
+    for single_stat_string in stat_string.split(","):
+        stat_name, value_str = single_stat_string.split(":")
+        player.stats.__dict__[stat_name] = int(value_str)
+    db().update_player_data(player)
+    return f"set player {player.name} stats to {player.stats}"
+
+
 ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
     "add": {
         "player": {
@@ -432,6 +443,7 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "level": __generate_int_op_command("level", "player", "set"),
             "sanity": __generate_int_op_command("sanity", "player", "set"),
             "essences": IFW([player_arg("player name"), RWE("essences", None, None)], set_player_essences, "Set player essences"),
+            "stats": IFW([player_arg("player name"), RWE("stats", None, None)], set_player_stats, "Set player stats"),
             "flags": __generate_int_op_command("flags", "player", "set"),
         },
         "guild": {
