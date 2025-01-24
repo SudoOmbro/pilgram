@@ -519,6 +519,7 @@ class QuestManager(Manager):
         # get combat participants
         participants: list[CombatActor] = party + [self._create_enemy(ac, random.randint(0, 2), int(x.level / 3)) for x in party]
         if is_boss:
+            guild.last_raid = datetime.now()
             participants.append(self._create_enemy(ac, 5, int(leader.level * 1.5), prefix="Legendary "))
         # process combat
         combat = CombatContainer(participants, {})

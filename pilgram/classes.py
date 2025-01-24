@@ -63,6 +63,8 @@ RANDOM_DURATION: timedelta = read_update_interval(GlobalSettings.get("quest.rand
 POWER_PER_ARTIFACT: int = ContentMeta.get("artifacts.power_per_artifact")
 MINIMUM_ASCENSION_LEVEL: int = ContentMeta.get("ascension.minimum_level")
 LEVEL_INCREASE_PER_ASCENSION: int = ContentMeta.get("ascension.level_increase_per_ascension")
+POWER_PER_DAY: int = ContentMeta.get("artifacts.power_per_day")
+RAID_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.raid_delay"))
 
 QTE_CACHE: dict[
     int, QuickTimeEvent
@@ -660,7 +662,7 @@ class Player(CombatActor):
         """returns spell charge of the player"""
         max_charge = self.get_max_charge()
         charge = int(
-            ((datetime.now() - self.last_cast).total_seconds() / 86400) * max_charge
+            ((datetime.now() - self.last_cast).total_seconds() / 86400) * POWER_PER_DAY
         )
         if charge > max_charge:
             return max_charge
@@ -1016,7 +1018,8 @@ class Guild:
         prestige: int,
         tourney_score: int,
         tax: int,
-        bank: int
+        bank: int,
+        last_raid: datetime
     ) -> None:
         """
         :param guild_id: unique id of the guild
@@ -1041,6 +1044,7 @@ class Guild:
         self.tax = tax
         self.bank = bank
         self.deleted: bool = False
+        self.last_raid = last_raid
 
     def get_max_members(self) -> int:
         value = self.level * self.PLAYERS_PER_LEVEL
@@ -1086,6 +1090,9 @@ class Guild:
     def upgrade(self) -> None:
         self.level += 1
 
+    def can_raid(self) -> bool:
+        return (datetime.now() - self.last_raid) >= RAID_DELAY
+
     def __eq__(self, other: Any) -> bool:
         if isinstance(other, Guild):
             return self.guild_id == other.guild_id
@@ -1099,7 +1106,7 @@ class Guild:
 
     @classmethod
     def create_default(cls, founder: Player, name: str, description: str) -> Guild:
-        return Guild(0, name, 1, description, founder, datetime.now(), 0, 0, 5, 0)
+        return Guild(0, name, 1, description, founder, datetime.now(), 0, 0, 5, 0, datetime.now())
 
     @classmethod
     def print_members(cls, members: list[tuple[int, str, int]]) -> str:

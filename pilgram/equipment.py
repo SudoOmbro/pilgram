@@ -222,6 +222,8 @@ class Equipment:
             m.Rarity.COMMON,
             m.Rarity.COMMON,
             m.Rarity.COMMON,
+            m.Rarity.COMMON,
+            m.Rarity.UNCOMMON,
             m.Rarity.UNCOMMON,
             m.Rarity.UNCOMMON,
             m.Rarity.UNCOMMON,

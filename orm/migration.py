@@ -299,3 +299,18 @@ def __migrate_v11_to_v12():
             ps.save()
     db.commit()
     db.close()
+
+
+@__add_to_migration_list("pilgram_v12.db")
+def __migrate_v12_to_v13():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v12 import db as previous_db
+    log.info("Migrating v12 to v13...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('guildmodel', 'last_raid', DateTimeField(default=datetime.now() - timedelta(days=8))),
+    )
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v12.db", "pilgram_v13.db")

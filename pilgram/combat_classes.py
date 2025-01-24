@@ -442,6 +442,7 @@ class CombatActor(ABC):
         return stats
 
     def get_hp_string(self) -> str:
+        """returns: 'HP: hp/max hp'"""
         return f"HP: {self.hp}/{self.get_max_hp()}"
 
     def attack(self, target: CombatActor, combat_context: CombatContainer) -> Damage:

@@ -133,7 +133,8 @@ class TestClasses(unittest.TestCase):
             EquipmentType.get(60),  # Ribaldequin
             [
                 get_modifier_from_name("Vampiric", 2),
-                get_modifier_from_name("Sneak attack", 5)
+                get_modifier_from_name("Sneak attack", 5),
+                get_modifier_from_name("True Strike", 10)
             ]
         )
         weapon.damage = Damage.load_from_json({"slash": 50})

@@ -336,6 +336,8 @@ class Strings:
     raid_success = "You completed the raid successfully."
     raid_leader_died = "The leader of the raid died. Hope abandons you & you decide to go back to town."
     raid_finished = "You manage to dispatch the group of enemies & their legendary leader. The raid is finished."
+    cannot_cancel_raid = "You can't cancel a Raid!"
+    too_many_raids = "Your guild was on a raid too recently, wait {days} more days."
 
     sanity_lines: dict[int, tuple[str, ...]] = {
         0: (

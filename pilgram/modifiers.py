@@ -1169,4 +1169,24 @@ class GreatswordProficiency(_GenericWeaponProficiency, weapon_type="greatsword")
     pass
 
 
+class TrueStrike(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MIN_STRENGTH = 2
+    MAX_STRENGTH = 25
+    SCALING = 8
+
+    NAME = "True Strike"
+    DESCRIPTION = "Remove {str}% of enemy health per hit (unblockable)"
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        target: cc.CombatActor = context.get("other")
+        amount: int = int((target.get_max_hp() / 100) * self.strength)
+        target.modify_hp(-amount)
+        self.write_to_log(context, f"True Strike for {self.strength}% HP ({target.get_hp_string()})")
+        return damage
+
+
+
 print(f"Loaded {len(_LIST)} perks")  # Always keep at the end

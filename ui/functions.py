@@ -20,7 +20,7 @@ from pilgram.classes import (
     Guild,
     Player,
     SpellError,
-    Zone, Progress,
+    Zone, Progress, RAID_DELAY,
 )
 from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
@@ -1461,6 +1461,8 @@ def cancel_quest(context: UserContext) -> str:
     ac = db().get_player_adventure_container(player)
     if not ac.is_on_a_quest():
         return Strings.not_on_a_quest
+    if ac.quest.is_raid:
+        return Strings.cannot_cancel_raid
     player.set_flag(QuestCanceled)
     db().update_player_data(player)
     return Strings.quest_canceled
@@ -1489,6 +1491,8 @@ def start_raid(context: UserContext, zone_id_str: str) -> str:
     guild = db().get_owned_guild(player)
     if not guild:
         return Strings.raid_guild_required
+    if not guild.can_raid():
+        return Strings.too_many_raids.format(days=(RAID_DELAY - (datetime.now() - guild.last_raid)).days)
     if db().is_player_on_a_quest(player):
         return Strings.raid_on_quest
     available_members = db().get_avaible_players_for_raid(guild)
