@@ -275,7 +275,7 @@ class Stats:
 
     def add_single_value(self, key: str, value: int) -> Stats:
         new_stats = copy(self)
-        new_stats.__dict__[key] = new_stats.__dict__[key] + value
+        new_stats.__dict__[key] += value
         return new_stats
 
     def scale(self, value: float):
@@ -502,7 +502,7 @@ class CombatActor(ABC):
 
     def get_prestige(self, zone_level: int) -> int:
         """Returns the prestige given by killing this actor"""
-        return int((self.get_level() - zone_level) / 2)
+        return max(1, int((self.get_level() - zone_level) / 2))
 
 
 class CombatContainer:

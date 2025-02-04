@@ -1,12 +1,20 @@
 import unittest
 from timeit import timeit
 
+from orm.db import PilgramORMDatabase
+from pilgram.classes import Zone
+from pilgram.combat_classes import Damage
+from pilgram.generics import PilgramDatabase
 from pilgram.strings import Strings
 from ui.functions import USER_COMMANDS, USER_PROCESSES
 from ui.interpreter import CLIInterpreter
 from ui.utils import UserContext, reconstruct_delimited_arguments
 
 interpreter = CLIInterpreter(USER_COMMANDS, USER_PROCESSES, help_formatting="`{c}`{a}- _{d}_\n\n")
+
+
+def db() -> PilgramDatabase:
+    return PilgramORMDatabase.instance()
 
 
 def create_character(character_id: int, name: str):
@@ -77,3 +85,32 @@ class TestUi(unittest.TestCase):
         result = interpreter.context_aware_execute(p2_context, "duel accept ombro")
         print(result)
 
+    def test_ascension(self):
+        db().add_zone(Zone(1, "Zone A", 1, "", Damage.get_empty(), Damage.get_empty(), {"essence": {"vitality": 1}}))
+        db().add_zone(Zone(2, "Zone B", 1, "", Damage.get_empty(), Damage.get_empty(), {"essence": {"strength": 1}}))
+        db().add_zone(Zone(3, "Zone C", 1, "", Damage.get_empty(), Damage.get_empty(), {"essence": {"strength": 1}}))
+        db().add_zone(Zone(4, "Zone D", 1, "", Damage.get_empty(), Damage.get_empty(), {"essence": {"skill": 1}}))
+        player_context = UserContext({"id": 1})
+        create_character(1, "Ombro")
+        player = db().get_player_data(1)
+        player.level = 30
+        player.artifact_pieces = 10
+        player.essences = {1: 1, 2: 2, 4: 4}
+        result = interpreter.context_aware_execute(player_context, "ascension")
+        print(result)
+        result = interpreter.context_aware_execute(player_context, "y")
+        print(result)
+        self.assertEqual(player.stats.vitality, 2)
+        self.assertEqual(player.stats.strength, 2)
+        self.assertEqual(player.stats.skill, 3)
+        result = interpreter.context_aware_execute(player_context, "check board")
+        print(result)
+
+    def test_check_player(self):
+        player_context = UserContext({"id": 1})
+        result = interpreter.context_aware_execute(player_context, "check player")
+        print(result)
+        result = interpreter.context_aware_execute(player_context, "check stats")
+        print(result)
+        result = interpreter.context_aware_execute(player_context, "check board")
+        print(result)

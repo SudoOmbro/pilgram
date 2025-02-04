@@ -207,6 +207,7 @@ class Strings:
         "revive": "Revives you",
         "buffs": "Damage buffs (2x)",
         "sanity_restored": "Sanity restored",
+        "bait_power": "Bait power"
     }
     satchel_position_out_of_range = "The given satchel position is not valid, you have {num} items in your satchel."
     used_item = "{verb} the {item}"

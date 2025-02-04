@@ -285,6 +285,7 @@ class ConsumableItem(Listable, base_filename="consumables"):
         self.revive: bool = effects.get("revive", False)
         self.buff_flag: Flag = self.get_buff_flag(buffs)
         self.sanity_restored: int = effects.get("sanity_restored", 0)
+        self.bait_power: float = effects.get("bait_power", 0.0)
         # internal vars used to build the description
         self.buffs = buffs
         self.effects = list(effects.keys())

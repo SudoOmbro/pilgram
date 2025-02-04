@@ -1611,12 +1611,11 @@ def process_ascension_confirm(context: UserContext, user_input: str) -> str:
                 if stat not in new_stats.__dict__:
                     log.error(f"Stat '{stat}' as defined in zone {zone_id} essence dict does not exist")
                     continue
-                new_stats.add_single_value(stat, int(value * levels))
-            player.stats += new_stats
+                new_stats = new_stats.add_single_value(stat, int(value * levels))
         else:
             # if the zone the essences came from does not have defined essence values, then add random stats
             new_stats = Stats.generate_random(0, levels)
-            player.stats += new_stats
+        player.stats += new_stats
     player.essences = remaining_essences
     # remove all items except for relics
     player.equipped_items = {}

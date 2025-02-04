@@ -1309,5 +1309,45 @@
     },
     "value": 5000,
     "max_perks": 4
+  }, {
+    "id": 88,
+    "name": "Divine Shard",
+    "description": "A shard of the shield once brandished by God Empreror.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "slash": 1,
+      "pierce": 1,
+      "blunt": 1,
+      "occult": 1,
+      "fire": 1,
+      "acid": 1,
+      "freeze": 1,
+      "electric": 1
+    },
+    "scaling": {
+      "attunement": 200
+    },
+    "value": 5000,
+    "max_perks": 4
+  }, {
+    "id": 89,
+    "name": "Obsidian Medallion",
+    "description": "Made of dark, cursed obsidian. It seems to leech energy from the environment.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "fire": 100,
+      "electric": 100
+    },
+    "scaling": {
+      "attunement": 200
+    },
+    "value": 5000,
+    "max_perks": 4
   }]
 }
