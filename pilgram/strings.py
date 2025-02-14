@@ -340,6 +340,10 @@ class Strings:
     cannot_cancel_raid = "You can't cancel a Raid!"
     too_many_raids = "Your guild was on a raid too recently, wait {days} more days."
 
+    no_deathwish_toggle_on_quest = "You cannot toggle Deathwish mode while on a quest."
+    deathwish_enabled = "You enabled Deathwish mode!\n\nYou will earn double XP, double BA & double essences but if you die you will lose all of your levels, your BA and your essences (you won't lose your items).\n\nThe enemies you encounter will also be twice as strong."
+    deathwish_disabled = "Deathwish mode disabled. you aren't into gambling, are you?"
+
     sanity_lines: dict[int, tuple[str, ...]] = {
         0: (
             "You see shadows move at the edge of your vision...",

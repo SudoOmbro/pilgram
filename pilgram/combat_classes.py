@@ -732,7 +732,7 @@ class CombatContainer:
                         else:
                             self._attack(actor, opponent)
                 elif action_id == CombatActions.lick_wounds:
-                    hp_restored = (1 + actor.get_level()) * 2
+                    hp_restored = (1 + actor.get_level()) * 4
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
                     self.write_to_log(
                         f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()})."

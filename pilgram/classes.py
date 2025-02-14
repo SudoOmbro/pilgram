@@ -37,7 +37,7 @@ from pilgram.flags import (
     MightBuff3,
     SwiftBuff1,
     SwiftBuff2,
-    SwiftBuff3,
+    SwiftBuff3, DeathwishMode,
 )
 from pilgram.globals import ContentMeta, GlobalSettings
 from pilgram.listables import Listable
@@ -596,6 +596,8 @@ class Player(CombatActor):
     def add_xp(self, amount: float) -> int:
         """adds xp to the player & returns how much was actually added to the player"""
         amount *= self.vocation.general_xp_mult + (self.ascension / 4)
+        if DeathwishMode.is_set(self.flags):
+            amount *= 2
         self.xp += int(amount)
         if self.xp >= self.get_required_xp():
             self.level_up()
@@ -609,6 +611,8 @@ class Player(CombatActor):
                 amount = int(amount * 1.5)
                 self.unset_flag(flag)
         amount = int(amount)
+        if DeathwishMode.is_set(self.flags):
+            amount *= 2
         self.money += amount
         if self.money >= self.max_money_reached:
             self.max_money_reached = self.money
@@ -908,6 +912,8 @@ class Player(CombatActor):
     def add_essence(self, zone_id: int, amount: int):
         if self.essences.get(zone_id, None) is None:
             self.essences[zone_id] = 0
+        if DeathwishMode.is_set(self.flags):
+            amount *= 2
         self.essences[zone_id] += amount
 
     def get_ascension_level(self) -> int:

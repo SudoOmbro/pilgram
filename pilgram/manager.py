@@ -23,7 +23,7 @@ from pilgram.classes import (
 from pilgram.combat_classes import CombatContainer, CombatActor
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    Cheater, QuestCanceled, Explore, InCrypt, Raiding
+    QuestCanceled, Explore, InCrypt, Raiding, DeathwishMode
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.listables import DEFAULT_TAG
@@ -333,8 +333,7 @@ class QuestManager(Manager):
             else:
                 enemy.level_modifier += 5
 
-    @staticmethod
-    def _process_combat_death(player: Player, ac: AdventureContainer) -> str:
+    def _process_combat_death(self, player: Player, ac: AdventureContainer) -> str:
         """ either revive the player or respawn them in town """
         if (player.vocation.revive_chance > 0) and (random.random() < player.vocation.revive_chance):
             player.hp_percent = 0.25
@@ -343,7 +342,14 @@ class QuestManager(Manager):
             lost_money: int = int(player.money * 0.1 * player.vocation.money_loss_on_death)
             previous_quest = ac.quest  # use this otherwise the death notification will always say 'crypt exploration'
             ac.quest = None
-            player.money -= lost_money  # lose 10% of money on death
+            if DeathwishMode.is_set(player.flags):
+                player.level = 1
+                player.money = 0
+                player.essences = {}
+                player.equipped_items = {}
+                self.db().create_and_add_notification(player, "You died while Deathwish mode was active! You lost all of your levels, BA & essences. Also all of your items have been unequipped.")
+            else:
+                player.money -= lost_money  # lose 10% of money on death
             player.hp_percent = 1.0
             player.sanity = 55
             player.renown = 0
@@ -397,9 +403,9 @@ class QuestManager(Manager):
                 days_left = (ac.finish_time - datetime.now()).days
                 enemy_level_modifier += 2 + (5 - days_left if days_left < 5 else 1)
                 modifiers_amount = 2
-                if Cheater.is_set(player.flags):
-                    modifiers_amount += 8
-                    enemy_level_modifier += 1000000
+                if DeathwishMode.is_set(player.flags):
+                    modifiers_amount += 2
+                    enemy_level_modifier *= 2
                 if player.sanity <= 50:
                     modifiers_amount += 1
                     enemy_level_modifier += 5 + ((player.get_max_sanity() - player.sanity)/5)

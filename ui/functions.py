@@ -26,7 +26,7 @@ from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
-    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore, InCrypt, Raiding
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore, InCrypt, Raiding, DeathwishMode
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -1364,6 +1364,8 @@ def __get_player_stats_string(player: Player) -> str:
         string += "\n\nSwift buff (2): weight -30 kg"
     elif SwiftBuff1.is_set(player.flags):
         string += "\n\nSwift buff (1): weight -15 kg"
+    if DeathwishMode.is_set(player.flags):
+        string += "\n\nDeathwish mode enabled!"
     # add perks (if the player has any)
     perks_string = ""
     for _, item in player.equipped_items.items():
@@ -1650,6 +1652,20 @@ def records(context: UserContext, *args) -> str:
     return f"{player.name}'s records:\n\n*max level*: {player.max_level_reached}\n*max {MONEY}*: {player.max_money_reached}\n*max renown*: {player.max_renown_reached}"
 
 
+def toggle_deathwish_mode(context: UserContext) -> str:
+    player = get_player(db, context)
+    ac = db().get_player_adventure_container(player)
+    if ac.is_on_a_quest() or InCrypt.is_set(player.flags):
+        return Strings.no_deathwish_toggle_on_quest
+    if DeathwishMode.is_set(player.flags):
+        player.unset_flag(DeathwishMode)
+        db().update_player_data(player)
+        return Strings.deathwish_disabled
+    player.set_flag(DeathwishMode)
+    db().update_player_data(player)
+    return Strings.deathwish_enabled
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1676,6 +1692,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "ascension": IFW(None, ascension, "Use 10 artifact pieces to ascend"),
     "raid": IFW([integer_arg("Zone number")], start_raid, "Start a raid with your guild members"),
     "crypt": IFW(None, crypt, "Enter the crypt"),
+    "deathwish": IFW(None, toggle_deathwish_mode, "Toggle Deathwish mode"),
     "cancel": {
         "quest": IFW(None, cancel_quest, "Cancels the current quest.")
     },

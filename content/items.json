@@ -2,6 +2,7 @@
   "items": [{
     "id": 0,
     "name": "Longsword",
+    "description": "Versatile and effective",
     "slot": "primary",
     "weapon": true,
     "class": "sword",
@@ -18,6 +19,7 @@
   }, {
     "id": 1,
     "name": "Spear",
+    "description": "Basic but effective",
     "slot": "primary",
     "weapon": true,
     "class": "polearm",
@@ -33,6 +35,7 @@
   }, {
     "id": 2,
     "name": "Dagger",
+    "description": "Gotta stab 'em all",
     "slot": "secondary",
     "weapon": true,
     "class": "dagger",
@@ -47,6 +50,7 @@
   }, {
     "id": 3,
     "name": "Round Shield",
+    "description": "Light & sturdy",
     "slot": "secondary",
     "weapon": false,
     "class": "shield",
@@ -65,6 +69,7 @@
   }, {
     "id": 4,
     "name": "Tower Shield",
+    "description": "Best used in a Testudo formation",
     "slot": "secondary",
     "weapon": false,
     "class": "shield",
@@ -83,6 +88,7 @@
   }, {
     "id": 5,
     "name": "FLint lock pistol",
+    "description": "A more civilized weapon for more grimdark times",
     "slot": "secondary",
     "weapon": true,
     "class": "firearm",
@@ -98,6 +104,7 @@
   }, {
     "id": 6,
     "name": "Halberd",
+    "description": "Stab AND slash, from a distance!",
     "slot": "primary",
     "weapon": true,
     "class": "polearm",
@@ -114,6 +121,7 @@
   }, {
     "id": 7,
     "name": "Gladius",
+    "description": "Are you not entertained?",
     "slot": "primary",
     "weapon": true,
     "class": "sword",
@@ -130,6 +138,7 @@
   }, {
     "id": 8,
     "name": "Brimmed hat",
+    "description": "You wouldn't want to burn your skin while fighting eldritch horrors, would you?",
     "slot": "head",
     "weapon": false,
     "delay": 0,
@@ -143,6 +152,7 @@
   }, {
     "id": 9,
     "name": "Poncho",
+    "description": "A small label says \"Eastwood\"",
     "slot": "chest",
     "weapon": false,
     "delay": 2,
@@ -158,6 +168,7 @@
   }, {
     "id": 10,
     "name": "Boots",
+    "description": "These boots have seen everything",
     "slot": "legs",
     "weapon": false,
     "delay": 1,
@@ -173,6 +184,7 @@
   }, {
     "id": 11,
     "name": "Gloves",
+    "description": "Gotta hand it to you",
     "slot": "arms",
     "weapon": false,
     "delay": 1,
@@ -188,6 +200,7 @@
   }, {
     "id": 12,
     "name": "Chest plate",
+    "description": "Great at keeping your insides inside you",
     "slot": "chest",
     "weapon": false,
     "delay": 12,
@@ -203,6 +216,7 @@
   }, {
     "id": 13,
     "name": "Horned helmet",
+    "description": "Yeah yeah it's historically inaccurate, but guess what? This is a fantasy game",
     "slot": "head",
     "weapon": false,
     "delay": 3,
@@ -218,6 +232,7 @@
   }, {
     "id": 14,
     "name": "Mace",
+    "description": "Bash their skulls in my liege",
     "slot": "primary",
     "weapon": true,
     "class": "mace",
@@ -232,6 +247,7 @@
   }, {
     "id": 15,
     "name": "Morning star",
+    "description": "Make 'em see stars",
     "slot": "primary",
     "weapon": true,
     "class": "mace",
@@ -247,6 +263,7 @@
   }, {
     "id": 16,
     "name": "Scythe",
+    "description": "Farming utensil for death mongers",
     "slot": "primary",
     "weapon": true,
     "delay": 6,
@@ -261,6 +278,7 @@
   }, {
     "id": 17,
     "name": "Hand cannon",
+    "description": "Got your nose! Just kidding, it's splattered all over the wall, along with your brain!",
     "slot": "primary",
     "weapon": true,
     "class": "firearm",
@@ -276,6 +294,7 @@
   }, {
     "id": 18,
     "name": "Zweihander",
+    "description": "WELL, WHAT IS IT!?",
     "slot": "primary",
     "weapon": true,
     "class": "greatsword",
@@ -292,6 +311,7 @@
   }, {
     "id": 19,
     "name": "Spiked Club",
+    "description": "Prickly bonk stick",
     "slot": "primary",
     "weapon": true,
     "class": "mace",
@@ -307,6 +327,7 @@
   }, {
     "id": 20,
     "name": "Chainmail",
+    "description": "Like a second metal skin",
     "slot": "chest",
     "weapon": false,
     "delay": 6,
@@ -322,6 +343,7 @@
   }, {
     "id": 21,
     "name": "Lorica segmentata",
+    "description": "Veni ,Vidi, Vici",
     "slot": "chest",
     "weapon": false,
     "delay": 7,
@@ -337,6 +359,7 @@
   }, {
     "id": 22,
     "name": "Fetish",
+    "description": "The spirit that inhabits seems to have very specific preferences",
     "slot": "secondary",
     "weapon": true,
     "class": "magic",
@@ -352,6 +375,7 @@
   }, {
     "id": 23,
     "name": "Sorcery staff",
+    "description": "SKIDADLE SKIDOODLE",
     "slot": "primary",
     "weapon": true,
     "class": "magic",
@@ -368,6 +392,7 @@
   }, {
     "id": 24,
     "name": "Robe",
+    "description": "Fashionable and refined. Also kinda sexy",
     "slot": "chest",
     "weapon": false,
     "delay": 6,
@@ -383,6 +408,7 @@
     "id": 25,
     "name": "Flail",
     "slot": "primary",
+    "description": "You're just swinging it, aren't you",
     "weapon": true,
     "class": "mace",
     "delay": 5,
@@ -398,6 +424,7 @@
   }, {
     "id": 26,
     "name": "Ballista",
+    "description": "Pin your enemies to the wall with tungsten rods",
     "slot": "primary",
     "weapon": true,
     "class": "crossbow",
@@ -413,6 +440,7 @@
   }, {
     "id": 27,
     "name": "Scimitar",
+    "description": "Still bears the old empire insignia",
     "slot": "primary",
     "weapon": true,
     "class": "sword",
@@ -427,6 +455,7 @@
   }, {
     "id": 28,
     "name": "Urumi",
+    "description": "A sword and a whip.",
     "slot": "primary",
     "weapon": true,
     "class": "sword",
@@ -441,6 +470,7 @@
   }, {
     "id": 29,
     "name": "Spell book",
+    "description": "\"Can you read my son?\"\n\"I don't know, can you go fuck yourself?\"",
     "slot": "secondary",
     "weapon": true,
     "class": "magic",
@@ -457,6 +487,7 @@
   }, {
     "id": 30,
     "name": "Naginata",
+    "description": "Kaaaaataaaanaaaaa",
     "slot": "primary",
     "weapon": true,
     "class": "polearm",
@@ -473,6 +504,7 @@
   }, {
     "id": 31,
     "name": "Katana",
+    "description": "You feel cool",
     "slot": "primary",
     "weapon": true,
     "class": "sword",
@@ -488,6 +520,7 @@
   }, {
     "id": 32,
     "name": "Bracelets",
+    "description": "Fabulous",
     "slot": "arms",
     "weapon": false,
     "delay": 0,
@@ -526,6 +559,7 @@
   }, {
     "id": 35,
     "name": "Inquisitor Helm",
+    "description": "Wash at 400 degrees in heretic blood",
     "slot": "head",
     "weapon": false,
     "delay": 8,
@@ -542,6 +576,7 @@
   }, {
     "id": 36,
     "name": "Great Helm",
+    "description": "Can you even see anything in there?",
     "slot": "head",
     "weapon": false,
     "delay": 15,
@@ -556,6 +591,7 @@
   }, {
     "id": 37,
     "name": "Spirals",
+    "description": "Pure gold spirals, reminiscent of the ones the Empress liked to wear",
     "slot": "arms",
     "weapon": false,
     "delay": 1,
@@ -643,6 +679,7 @@
   }, {
     "id": 43,
     "name": "Gambeson",
+    "description": "Not as good as metal but good enough for most",
     "slot": "chest",
     "weapon": false,
     "delay": 4,
@@ -658,6 +695,7 @@
   }, {
     "id": 44,
     "name": "Hood",
+    "description": "How mysterious",
     "slot": "head",
     "weapon": false,
     "delay": 1,
@@ -672,6 +710,7 @@
   }, {
     "id": 45,
     "name": "War hammer",
+    "description": "Quite grimdark :)",
     "slot": "primary",
     "class": "hammer",
     "weapon": true,
@@ -686,6 +725,7 @@
   }, {
     "id": 46,
     "name": "Pike",
+    "description": "A long metal stick to impale your enemies with",
     "slot": "primary",
     "class": "polearm",
     "weapon": true,
@@ -700,6 +740,7 @@
   }, {
     "id": 47,
     "name": "Fingerless gloves",
+    "description": "Yes everyone went to play bingo.",
     "slot": "arms",
     "weapon": false,
     "delay": 0,
@@ -713,6 +754,7 @@
   }, {
     "id": 48,
     "name": "Claws",
+    "description": "Claw their eyes out, slash their tongue, make 'em bleed.",
     "slot": "secondary",
     "class": "fist",
     "weapon": true,
@@ -727,6 +769,7 @@
   }, {
     "id": 49,
     "name": "Pure Gold bracelets",
+    "description": "Pure and radiant",
     "slot": "arms",
     "weapon": false,
     "delay": 0,
@@ -786,6 +829,7 @@
   }, {
     "id": 53,
     "name": "Pot Helm",
+    "description": "Let me solo h-nevermind.",
     "slot": "head",
     "weapon": false,
     "delay": 5,
@@ -829,6 +873,7 @@
   }, {
     "id": 56,
     "name": "Chakrams",
+    "description": "Sharp discs. Apply directly on forehead.",
     "slot": "secondary",
     "class": "thrown",
     "weapon": true,
@@ -843,6 +888,7 @@
   }, {
     "id": 57,
     "name": "Franciscas",
+    "description": "Small axes to be used from range",
     "slot": "secondary",
     "class": "thrown",
     "weapon": true,
@@ -886,6 +932,7 @@
   }, {
     "id": 60,
     "name": "Ribauldequin",
+    "description": "How are you even carrying this thing around!?",
     "slot": "primary",
     "class": "firearm",
     "weapon": true,
@@ -902,6 +949,7 @@
   }, {
     "id": 61,
     "name": "Flamethrower",
+    "description": "The self inflicted, mind detonator",
     "slot": "primary",
     "class": "firearm",
     "weapon": true,
@@ -931,6 +979,7 @@
   }, {
     "id": 63,
     "name": "Brass Knuckles",
+    "description": "The ole one two punch",
     "slot": "secondary",
     "class": "fist",
     "weapon": true,
@@ -945,6 +994,7 @@
   }, {
     "id": 64,
     "name": "Fire bombs",
+    "description": "If i was fire i'd burn the world",
     "slot": "secondary",
     "class": "thrown",
     "weapon": true,
@@ -961,6 +1011,7 @@
   }, {
     "id": 65,
     "name": "Cane",
+    "description": "good for walking and whacking",
     "slot": "secondary",
     "class": "stick",
     "weapon": true,
@@ -991,6 +1042,7 @@
   }, {
     "id": 67,
     "name": "Dueling shield",
+    "description": "I stole this from Elden Ring",
     "slot": "secondary",
     "class": "shield",
     "weapon": false,
@@ -1108,6 +1160,7 @@
   }, {
     "id": 74,
     "name": "Gun shield",
+    "description": "Fire from cover. Always.",
     "slot": "secondary",
     "class": "firearm",
     "weapon": true,

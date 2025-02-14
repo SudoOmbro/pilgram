@@ -421,5 +421,61 @@
           "maluses": "rn 100"
         }
       ]
+    }, {
+      "description": "You find a strange, misshapen shrine. A jagged figure is barely visible through the grime.",
+      "choices": [
+        {
+          "option": "Pray",
+          "chance": 5,
+          "success": "For a brief moment, you glimpse the Flaw of the World. Bliss. A tear runs down your cheek.",
+          "failure": "For a brief moment, you glimpse the Flaw of the World. Dread. You try to claw your eyes out.",
+          "rewards": "xp 314159",
+          "maluses": "hp 314159"
+        },
+        {
+          "option": "Ignore the shrine",
+          "chance": 90,
+          "success": "You avoid engaging with the shrine, you don't trust it, whatever it is.",
+          "failure": "You feel a sharp pain in your head, then a bloody tear runs down your cheek.",
+          "rewards": "xp 20",
+          "maluses": "hp 50"
+        }
+      ]
+    }, {
+      "description": "You find a cool stick.",
+      "choices": [
+        {
+          "option": "Pretend it's a sword and do some cool moves",
+          "chance": 95,
+          "success": "Cool swings dude.",
+          "failure": "The stick breaks :(",
+          "rewards": "xp 100, rn 100",
+          "maluses": "rn 1"
+        },
+        {
+          "option": "Pretend it's a spear and make it spin.",
+          "chance": 95,
+          "success": "Cool moves dude.",
+          "failure": "The stick breaks :(",
+          "rewards": "xp 100, rn 100",
+          "maluses": "rn 1"
+        },
+        {
+          "option": "Pretend it's a gun and do some cool tricks",
+          "chance": 95,
+          "success": "Nice aim dude.",
+          "failure": "The stick breaks :(",
+          "rewards": "xp 100, rn 100",
+          "maluses": "rn 1"
+        },
+        {
+          "option": "Leave it there",
+          "chance": 20,
+          "success": "You are lame.",
+          "failure": "A pidgeon shits on you while you leave. You kinda deserve it.",
+          "rewards": "xp 1",
+          "maluses": "rn 100"
+        }
+      ]
     }]
 }

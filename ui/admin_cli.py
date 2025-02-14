@@ -10,7 +10,6 @@ from orm.db import PilgramORMDatabase
 from pilgram.classes import Artifact, EnemyMeta, Quest, Zone, ZoneEvent
 from pilgram.combat_classes import Damage
 from pilgram.equipment import Equipment, EquipmentType
-from pilgram.flags import Cheater
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR
 from pilgram.globals import POSITIVE_INTEGER_REGEX as PIR
@@ -357,28 +356,6 @@ def reset_guild_tourney(context: UserContext) -> str:
     return "Successfully reset all guild tourney scores."
 
 
-def mark_as_cheater(context: UserContext, player_name: str) -> str:
-    """ mark a player as cheater, spawning an extremely strong monster on their next hunt """
-    player = db().get_player_from_name(player_name)
-    if player is None:
-        return Strings.obj_does_not_exist.format(obj="player")
-    player.flags = Cheater.set(player.flags)
-    db().update_player_data(player)
-    db().create_and_add_notification(player, "You feel a sense of dread, as if the world is angry at you...", notification_type="Cheat")
-    return f"Player {player.name} has been flagged as cheater."
-
-
-def unmark_as_cheater(context: UserContext, player_name: str) -> str:
-    """ unmark a player as cheater """
-    player = db().get_player_from_name(player_name)
-    if player is None:
-        return Strings.obj_does_not_exist.format(obj="player")
-    player.unset_flag(Cheater)
-    db().update_player_data(player)
-    db().create_and_add_notification(player, "You feel a sense of relief...", notification_type="Cheat")
-    return f"Player {player.name} has been un-flagged as cheater."
-
-
 def restore_player_last_switch(context: UserContext, player_name: str) -> str:
     """ set the player's guild """
     player = db().get_player_from_name(player_name)
@@ -488,10 +465,6 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
     },
     "tourney": {
         "reset": IFW(None, reset_guild_tourney, "Reset all guild scores")
-    },
-    "cheater": {
-        "mark": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], mark_as_cheater, "mark player as cheater (hunts become impossible)"),
-        "unmark": IFW([RWE("player name", PNR, Strings.player_name_validation_error)], unmark_as_cheater, "unmark player as cheater (hunts become possbile again)")
     }
 }
 
