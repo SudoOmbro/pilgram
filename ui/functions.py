@@ -506,6 +506,8 @@ def cast_spell(context: UserContext, spell_name: str, *extra_args) -> str:
     if spell_name not in SPELLS:
         return Strings.named_object_not_exist.format(obj="Spell", name=spell_name)
     spell = SPELLS[spell_name]
+    if player.ascension < spell.level:
+        return Strings.ascension_too_low
     if not spell.can_cast(player):
         return Strings.not_enough_power
     if not spell.check_args(extra_args):
@@ -705,7 +707,7 @@ def __list_minigames() -> str:
 
 
 def __list_spells() -> str:
-    return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}{(" | artifact pieces: " + str(spell.required_artifacts)) if spell.required_artifacts > 0 else ""}\n_{spell.description}_" for key, spell in SPELLS.items())
+    return "Grimoire:\n\n" + "\n\n".join(f"`{key}` | min power: {spell.required_power}, level: {spell.level} {(" | artifact pieces: " + str(spell.required_artifacts)) if spell.required_artifacts > 0 else ""}\n_{spell.description}_" for key, spell in SPELLS.items())
 
 
 def list_vocations(context: UserContext) -> str:
@@ -1719,8 +1721,10 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "join": IFW([guild_arg("Guild")], join_guild, "Join guild with the given name."),
     "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
     "kick": IFW([player_arg("player")], kick, "Kicks player from your own guild."),
-    "donate": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
-    "gift": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player."),
+    "gift": {
+        "ba": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
+        "item": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player.")
+    },
     "withdraw": IFW([integer_arg("Amount")], withdraw, "Withdraw from your guild's bank"),
     "logs": IFW(None, check_bank_logs, "Checks the last 10 withdrawals and deposits from the bank"),
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("target", None, None)]),
@@ -1823,5 +1827,6 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
 
 ALIASES: dict[str, str] = {
     "check self": "check player",
-    "check mates": "check members"
+    "check mates": "check members",
+    "donate": "gift ba"
 }

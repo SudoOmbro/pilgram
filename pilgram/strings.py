@@ -152,6 +152,7 @@ class Strings:
     spell_name_validation_error = "Invalid spell name."
     not_enough_power = "You don't have enough eldritch power to cast this spell. Wait for your abilities to recharge."
     not_enough_args = "Not enough arguments, this spell requires {num} args."
+    ascension_too_low = "Your ascension level is too low for this spell."
 
     # quick time events
     no_qte_active = "You don't have any currently active quick time event!"

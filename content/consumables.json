@@ -180,5 +180,15 @@
       "hp_percent_restored": 0.6,
       "bait_power": 0.8
     }
+  }, {
+    "id": 19,
+    "name": "Slate Fruit",
+    "description": "Fruit that grows in coffins of cadavers who underwent the ascension process.",
+    "verb": "consumed",
+    "value": 600,
+    "effects": {
+      "hp_restored": 150,
+      "bait_power": 0.9
+    }
   }]
 }

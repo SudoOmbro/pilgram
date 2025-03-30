@@ -158,7 +158,7 @@ class Equipment:
     def __str__(self) -> str:
         string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type}\nWeight: {self.equipment_type.delay} Kg\nValue: {self.get_value()} {MONEY}_"
         if self.equipment_type.description:
-            string += f"\n_{self.equipment_type.description}_"
+            string += f"\n\n_{self.equipment_type.description}_"
         if self.damage:
             string += f"\n\n*Damage ({self.damage.get_total_damage()})*:\n{str(self.damage)}"
         if self.resist:

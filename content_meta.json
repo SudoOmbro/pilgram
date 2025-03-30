@@ -143,86 +143,102 @@
     "mida": {
       "name": "Mida's touch",
       "description": "Create Boromian Alloy from thin air.",
-      "power": 10
+      "power": 10,
+      "level": 0
     },
     "bones": {
       "name": "Bone recall",
       "description": "Recall the experiences of the bone's former owner.",
-      "power": 10
+      "power": 10,
+      "level": 0
     },
     "displacement": {
       "name": "Eldritch displacement",
       "description": "Briefly travel through another dimension where time and space are distorted, gaining time on your quest.",
-      "power": 20
+      "power": 20,
+      "level": 0
+    },
+    "heal": {
+      "name": "Eldritch Healing",
+      "description": "Heal yourself for [power used]% HP.",
+      "power": 10,
+      "level": 0
     },
     "glitch": {
       "name": "Alloy glitch",
       "description": "The next time you earn money the amount will be multiplied by 1.5 times for every 30 power used.",
-      "power": 30
+      "power": 30,
+      "level": 1
+    },
+    "might": {
+      "name": "Eldritch Might",
+      "description": "Be much stronger in the next combat.\nEffect scales with amount of power used (40 for 1.5x, 80 for 2x, 120 for 2.5x).",
+      "power": 30,
+      "level": 1
+    },
+    "swift": {
+      "name": "Eldritch Swiftness",
+      "description": "Be much faster in the next combat, ignore weight.\nEffect scales with amount of power used (40 for -15 kg, 80 for -30 kg, 120 for -45 kg).",
+      "power": 30,
+      "level": 1
+    },
+    "ritual": {
+      "name": "Summoning Ritual",
+      "description": "Enemy in the next encounter is going to be much stronger.\nEffect scales with amount of power used (50 for +5 levels, 100 for +10 levels).",
+      "power": 30,
+      "level": 1
+    },
+    "peace": {
+      "name": "Peace of Mind",
+      "description": "Restore [power used] sanity of the target.",
+      "power": 20,
+      "level": 1
+    },
+    "terror": {
+      "name": "Terrifying presence",
+      "description": "Decrease the target's sanity by [power used].",
+      "power": 20,
+      "level": 1
+    },
+    "blood": {
+      "name": "Blood boil",
+      "description": "Lose [power used] HP & remove [power used] HP from target.",
+      "power": 20,
+      "level": 1
     },
     "hex": {
       "name": "Ancient Hex",
       "description": "Hex someone of your choosing, they will have a disadvantage finishing their next quest. Send the name after 'hex'. Double the effect if you use 100 power.",
       "power": 50,
+      "level": 2,
       "args": 1
     },
     "bless": {
       "name": "Ancient Blessing",
       "description": "Bless someone of your choosing, they will have an advantage finishing their next quest. Send the name after 'bless'. Triple the effect if you use 100 power.",
-      "power": 50
-    },
-    "heal": {
-      "name": "Eldritch Healing",
-      "description": "Heal yourself for [power used]% HP.",
-      "power": 10
-    },
-    "might": {
-      "name": "Eldritch Might",
-      "description": "Be much stronger in the next combat.\nEffect scales with amount of power used (40 for 1.5x, 80 for 2x, 120 for 2.5x).",
-      "power": 30
-    },
-    "swift": {
-      "name": "Eldritch Swiftness",
-      "description": "Be much faster in the next combat, ignore weight.\nEffect scales with amount of power used (40 for -15 kg, 80 for -30 kg, 120 for -45 kg).",
-      "power": 30
-    },
-    "ritual": {
-      "name": "Summoning Ritual",
-      "description": "Enemy in the next encounter is going to be much stronger.\nEffect scales with amount of power used (50 for +5 levels, 100 for +10 levels).",
-      "power": 30
+      "power": 50,
+      "level": 2
     },
     "ironflesh": {
       "name": "Ironflesh Boon",
       "description": "Set the target's HP to (100 + [power used])%.",
       "power": 50,
-      "artifacts": 1
+      "artifacts": 1,
+      "level": 2
     },
     "radiance": {
       "name": "Radiance Boon",
       "description": "Materialize a God Emperor's blessing in the target's satchel.",
       "power": 50,
-      "artifacts": 1
+      "artifacts": 1,
+      "level": 2
     },
     "supremacy": {
       "name": "Supremacy Boon",
       "description": "Give the target every combat buff.\nEffect scales with amount of power used (50 for 1.5x, 100 for 2x).",
       "power": 50,
-      "artifacts": 1
-    },
-    "peace": {
-      "name": "Peace of Mind",
-      "description": "Restore [power used] sanity of the target.",
-      "power": 20
-    },
-    "terror": {
-      "name": "Terrifying presence",
-      "description": "Decrease the target's sanity by [power used].",
-      "power": 20
-    },
-    "blood": {
-      "name": "Blood boil",
-      "description": "Lose [power used] HP & remove [power used] HP from target.",
-      "power": 20
+      "artifacts": 1,
+      "level": 2
     }
   }
 }

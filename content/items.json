@@ -1339,7 +1339,7 @@
     "weapon": true,
     "delay": -10,
     "damage": {
-      "occult": 120
+      "occult": 20
     },
     "scaling": {
       "attunement": 200
@@ -1355,7 +1355,7 @@
     "weapon": false,
     "delay": 2,
     "resist": {
-      "occult": 120
+      "occult": 30
     },
     "scaling": {
       "attunement": 200
@@ -1365,7 +1365,7 @@
   }, {
     "id": 88,
     "name": "Divine Shard",
-    "description": "A shard of the shield once brandished by God Empreror.",
+    "description": "A shard of the shield once brandished by the God Emperor.",
     "slot": "relic",
     "tag": "relic",
     "weapon": false,
@@ -1373,7 +1373,6 @@
     "resist": {
       "slash": 1,
       "pierce": 1,
-      "blunt": 1,
       "occult": 1,
       "fire": 1,
       "acid": 1,
@@ -1394,8 +1393,42 @@
     "weapon": false,
     "delay": 2,
     "resist": {
-      "fire": 100,
-      "electric": 100
+      "fire": 18,
+      "electric": 18
+    },
+    "scaling": {
+      "attunement": 200
+    },
+    "value": 5000,
+    "max_perks": 4
+  }, {
+    "id": 90,
+    "name": "Time-locked Crystal Amulet",
+    "description": "Bright droplet of time-locked light encased in a transparent material of unknown origin.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": true,
+    "delay": -10,
+    "damage": {
+      "fire": 10,
+      "occult": 10
+    },
+    "scaling": {
+      "attunement": 200
+    },
+    "value": 5000,
+    "max_perks": 4
+  }, {
+    "id": 91,
+    "name": "Nightmare Alloy Ring",
+    "description": "Ever-shifting dark ring that shows the wearer how they could die in the near future... And makes them experience the pain.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": -100,
+    "damage": {
+      "blunt": 1,
+      "pierce": 1
     },
     "scaling": {
       "attunement": 200

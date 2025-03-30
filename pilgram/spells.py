@@ -54,6 +54,7 @@ def __add_to_spell_list(spell_short_name: str) -> Callable:
             ContentMeta.get(f"spells.{spell_short_name}.description"),
             ContentMeta.get(f"spells.{spell_short_name}.power"),
             ContentMeta.get(f"spells.{spell_short_name}.artifacts", default=0),
+            ContentMeta.get(f"spells.{spell_short_name}.level", default=0),
             ContentMeta.get(f"spells.{spell_short_name}.args", default=0),
             func,
         )
@@ -105,6 +106,18 @@ def __eldritch_displacement(caster: Player, args: list[str]) -> str:
     return get_cast_string(target, self_cast)
 
 
+@__add_to_spell_list("heal")
+def __eldritch_healing(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = int(target.get_max_hp() * (caster.get_spell_charge() / 100))
+    # we don't need to save the player data, it will be done automatically later
+    target.modify_hp(amount)
+    if not self_cast:
+        _db().update_player_data(target)
+    _db().create_and_add_notification(target, f"You gain {amount} HP ({target.get_hp_string()}).")
+    return get_cast_string(target, self_cast)
+
+
 @__add_to_spell_list("glitch")
 def __alloy_glitch(caster: Player, args: list[str]) -> str:
     target, self_cast = get_spell_target(caster, args)
@@ -124,6 +137,95 @@ def __alloy_glitch(caster: Player, args: list[str]) -> str:
         target,
         f"The next time you earn money the amount you earn will be multiplied {multiplier} times."
     )
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("might")
+def __eldritch_might(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    if amount >= 40:
+        target.set_flag(MightBuff1)
+    if amount >= 80:
+        target.set_flag(MightBuff2)
+    if amount >= 120:
+        target.set_flag(MightBuff3)
+    if not self_cast:
+        _db().update_player_data(target)
+    _db().create_and_add_notification(target, f"You feel stronger ({int(amount / 30)}x)")
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("swift")
+def __eldritch_swiftness(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    if amount >= 40:
+        target.set_flag(SwiftBuff1)
+    if amount >= 80:
+        target.set_flag(SwiftBuff2)
+    if amount >= 120:
+        target.set_flag(SwiftBuff3)
+    if not self_cast:
+        _db().update_player_data(target)
+    _db().create_and_add_notification(target, f"You faster stronger ({int(amount / 30)}x)")
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("ritual")
+def __summoning_ritual(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    if amount >= 50:
+        target.set_flag(Ritual1)
+    if amount >= 100:
+        target.set_flag(Ritual2)
+    if not self_cast:
+        _db().update_player_data(target)
+    _db().create_and_add_notification(target, f"You feel a sense of dread ({int(amount / 40)}x)")
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("peace")
+def __peace_of_mind(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    if target.sanity >= target.get_max_sanity():
+        return "Target is already at max sanity"
+    target.add_sanity(amount)
+    if not self_cast:
+        _db().update_player_data(target)
+    _db().create_and_add_notification(target, "You feel a sense of calm...")
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("terror")
+def __terrifying_presence(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    target.add_sanity(-amount)
+    _db().create_and_add_notification(target, f"An unknown presence terrifies you. You lose {amount} sanity.")
+    if not self_cast:
+        _db().update_player_data(target)
+    return get_cast_string(target, self_cast)
+
+
+@__add_to_spell_list("blood")
+def __blood_boil(caster: Player, args: list[str]) -> str:
+    target, self_cast = get_spell_target(caster, args)
+    amount = caster.get_spell_charge()
+    caster.modify_hp(-amount)
+    if caster.hp < 1:
+        caster.hp = 1
+    target.modify_hp(-amount)
+    if target.hp < 1:
+        target.hp = 1
+    _db().create_and_add_notification(
+        target,
+        f"You feel dizzy & you pass out for a moment. You wake up in a pool of blood. You lost {amount} HP."
+    )
+    if not self_cast:
+        _db().update_player_data(target)
     return get_cast_string(target, self_cast)
 
 
@@ -175,64 +277,6 @@ def __bless(caster: Player, args: list[str]) -> str:
     return f"You blessed (1) {"yourself" if self_cast else target.name}."
 
 
-@__add_to_spell_list("heal")
-def __eldritch_healing(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = int(target.get_max_hp() * (caster.get_spell_charge() / 100))
-    # we don't need to save the player data, it will be done automatically later
-    target.modify_hp(amount)
-    if not self_cast:
-        _db().update_player_data(target)
-    _db().create_and_add_notification(target, f"You gain {amount} HP ({target.get_hp_string()}).")
-    return get_cast_string(target, self_cast)
-
-
-@__add_to_spell_list("might")
-def __eldritch_might(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = caster.get_spell_charge()
-    if amount >= 40:
-        target.set_flag(MightBuff1)
-    if amount >= 80:
-        target.set_flag(MightBuff2)
-    if amount >= 120:
-        target.set_flag(MightBuff3)
-    if not self_cast:
-        _db().update_player_data(target)
-    _db().create_and_add_notification(target, f"You feel stronger ({int(amount / 30)}x)")
-    return get_cast_string(target, self_cast)
-
-
-@__add_to_spell_list("swift")
-def __eldritch_swiftness(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = caster.get_spell_charge()
-    if amount >= 40:
-        target.set_flag(SwiftBuff1)
-    if amount >= 80:
-        target.set_flag(SwiftBuff2)
-    if amount >= 120:
-        target.set_flag(SwiftBuff3)
-    if not self_cast:
-        _db().update_player_data(target)
-    _db().create_and_add_notification(target, f"You faster stronger ({int(amount / 30)}x)")
-    return get_cast_string(target, self_cast)
-
-
-@__add_to_spell_list("ritual")
-def __summoning_ritual(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = caster.get_spell_charge()
-    if amount >= 50:
-        target.set_flag(Ritual1)
-    if amount >= 100:
-        target.set_flag(Ritual2)
-    if not self_cast:
-        _db().update_player_data(target)
-    _db().create_and_add_notification(target, f"You feel a sense of dread ({int(amount / 40)}x)")
-    return get_cast_string(target, self_cast)
-
-
 @__add_to_spell_list("ironflesh")
 def __ironflesh_boon(caster: Player, args: list[str]) -> str:
     target, self_cast = get_spell_target(caster, args)
@@ -277,47 +321,4 @@ def __supremacy_boon(caster: Player, args: list[str]) -> str:
     if not self_cast:
         _db().update_player_data(target)
     _db().create_and_add_notification(target, "You feel an incredible surge of power...")
-    return get_cast_string(target, self_cast)
-
-
-@__add_to_spell_list("peace")
-def __peace_of_mind(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = caster.get_spell_charge()
-    if target.sanity >= target.get_max_sanity():
-        return "Target is already at max sanity"
-    target.add_sanity(amount)
-    if not self_cast:
-        _db().update_player_data(target)
-    _db().create_and_add_notification(target, "You feel a sense of calm...")
-    return get_cast_string(target, self_cast)
-
-
-@__add_to_spell_list("terror")
-def __terrifying_presence(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = caster.get_spell_charge()
-    target.add_sanity(-amount)
-    _db().create_and_add_notification(target, f"An unknown presence terrifies you. You lose {amount} sanity.")
-    if not self_cast:
-        _db().update_player_data(target)
-    return get_cast_string(target, self_cast)
-
-
-@__add_to_spell_list("blood")
-def __blood_boil(caster: Player, args: list[str]) -> str:
-    target, self_cast = get_spell_target(caster, args)
-    amount = caster.get_spell_charge()
-    caster.modify_hp(-amount)
-    if caster.hp < 1:
-        caster.hp = 1
-    target.modify_hp(-amount)
-    if target.hp < 1:
-        target.hp = 1
-    _db().create_and_add_notification(
-        target,
-        f"You feel dizzy & you pass out for a moment. You wake up in a pool of blood. You lost {amount} HP."
-    )
-    if not self_cast:
-        _db().update_player_data(target)
     return get_cast_string(target, self_cast)

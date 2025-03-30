@@ -400,6 +400,7 @@ class Spell:
         description: str,
         required_power: int,
         required_artifacts: int,
+        level: int,
         required_args: int,
         function: Callable[[Player, list[str] | tuple[str, ...]], str],
     ) -> None:
@@ -407,11 +408,12 @@ class Spell:
         self.description = description
         self.required_power = required_power
         self.required_artifacts = required_artifacts
+        self.level = level
         self.required_args = required_args
         self.function = function
 
     def can_cast(self, caster: Player) -> bool:
-        return (caster.get_spell_charge() >= self.required_power ) and (caster.artifact_pieces >= self.required_artifacts)
+        return (caster.ascension >= self.level) and (caster.get_spell_charge() >= self.required_power ) and (caster.artifact_pieces >= self.required_artifacts)
 
     def check_args(self, args: tuple[str, ...]) -> bool:
         if self.required_args == 0:
@@ -654,7 +656,7 @@ class Player(CombatActor):
         """ return eldritch power charge """
         if not self.artifacts:
             return 0
-        max_charge = (len(self.artifacts) * POWER_PER_ARTIFACT) + self.vocation.power_bonus
+        max_charge = (len(self.artifacts) * POWER_PER_ARTIFACT) + self.vocation.power_bonus + (self.ascension * 5)
         if self.vocation.power_bonus_per_zone_visited:
             max_charge += (
                 len(self.progress.zone_progress)
