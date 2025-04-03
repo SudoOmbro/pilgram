@@ -1024,7 +1024,7 @@ class _GenericStatIncrease(Modifier):
     TYPE = ModifierType.MODIFY_STATS
 
     MIN_STRENGTH = 1
-    SCALING = 1.2
+    SCALING = 8
 
     DESCRIPTION = "increase STAT by {str}"
     STAT: str
@@ -1186,6 +1186,10 @@ class TrueStrike(Modifier, rarity=Rarity.LEGENDARY):
         target.modify_hp(-amount)
         self.write_to_log(context, f"True Strike for {self.strength}% HP ({target.get_hp_string()})")
         return damage
+
+
+class StickProficiency(_GenericWeaponProficiency, weapon_type="stick"):
+    pass
 
 
 

@@ -741,7 +741,10 @@ class Player(CombatActor):
             int(MightBuff3.is_set(self.flags))
         )
         base_damage = base_damage.scale(1 + (0.5 * spell_buff))
-        return base_damage.scale(self.get_insanity_scaling())
+        insanity_scaling = self.get_insanity_scaling()
+        if insanity_scaling > 2:
+            insanity_scaling = 2
+        return base_damage.scale(insanity_scaling)
 
     def get_base_attack_resistance(self) -> Damage:
         base_resistance = self.vocation.resist.scale(self.level)
@@ -749,8 +752,6 @@ class Player(CombatActor):
         for _, item in self.equipped_items.items():
             base_resistance += item.resist.scale_with_stats(stats, item.equipment_type.scaling)
         insanity_scaling = 1 / self.get_insanity_scaling()
-        if insanity_scaling > 2:
-            insanity_scaling = 2
         return base_resistance.scale(insanity_scaling)
 
     def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:

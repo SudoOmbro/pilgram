@@ -683,12 +683,19 @@ class CombatContainer:
             self.participants.sort(key=lambda a: a.get_initiative())
             # choose & perform actions
             for actor in self.participants:
+                # lose dodge over time
+                if self.resist_scale[actor] < 1.0:
+                    self.resist_scale[actor] += 0.1
+                else:
+                    self.resist_scale[actor] = 1.0
+                # choose opponent and try to revive if dead
                 opponent = self.choose_attack_target(actor)
                 if actor.is_dead():
                     if not self._try_revive(actor, opponent):
                         continue
                 if not opponent:
                     continue
+                # actually start turn
                 for modifier in actor.get_modifiers(m.ModifierType.TURN_START):
                     modifier.apply(self.get_mod_context({"entity": actor, "opponent": opponent, "turn": self.turn}))
                 if actor.is_dead():
@@ -732,7 +739,7 @@ class CombatContainer:
                         else:
                             self._attack(actor, opponent)
                 elif action_id == CombatActions.lick_wounds:
-                    hp_restored = (1 + actor.get_level()) * 4
+                    hp_restored = (1 + actor.get_level()) * 10
                     actor.modify_hp(hp_restored if hp_restored > 0 else 1)
                     self.write_to_log(
                         f"{actor.get_name()} licks their wounds (+{hp_restored} HP) ({actor.get_hp_string()})."

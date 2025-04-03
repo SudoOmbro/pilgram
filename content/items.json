@@ -1321,6 +1321,7 @@
     "id": 85,
     "name": "Nunchaku",
     "slot": "primary",
+    "class": "stick",
     "weapon": true,
     "delay": 3,
     "damage": {
@@ -1435,5 +1436,37 @@
     },
     "value": 5000,
     "max_perks": 4
+  }, {
+    "id": 92,
+    "name": "Ahlspiess",
+    "description": "designed for one purpose only: penetrating plate armor.",
+    "slot": "primary",
+    "class": "polearm",
+    "weapon": true,
+    "delay": 8,
+    "damage": {
+      "pierce": 5
+    },
+    "scaling": {
+      "skill": 20,
+      "strength": 40
+    },
+    "value": 10
+  }, {
+    "id": 93,
+    "name": "Peasant Flail",
+    "description": "Tenderizes flesh as well as soil.",
+    "slot": "primary",
+    "class": "mace",
+    "weapon": true,
+    "delay": 10,
+    "damage": {
+      "pierce": 2,
+      "blunt": 4
+    },
+    "scaling": {
+      "strength": 50
+    },
+    "value": 10
   }]
 }
