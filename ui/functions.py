@@ -1668,15 +1668,34 @@ def toggle_deathwish_mode(context: UserContext) -> str:
     return Strings.deathwish_enabled
 
 
+def check_notice_board(context: UserContext) -> str:
+    notice_board = db().get_message_board()
+    if notice_board:
+        return "\n\n".join(notice_board)
+    return "No messages in the notice board"
+
+
+def add_message_to_notice_board(context: UserContext, message: str) -> str:
+    if len(message) > 240:
+        return "Message too long"
+    player = get_player(db, context)
+    if player.money >= 100:
+        player.money -= 100
+    else:
+        return "100 BA required. Not enough money."
+    db().update_notice_board(player, message)
+    return f"Your message '{message}' has been added to the notice board."
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
         "records": IFW(None, records, "Shows player records", optional_args=[player_arg("Player name")]),
-        "board": IFW(None, check_board, "Shows the quest board."),
-        "quest": IFW(None, check_current_quest, "Shows the current quest name, objective & duration."),
+        "board": IFW(None, check_board, "Shows quest board."),
+        "quest": IFW(None, check_current_quest, "Shows current quest name, objective & duration."),
         "zone": IFW([integer_arg("Zone number")], check_zone, "Describes a Zone."),
         "enemy": IFW([integer_arg("Zone number")], check_enemy, "Describes an Enemy."),
-        "guild": IFW(None, check_guild, "Shows guild (your guild by default).", optional_args=[guild_arg("Guild")]),
+        "guild": IFW(None, check_guild, "Shows guild.", optional_args=[guild_arg("Guild")]),
         "stats": IFW(None, check_player_stats, "Shows player perks.", optional_args=[player_arg("Player name")]),
         "artifact": IFW([integer_arg("Artifact number")], check_artifact, "Describes an Artifact."),
         "prices": IFW(None, check_prices, "Shows all the prices."),
@@ -1686,10 +1705,12 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "auctions": IFW(None, check_auctions, "Shows all auctions."),
         "auction": IFW([integer_arg("Auction")], check_auction, "Show a specific auction."),
         "members": IFW(None, check_guild_members, "Shows the members of the given guild", optional_args=[guild_arg("Guild")]),
-        "item": IFW([integer_arg("Item")], check_item, "Shows the specified item stats"),
-        "market": IFW(None, show_market, "Shows the daily consumables you can buy."),
-        "smithy": IFW(None, show_smithy, "Shows the daily equipment you can buy."),
+        "item": IFW([integer_arg("Item")], check_item, "Shows specified item stats"),
+        "market": IFW(None, show_market, "Shows daily consumables you can buy."),
+        "smithy": IFW(None, show_smithy, "Shows daily items you can buy."),
+        "notices": IFW(None, check_notice_board, "Shows notice board.")
     },
+    "post": IFW([RWE("message", None, None)], add_message_to_notice_board, "post message on notice board"),
     "sacrifice": IFW(None, sacrifice, "Sacrifice 75% of HP for XP."),
     "ascension": IFW(None, ascension, "Use 10 artifact pieces to ascend"),
     "raid": IFW([integer_arg("Zone number")], start_raid, "Start a raid with your guild members"),
@@ -1719,14 +1740,14 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "vocations": IFW([integer_arg("Vocation id")], change_vocation, "Select your vocations", optional_args=[integer_arg("Vocation id")])
     },
     "join": IFW([guild_arg("Guild")], join_guild, "Join guild with the given name."),
-    "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Starts quest in specified zone."),
-    "kick": IFW([player_arg("player")], kick, "Kicks player from your own guild."),
+    "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Start quest in specified zone."),
+    "kick": IFW([player_arg("player")], kick, "Kick player from your own guild."),
     "gift": {
-        "ba": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donates 'amount' of {MONEY} to player 'recipient'."),
-        "item": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gifts an item to a player.")
+        "ba": IFW([player_arg("recipient"), integer_arg("Amount")], donate, f"donate 'amount' of {MONEY} to player 'recipient'."),
+        "item": IFW([player_arg("recipient"), integer_arg("Item")], send_gift_to_player, f"gift item to player.")
     },
     "withdraw": IFW([integer_arg("Amount")], withdraw, "Withdraw from your guild's bank"),
-    "logs": IFW(None, check_bank_logs, "Checks the last 10 withdrawals and deposits from the bank"),
+    "logs": IFW(None, check_bank_logs, "Shows last 10 withdrawals & deposits from guild bank"),
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("target", None, None)]),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
@@ -1747,30 +1768,30 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "artifact": IFW(None, assemble_artifact, f"Assemble an artifact using {REQUIRED_PIECES} artifact pieces")
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
-    "equip": IFW([integer_arg("Item")], equip_item, "Equip an item from your inventory"),
+    "equip": IFW([integer_arg("Item")], equip_item, "Equip item from inventory"),
     "unequip": IFW(None, unequip_all_items, "Unequip all items"),
-    "sell": IFW([integer_arg("Item")], sell_item, "Sell an item from your inventory."),
-    "sellall": IFW(None, sell_all, "Sell all unused items from your inventory."),
+    "sell": IFW([integer_arg("Item")], sell_item, "Sell item from inventory."),
+    "sellall": IFW(None, sell_all, "Sell all unused items from inventory."),
     "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),
     "craft": IFW([integer_arg("Item")], smithy_craft, "Craft something at the smithy."),
-    "reroll": IFW([integer_arg("Item")], reroll_item, "Reroll an item from your inventory"),
-    "enchant": IFW([integer_arg("Item")], enchant_item, "Add a perk to an item from your inventory"),
+    "reroll": IFW([integer_arg("Item")], reroll_item, "Reroll an item from inventory"),
+    "enchant": IFW([integer_arg("Item")], enchant_item, "Add perk to an item from inventory"),
     "consume": IFW([integer_arg("Item")], use_consumable, "Use an item in your satchel"),
-    "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches you stance to the given stance"),
+    "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches your stance to the given stance"),
     "qte": IFW([integer_arg("Option")], do_quick_time_event, "Do a quick time event"),
-    "retire": IFW(None, set_last_update, f"Take a 1 year vacation (pauses the game for 1 year) (cost: 100 {MONEY})", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
+    "retire": IFW(None, set_last_update, f"Take a 1 year vacation for 100 BA", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {
         "to": {
-            "work": IFW(None, set_last_update, "Come back from your vacation", default_args={"delta": None, "msg": Strings.you_came_back})
+            "work": IFW(None, set_last_update, "Come back from vacation", default_args={"delta": None, "msg": Strings.you_came_back})
         }
     },
-    "minigames": IFW(None, return_string, "Shows all the minigames", default_args={"string": __list_minigames()}),
+    "minigames": IFW(None, return_string, "Shows all minigames", default_args={"string": __list_minigames()}),
     "vocations": IFW(None, list_vocations, "Shows all vocations"),
     "hunt": IFW(None, force_combat, "Hunt for a strong enemy"),
     "explore": IFW(None, force_qte, "Force a QTE"),
-    "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play the specified minigame."),
+    "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play specified minigame."),
     "explain": {
-        "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains how the specified minigame works."),
+        "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains specified minigame."),
     },
     "bestiary": IFW([integer_arg("Zone number")], bestiary, "shows all enemies that can be found in the given zone."),
     "man": IFW([integer_arg("Page")], manual, "Shows the specified manual page.")

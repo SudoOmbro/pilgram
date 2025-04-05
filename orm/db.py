@@ -1153,6 +1153,23 @@ class PilgramORMDatabase(PilgramDatabase):
         self.ANOMALY["current"] = anomaly
         save_json_to_file(self.ANOMALY_FILENAME, anomaly.get_json())
 
+    # notice board ----
+
+    NOTICE_BOARD: list[str] = []
+    NOTICE_BOARD_MAX_SIZE: int = 20
+    NOTICE_BOARD_MAX_MESSAGE_LENGTH: int = 240
+
+    def get_message_board(self) -> list[str]:
+        return self.NOTICE_BOARD
+
+    def update_notice_board(self, author: Player, message: str) -> bool:
+        if len(message) > self.NOTICE_BOARD_MAX_SIZE:
+            return False
+        self.NOTICE_BOARD.append(f"{author.name}:\n{message}")
+        if len(self.NOTICE_BOARD) > self.NOTICE_BOARD_MAX_SIZE:
+            self.NOTICE_BOARD.pop(0)
+        return True
+
     # utility functions ----
 
     @_thread_safe()

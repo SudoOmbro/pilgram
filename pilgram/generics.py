@@ -506,6 +506,14 @@ class PilgramDatabase(ABC):
         """ sets the current anomaly as the active anomaly """
         raise NotImplementedError
 
+    # notice board ----------------------------------
+
+    def get_message_board(self) -> list[str]:
+        raise NotImplementedError
+
+    def update_notice_board(self, author: Player, message: str) -> bool:
+        raise NotImplementedError
+
     # utility functions ----------------------------------
 
     def reset_caches(self):
