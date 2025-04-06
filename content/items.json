@@ -6,7 +6,7 @@
     "slot": "primary",
     "weapon": true,
     "class": "sword",
-    "delay": 3,
+    "delay": 4,
     "damage": {
       "slash": 3,
       "pierce": 1
@@ -1425,7 +1425,7 @@
     "description": "Ever-shifting dark ring that shows the wearer how they could die in the near future... And makes them experience the pain.",
     "slot": "relic",
     "tag": "relic",
-    "weapon": false,
+    "weapon": true,
     "delay": -100,
     "damage": {
       "blunt": 1,
@@ -1468,5 +1468,73 @@
       "strength": 50
     },
     "value": 10
+  }, {
+    "id": 94,
+    "name": "Spiked bracelets",
+    "description": "Rocking that goth aesthetic",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "slash": 1
+    },
+    "damage": {
+      "pierce": 1
+    },
+    "scaling": {
+      "strength": 10
+    },
+    "value": 15,
+    "max_perks": 2
+  }, {
+    "id": 95,
+    "name": "Mittens",
+    "description": "Warm and Cozy",
+    "slot": "arms",
+    "weapon": false,
+    "delay": 2,
+    "resist": {
+      "blunt": 1,
+      "freeze": 1
+    },
+    "scaling": {
+      "strength": 10
+    },
+    "value": 10,
+    "max_perks": 2
+  }, {
+    "id": 96,
+    "name": "Singularity Shard Ring",
+    "description": "A serrated ring that embeds itself into the wearer's flesh. It hols a piece of an ancient black hole's singularity, significantly enhancing the user's punches.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": true,
+    "delay": 150,
+    "damage": {
+      "blunt": 50
+    },
+    "scaling": {
+      "attunement": 200
+    },
+    "value": 5000,
+    "max_perks": 4
+  }, {
+    "id": 97,
+    "name": "Time-Locked Light Blade",
+    "description": "A sword made of time-locked light. I guess you could call it a light saber.",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": true,
+    "delay": 0,
+    "damage": {
+      "fire": 10,
+      "slash": 10
+    },
+    "scaling": {
+      "attunement": 50,
+      "skill": 150
+    },
+    "value": 5000,
+    "max_perks": 4
   }]
 }
