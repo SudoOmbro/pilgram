@@ -1470,19 +1470,16 @@
     "value": 10
   }, {
     "id": 94,
-    "name": "Spiked bracelets",
+    "name": "Arm fishnets",
     "description": "Rocking that goth aesthetic",
     "slot": "arms",
     "weapon": false,
-    "delay": 2,
+    "delay": 0,
     "resist": {
-      "slash": 1
-    },
-    "damage": {
-      "pierce": 1
+      "blunt": 1
     },
     "scaling": {
-      "strength": 10
+      "strength": 5
     },
     "value": 15,
     "max_perks": 2
@@ -1536,5 +1533,35 @@
     },
     "value": 5000,
     "max_perks": 4
+  }, {
+    "id": 98,
+    "name": "Leg fishnets",
+    "description": "Rocking that goth aesthetic",
+    "slot": "legs",
+    "weapon": false,
+    "delay": 0,
+    "resist": {
+      "blunt": 1
+    },
+    "scaling": {
+      "strength": 5
+    },
+    "value": 15,
+    "max_perks": 2
+  }, {
+    "id": 99,
+    "name": "Strawhat",
+    "description": "Peasant drip",
+    "slot": "head",
+    "weapon": false,
+    "delay": 1,
+    "resist": {
+      "blunt": 1
+    },
+    "scaling": {
+      "strength": 5
+    },
+    "value": 5,
+    "max_perks": 2
   }]
 }

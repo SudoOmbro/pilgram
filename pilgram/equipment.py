@@ -137,10 +137,10 @@ class Equipment:
         return int(self.get_value() * REROLL_MULT * player.vocation.reroll_cost_multiplier + (self.rerolls * self.get_value()))
 
     def reroll(self, stats_bonus: int, modifier_bias: int) -> None:
-        seed = time.time()
+        self.seed = time.time()
         rarity = len(self.modifiers)
-        dmg_type_string, damage, resist = self.get_dmg_and_resist_values(
-            self.level + stats_bonus, seed, self.equipment_type.is_weapon
+        dmg_type_string, damage, resist = self.generate_dmg_and_resist_values(
+            self.level + stats_bonus, self.seed, self.equipment_type.is_weapon
         )
         self.name = self.generate_name(self.equipment_type, dmg_type_string, rarity)
         self.modifiers = self.generate_modifiers(rarity, self.level, bias=modifier_bias)
@@ -154,6 +154,16 @@ class Equipment:
         self.name += Strings.enchant_symbol
         self.modifiers.append(self._get_random_modifier(self.level))
         return True
+
+    def temper(self):
+        self.level += 1
+        _, damage, resist = self.generate_dmg_and_resist_values(
+            self.level, self.seed, self.equipment_type.is_weapon
+        )
+        self.damage = self.equipment_type.damage.scale(self.level) + damage
+        self.resist = self.equipment_type.resist.scale(self.level) + resist
+        self.rerolls += 1
+
 
     def __str__(self) -> str:
         string = f"*{self.name}* | lv. {self.level}\n_{self.equipment_type}\nWeight: {self.equipment_type.delay} Kg\nValue: {self.get_value()} {MONEY}_"
@@ -198,7 +208,7 @@ class Equipment:
         return name + (" " + (Strings.enchant_symbol * rarity) if rarity > 0 else "")
 
     @staticmethod
-    def get_dmg_and_resist_values(level: int, seed: float, is_weapon: bool) -> tuple[list[str], Damage, Damage]:
+    def generate_dmg_and_resist_values(level: int, seed: float, is_weapon: bool) -> tuple[list[str], Damage, Damage]:
         rng = Random(seed)
         number_of_modifiers: int = rng.randint(1, 3)
         modifiers_to_exclude = ["slash", "pierce", "blunt", "occult", "fire", "acid", "freeze", "electric"]
@@ -245,7 +255,7 @@ class Equipment:
     @classmethod
     def generate(cls, level: int, equipment_type: EquipmentType, rarity: int) -> Equipment:
         seed = time.time()
-        dmg_type_string, damage, resist = cls.get_dmg_and_resist_values(level, seed, equipment_type.is_weapon)
+        dmg_type_string, damage, resist = cls.generate_dmg_and_resist_values(level, seed, equipment_type.is_weapon)
         if rarity > equipment_type.max_perks:
             rarity = equipment_type.max_perks
         modifiers: list[m.Modifier] = cls.generate_modifiers(rarity, level)

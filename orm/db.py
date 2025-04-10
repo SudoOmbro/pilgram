@@ -928,7 +928,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def __build_item(self, its: EquipmentModel) -> Equipment:
         equipment_type = EquipmentType.get(its.equipment_type)
-        _, damage, resist = Equipment.get_dmg_and_resist_values(its.level, its.damage_seed, equipment_type.is_weapon)
+        _, damage, resist = Equipment.generate_dmg_and_resist_values(its.level, its.damage_seed, equipment_type.is_weapon)
         return Equipment(
             its.id,
             its.level,

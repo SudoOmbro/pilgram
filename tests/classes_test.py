@@ -32,7 +32,7 @@ def _print_quest_fail_rate(fail_rate: float, quest: Quest, player: Player):
 
 
 def _generate_equipment(player: Player, equipment_type: EquipmentType, modifiers: list[Modifier]) -> Equipment:
-    _, damage, resist = Equipment.get_dmg_and_resist_values(player.level, time.time(), equipment_type.is_weapon)
+    _, damage, resist = Equipment.generate_dmg_and_resist_values(player.level, time.time(), equipment_type.is_weapon)
     Damage.generate_from_seed(time.time(), player.level)
     return Equipment(
         0,

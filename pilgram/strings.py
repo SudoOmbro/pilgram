@@ -266,6 +266,8 @@ class Strings:
     max_enchants_reached = "You have reached the maximum amount of perks on this item."
     action_canceled = "{action} canceled."
     enchant_ascension_required = "You must be at least ascension level 1 to enchant items."
+    item_temper_confirm = f"Are you sure you want to temper {{item}}? It will cost you {{price}} {MONEY}. (y/n)"
+    item_tempered = f"You paid {{amount}} {MONEY} to temper {{item}}, increasing it's level by one."
 
     # auctions
     no_auctions_yet = "No auctions yet"

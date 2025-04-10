@@ -1023,7 +1023,7 @@ def process_sell_all_confirm(context: UserContext, user_input: str) -> str:
     total_money_gained: int = 0
     for pos in reversed(range(len(items))):
         item = items[pos - 1]
-        if player.is_item_equipped(item) or db().get_auction_from_item(item):
+        if player.is_item_equipped(item) or db().get_auction_from_item(item) or (item.equipment_type.slot == Slots.RELIC):
             continue
         mult = 1 if player.guild_level() < 6 else 2
         money = int(item.get_value() * mult)
@@ -1687,6 +1687,45 @@ def add_message_to_notice_board(context: UserContext, message: str) -> str:
     return f"Your message '{message}' has been added to the notice board."
 
 
+def temper_item(context: UserContext, item_pos_str: str) -> str:
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    items = __get_items(player)
+    if not items:
+        return Strings.no_items_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_item
+    item = items[item_pos - 1]
+    price = item.get_reroll_price(player)
+    if player.money < price:
+        return Strings.not_enough_money.format(amount=price - player.money)
+    context.set("item pos", item_pos)
+    context.start_process("temper confirm")
+    return Strings.item_temper_confirm.format(item=item.name, price=price)
+
+
+def process_temper_confirm(context: UserContext, user_input: str) -> str:
+    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    context.end_process()
+    if get_yes_or_no(user_input):
+        items = __get_items(player)
+        item_pos = context.get("item pos")
+        item = items[item_pos - 1]
+        price = item.get_reroll_price(player)
+        item.temper()
+        if player.is_item_equipped(item):
+            player.equip_item(item)
+        player.money -= price
+        text = ""
+        if player.vocation.xp_on_reroll > 0:
+            xp_am = player.add_xp(player.vocation.xp_on_reroll * max(item.level - item.rerolls, 1))
+            text = rewards_string(xp_am, 0, 0)
+        db().update_player_data(player)
+        db().update_item(item, player)
+        return Strings.item_tempered.format(amount=price, item=item.name) + text
+    return Strings.action_canceled.format(action="Temper")
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1775,6 +1814,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),
     "craft": IFW([integer_arg("Item")], smithy_craft, "Craft something at the smithy."),
     "reroll": IFW([integer_arg("Item")], reroll_item, "Reroll an item from inventory"),
+    "temper": IFW([integer_arg("Item")], temper_item, "Temper an item from inventory"),
     "enchant": IFW([integer_arg("Item")], enchant_item, "Add perk to an item from inventory"),
     "consume": IFW([integer_arg("Item")], use_consumable, "Use an item in your satchel"),
     "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches your stance to the given stance"),
@@ -1843,7 +1883,10 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "ascension": (
         ("confirm", process_ascension_confirm),
-    )
+    ),
+    "temper confirm": (
+        ("confirm", process_temper_confirm),
+    ),
 }
 
 ALIASES: dict[str, str] = {
