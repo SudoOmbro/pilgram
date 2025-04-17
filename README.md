@@ -5,6 +5,11 @@ a texting based idle MMO-RPG powered by AI.
   <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img1.png" style=" width:200px ; height:200px" >
   <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img2.png" style=" width:200px ; height:200px" >
   <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img3.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img4.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img5.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img6.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img7.png" style=" width:200px ; height:200px" >
+  <img src="https://github.com/SudoOmbro/pilgram/blob/master/screenshots/img8.png" style=" width:200px ; height:200px" >
 </div>
 
 Embark on quests, join guilds, play minigames, cast spells... All by texting!
