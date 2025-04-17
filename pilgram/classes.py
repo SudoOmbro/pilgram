@@ -502,6 +502,7 @@ class Player(CombatActor):
         :param max_level_reached: the maximum level the player has ever reached
         :param max_money_reached: the maximum money the player has ever reached
         :param max_renown_reached: the maximum renown the player has ever reached
+        :param pet: the currently equipped pet
         """
         self.player_id = player_id
         self.name = name
@@ -1007,7 +1008,8 @@ class Player(CombatActor):
             {},
             0,
             0,
-            0
+            0,
+            None
         )
 
 

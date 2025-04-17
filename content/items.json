@@ -903,6 +903,7 @@
   }, {
     "id": 58,
     "name": "Kunais",
+    "description": "Aim for the throat.",
     "slot": "secondary",
     "class": "thrown",
     "weapon": true,
@@ -965,6 +966,7 @@
   }, {
     "id": 62,
     "name": "Knife",
+    "description": "\"What are you gonna do, stab me?\" - Guy that got stabbed.",
     "slot": "secondary",
     "class": "dagger",
     "weapon": true,
@@ -979,7 +981,7 @@
   }, {
     "id": 63,
     "name": "Brass Knuckles",
-    "description": "The ole one two punch",
+    "description": "The ole one two punch.",
     "slot": "secondary",
     "class": "fist",
     "weapon": true,
@@ -994,7 +996,7 @@
   }, {
     "id": 64,
     "name": "Fire bombs",
-    "description": "If i was fire i'd burn the world",
+    "description": "If i was fire i'd burn the world.",
     "slot": "secondary",
     "class": "thrown",
     "weapon": true,
@@ -1027,6 +1029,7 @@
   }, {
     "id": 66,
     "name": "Buckler",
+    "description": "Parry and riposte.",
     "slot": "secondary",
     "class": "shield",
     "weapon": false,
@@ -1042,7 +1045,7 @@
   }, {
     "id": 67,
     "name": "Dueling shield",
-    "description": "I stole this from Elden Ring",
+    "description": "I stole this from Elden Ring.",
     "slot": "secondary",
     "class": "shield",
     "weapon": false,
@@ -1197,6 +1200,7 @@
   }, {
     "id": 76,
     "name": "Repeating Crossbow",
+    "description": "Something something Chu Ko Nu.",
     "slot": "primary",
     "class": "crossbow",
     "weapon": true,
@@ -1211,6 +1215,7 @@
   }, {
     "id": 77,
     "name": "Blunderbuss",
+    "description": "The good old boomstick.",
     "slot": "primary",
     "class": "firearm",
     "weapon": true,
@@ -1227,6 +1232,7 @@
   }, {
     "id": 78,
     "name": "Sandals",
+    "description": "Do NOT pair socks with these.",
     "slot": "legs",
     "weapon": false,
     "delay": 1,
@@ -1240,6 +1246,7 @@
   }, {
     "id": 79,
     "name": "Tiara",
+    "description": "You are fabulous.",
     "slot": "head",
     "weapon": false,
     "delay": 1,
@@ -1280,6 +1287,7 @@
   }, {
     "id": 82,
     "name": "High heels",
+    "description": "Slay. Literally.",
     "slot": "legs",
     "weapon": false,
     "delay": 5,
@@ -1306,6 +1314,7 @@
   }, {
     "id": 84,
     "name": "Quarterstaff",
+    "description": "The good old beating stick.",
     "slot": "primary",
     "class": "stick",
     "weapon": true,
@@ -1320,6 +1329,7 @@
   }, {
     "id": 85,
     "name": "Nunchaku",
+    "description": "You can do some cool tricks with these.",
     "slot": "primary",
     "class": "stick",
     "weapon": true,
