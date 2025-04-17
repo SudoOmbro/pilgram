@@ -15,7 +15,7 @@ from pilgram.classes import (
     Quest,
     Tourney,
     Zone,
-    ZoneEvent, Notification, Anomaly,
+    ZoneEvent, Notification, Anomaly, Pet,
 )
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
 from pilgram.flags import Raiding
@@ -512,6 +512,28 @@ class PilgramDatabase(ABC):
         raise NotImplementedError
 
     def update_notice_board(self, author: Player, message: str) -> bool:
+        raise NotImplementedError
+
+    # pets ---------------------------------------------
+
+    def get_pet(self, pet_id: int) -> Pet:
+        """return a specific pet given its id"""
+        raise NotImplementedError
+
+    def get_player_pets(self, player_id: int) -> list[Pet]:
+        """get all pets owned by the specified player"""
+        raise NotImplementedError
+
+    def update_pet(self, pet: Pet, owner: Player) -> None:
+        """update a pet on the database"""
+        raise NotImplementedError
+
+    def add_pet(self, pet: Pet, owner: Player) -> int:
+        """ add a new pet on the database & returns the id """
+        raise NotImplementedError
+
+    def delete_pet(self, pet: Pet) -> None:
+        """delete a specific pet on the database"""
         raise NotImplementedError
 
     # utility functions ----------------------------------

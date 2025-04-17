@@ -11,6 +11,7 @@ from peewee import (
     FloatField,
     ForeignKeyField,
     IntegerField,
+    DeferredForeignKey
 )
 
 log = logging.getLogger(__name__)
@@ -314,3 +315,31 @@ def __migrate_v12_to_v13():
     previous_db.commit()
     previous_db.close()
     os.rename("pilgram_v12.db", "pilgram_v13.db")
+
+
+@__add_to_migration_list("pilgram_v13.db")
+def __migrate_v13_to_v14():
+    from playhouse.migrate import SqliteMigrator, migrate
+    from ._models_v13 import db as previous_db
+    from ._models_v13 import BaseModel, PlayerModel, EnemyTypeModel
+
+    class PetModel(BaseModel):
+        id = AutoField(primary_key=True)
+        name = CharField(null=True, unique=False, default=None)
+        enemy_type = ForeignKeyField(EnemyTypeModel, null=False)
+        owner = ForeignKeyField(PlayerModel, backref="pets", index=True, null=False)
+        level = IntegerField(default=1)
+        xp = IntegerField(default=0)
+        hp_percent = FloatField(null=False, default=1.0)
+        seed = FloatField(null=False)
+
+    log.info("Migrating v13 to v14...")
+    previous_db.connect()
+    migrator = SqliteMigrator(previous_db)
+    migrate(
+        migrator.add_column('PlayerModel', 'pet_id', DeferredForeignKey("PetModel", null=True, default=None)),
+    )
+    previous_db.create_tables([PetModel])
+    previous_db.commit()
+    previous_db.close()
+    os.rename("pilgram_v13.db", "pilgram_v14.db")

@@ -14,7 +14,7 @@ from peewee import (
     SqliteDatabase,
 )
 
-DB_FILENAME: str = "pilgram_v13.db"  # yes, I'm encoding the DB version in the filename, problem? :)
+DB_FILENAME: str = "pilgram_v14.db"  # yes, I'm encoding the DB version in the filename, problem? :)
 
 db = SqliteDatabase(DB_FILENAME)
 
@@ -89,6 +89,7 @@ class PlayerModel(BaseModel):
     max_level_reached = IntegerField(default=0)
     max_money_reached = IntegerField(default=0)
     max_renown_reached = IntegerField(default=0)
+    pet = DeferredForeignKey("PetModel", null=True, default=None)
 
 
 class GuildModel(BaseModel):
@@ -165,6 +166,18 @@ class AuctionModel(BaseModel):
     best_bidder = ForeignKeyField(PlayerModel, index=True, null=True, default=None)
     best_bid = IntegerField(null=False, default=0)
     creation_date = DateTimeField(default=datetime.now)
+
+
+class PetModel(BaseModel):
+    """ Table that contains all the pets, which can be multiple per player """
+    id = AutoField(primary_key=True)
+    name = CharField(null=True, unique=False, default=None)
+    enemy_type = ForeignKeyField(EnemyTypeModel, null=False)
+    owner = ForeignKeyField(PlayerModel, backref="pets", index=True, null=False)
+    level = IntegerField(default=1)
+    xp = IntegerField(default=0)
+    hp_percent = FloatField(null=False, default=1.0)
+    seed = FloatField(null=False)  # this also controls the perks since we are not storing those
 
 
 def db_connect():

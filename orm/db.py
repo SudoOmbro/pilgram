@@ -302,7 +302,8 @@ class PilgramORMDatabase(PilgramDatabase):
                 decode_essences(pls.essences),
                 pls.max_level_reached,
                 pls.max_money_reached,
-                pls.max_renown_reached
+                pls.max_renown_reached,
+                None if pls.pet is None else self.get_pet(pls.pet.id)
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
