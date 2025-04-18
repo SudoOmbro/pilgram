@@ -23,6 +23,7 @@ from orm.models import (
     ZoneEventModel,
     ZoneModel,
     create_tables,
+    PetModel,
     db,
 )
 from orm.utils import cache_sized_ttl_quick, cache_ttl_quick, cache_ttl_single_value
@@ -38,7 +39,10 @@ from pilgram.classes import (
     Quest,
     Tourney,
     Zone,
-    ZoneEvent, Notification, Anomaly,
+    ZoneEvent,
+    Notification,
+    Anomaly,
+    Pet,
 )
 from pilgram.combat_classes import Damage, Stats
 from pilgram.equipment import ConsumableItem, Equipment, EquipmentType
@@ -303,7 +307,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.max_level_reached,
                 pls.max_money_reached,
                 pls.max_renown_reached,
-                None if pls.pet is None else self.get_pet(pls.pet.id)
+                None if pls.pet is None else self.get_pet_from_id(pls.pet.id)
             )
             if guild and (guild.founder is None):
                 # if guild has no founder it means the founder is the player currently being retrieved
@@ -1170,6 +1174,26 @@ class PilgramORMDatabase(PilgramDatabase):
         if len(self.NOTICE_BOARD) > self.NOTICE_BOARD_MAX_SIZE:
             self.NOTICE_BOARD.pop(0)
         return True
+
+    # pets
+
+    def __build_pet(self, ps: PetModel) -> Pet:
+        pass  # TODO
+
+    def get_pet_from_id(self, pet_id: int) -> Pet | None:
+        return None  # TODO
+
+    def get_player_pets(self, player_id: int) -> list[Pet]:
+        return []  # TODO
+
+    def update_pet(self, pet: Pet, owner: Player) -> None:
+        return None  # TODO
+
+    def add_pet(self, pet: Pet, owner: Player) -> int:
+        return 0  # TODO
+
+    def delete_pet(self, pet: Pet) -> None:
+        return None  # TODO
 
     # utility functions ----
 

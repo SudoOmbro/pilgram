@@ -349,11 +349,14 @@ class Stats:
         return cls(base, base, base, base, base, base, base)
 
     @classmethod
-    def generate_random(cls, base: int, iterations: int) -> Stats:
+    def generate_random(cls, base: int, iterations: int, seed: float | None = None) -> Stats:
+        if seed is None:
+            seed = time()
+        rand = random.Random(seed)
         stats = Stats.create_default(base)
         stats_keys = list(stats.__dict__.keys())
         for _ in range(iterations):
-            target = random.choice(stats_keys)
+            target = rand.choice(stats_keys)
             stats.__dict__[target] += 1
         return stats
 
@@ -393,20 +396,44 @@ class CombatActor(ABC):
         raise NotImplementedError
 
     def roll(self, dice_faces: int):
-        """generic method used to roll dices for entities"""
-        raise NotImplementedError
+        """generic method used to roll dices for entities, default implementation provided."""
+        return random.randint(1, dice_faces)
 
     def get_delay(self) -> int:
         """returns the delay of the actor, which is a factor that determines who goes first in the combat turn"""
         raise NotImplementedError
 
     def get_stance(self):
-        """returns the stance of the actor, which determines how it behaves in combat"""
-        raise NotImplementedError
+        """
+        returns the stance of the actor, which determines how it behaves in combat, default implementation provided.
+        """
+        return "b"
 
     def choose_action(self, opponent: CombatActor) -> int:
-        """return what the entity wants to do (possible actions defined in CombatActions)"""
-        raise NotImplementedError
+        """
+        return what the entity wants to do (possible actions defined in CombatActions), default implementation provided.
+        """
+        if self.hp_percent > 0.5:
+            return random.choice(
+                (
+                    CombatActions.attack,
+                    CombatActions.attack,
+                    CombatActions.attack,
+                    CombatActions.charge_attack,
+                    CombatActions.dodge,
+                )
+            )
+        return random.choice(
+            (
+                CombatActions.attack,
+                CombatActions.attack,
+                CombatActions.attack,
+                CombatActions.charge_attack,
+                CombatActions.dodge,
+                CombatActions.dodge,
+                CombatActions.lick_wounds,
+            )
+        )
 
     def get_modifiers(self, *type_filters: int) -> list[m.Modifier]:
         """returns the list of modifiers + timed modifiers"""

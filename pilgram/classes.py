@@ -6,7 +6,7 @@ import math
 import os
 import random
 import threading
-import time
+from time import time
 from collections.abc import Callable
 from copy import copy
 from datetime import datetime, timedelta
@@ -1713,7 +1713,7 @@ class Tourney:
         self.duration = duration
 
     def has_tourney_ended(self) -> bool:
-        return time.time() >= (self.tourney_start + self.duration)
+        return time() >= (self.tourney_start + self.duration)
 
     def get_days_left(self) -> int:
         current_datetime = datetime.now()
@@ -1737,7 +1737,7 @@ class Tourney:
             tourney_json = read_json_file(filename)
         tourney = cls(
             tourney_json.get("edition", 1),
-            tourney_json.get("start", time.time()),
+            tourney_json.get("start", time()),
             tourney_json.get("duration", 1209600),
         )
         if not tourney_json:
@@ -1778,7 +1778,11 @@ class Enemy(CombatActor):
     stance: str
 
     def __init__(
-        self, meta: EnemyMeta, modifiers: list[m.Modifier], level_modifier: int, name_prefix: str = ""
+        self,
+        meta: EnemyMeta,
+        modifiers: list[m.Modifier],
+        level_modifier: int,
+        name_prefix: str = ""
     ) -> None:
         self.meta = meta
         self.modifiers = modifiers
@@ -1787,9 +1791,6 @@ class Enemy(CombatActor):
         self.stance = self.meta.zone.extra_data.get("stance", "r")
         self.name_prefix = name_prefix
         super().__init__(1.0, 1, Stats.generate_random(0, self.get_level()))
-
-    def roll(self, dice_faces: int) -> int:
-        return random.randint(1, dice_faces)
 
     def get_name(self) -> str:
         return "the " + self.name_prefix + self.meta.name.rstrip().lstrip("The ")
@@ -1825,36 +1826,81 @@ class Enemy(CombatActor):
     def get_stance(self) -> str:
         return self.stance
 
-    def choose_action(self, opponent: CombatActor) -> int:
-        if self.hp_percent > 0.5:
-            return random.choice(
-                (
-                    CombatActions.attack,
-                    CombatActions.attack,
-                    CombatActions.attack,
-                    CombatActions.charge_attack,
-                    CombatActions.dodge,
-                )
-            )
-        return random.choice(
-            (
-                CombatActions.attack,
-                CombatActions.attack,
-                CombatActions.attack,
-                CombatActions.charge_attack,
-                CombatActions.dodge,
-                CombatActions.dodge,
-                CombatActions.lick_wounds,
-            )
-        )
-
     def __str__(self) -> str:
         return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"
 
 
 class Pet(CombatActor):
-    # TODO
-    pass
+
+    def __init__(
+            self,
+            pet_id: int,
+            name: str,
+            enemy_meta: EnemyMeta,
+            owner: Player,
+            level: int,
+            xp: int,
+            hp_percent: float,
+            stats_seed: float,
+            modifiers: list[m.Modifier]
+    ) -> None:
+        super().__init__(hp_percent, 0, Stats.generate_random(1, level, seed=stats_seed))
+        self.id = pet_id
+        self.name = name
+        self.meta = enemy_meta
+        self.delay = 7 + enemy_meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
+        self.owner = owner
+        self.level = level
+        self.xp = xp
+        self.stats_seed = stats_seed
+        self.modifiers = modifiers
+
+    @classmethod
+    def build_from_captured_enemy(cls, owner: Player, enemy: Enemy) -> Pet:
+        return cls(
+            0,
+            "",
+            enemy.meta,
+            owner,
+            enemy.level_modifier + enemy.meta.zone.level,
+            0,
+            1.0,
+            time(),
+            enemy.modifiers
+        )
+
+    def get_name(self) -> str:
+        return f"{self.name} ({self.owner.name})" if self.name else f"{self.owner.name}'s pet {self.meta.name}"
+
+    def get_level(self) -> int:
+        return self.level
+
+    def get_base_max_hp(self) -> int:
+        return (45 + self.get_stats().vitality) * self.level
+
+    def get_base_attack_damage(self) -> Damage:
+        stats = self.get_stats()
+        return self.meta.zone.damage_modifiers.scale(stats.strength + stats.skill + stats.attunement + self.get_level()).apply_bonus(self.meta.zone.level)
+
+    def get_base_attack_resistance(self) -> Damage:
+        stats = self.get_stats()
+        return self.meta.zone.resist_modifiers.scale(stats.toughness + stats.agility + stats.mind + self.get_level()).apply_bonus(self.meta.zone.level)
+
+    def get_entity_modifiers(self, *type_filters: int) -> list[m.Modifier]:
+        if not type_filters:
+            return self.modifiers
+        result: list[m.Modifier] = []
+        for modifier in self.modifiers:
+            if modifier.TYPE in type_filters:
+                result.append(modifier)
+        return result
+
+    def get_delay(self) -> int:
+        value = self.delay + random.randint(-3, 3)
+        return max(value, 0)
+
+    def __str__(self) -> str:
+        return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"
 
 
 class Auction:

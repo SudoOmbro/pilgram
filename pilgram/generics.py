@@ -516,7 +516,7 @@ class PilgramDatabase(ABC):
 
     # pets ---------------------------------------------
 
-    def get_pet(self, pet_id: int) -> Pet:
+    def get_pet_from_id(self, pet_id: int) -> Pet | None:
         """return a specific pet given its id"""
         raise NotImplementedError
 

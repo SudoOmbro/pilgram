@@ -19,7 +19,7 @@
   }, {
     "id": 1,
     "name": "Spear",
-    "description": "Basic but effective",
+    "description": "Basic but very effective",
     "slot": "primary",
     "weapon": true,
     "class": "polearm",

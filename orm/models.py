@@ -177,7 +177,8 @@ class PetModel(BaseModel):
     level = IntegerField(default=1)
     xp = IntegerField(default=0)
     hp_percent = FloatField(null=False, default=1.0)
-    seed = FloatField(null=False)  # this also controls the perks since we are not storing those
+    stats_seed = FloatField(null=False)
+    modifiers = CharField(null=False, default="")  # modifiers are stored as a 16bit int for the modifier id + a 32bit int for the strength of the modifier
 
 
 def db_connect():

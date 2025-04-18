@@ -331,7 +331,8 @@ def __migrate_v13_to_v14():
         level = IntegerField(default=1)
         xp = IntegerField(default=0)
         hp_percent = FloatField(null=False, default=1.0)
-        seed = FloatField(null=False)
+        stats_seed = FloatField(null=False)
+        modifiers = CharField(null=False, default="")
 
     log.info("Migrating v13 to v14...")
     previous_db.connect()
