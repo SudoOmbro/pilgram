@@ -1178,22 +1178,70 @@ class PilgramORMDatabase(PilgramDatabase):
     # pets
 
     def __build_pet(self, ps: PetModel) -> Pet:
-        pass  # TODO
+        enemy_meta = self.get_enemy_meta(ps.enemy_type)
+        return Pet(
+            ps.id,
+            ps.name,
+            enemy_meta,
+            ps.level,
+            ps.xp,
+            ps.hp_percent,
+            ps.stats_seed,
+            decode_modifiers(ps.modifiers)
+        )
 
     def get_pet_from_id(self, pet_id: int) -> Pet | None:
-        return None  # TODO
+        try:
+            ps = PetModel.get(EquipmentModel.id == pet_id)
+            return self.__build_pet(ps)
+        except PetModel.DoesNotExist:
+            raise KeyError(f"Could not find pet with id {pet_id}")
 
     def get_player_pets(self, player_id: int) -> list[Pet]:
-        return []  # TODO
+        try:
+            ps = PlayerModel.get(PlayerModel.id == player_id).pets
+            return [self.__build_pet(x) for x in ps]
+        except PlayerModel.DoesNotExist:
+            raise KeyError(f"Could not find player with id {player_id}")
+        except PetModel.DoesNotExist:
+            return []
 
     def update_pet(self, pet: Pet, owner: Player) -> None:
-        return None  # TODO
+        try:
+            with db.atomic():
+                ps: PetModel = PetModel.get(PetModel.id == pet.id)
+                ps.name = pet.name
+                ps.enemy_type = pet.meta.meta_id
+                ps.owner = owner.player_id
+                ps.level = pet.level
+                ps.xp = pet.xp
+                ps.hp_percent = pet.hp_percent
+                ps.stats_seed = pet.stats_seed
+                ps.modifiers = encode_modifiers(pet.modifiers)
+                ps.save()
+        except PetModel.DoesNotExist:
+            raise KeyError(f"Could not find pet with id {pet.id}")
 
     def add_pet(self, pet: Pet, owner: Player) -> int:
-        return 0  # TODO
+        with db.atomic():
+            item = PetModel.create(
+                name=pet.name,
+                enemy_type=pet.meta.meta_id,
+                owner=owner.player_id,
+                level=pet.level,
+                xp=pet.xp,
+                hp_percent=pet.hp_percent,
+                stats_seed=pet.stats_seed,
+                modifiers=encode_modifiers(pet.modifiers)
+            )
+            return item.id
 
     def delete_pet(self, pet: Pet) -> None:
-        return None  # TODO
+        try:
+            with db.atomic():
+                PetModel.get(PetModel.id == pet.id).delete_instance()
+        except PetModel.DoesNotExist:
+            raise KeyError(f"Could not find pet with id {pet.id} to delete")
 
     # utility functions ----
 

@@ -1837,7 +1837,6 @@ class Pet(CombatActor):
             pet_id: int,
             name: str,
             enemy_meta: EnemyMeta,
-            owner: Player,
             level: int,
             xp: int,
             hp_percent: float,
@@ -1849,7 +1848,6 @@ class Pet(CombatActor):
         self.name = name
         self.meta = enemy_meta
         self.delay = 7 + enemy_meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
-        self.owner = owner
         self.level = level
         self.xp = xp
         self.stats_seed = stats_seed
@@ -1859,9 +1857,8 @@ class Pet(CombatActor):
     def build_from_captured_enemy(cls, owner: Player, enemy: Enemy) -> Pet:
         return cls(
             0,
-            "",
+            f"{owner.name}'s pet {enemy.meta.name}",
             enemy.meta,
-            owner,
             enemy.level_modifier + enemy.meta.zone.level,
             0,
             1.0,
@@ -1870,7 +1867,7 @@ class Pet(CombatActor):
         )
 
     def get_name(self) -> str:
-        return f"{self.name} ({self.owner.name})" if self.name else f"{self.owner.name}'s pet {self.meta.name}"
+        return self.name
 
     def get_level(self) -> int:
         return self.level
