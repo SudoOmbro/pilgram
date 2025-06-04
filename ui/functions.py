@@ -20,7 +20,10 @@ from pilgram.classes import (
     Guild,
     Player,
     SpellError,
-    Zone, Progress, RAID_DELAY,
+    Zone,
+    Progress,
+    RAID_DELAY,
+    Pet,
 )
 from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
@@ -859,6 +862,12 @@ def __get_items(player: Player) -> list[Equipment]:
     return items
 
 
+def __get_pets(player: Player) -> list[Pet]:
+    pets = db().get_player_pets(player.player_id)
+    pets.sort(key=lambda pet: (pet.level, pet.name))
+    return pets
+
+
 def inventory(context: UserContext) -> str:
     player = get_player(db, context)
     items = __get_items(player)
@@ -867,7 +876,15 @@ def inventory(context: UserContext) -> str:
     return f"Items ({len(items)}/{player.get_inventory_size()}):\n\n{'\n'.join([f'{i + 1} - {Strings.get_item_icon(x.equipment_type.slot)}{' ✅' if player.is_item_equipped(x) else ''}| *{x.name}* (lv. {x.level})' for i, x in enumerate(items)])}"
 
 
-def __item_id_is_valid(item_id: int, items: list[Equipment]) -> bool:
+def pets_inventory(context: UserContext) -> str:
+    player = get_player(db, context)
+    pets = __get_pets(player)
+    if not pets:
+        return Strings.no_pets_yet
+    return f"Pets ({len(pets)}/{player.get_pet_inventory_size()}):\n\n{'\n'.join([f'{i+1} - {' ✅' if player.is_pet_equipped(x) else ''}| *{x.name}* (lv. {x.level})' for i, x in enumerate(pets)])}"
+
+
+def __item_id_is_valid(item_id: int, items: list) -> bool:
     return (item_id > 0) and (item_id <= len(items))
 
 
@@ -879,6 +896,17 @@ def check_item(context: UserContext, item_pos_str: str) -> str:
         return Strings.no_items_yet
     if not __item_id_is_valid(item_pos, items):
         return Strings.invalid_item
+    return str(items[item_pos - 1])
+
+
+def check_pet(context: UserContext, item_pos_str: str) -> str:
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    items = __get_pets(player)
+    if not items:
+        return Strings.no_pets_yet
+    if not __item_id_is_valid(item_pos, items):
+        return Strings.invalid_pet
     return str(items[item_pos - 1])
 
 
@@ -898,6 +926,20 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
     player.equip_item(item)
     db().update_player_data(player)
     return Strings.item_equipped.format(item=item.name, slot=Strings.slots[item.equipment_type.slot])
+
+
+def equip_pet(context: UserContext, item_pos_str: str) -> str:
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    pets = __get_pets(player)
+    if not pets:
+        return Strings.no_pets_yet
+    if not __item_id_is_valid(item_pos, pets):
+        return Strings.invalid_pet
+    pet = pets[item_pos - 1]
+    player.equip_pet(pet)
+    db().update_player_data(player)
+    return Strings.pet_equipped.format(name=pet.name, race=pet.meta.name)
 
 
 def unequip_all_items(context: UserContext) -> str:
@@ -1004,6 +1046,22 @@ def sell_item(context: UserContext, item_pos_str: str) -> str:
     return Strings.item_sell_confirm.format(item=item.name)
 
 
+def sell_pet(context: UserContext, item_pos_str: str) -> str:
+    item_pos = int(item_pos_str)
+    player = get_player(db, context)
+    pets = __get_pets(player)
+    if not pets:
+        return Strings.no_pets_yet
+    if not __item_id_is_valid(item_pos, pets):
+        return Strings.invalid_pet
+    pet = pets[item_pos - 1]
+    if player.is_pet_equipped(pet):
+        return Strings.cannot_sell_equipped_pet
+    context.set("item pos", item_pos)
+    context.start_process("sellpet confirm")
+    return Strings.item_sell_confirm.format(item=pet.name)
+
+
 def sell_all(context: UserContext) -> str:
     player = db().get_player_data(context.get("id"))
     items = __get_items(player)
@@ -1060,6 +1118,28 @@ def process_sell_confirm(context: UserContext, user_input: str) -> str:
         except KeyError as e:
             return f"Error: {e}"
         return Strings.item_sold.format(item=item.name, money=money_am)
+    return Strings.action_canceled.format(action="Sell")
+
+
+def process_sell_pet_confirm(context: UserContext, user_input: str) -> str:
+    player = get_player(db, context)
+    context.end_process()
+    if get_yes_or_no(user_input):
+        pets = __get_pets(player)
+        item_pos = context.get("item pos")
+        pet = pets[item_pos - 1]
+        if player.is_pet_equipped(pet):
+            return Strings.cannot_sell_equipped_pet
+        mult = 1 if player.guild_level() < 6 else 2
+        money = int(pet.get_value() * mult)
+        money_am = player.add_money(money)
+        pets.pop(item_pos - 1)
+        db().update_player_data(player)
+        try:
+            db().delete_pet(pet)
+        except KeyError as e:
+            return f"Error: {e}"
+        return Strings.item_sold.format(item=pet.name, money=money_am)
     return Strings.action_canceled.format(action="Sell")
 
 
@@ -1745,6 +1825,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "auction": IFW([integer_arg("Auction")], check_auction, "Show a specific auction."),
         "members": IFW(None, check_guild_members, "Shows the members of the given guild", optional_args=[guild_arg("Guild")]),
         "item": IFW([integer_arg("Item")], check_item, "Shows specified item stats"),
+        "pet": IFW([integer_arg("Pet")], check_pet, "Shows specified pet stats"),
         "market": IFW(None, show_market, "Shows daily consumables you can buy."),
         "smithy": IFW(None, show_smithy, "Shows daily items you can buy."),
         "notices": IFW(None, check_notice_board, "Shows notice board.")
@@ -1776,7 +1857,8 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "guild": IFW(None, modify_guild, "Modify your guild (for a price).",),
     },
     "select": {
-        "vocations": IFW([integer_arg("Vocation id")], change_vocation, "Select your vocations", optional_args=[integer_arg("Vocation id")])
+        "vocations": IFW([integer_arg("Vocation id")], change_vocation, "Select your vocations", optional_args=[integer_arg("Vocation id")]),
+        "pet": IFW([integer_arg("Pet")], equip_pet, "Select pet from pet inventory"),
     },
     "join": IFW([guild_arg("Guild")], join_guild, "Join guild with the given name."),
     "embark": IFW([integer_arg("Zone number")], embark_on_quest, "Start quest in specified zone."),
@@ -1807,9 +1889,13 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "artifact": IFW(None, assemble_artifact, f"Assemble an artifact using {REQUIRED_PIECES} artifact pieces")
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
+    "pets": IFW(None, pets_inventory, "Shows all your pets"),
     "equip": IFW([integer_arg("Item")], equip_item, "Equip item from inventory"),
     "unequip": IFW(None, unequip_all_items, "Unequip all items"),
-    "sell": IFW([integer_arg("Item")], sell_item, "Sell item from inventory."),
+    "sell": {
+        "item": IFW([integer_arg("Item")], sell_item, "Sell item from inventory."),
+        "pet": IFW([integer_arg("Pet")], sell_item, "Sells a pet.")
+    },
     "sellall": IFW(None, sell_all, "Sell all unused items from inventory."),
     "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),
     "craft": IFW([integer_arg("Item")], smithy_craft, "Craft something at the smithy."),
@@ -1871,6 +1957,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     ),
     "sell confirm": (
         ("confirm", process_sell_confirm),
+    ),
+    "sellpet confirm": (
+        ("confirm", process_sell_pet_confirm),
     ),
     "sell all confirm": (
         ("confirm", process_sell_all_confirm),

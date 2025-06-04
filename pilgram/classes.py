@@ -690,6 +690,9 @@ class Player(CombatActor):
     def get_inventory_size(self) -> int:
         return 10 + self.home_level * 4
 
+    def get_pet_inventory_size(self) -> int:
+        return self.home_level
+
     def get_max_number_of_artifacts(self) -> int:
         return self.home_level * 2
 
@@ -815,11 +818,17 @@ class Player(CombatActor):
     def equip_item(self, item: Equipment) -> None:
         self.equipped_items[item.equipment_type.slot] = item
 
+    def equip_pet(self, pet: Pet) -> None:
+        self.pet = pet
+
     def is_item_equipped(self, item: Equipment) -> bool:
         for equipped_item in self.equipped_items.values():
             if equipped_item == item:
                 return True
         return False
+
+    def is_pet_equipped(self, pet: Pet) -> bool:
+        return pet == self.pet
 
     def get_stance(self) -> str:
         return self.stance
@@ -1896,8 +1905,16 @@ class Pet(CombatActor):
         value = self.delay + random.randint(-3, 3)
         return max(value, 0)
 
+    def get_value(self) -> int:
+        return self.level * 500 * len(self.get_entity_modifiers())
+
+    def __eq__(self, other):
+        if other.__class__ != self.__class__:
+            return False
+        return self.id == other.id
+
     def __str__(self) -> str:
-        return f"*{self.get_name()}*\n{self.hp}/{self.get_base_max_hp()}"
+        return f"*{self.get_name()}*\nHP: {self.hp}/{self.get_base_max_hp()}"
 
 
 class Auction:
