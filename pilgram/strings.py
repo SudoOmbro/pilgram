@@ -248,19 +248,15 @@ class Strings:
         "Relic"
     ]
     no_items_yet = "You don't have any items yet"
-    no_pets_yet = "You don't have any pets yet"
     invalid_item = "Invalid item."
-    invalid_pet = "Invalid pet."
     item_sell_confirm = f"Are you sure you want to sell {{item}}? (y/n)"
     sell_all_confirm = "Are you sure you want to sell all your items? (y/n)"
     item_sold = f"You sold '*{{item}}*' for *{{money}} {MONEY}*."
     item_bought = f"You bought '*{{item}}*' for *{{money}} {MONEY}*."
     item_equipped = "You equipped '{item}' in the {slot} slot."
-    pet_equipped = "You took {name} ({race}) with you."
     unequip_all = "Unequipped all items."
     cannot_sell_equipped_item = "You can't sell an equipped item!"
     cannot_gift_equipped_item = "You can't gift an equipped item!"
-    cannot_sell_equipped_pet = "You can't sell an equipped pet!"
     cannot_shop_on_a_quest = "You cannot shop while on a quest!"
     item_reroll_confirm = f"Are you sure you want to reroll {{item}}? It will cost you {{price}} {MONEY}. (y/n)"
     item_rerolled = f"You paid {{amount}} {MONEY} to reroll {{old_name}} into:"
@@ -272,6 +268,14 @@ class Strings:
     enchant_ascension_required = "You must be at least ascension level 1 to enchant items."
     item_temper_confirm = f"Are you sure you want to temper {{item}}? It will cost you {{price}} {MONEY}. (y/n)"
     item_tempered = f"You paid {{amount}} {MONEY} to temper {{item}}, increasing it's level by one."
+
+    # pets
+    no_pets_yet = "You don't have any pets yet"
+    invalid_pet = "Invalid pet."
+    pet_equipped = "You took {name} ({race}) with you."
+    max_pets_reached = "You have reached the maximum amount of pets."
+    already_catching = "You are already trying to catch a pet."
+    cannot_sell_equipped_pet = "You can't sell an equipped pet!"
 
     # auctions
     no_auctions_yet = "No auctions yet"

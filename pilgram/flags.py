@@ -153,7 +153,7 @@ class QuestCanceled(Flag):
     pass  # 29
 
 
-class Explore(Flag):
+class Catching(Flag):
     pass  # 30
 
 

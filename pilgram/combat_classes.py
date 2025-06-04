@@ -531,6 +531,9 @@ class CombatActor(ABC):
         """Returns the prestige given by killing this actor"""
         return max(1, int((self.get_level() - zone_level) / 2))
 
+    def has_pet(self) -> bool:
+        return False
+
 
 class CombatContainer:
     MAX_TURNS: int = 1000
@@ -574,6 +577,8 @@ class CombatContainer:
             if actor.team not in teams:
                 teams[actor.team] = []
             teams[actor.team].append(actor)
+            if actor.has_pet():
+                teams[actor.team].append(actor.pet)
         self.combat_log = (
             "*"
             + " vs ".join(

@@ -23,7 +23,7 @@ from pilgram.classes import (
 from pilgram.combat_classes import CombatContainer, CombatActor
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    QuestCanceled, Explore, InCrypt, Raiding, DeathwishMode
+    QuestCanceled, InCrypt, Raiding, DeathwishMode
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.listables import DEFAULT_TAG
@@ -289,15 +289,11 @@ class QuestManager(Manager):
             if player.player_id in QTE_CACHE:
                 del QTE_CACHE[player.player_id]
                 text = Strings.qte_failed + "\n\n" + text
-                if Explore.is_set(player.flags):
-                    player.unset_flag(Explore)
-            elif Explore.is_set(player.flags) or (random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus)):
+            elif random.randint(1, 10) <= (1 + player.vocation.qte_frequency_bonus):
                 # log.info(f"Player '{player.name}' encountered a QTE.")
                 qte = random.choice(QuickTimeEvent.LISTS[DEFAULT_TAG])
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
-                if Explore.is_set(player.flags):
-                    player.unset_flag(Explore)
             elif random.randint(1, 10) <= (
                 1 + player.vocation.discovery_bonus + (anomaly.item_drop_bonus if ac.zone() == anomaly.zone else 0)
             ):  # 10% base change of finding an item

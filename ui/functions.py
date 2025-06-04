@@ -29,7 +29,7 @@ from pilgram.combat_classes import CombatContainer, Stats
 from pilgram.equipment import Equipment, EquipmentType
 from pilgram.flags import ForcedCombat, HexedFlag, CursedFlag, AlloyGlitchFlag3, AlloyGlitchFlag1, AlloyGlitchFlag2, \
     LuckFlag1, LuckFlag2, StrengthBuff, OccultBuff, FireBuff, IceBuff, AcidBuff, ElectricBuff, MightBuff3, MightBuff2, \
-    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Explore, InCrypt, Raiding, DeathwishMode
+    MightBuff1, SwiftBuff3, SwiftBuff2, SwiftBuff1, QuestCanceled, Catching, InCrypt, Raiding, DeathwishMode
 from pilgram.generics import AlreadyExists, PilgramDatabase
 from pilgram.globals import (
     DESCRIPTION_REGEX,
@@ -921,7 +921,7 @@ def equip_item(context: UserContext, item_pos_str: str) -> str:
     item = items[item_pos - 1]
     if db().get_auction_from_item(item):
         return Strings.cannot_equip_auctioned_item
-    if item.level > player.level:
+    if (item.level > player.level) and (item.equipment_type.slot != Slots.RELIC):
         return Strings.cannot_equip_higher_level_item
     player.equip_item(item)
     db().update_player_data(player)
@@ -1215,23 +1215,10 @@ def force_combat(context: UserContext) -> str:
     player = get_player(db, context)
     if ForcedCombat.is_set(player.flags):
         return Strings.already_hunting
-    if Explore.is_set(player.flags):
-        return Strings.already_exploring
     player.add_sanity(-HUNT_SANITY_COST - player.vocation.hunt_sanity_loss)
     player.set_flag(ForcedCombat)
     db().update_player_data(player)
     return Strings.force_combat
-
-
-def force_qte(context: UserContext) -> str:
-    player = get_player(db, context)
-    if ForcedCombat.is_set(player.flags):
-        return Strings.already_hunting
-    if Explore.is_set(player.flags):
-        return Strings.already_exploring
-    player.set_flag(Explore)
-    db().update_player_data(player)
-    return Strings.explore_text
 
 
 def check_auctions(context: UserContext) -> str:
@@ -1806,6 +1793,16 @@ def process_temper_confirm(context: UserContext, user_input: str) -> str:
     return Strings.action_canceled.format(action="Temper")
 
 
+def catch_pet(context: UserContext) -> str:
+    player = get_player(db, context)
+    if Catching.is_set(player.flags):
+        return Strings.already_catching
+    pets = __get_pets(player)
+    if len(pets) >= player.get_pet_inventory_size():
+        return Strings.max_pets_reached
+    player.set_flag(Catching)
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1837,7 +1834,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "crypt": IFW(None, crypt, "Enter the crypt"),
     "deathwish": IFW(None, toggle_deathwish_mode, "Toggle Deathwish mode"),
     "cancel": {
-        "quest": IFW(None, cancel_quest, "Cancels the current quest.")
+        "quest": IFW(None, cancel_quest, "Cancels current quest.")
     },
     "create": {
         "character": IFW(None, start_character_creation, "Create your character."),
@@ -1872,21 +1869,21 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "cast": IFW([RWE("spell name", SPELL_NAME_REGEX, Strings.spell_name_validation_error)], cast_spell, "Cast a spell.", optional_args=[RWE("target", None, None)]),
     "grimoire": IFW(None, return_string, "Shows & describes all spells", default_args={"string": __list_spells()}),
     "rank": {
-        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked based on their prestige."),
-        "players": IFW(None, rank_players, "Shows the top 20 players, ranked based on their renown."),
-        "tourney": IFW(None, rank_tourney, "Shows the top 10 guilds competing in the tourney. Only the top 3 will win."),
+        "guilds": IFW(None, rank_guilds, "Shows the top 20 guilds, ranked by prestige."),
+        "players": IFW(None, rank_players, "Shows the top 20 players, ranked by renown."),
+        "tourney": IFW(None, rank_tourney, "Shows the top 10 guilds in the current tourney."),
     },
     "message": {
-        "player": IFW([player_arg("player name")], send_message_to_player, "Send message to a single player."),
-        "guild": IFW(None, send_message_to_owned_guild, "Send message to every member of your owned guild.")
+        "player": IFW([player_arg("player name")], send_message_to_player, "message player."),
+        "guild": IFW(None, send_message_to_owned_guild, "message everyone in your owned guild.")
     },
     "duel": {
-        "invite": IFW([player_arg("player name")], duel_invite, "Send duel invite to a player."),
-        "accept": IFW([player_arg("player name")], duel_accept, "Accept a duel invite."),
-        "reject": IFW([player_arg("player name")], duel_reject, "Reject a duel invite.")
+        "invite": IFW([player_arg("player name")], duel_invite, "Send duel invite to player."),
+        "accept": IFW([player_arg("player name")], duel_accept, "Accept duel invite."),
+        "reject": IFW([player_arg("player name")], duel_reject, "Reject duel invite.")
     },
     "assemble": {
-        "artifact": IFW(None, assemble_artifact, f"Assemble an artifact using {REQUIRED_PIECES} artifact pieces")
+        "artifact": IFW(None, assemble_artifact, f"Assemble artifact using {REQUIRED_PIECES} artifact pieces")
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
     "pets": IFW(None, pets_inventory, "Shows all your pets"),
@@ -1903,7 +1900,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "temper": IFW([integer_arg("Item")], temper_item, "Temper an item from inventory"),
     "enchant": IFW([integer_arg("Item")], enchant_item, "Add perk to an item from inventory"),
     "consume": IFW([integer_arg("Item")], use_consumable, "Use an item in your satchel"),
-    "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches your stance to the given stance"),
+    "stance": IFW([RWE("stance", None, None)], switch_stance, "Switches stance to the given stance"),
     "qte": IFW([integer_arg("Option")], do_quick_time_event, "Do a quick time event"),
     "retire": IFW(None, set_last_update, f"Take a 1 year vacation for 100 BA", default_args={"delta": timedelta(days=365), "msg": Strings.you_retired, "cost": 100}),
     "back": {
@@ -1914,13 +1911,13 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "minigames": IFW(None, return_string, "Shows all minigames", default_args={"string": __list_minigames()}),
     "vocations": IFW(None, list_vocations, "Shows all vocations"),
     "hunt": IFW(None, force_combat, "Hunt for a strong enemy"),
-    "explore": IFW(None, force_qte, "Force a QTE"),
+    "catch": IFW(None, catch_pet, "Try to catch pet"),
     "play": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], start_minigame, "Play specified minigame."),
     "explain": {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains specified minigame."),
     },
     "bestiary": IFW([integer_arg("Zone number")], bestiary, "shows all enemies that can be found in the given zone."),
-    "man": IFW([integer_arg("Page")], manual, "Shows the specified manual page.")
+    "man": IFW([integer_arg("Page")], manual, "Shows specified manual page.")
 }
 
 USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
