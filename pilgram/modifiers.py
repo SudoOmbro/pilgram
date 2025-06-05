@@ -1210,4 +1210,20 @@ class Immolation(Modifier, rarity=Rarity.LEGENDARY):
         self.write_to_log(context, f"{caster.get_name()} dies and Immolates, dealing {damage} to {opponent.get_name()}")
 
 
+class AcceleratingDefence(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.MID_DEFEND
+
+    MAX_STRENGTH = 5
+    MIN_STRENGTH = 1
+    SCALING = 20
+
+    NAME = "Entropic Recursion"
+    DESCRIPTION = "Decrease damage taken by {str}% each turn (up to 95%)."
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        percent_decrease: int = self.strength if self.strength < 95 else 95
+        return damage.scale((100 - percent_decrease) / 100)
+
+
 print(f"Loaded {len(_LIST)} perks")  # Always keep at the end

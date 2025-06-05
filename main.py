@@ -11,7 +11,8 @@ from pilgram.manager import (
     GeneratorManager,
     QuestManager,
     TimedUpdatesManager,
-    TourneyManager, NotificationsManager,
+    TourneyManager,
+    NotificationsManager,
 )
 from pilgram.utils import read_update_interval
 from ui.admin_cli import ADMIN_INTERPRETER
