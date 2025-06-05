@@ -1935,6 +1935,9 @@ class Pet(CombatActor):
             self.level_up(owner)
         return int(amount)
 
+    def get_level_progress(self):
+        return (self.xp / self.get_required_xp()) * 100
+
     def get_delay(self) -> int:
         value = self.delay + random.randint(-3, 3)
         return max(value, 0)
@@ -1952,7 +1955,16 @@ class Pet(CombatActor):
         return self.id == other.id
 
     def __str__(self) -> str:
-        return f"*{self.get_name()}*\nHP: {self.hp}/{self.get_base_max_hp()}"
+        max_hp = self.get_max_hp()
+        string = f"{self.get_name()} | lv. {self.level}\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`\n"
+        string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
+        string += f"\n\n*Stats*:\n{self.get_stats()}"
+        string += f"\n\n*Damage ({self.get_base_attack_damage().get_total_damage()})*:\n{str(self.get_base_attack_damage())}"
+        string += f"\n\n*Resist ({self.get_base_attack_resistance().get_total_damage()})*:\n{str(self.get_base_attack_resistance())}"
+        modifiers = self.get_modifiers()
+        if not modifiers:
+            return string
+        return string + f"\n\n*Perks*:\n\n{'\n\n'.join(str(x) for x in modifiers)}"
 
 
 class Auction:
