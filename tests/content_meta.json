@@ -50,6 +50,9 @@
   "market": {
     "max_items": 12
   },
+  "pet": {
+    "rename_cost": 500
+  },
   "minigames": {
     "hands": {
       "min_buy_in": 5,

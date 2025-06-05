@@ -828,7 +828,7 @@ class Player(CombatActor):
         return False
 
     def is_pet_equipped(self, pet: Pet) -> bool:
-        return pet == self.pet
+        return pet.id == self.pet.id
 
     def get_stance(self) -> str:
         return self.stance
@@ -941,6 +941,20 @@ class Player(CombatActor):
         self.renown += amount
         if self.renown >= self.max_renown_reached:
             self.max_renown_reached = self.renown
+
+    def use_best_bait_item(self) -> ConsumableItem or None:
+        best_item: ConsumableItem or None = None
+        pos: int = 0
+        for i, consumable in enumerate(self.satchel):
+            if best_item is None:
+                best_item = consumable
+                pos = i
+            elif consumable.bait_power > best_item.bait_power:
+                best_item = consumable
+                pos = i
+        if best_item is not None:
+            self.satchel.pop(pos)
+        return best_item
 
     # utility
 
@@ -1900,6 +1914,26 @@ class Pet(CombatActor):
             if modifier.TYPE in type_filters:
                 result.append(modifier)
         return result
+
+    def get_required_xp(self) -> int:
+        lv = self.level
+        return (100 * (lv * lv)) + (1000 * lv)
+
+    def level_up(self, owner: Player or None) -> None:
+        req_xp = self.get_required_xp()
+        while self.xp >= req_xp:
+            self.level += 1
+            self.xp -= req_xp
+            req_xp = self.get_required_xp()
+            if owner is not None:
+                InternalEventBus().notify(Event("pet level up", owner, {"level": self.level, "name": self.name}))
+
+    def add_xp(self, amount: float, owner: Player or None = None) -> int:
+        """adds xp to the player & returns how much was actually added to the player"""
+        self.xp += int(amount)
+        if self.xp >= self.get_required_xp():
+            self.level_up(owner)
+        return int(amount)
 
     def get_delay(self) -> int:
         value = self.delay + random.randint(-3, 3)

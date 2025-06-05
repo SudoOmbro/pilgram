@@ -276,6 +276,10 @@ class Strings:
     max_pets_reached = "You have reached the maximum amount of pets."
     already_catching = "You are already trying to catch a pet."
     cannot_sell_equipped_pet = "You can't sell an equipped pet!"
+    pet_caught = "You successfully catched a {name}."
+    pet_escaped = "You couldn't catch the {name}, it escaped."
+    pet_start_rename = "Write a new name for {name}."
+    pet_renamed = "Successfully renamed {oldname} into {newname}, you paid {amount}."
 
     # auctions
     no_auctions_yet = "No auctions yet"
@@ -394,7 +398,7 @@ class Strings:
     named_object_not_exist = "{obj} with name {name} does not exist."
     name_object_already_exists = "{obj} with name {name} already exists, give your {obj} a different name (names are case sensitive)"
     __must_not_contain = "must not contain new lines & the following characters: \\_, \\*, \\`, \\[, ], ~"
-    player_name_validation_error = "Player names must only be 4 to 20 characters long, must not contain spaces and " + __must_not_contain
+    player_name_validation_error = "Player/pet names must only be 4 to 20 characters long, must not contain spaces and " + __must_not_contain
     guild_name_validation_error = "Guild names must only be 2 to 30 characters long, must not contain spaces and " + __must_not_contain
     description_validation_error = "Descriptions must only be 10 to 300 characters long and " + __must_not_contain
     obj_number_error = "{obj} must be a positive integer number."

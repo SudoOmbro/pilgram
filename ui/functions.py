@@ -58,7 +58,8 @@ REQUIRED_PIECES: int = ContentMeta.get("artifacts.required_pieces")
 SWITCH_DELAY: timedelta = read_update_interval(ContentMeta.get("guilds.switch_delay"))
 HUNT_SANITY_COST: int = ContentMeta.get("hunt.sanity_cost")
 ASCENSION_COST: int = ContentMeta.get("ascension.cost")
-MAX_MARKET_ITEMS = ContentMeta.get("market.max_items")
+MAX_MARKET_ITEMS: int = ContentMeta.get("market.max_items")
+PET_RENAME_COST: int = ContentMeta.get("pet.rename_cost")
 
 
 def db() -> PilgramDatabase:
@@ -885,6 +886,7 @@ def pets_inventory(context: UserContext) -> str:
 
 
 def __item_id_is_valid(item_id: int, items: list) -> bool:
+    """ checks if given id is > 0 and withing the length of the given list of items """
     return (item_id > 0) and (item_id <= len(items))
 
 
@@ -1803,6 +1805,38 @@ def catch_pet(context: UserContext) -> str:
     player.set_flag(Catching)
 
 
+def rename_pet(context: UserContext, pet_pos_str: str) -> str:
+    player = get_player(db, context)
+    if player.money < PET_RENAME_COST:
+        return Strings.not_enough_money.format(amount=PET_RENAME_COST-player.money)
+    pet_pos = int(pet_pos_str)
+    pets = __get_pets(player)
+    if not __item_id_is_valid(pet_pos, pets):
+        return Strings.invalid_pet
+    pet = pets[pet_pos - 1]
+    context.start_process("rename pet")
+    context.set("pet pos", pet_pos - 1)
+    return Strings.pet_start_rename(name=pet.name)
+
+
+def rename_pet_process(context: UserContext, user_input: str) -> str:
+    if not re.match(PLAYER_NAME_REGEX, user_input):
+        return Strings.player_name_validation_error
+    player = db().get_player_data(context.get("id"))  # player must exist to get to this point
+    player.money -= PET_RENAME_COST
+    pet_pos = context.get("pet pos")
+    pets = __get_pets(player)
+    pet = pets[pet_pos]
+    old_name = pet.name
+    pet.name = user_input
+    if player.is_pet_equipped(pet):
+        player.pet = pet
+    db().update_pet(pet, player)
+    db().update_player_data(player)
+    context.end_process()
+    return Strings.pet_renamed.format(oldname=old_name, newname=user_input, amount=PET_RENAME_COST)
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1887,6 +1921,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     },
     "inventory": IFW(None, inventory, "Shows all your items"),
     "pets": IFW(None, pets_inventory, "Shows all your pets"),
+    "rename": IFW([integer_arg("Pet")], rename_pet, "Rename a pet"),
     "equip": IFW([integer_arg("Item")], equip_item, "Equip item from inventory"),
     "unequip": IFW(None, unequip_all_items, "Unequip all items"),
     "sell": {
@@ -1973,6 +2008,9 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
     "temper confirm": (
         ("confirm", process_temper_confirm),
     ),
+    "rename pet": (
+        ("rename", rename_pet_process),
+    )
 }
 
 ALIASES: dict[str, str] = {

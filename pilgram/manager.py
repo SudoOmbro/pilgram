@@ -18,12 +18,12 @@ from pilgram.classes import (
     Player,
     Quest,
     QuickTimeEvent,
-    Zone, InternalEventBus, Event, Notification,
+    Zone, InternalEventBus, Event, Notification, Pet,
 )
 from pilgram.combat_classes import CombatContainer, CombatActor
-from pilgram.equipment import Equipment, EquipmentType
+from pilgram.equipment import Equipment, EquipmentType, ConsumableItem
 from pilgram.flags import BUFF_FLAGS, ForcedCombat, Ritual1, Ritual2, Pity1, Pity2, Pity3, Pity4, PITY_FLAGS, Pity5, \
-    QuestCanceled, InCrypt, Raiding, DeathwishMode
+    QuestCanceled, InCrypt, Raiding, DeathwishMode, Catching
 from pilgram.generics import PilgramDatabase, PilgramGenerator, PilgramNotifier
 from pilgram.globals import ContentMeta
 from pilgram.listables import DEFAULT_TAG
@@ -294,6 +294,22 @@ class QuestManager(Manager):
                 qte = random.choice(QuickTimeEvent.LISTS[DEFAULT_TAG])
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
+            elif Catching.is_set(player.flags):
+                bait: ConsumableItem or None = player.use_best_bait_item()
+                bait_power = (0.1 + 0 if bait is None else bait.bait_power) * (player.level / zone.level)
+                roll_result = player.roll(100)
+                enemy = self._create_enemy(ac, random.randint(0, 2), 0)
+                if roll_result <= 100 * bait_power:
+                    # catch successful
+                    text += Strings.pet_caught.format(name=enemy.meta.name)
+                    pet = Pet.build_from_captured_enemy(player, enemy)
+                    pet_id = self.db().add_pet(pet, player)
+                    if player.pet is None:
+                        pet.id = pet_id
+                        player.pet = pet
+                else:
+                    text += Strings.pet_escaped.format(name=enemy.meta.name)
+                player.unset_flag(Catching)
             elif random.randint(1, 10) <= (
                 1 + player.vocation.discovery_bonus + (anomaly.item_drop_bonus if ac.zone() == anomaly.zone else 0)
             ):  # 10% base change of finding an item
@@ -454,6 +470,11 @@ class QuestManager(Manager):
             xp_am = player.add_xp(xp)
             player.add_renown(renown)
             money_am = player.add_money(money)
+            # handle pet
+            if player.pet is not None:
+                player.pet.add_xp(xp, owner=player)
+                player.pet.hp_percent = 1.0
+                self.db().update_pet(player.pet, player)
             # create notification text
             if isinstance(enemy, Enemy):
                 text += f"\n\n{enemy.meta.win_text}{rewards_string(xp_am, money_am, renown)}"
@@ -505,6 +526,11 @@ class QuestManager(Manager):
             xp_am = player.add_xp(xp)
             player.add_renown(renown)
             money_am = player.add_money(money)
+            # handle pet
+            if player.pet is not None:
+                player.pet.add_xp(xp, owner=player)
+                player.pet.hp_percent = 1.0
+                self.db().update_pet(player.pet, player)
             text += f"\n\n{Strings.shade_win}{rewards_string(xp_am, money_am, renown)}"
         for flag in BUFF_FLAGS:
             if flag.is_set(player.flags):
@@ -569,6 +595,11 @@ class QuestManager(Manager):
                 money_am = member.add_money(money)
                 renown = member.get_prestige(ac.quest.zone.level)
                 member.add_renown(renown)
+                # handle member pet
+                if member.pet is not None:
+                    member.pet.add_xp(xp, owner=member)
+                    member.pet.hp_percent = 1.0
+                    self.db().update_pet(member.pet, member)
                 guild.prestige += renown
                 # notify player
                 self.db().create_and_add_notification(
@@ -946,6 +977,10 @@ class NotificationsManager(Manager):
             for value, strings in Strings.sanity_lines.items():
                 if sanity >= value:
                     string = random.choice(strings)
+        elif event.type == "pet level up":
+            pet_name: str = event.data["name"]
+            level: int = event.data["level"]
+            string = f"Your pet '{pet_name}' has reached level {level}!"
         return string
 
     def run(self) -> None:
