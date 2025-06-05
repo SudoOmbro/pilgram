@@ -1942,6 +1942,10 @@ class Pet(CombatActor):
     def get_value(self) -> int:
         return self.level * 500 * len(self.get_entity_modifiers())
 
+    def heal(self):
+        self.hp_percent = 1.0
+        self.hp = self.get_max_hp()
+
     def __eq__(self, other):
         if other.__class__ != self.__class__:
             return False

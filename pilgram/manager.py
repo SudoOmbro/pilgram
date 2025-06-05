@@ -473,7 +473,7 @@ class QuestManager(Manager):
             # handle pet
             if player.pet is not None:
                 player.pet.add_xp(xp, owner=player)
-                player.pet.hp_percent = 1.0
+                player.pet.heal()
                 self.db().update_pet(player.pet, player)
             # create notification text
             if isinstance(enemy, Enemy):
@@ -529,7 +529,7 @@ class QuestManager(Manager):
             # handle pet
             if player.pet is not None:
                 player.pet.add_xp(xp, owner=player)
-                player.pet.hp_percent = 1.0
+                player.pet.heal()
                 self.db().update_pet(player.pet, player)
             text += f"\n\n{Strings.shade_win}{rewards_string(xp_am, money_am, renown)}"
         for flag in BUFF_FLAGS:

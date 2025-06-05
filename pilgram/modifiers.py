@@ -1192,5 +1192,22 @@ class StickProficiency(_GenericWeaponProficiency, weapon_type="stick"):
     pass
 
 
+class Immolation(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.ON_DEATH
+
+    MIN_STRENGTH = 25
+    MAX_STRENGTH = 100
+    SCALING = 2
+
+    NAME = "Immolation"
+    DESCRIPTION = "On death deal {str}% of enemy health in damage to an enemy (unblockable)"
+
+    def function(self, context: ModifierContext) -> Any:
+        caster: cc.CombatActor = context.get("entity")
+        opponent: cc.CombatActor = context.get("opponent")
+        damage = int(opponent.get_max_hp() * self.get_fstrength())
+        opponent.modify_hp(-damage)
+        self.write_to_log(context, f"{caster.get_name()} dies and Immolates, dealing {damage} to {opponent.get_name()}")
+
 
 print(f"Loaded {len(_LIST)} perks")  # Always keep at the end
