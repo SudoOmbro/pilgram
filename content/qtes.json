@@ -477,5 +477,25 @@
           "maluses": "rn 100"
         }
       ]
+    }, {
+      "description": "You find a strange ethereal creature. It doesn't seem to acknowledge you.",
+      "choices": [
+        {
+          "option": "Throw a rock at it",
+          "chance": 5,
+          "success": "You hit it and it disappears, leaving some strange dust behind.",
+          "failure": "You miss it and it disappears, nothing really happens but it was kind of embarassing.",
+          "rewards": "xp 600",
+          "maluses": "rn 5"
+        },
+        {
+          "option": "Ignore it",
+          "chance": 90,
+          "success": "You avoid engaging with the creature, you don't trust it, whatever it is.",
+          "failure": "You try to leave but you are enthralled with the creature, you can't seem to turn away. You bump into a wall.",
+          "rewards": "xp 20",
+          "maluses": "hp 10"
+        }
+      ]
     }]
 }
