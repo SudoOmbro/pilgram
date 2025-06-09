@@ -294,22 +294,6 @@ class QuestManager(Manager):
                 qte = random.choice(QuickTimeEvent.LISTS[DEFAULT_TAG])
                 QTE_CACHE[player.player_id] = qte
                 text += f"*QTE*\n\n{qte}\n\n"
-            elif Catching.is_set(player.flags):
-                bait: ConsumableItem or None = player.use_best_bait_item()
-                bait_power = (0.1 + 0 if bait is None else bait.bait_power) * (player.level / zone.level)
-                roll_result = player.roll(100)
-                enemy = self._create_enemy(ac, random.randint(0, 2), 0)
-                if roll_result <= 100 * bait_power:
-                    # catch successful
-                    text += Strings.pet_caught.format(name=enemy.meta.name)
-                    pet = Pet.build_from_captured_enemy(player, enemy)
-                    pet_id = self.db().add_pet(pet, player)
-                    if player.pet is None:
-                        pet.id = pet_id
-                        player.pet = pet
-                else:
-                    text += Strings.pet_escaped.format(name=enemy.meta.name)
-                player.unset_flag(Catching)
             elif random.randint(1, 10) <= (
                 1 + player.vocation.discovery_bonus + (anomaly.item_drop_bonus if ac.zone() == anomaly.zone else 0)
             ):  # 10% base change of finding an item
@@ -501,7 +485,7 @@ class QuestManager(Manager):
             if flag.is_set(player.flags):
                 player.flags = flag.unset(player.flags)
         if ForcedCombat.is_set(player.flags):
-            player.flags = ForcedCombat.unset(player.flags)
+            player.unset_flag(ForcedCombat)
         # save data to db
         self.db().update_player_data(player)
         self.db().update_quest_progress(ac)
@@ -621,6 +605,27 @@ class QuestManager(Manager):
         self.db().update_guild(guild)
         self.db().update_quest_progress(ac)
 
+    def process_catch_pet(self, ac: AdventureContainer):
+        player = ac.player
+        zone = ac.zone()
+        bait: ConsumableItem or None = player.use_best_bait_item()
+        bait_power = (0.1 + 0 if bait is None else bait.bait_power) * (player.level / zone.level)
+        roll_result = player.roll(100)
+        enemy = self._create_enemy(ac, random.randint(0, 2), 0)
+        text = "Catching result:\n\n"
+        if roll_result <= 100 * bait_power:
+            # catch successful
+            text += Strings.pet_caught.format(name=enemy.meta.name)
+            pet = Pet.build_from_captured_enemy(player, enemy)
+            pet_id = self.db().add_pet(pet, player)
+            if player.pet is None:
+                pet.id = pet_id
+                player.pet = pet
+        else:
+            text += Strings.pet_escaped.format(name=enemy.meta.name)
+        self.db().create_and_add_notification(player, text)
+        self.db().update_player_data(player)
+
     def process_update(
         self, ac: AdventureContainer, updates: list[AdventureContainer]
     ) -> bool:
@@ -634,6 +639,9 @@ class QuestManager(Manager):
                 except Exception as e:
                     log.error(f"an error occurred while processing raid for player {player.name}: {e}")
                     return False
+            if Catching.is_set(player.flags):
+                self.process_catch_pet(ac)
+                player.unset_flag(Catching)
             elif ac.is_quest_finished():
                 self._complete_quest(ac)
                 return False

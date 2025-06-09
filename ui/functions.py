@@ -1803,6 +1803,8 @@ def catch_pet(context: UserContext) -> str:
     if len(pets) >= player.get_pet_inventory_size():
         return Strings.max_pets_reached
     player.set_flag(Catching)
+    db().update_player_data(player)
+    return Strings.pet_catch_start
 
 
 def rename_pet(context: UserContext, pet_pos_str: str) -> str:
@@ -1816,7 +1818,7 @@ def rename_pet(context: UserContext, pet_pos_str: str) -> str:
     pet = pets[pet_pos - 1]
     context.start_process("rename pet")
     context.set("pet pos", pet_pos - 1)
-    return Strings.pet_start_rename(name=pet.name)
+    return Strings.pet_start_rename.format(name=pet.get_name())
 
 
 def rename_pet_process(context: UserContext, user_input: str) -> str:
@@ -1926,7 +1928,7 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
     "unequip": IFW(None, unequip_all_items, "Unequip all items"),
     "sell": {
         "item": IFW([integer_arg("Item")], sell_item, "Sell item from inventory."),
-        "pet": IFW([integer_arg("Pet")], sell_item, "Sells a pet.")
+        "pet": IFW([integer_arg("Pet")], sell_pet, "Sells a pet.")
     },
     "sellall": IFW(None, sell_all, "Sell all unused items from inventory."),
     "buy": IFW([integer_arg("Item")], market_buy, "Buy something from the market."),

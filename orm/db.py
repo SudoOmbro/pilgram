@@ -374,6 +374,7 @@ class PilgramORMDatabase(PilgramDatabase):
                 pls.max_level_reached = player.max_level_reached
                 pls.max_money_reached = player.max_money_reached
                 pls.max_renown_reached = player.max_renown_reached
+                pls.pet = player.pet.id if player.pet else None
                 pls.save()
         except PlayerModel.DoesNotExist:
             raise KeyError(f'Player with id {player.player_id} not found')
@@ -1192,11 +1193,12 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def get_pet_from_id(self, pet_id: int) -> Pet | None:
         try:
-            ps = PetModel.get(EquipmentModel.id == pet_id)
+            ps = PetModel.get(PetModel.id == pet_id)
             return self.__build_pet(ps)
         except PetModel.DoesNotExist:
             raise KeyError(f"Could not find pet with id {pet_id}")
 
+    @cache_sized_ttl_quick(size_limit=100, ttl=3600)
     def get_player_pets(self, player_id: int) -> list[Pet]:
         try:
             ps = PlayerModel.get(PlayerModel.id == player_id).pets
@@ -1206,6 +1208,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except PetModel.DoesNotExist:
             return []
 
+    @_thread_safe()
     def update_pet(self, pet: Pet, owner: Player) -> None:
         try:
             with db.atomic():
@@ -1222,6 +1225,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except PetModel.DoesNotExist:
             raise KeyError(f"Could not find pet with id {pet.id}")
 
+    @_thread_safe()
     def add_pet(self, pet: Pet, owner: Player) -> int:
         with db.atomic():
             item = PetModel.create(
@@ -1236,6 +1240,7 @@ class PilgramORMDatabase(PilgramDatabase):
             )
             return item.id
 
+    @_thread_safe()
     def delete_pet(self, pet: Pet) -> None:
         try:
             with db.atomic():

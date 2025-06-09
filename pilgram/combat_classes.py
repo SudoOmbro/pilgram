@@ -549,7 +549,6 @@ class CombatContainer:
         self.damage_scale: dict[CombatActor, float] = {}
         self.resist_scale: dict[CombatActor, float] = {}
         self.stamina: dict[CombatActor, float] = {}
-        self._reset_damage_and_resist_scales()
         self.turn = 0
         self.death_was_notified: list[CombatActor] = []
 
@@ -579,6 +578,8 @@ class CombatContainer:
             teams[actor.team].append(actor)
             if actor.has_pet():
                 teams[actor.team].append(actor.pet)
+                self.participants.append(actor.pet)
+        self._reset_damage_and_resist_scales()
         self.combat_log = (
             "*"
             + " vs ".join(

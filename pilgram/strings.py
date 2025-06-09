@@ -275,11 +275,12 @@ class Strings:
     pet_equipped = "You took {name} ({race}) with you."
     max_pets_reached = "You have reached the maximum amount of pets."
     already_catching = "You are already trying to catch a pet."
-    cannot_sell_equipped_pet = "You can't sell an equipped pet!"
-    pet_caught = "You successfully caught a {name}."
+    cannot_sell_equipped_pet = "You can't sell your currently selected pet!"
+    pet_catch_start = "You lay some bait, hopefully you'll catch a monster..."
+    pet_caught = "You successfully caught a {name}\n\nUse the `rename` command to give it a new name."
     pet_escaped = "You couldn't catch the {name}, it escaped."
-    pet_start_rename = "Write a new name for {name}."
-    pet_renamed = "Successfully renamed {oldname} into {newname}, you paid {amount}."
+    pet_start_rename = "Write a new name for {name}"
+    pet_renamed = "Successfully renamed {oldname} into {newname}\n\nyou paid {amount}."
 
     # auctions
     no_auctions_yet = "No auctions yet"

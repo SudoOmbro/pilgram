@@ -828,7 +828,12 @@ class Player(CombatActor):
         return False
 
     def is_pet_equipped(self, pet: Pet) -> bool:
+        if self.pet is None:
+            return False
         return pet.id == self.pet.id
+
+    def has_pet(self) -> bool:
+        return self.pet is not None
 
     def get_stance(self) -> str:
         return self.stance
@@ -983,6 +988,8 @@ class Player(CombatActor):
             string += f"\n\n_{self.description}\n\nQuests: {self.get_number_of_tried_quests()} tried, {self.completed_quests} completed.\nArtifact pieces: {self.artifact_pieces}_"
         if self.equipped_items:
             string += f"\n\nEquipped items:\n*{'\n'.join(f"{Strings.get_item_icon(slot)} - {item.name}" for slot, item in sorted(self.equipped_items.items()))}*"
+        if self.pet:
+            string += f"\n\nPet: *{self.pet.get_name()}*"
         if self.satchel:
             string += f"\n\nSatchel:\n{'\n'.join(f"{i + 1}. {x.name}" for i, x in enumerate(self.satchel))}"
         return string
@@ -1866,15 +1873,15 @@ class Pet(CombatActor):
             stats_seed: float,
             modifiers: list[m.Modifier]
     ) -> None:
-        super().__init__(hp_percent, 0, Stats.generate_random(1, level, seed=stats_seed))
         self.id = pet_id
         self.name = name
-        self.meta = enemy_meta
-        self.delay = 7 + enemy_meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
-        self.level = level
+        self.modifiers = modifiers
+        self.level = max(1, level)
         self.xp = xp
         self.stats_seed = stats_seed
-        self.modifiers = modifiers
+        self.meta = enemy_meta
+        self.delay = 7 + enemy_meta.zone.extra_data.get("delay", 0) + random.randint(-5, 5)
+        super().__init__(hp_percent, 0, Stats.generate_random(1, level, seed=stats_seed))
 
     @classmethod
     def build_from_captured_enemy(cls, owner: Player, enemy: Enemy) -> Pet:
@@ -1882,11 +1889,11 @@ class Pet(CombatActor):
             0,
             f"{owner.name}'s pet {enemy.meta.name}",
             enemy.meta,
-            enemy.level_modifier + enemy.meta.zone.level,
+            max(1, enemy.level_modifier + enemy.meta.zone.level),
             0,
             1.0,
             time(),
-            enemy.modifiers
+            enemy.get_entity_modifiers()
         )
 
     def get_name(self) -> str:
@@ -1949,14 +1956,9 @@ class Pet(CombatActor):
         self.hp_percent = 1.0
         self.hp = self.get_max_hp()
 
-    def __eq__(self, other):
-        if other.__class__ != self.__class__:
-            return False
-        return self.id == other.id
-
     def __str__(self) -> str:
         max_hp = self.get_max_hp()
-        string = f"{self.get_name()} | lv. {self.level}\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`\n"
+        string = f"{self.get_name()} | lv. {self.level}\n*{self.meta.name}*\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`"
         string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
         string += f"\n\n*Stats*:\n{self.get_stats()}"
         string += f"\n\n*Damage ({self.get_base_attack_damage().get_total_damage()})*:\n{str(self.get_base_attack_damage())}"

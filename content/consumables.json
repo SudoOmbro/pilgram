@@ -199,7 +199,7 @@
     "effects": {
       "hp_restored": 10,
       "sanity_restored": -100,
-      "bait power": 0.6
+      "bait_power": 0.6
     }
   }, {
     "id": 21,
@@ -210,7 +210,7 @@
     "effects": {
       "hp_restored": 5,
       "sanity_restored": -5,
-      "bait power": 0.9
+      "bait_power": 0.9
     }
   }]
 }
