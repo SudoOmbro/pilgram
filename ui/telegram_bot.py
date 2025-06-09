@@ -240,8 +240,8 @@ class PilgramBot(PilgramNotifier):
             await asyncio.sleep(timeout)
 
     def notify(self, notification: Notification) -> dict:
-        if notification.target.name != "Ombro":
-            return {"ok": True}
+        # if notification.target.name != "Ombro":
+        #     return {"ok": True}
         if len(notification.text) > 4096:
             log.info(f"Text too long, seding notification to {notification.target.name} as file")
             return self.send_file(

@@ -232,3 +232,9 @@ An equal amount of monsters will spawn to the amount of participants of the raid
 Raids last a single day, no matter the zone; At the end of the raid a legend will spawn along with the usual group of monsters, acting as a final boss for the raid.
 
 If the guild leader dies then the raid fails.
+
+♦️♦️*Pets*♦️♦️
+Basically mini players you can bring with you on your adventures.
+You can only have a single pet equipped at a time.
+Every pet has to be captured in a zone, it will have that zone's modifiers.
+Buy consumables with good bait power to increase your chances of catching a pet.
