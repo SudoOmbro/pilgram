@@ -1958,8 +1958,9 @@ class Pet(CombatActor):
 
     def __str__(self) -> str:
         max_hp = self.get_max_hp()
-        string = f"{self.get_name()} | lv. {self.level}\n*{self.meta.name}*\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`"
-        string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`\n"
+        string = f"*{self.get_name()}* ({self.meta.name.rstrip()}) | lv. {self.level}\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`\n"
+        string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`"
+        string += f"\n\n_{self.meta.description}_"
         string += f"\n\n*Stats*:\n{self.get_stats()}"
         string += f"\n\n*Damage ({self.get_base_attack_damage().get_total_damage()})*:\n{str(self.get_base_attack_damage())}"
         string += f"\n\n*Resist ({self.get_base_attack_resistance().get_total_damage()})*:\n{str(self.get_base_attack_resistance())}"
