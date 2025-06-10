@@ -623,6 +623,7 @@ class QuestManager(Manager):
                 player.pet = pet
         else:
             text += Strings.pet_escaped.format(name=enemy.meta.name)
+        player.unset_flag(Catching)
         self.db().create_and_add_notification(player, text)
         self.db().update_player_data(player)
 
@@ -641,7 +642,6 @@ class QuestManager(Manager):
                     return False
             if Catching.is_set(player.flags):
                 self.process_catch_pet(ac)
-                player.unset_flag(Catching)
             elif ac.is_quest_finished():
                 self._complete_quest(ac)
                 return False

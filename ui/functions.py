@@ -664,10 +664,11 @@ def send_message_to_owned_guild(context: UserContext) -> str:
 
 
 def send_message_process(context: UserContext, message: str):
+    player = get_player(db, context)
     for target in context.get("targets"):
         db().create_and_add_notification(
             Player.create_default(target, str(target), ""),
-            context.get("text") + message
+            context.get("text").format(name=player.name) + message
         )
     context.end_process()
     return Strings.message_sent
