@@ -9,7 +9,7 @@ from AI.chatgpt import ChatGPTAPI, ChatGPTGenerator
 from orm.db import PilgramORMDatabase
 from pilgram.classes import Artifact, EnemyMeta, Quest, Zone, ZoneEvent
 from pilgram.combat_classes import Damage
-from pilgram.equipment import Equipment, EquipmentType
+from pilgram.equipment import Equipment, EquipmentType, ConsumableItem
 from pilgram.generics import PilgramDatabase
 from pilgram.globals import PLAYER_NAME_REGEX as PNR
 from pilgram.globals import POSITIVE_INTEGER_REGEX as PIR
@@ -350,6 +350,20 @@ def give_item_to_player(
     return f"Added '{item.name}' to player '{player_name}'."
 
 
+def give_consumable_to_player(
+        context: UserContext,
+        player_name: str,
+        consumable_type_str: str
+) -> str:
+    player = db().get_player_from_name(player_name)
+    if len(player.satchel) >= player.get_max_satchel_items():
+        return f"{player.name}'s Satchel is already full!"
+    consumable: ConsumableItem = ConsumableItem.get(int(consumable_type_str))
+    player.satchel.append(consumable)
+    db().update_player_data(player)
+    return f"Added '{consumable.name}' to player '{player_name}'."
+
+
 def reset_guild_tourney(context: UserContext) -> str:
     """manually reset guild tourney scores"""
     db().reset_all_guild_scores()
@@ -398,6 +412,7 @@ ADMIN_COMMANDS: dict[str, str | IFW | dict] = {
             "pieces": __generate_int_op_command("artifact_pieces", "player", "add"),
             "randitem": IFW([player_arg("player name")], give_random_item_to_player, "Add a random item to the player's inventory"),
             "item": IFW([player_arg("player name"), integer_arg("item type"), integer_arg("item level"), integer_arg("item rarity")], give_item_to_player, "Add an item to the player's inventory"),
+            "consumable": IFW([player_arg("player name"), integer_arg("consumable type")], give_consumable_to_player, "Add a Consumable to the player's satchel"),
             "sanity": __generate_int_op_command("sanity", "player", "add"),
         },
         "guild": {
