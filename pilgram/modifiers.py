@@ -51,6 +51,12 @@ def get_modifier(modifier_id: int, strength: int) -> Modifier:
     return _LIST[modifier_id](strength)
 
 
+def get_scaled_strength_modifier(modifier_id: int, level: int) -> Modifier:
+    """returns a new modifier with its strength value, given its id"""
+    m: type(Modifier) = _LIST[modifier_id]
+    return m.generate(level)
+
+
 def get_modifier_from_name(modifier_name: str, strength: int) -> Modifier:
     """returns a new modifier with its strength value, given its name"""
     return _NAME_LUT[modifier_name](strength)

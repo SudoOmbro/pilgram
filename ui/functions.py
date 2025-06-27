@@ -1,4 +1,5 @@
 import logging
+import math
 import random
 import re
 import json
@@ -40,6 +41,7 @@ from pilgram.globals import (
     SPELL_NAME_REGEX,
     ContentMeta, Slots,
 )
+from pilgram.modifiers import Modifier, get_all_modifiers, get_scaled_strength_modifier
 from pilgram.spells import SPELLS
 from pilgram.strings import MONEY, Strings, rewards_string
 from pilgram.utils import read_text_file, read_update_interval, generate_random_eldritch_name, \
@@ -1840,6 +1842,23 @@ def rename_pet_process(context: UserContext, user_input: str) -> str:
     return Strings.pet_renamed.format(oldname=old_name, newname=user_input, amount=PET_RENAME_COST)
 
 
+def list_perks(context: UserContext, page_str: str) -> str:
+    player = get_player(db, context)
+    page = int(page_str) - 1
+    pages: int = math.ceil(len(get_all_modifiers()) / 10)
+    if page >= pages:
+        return "Invalid page"
+    starting_id: int = page * 10
+    modifiers: list[Modifier] = []
+    for i in range(starting_id, starting_id + 10):
+        try:
+            m: Modifier = get_scaled_strength_modifier(i, player.level)
+            modifiers.append(m)
+        except:
+            break
+    return f"Perks ({page + 1}/{pages})\n_Note that the reported numbers are scaled to your level ({player.level})_\n\n" + "\n\n".join(f"{m.ID + 1} - {m}" for m in modifiers)
+
+
 USER_COMMANDS: dict[str, str | IFW | dict] = {
     "check": {
         "player": IFW(None, check_player, "Shows player stats.", optional_args=[player_arg("Player name")]),
@@ -1955,7 +1974,8 @@ USER_COMMANDS: dict[str, str | IFW | dict] = {
         "minigame": IFW([RWE("minigame name", MINIGAME_NAME_REGEX, Strings.invalid_minigame_name)], explain_minigame, "Explains specified minigame."),
     },
     "bestiary": IFW([integer_arg("Zone number")], bestiary, "shows all enemies that can be found in the given zone."),
-    "man": IFW([integer_arg("Page")], manual, "Shows specified manual page.")
+    "man": IFW([integer_arg("Page")], manual, "Shows specified manual page."),
+    "perks": IFW([integer_arg("Page")], list_perks, "Shows specified perks page.")
 }
 
 USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
