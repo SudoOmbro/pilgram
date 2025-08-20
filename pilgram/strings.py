@@ -281,6 +281,15 @@ class Strings:
     pet_escaped = "You couldn't catch the {name}, it escaped."
     pet_start_rename = "Write a new name for {name}"
     pet_renamed = "Successfully renamed {oldname} into {newname}\n\nyou paid {amount}."
+    pet_behaviours = (
+        "playing",
+        "looking at you",
+        "sleeping",
+        "training",
+        "exploring",
+        "requesting pets",
+        "eating"
+    )
 
     # auctions
     no_auctions_yet = "No auctions yet"

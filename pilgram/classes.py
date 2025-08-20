@@ -1960,6 +1960,8 @@ class Pet(CombatActor):
         max_hp = self.get_max_hp()
         string = f"*{self.get_name()}* ({self.meta.name.rstrip()}) | lv. {self.level}\n`{self.xp}/{self.get_required_xp()} xp ({self.get_level_progress():.2f}%)`\n"
         string += f"HP:  `{int(max_hp * self.hp_percent)}/{max_hp}`"
+        string += f"\nCaptured in *{self.meta.zone.zone_name}*"
+        string += f"\nCurrently {random.choice(Strings.pet_behaviours)}"
         string += f"\n\n_{self.meta.description}_"
         string += f"\n\n*Stats*:\n{self.get_stats()}"
         string += f"\n\n*Damage ({self.get_base_attack_damage().get_total_damage()})*:\n{str(self.get_base_attack_damage())}"
