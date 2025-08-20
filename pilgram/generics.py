@@ -178,6 +178,11 @@ class PilgramDatabase(ABC):
         for member_id, _, _ in guild_members_data:
             member = self.get_player_data(member_id)
             if not self.is_player_on_a_quest(member):
+                # if player is on a quest then don't join the raid
+                ac = self.get_player_adventure_container(member)
+                if ac.last_update > (datetime.now() + timedelta(days=30)):
+                    # if player is retired then don't join the raid
+                    continue
                 available_members.append(member)
         return available_members
 

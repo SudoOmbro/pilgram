@@ -2039,5 +2039,6 @@ USER_PROCESSES: dict[str, tuple[tuple[str, Callable], ...]] = {
 ALIASES: dict[str, str] = {
     "check self": "check player",
     "check mates": "check members",
-    "donate": "gift ba"
+    "donate": "gift ba",
+    "ci": "check item"
 }

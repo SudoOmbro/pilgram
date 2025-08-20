@@ -1573,5 +1573,35 @@
     },
     "value": 5,
     "max_perks": 2
+  }, {
+    "id": 100,
+    "name": "Cat ears",
+    "description": "Very cute",
+    "slot": "head",
+    "weapon": false,
+    "delay": 4,
+    "resist": {
+      "blunt": 1
+    },
+    "scaling": {
+      "skill": 10
+    },
+    "value": 80,
+    "max_perks": 3
+  }, {
+    "id": 101,
+    "name": "Powdered Wig",
+    "description": "How noble of you",
+    "slot": "head",
+    "weapon": false,
+    "delay": 6,
+    "resist": {
+      "blunt": 2
+    },
+    "scaling": {
+      "skill": 15
+    },
+    "value": 100,
+    "max_perks": 2
   }]
 }
