@@ -312,7 +312,7 @@ class Strings:
     # bestiary
     bestiary_string = "Here's what you can find in {zone}:"
     no_enemies_yet = "Nothing is known about {zone} yet..."
-    no_monsters_in_town = f"There ar eno monsters in {TOWN}."
+    no_monsters_in_town = f"There are no monsters in {TOWN}."
 
     # combat
     invalid_stance = "Invalid stance, here are the available stances (you can write just the first letter):\n"

@@ -1232,4 +1232,25 @@ class AcceleratingDefence(Modifier, rarity=Rarity.LEGENDARY):
         return damage.scale((100 - percent_decrease) / 100)
 
 
+class RelicDamageModifier(Modifier, rarity=Rarity.LEGENDARY):
+    TYPE = ModifierType.PRE_ATTACK
+
+    MAX_STRENGTH = 100
+    SCALING = 2
+
+    NAME = "Relic Worship"
+    DESCRIPTION = "Deal {str}% more damage if a Relic is equipped."
+
+    def function(self, context: ModifierContext) -> Any:
+        damage: cc.Damage = context.get("damage")
+        attacker: cc.CombatActor = context.get("supplier")
+        if isinstance(attacker, classes.Player):
+            relic = attacker.equipped_items.get(equipment.Slots.RELIC, None)
+            if relic is not None:
+                return damage.scale(1 + (self.get_fstrength()))
+        else:
+            return damage.scale(1.2)
+        return damage
+
+
 print(f"Loaded {len(_LIST)} perks")  # Always keep at the end

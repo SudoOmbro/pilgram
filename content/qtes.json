@@ -497,5 +497,25 @@
           "maluses": "hp 10"
         }
       ]
+    }, {
+      "description": "You find a floating glass box that seems to be holding a nice item.",
+      "choices": [
+        {
+          "option": "Punch it",
+          "chance": 20,
+          "success": "You hit it and it breaks, dropping the item.",
+          "failure": "You hit it but it doesn't break, your hand really hurts & the cube flies away.",
+          "rewards": "item (Eldritch)",
+          "maluses": "hp 100"
+        },
+        {
+          "option": "Ignore it",
+          "chance": 90,
+          "success": "You avoid engaging with the cube, you don't trust it, whatever it is.",
+          "failure": "As you leave the cube flies away and bumps into your head, leaving you unconscious for a while.",
+          "rewards": "xp 20",
+          "maluses": "hp 200, ba 200"
+        }
+      ]
     }]
 }

@@ -1603,5 +1603,77 @@
     },
     "value": 100,
     "max_perks": 2
+  }, {
+    "id": 102,
+    "name": "Cursed Meat Jar",
+    "description": "Crystal jar containing cursed undying meat that will share some of your pain",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "blunt": 4,
+      "slash": 4,
+      "pierce": 4,
+      "occult": 4,
+      "fire": 4,
+      "acid": 4,
+      "freeze": 4,
+      "electric": 4
+    },
+    "scaling": {
+      "attunement": 50
+    },
+    "value": 5000,
+    "max_perks": 3
+  }, {
+    "id": 103,
+    "name": "Swamp Hearth",
+    "description": "Still beating hearth of a swamp living tree",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "fire": 15,
+      "acid": 15,
+      "occult": 15
+    },
+    "scaling": {
+      "attunement": 75
+    },
+    "value": 5000,
+    "max_perks": 4
+  }, {
+    "id": 104,
+    "name": "Tainted Rubedo Shackle",
+    "description": "Crimson shackle used to torture a legendary hero, it is now imbued with their blood, granting you some of their latent power",
+    "slot": "relic",
+    "tag": "relic",
+    "weapon": false,
+    "delay": 5,
+    "resist": {
+      "occult": 1
+    },
+    "scaling": {
+      "attunement": 10
+    },
+    "value": 5000,
+    "max_perks": 6
+  }, {
+    "id": 105,
+    "name": "Shank",
+    "description": "For all your prison shower needs",
+    "slot": "secondary",
+    "class": "dagger",
+    "weapon": true,
+    "delay": 1,
+    "damage": {
+      "pierce": 1
+    },
+    "scaling": {
+      "skill": 50
+    },
+    "value": 2
   }]
 }
