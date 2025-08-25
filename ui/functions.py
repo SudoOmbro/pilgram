@@ -2040,5 +2040,6 @@ ALIASES: dict[str, str] = {
     "check self": "check player",
     "check mates": "check members",
     "donate": "gift ba",
-    "ci": "check item"
+    "ci": "check item",
+    "cp": "check item"
 }
