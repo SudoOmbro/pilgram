@@ -40,7 +40,6 @@ def populate_sc_commands_list(commands_list: list[tuple[str, int, str]], command
         elif isinstance(value, IFW):
             commands_list.append((string + key, value.number_of_args, value.description))
 
-
 class CLIInterpreter:
     """ generic CLI interpreter that can be used with any commands list """
 
@@ -102,11 +101,17 @@ class CLIInterpreter:
 
     def context_aware_execute(self, user: UserContext, user_input: str) -> str:
         """ parses and elaborates the given user input and returns the output. """
-        if user_input.lower() in self.aliases:
-            user_input = self.aliases[user_input.lower()]
         try:
             if user.is_in_a_process():
                 return self.processes[user.get_process_name()][user.get_process_step()][1](user, user_input)
+            else:
+                # find alias
+                split_input = user_input.split()
+                alias_list = [" ".join(split_input[0:i]) for i in range(len(split_input) + 1)[1:]]
+                for alias in alias_list:
+                    if alias in self.aliases:
+                        user_input = user_input.replace(alias, self.aliases[alias])
+                        continue
             parsing_result = self.parse_command(user_input)
             return parsing_result.execute(user)
         except CommandError as e:
