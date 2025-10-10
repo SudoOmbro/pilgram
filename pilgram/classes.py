@@ -1142,7 +1142,20 @@ class Guild:
         return False
 
     def __str__(self) -> str:
-        return f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\nFounder: {self.founder.print_username() if self.founder else '???'}\n_Since {self.creation_date.strftime("%d %b %Y")}_\n\n{self.description}\n\n_Tax: {self.tax}%\nTourney score: {self.tourney_score}_"
+        string: str = f"*{self.name}* | lv. {self.level}\nPrestige: {self.prestige}\n"
+        string += f"Founder: {self.founder.print_username() if self.founder else '???'}\nTax: {self.tax}%\n"
+        string += f"Since {self.creation_date.strftime("%d %b %Y")}\n\n_{self.description}_\n\nPerks:\n"
+        string += f"Quest reward multiplier: {self.level + (5 if self.level == 10 else 0)}x\n"
+        if self.level >= 6:
+            string += f"Sold items yield double the {MONEY}\n"
+        if self.level >= 7:
+            string += "Crafted items at the smithy always have at least one modifier\n"
+        if self.level >= 8:
+            string += "50% discount at the market\n"
+        if self.level >= 9:
+            string += "50% discount at the smithy\n"
+        string += f"\nTourney score: {self.tourney_score}"
+        return string
     
     def __hash__(self) -> int:
         return hash(self.guild_id)

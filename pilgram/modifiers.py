@@ -1206,13 +1206,15 @@ class Immolation(Modifier, rarity=Rarity.LEGENDARY):
     SCALING = 2
 
     NAME = "Immolation"
-    DESCRIPTION = "On death deal {str}% of enemy health in damage to an enemy (unblockable)"
+    DESCRIPTION = "On death deal {str}% of enemy health in damage to an enemy (unblockable & cannot kill)"
 
     def function(self, context: ModifierContext) -> Any:
         caster: cc.CombatActor = context.get("entity")
         opponent: cc.CombatActor = context.get("opponent")
         damage = int(opponent.get_max_hp() * self.get_fstrength())
         opponent.modify_hp(-damage)
+        if opponent.is_dead():
+            opponent.modify_hp(1)
         self.write_to_log(context, f"{caster.get_name()} dies and Immolates, dealing {damage} to {opponent.get_name()}")
 
 
