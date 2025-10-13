@@ -719,8 +719,11 @@ class QuestManager(Manager):
         zones_players_map: dict[int, list[Player]] = {}
         updates = self.get_updates()
         for update in updates:
-            if self.process_update(update, updates) and update.player.vocation.can_meet_players:
-                add_to_zones_players_map(zones_players_map, update)
+            try:
+                if self.process_update(update, updates) and update.player.vocation.can_meet_players:
+                    add_to_zones_players_map(zones_players_map, update)
+            except Exception as e:
+                log.error(f"Ecountered an error while processing update for player {update.player}: {e}")
         self.handle_players_meeting(zones_players_map)
 
 
