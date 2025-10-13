@@ -31,7 +31,7 @@ The "main" version of pilgram is running on `@pilgram_bot` on Telegram if you wa
 
 ## Configuration
 Pilgram has 2 main config files: 
-- `content_meta.json`: contains all the info about the world & the content in the game
+- `content/content_meta.json`: contains all the info about the world & the content in the game
 - `settings.json`: contains general system settings like tokens & intervals
 
 to Create `settings.json` simply rename `settings_template.json` or run `cp settings_template.json settings.json`, then proceed to change all XXX values to your own tokens.
@@ -40,7 +40,11 @@ to Create `settings.json` simply rename `settings_template.json` or run `cp sett
 Pilgram can be run simply by activating the Python virtual enviorment and then running the main file with `python main.py`. 
 This is a simple but not ideal way of doing it, it does however give you easy access to the **Admin CLI**, which can be used to add content to the game and change some player values.
 
-It is harder but preferable to deploy pilgram as a daemon on a linux server:
+It is preferable to deploy pilgram as a daemon on a linux server:
+
+### Docker
+
+Open a terminal window in the folder where you pulled this repo and run `docker build -t pilgram .` and then run the built image with `docker run pilgram`
 
 ### systemd
 here's how to deploy pilgram to a linux server:
