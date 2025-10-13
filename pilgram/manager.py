@@ -526,6 +526,9 @@ class QuestManager(Manager):
     def process_raid_combat(self, ac: AdventureContainer, is_boss: bool):
         leader = self.db().get_player_data(ac.player.player_id)
         guild = self.db().get_owned_guild(leader)
+        if not guild:
+            log.warning("Guild member tried to update raid for some reason, skipping...")
+            return
         party = self.db().get_raid_participants(guild)
         mult = _get_tourney_score_multiplier(len(party))
         # get combat participants
