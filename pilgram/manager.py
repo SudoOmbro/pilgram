@@ -723,7 +723,10 @@ class QuestManager(Manager):
                 if self.process_update(update, updates) and update.player.vocation.can_meet_players:
                     add_to_zones_players_map(zones_players_map, update)
             except Exception as e:
-                log.error(f"Ecountered an error while processing update for player {update.player}: {e}")
+                if update.player:
+                    log.error(f"Ecountered an error while processing update for player {update.player.name}: {e}")
+                else:
+                    log.error(f"Ecountered an error while processing update for null player: {e}")
         self.handle_players_meeting(zones_players_map)
 
 
