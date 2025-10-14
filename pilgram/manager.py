@@ -527,7 +527,17 @@ class QuestManager(Manager):
         leader = self.db().get_player_data(ac.player.player_id)
         guild = self.db().get_owned_guild(leader)
         if not guild:
-            log.warning("Guild member tried to update raid for some reason, skipping...")
+            log.warning("Guild member tried to update raid for some reason, Fixing...")
+            party = self.db().get_raid_participants(guild)
+            for member in party:
+                if self.db().get_owned_guild(member):
+                    # if any of the raiders has a guild then he's the leader
+                    ac = self.db().get_player_adventure_container(member)
+                    ac.last_update = datetime.now() - timedelta(hours=8)
+                    self.db().update_quest_progress(ac, ac.last_update)
+            ac = self.db().get_player_adventure_container(leader)
+            ac.last_update = datetime.now() + timedelta(days=2)
+            self.db().update_quest_progress(ac, ac.last_update)
             return
         party = self.db().get_raid_participants(guild)
         mult = _get_tourney_score_multiplier(len(party))
@@ -730,7 +740,10 @@ class QuestManager(Manager):
                     log.error(f"Ecountered an error while processing update for player {update.player.name}: {e}")
                 else:
                     log.error(f"Ecountered an error while processing update for null player: {e}")
-        self.handle_players_meeting(zones_players_map)
+        try:
+            self.handle_players_meeting(zones_players_map)
+        except Exception as e:
+            log.error(f"Ecountered an error while processing player meetings: {e}")
 
 
 class GeneratorManager(Manager):

@@ -753,7 +753,7 @@ class PilgramORMDatabase(PilgramDatabase):
 
     def get_all_pending_updates(self, delta: timedelta) -> list[AdventureContainer]:
         try:
-            qps: ModelSelect = QuestProgressModel.select().where(QuestProgressModel.last_update <= datetime.now() - delta)
+            qps: ModelSelect = QuestProgressModel.select().where(QuestProgressModel.last_update <= (datetime.now() - delta))
             return [self.build_adventure_container(x) for x in qps]
         except QuestProgressModel.DoesNotExist:
             return []
