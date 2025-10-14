@@ -527,28 +527,26 @@ class QuestManager(Manager):
         leader = self.db().get_player_data(ac.player.player_id)
         guild = self.db().get_owned_guild(leader)
         if not guild:
-            log.warning("Guild member tried to update raid for some reason, Canceling Raid...")
-            party = self.db().get_raid_participants(guild)
-            for member in party:
-                # cancel raid
-                member_ac = self.db().get_player_adventure_container(member)
-                member_ac.quest = None
-                member.unset_flag(Raiding)
-                member.hp_percent = 1.0
-                # add money, xp & renown (x16)
-                xp, money = member.get_rewards(member)
-                xp_am = member.add_xp(xp * 16)
-                money_am = member.add_money(money * 16)
-                renown = member.get_prestige(ac.quest.zone.level) * 16
-                member.add_renown(renown)
-                # notify Raid failure
-                self.db().create_and_add_notification(
-                    member,
-                    Strings.raid_error + rewards_string(xp_am, money_am, renown)
-                )
-                # save member data
-                self.db().update_quest_progress(member_ac)
-                self.db().update_player_data(member)
+            log.warning("Guild member tried to update raid for some reason, Canceling Raid for them...")
+            # cancel raid
+            member_ac = self.db().get_player_adventure_container(leader)
+            member_ac.quest = None
+            leader.unset_flag(Raiding)
+            leader.hp_percent = 1.0
+            # add money, xp & renown (x32)
+            xp, money = leader.get_rewards(leader)
+            xp_am = leader.add_xp(xp * 32)
+            money_am = leader.add_money(money * 32)
+            renown = leader.get_prestige(ac.quest.zone.level) * 32
+            leader.add_renown(renown)
+            # notify Raid failure
+            self.db().create_and_add_notification(
+                leader,
+                Strings.raid_error + rewards_string(xp_am, money_am, renown)
+            )
+            # save member data
+            self.db().update_quest_progress(member_ac)
+            self.db().update_player_data(leader)
             return
         party = self.db().get_raid_participants(guild)
         mult = _get_tourney_score_multiplier(len(party))
