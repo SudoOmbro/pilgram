@@ -68,7 +68,7 @@ def run_generator_manager(database: PilgramDatabase):
     )
     while True:
         try:
-            log.info("Generator manager update")
+            log.info("Generator manager update start")
             generator_manager.run(1)
             if is_killed(INTERVAL):
                 return
@@ -87,7 +87,7 @@ def run_tourney_manager(database: PilgramDatabase):
         return
     while True:
         try:
-            log.info("tourney manager update")
+            log.info("tourney manager update start")
             tourney_manager.run()
             if is_killed(interval):
                 return
@@ -105,7 +105,7 @@ def run_updates_manager(database: PilgramDatabase):
         return
     while True:
         try:
-            log.info("updates manager update")
+            log.info("updates manager update start")
             updates_manager.run()
             if is_killed(INTERVAL):
                 return

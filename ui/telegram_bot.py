@@ -256,7 +256,7 @@ class PilgramBot(PilgramNotifier):
             result = requests.get(url)
             if result.ok:
                 return {"ok": True}
-            if result.status_code == 403:
+            if (result.status_code == 403) or (result.status_code == 400):
                 # ignore unauthorized requests
                 return {"ok": False, "reason": "blocked"}
             raise Exception(result.text)
