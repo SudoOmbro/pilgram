@@ -751,6 +751,7 @@ class PilgramORMDatabase(PilgramDatabase):
         adventure_container = self.get_player_adventure_container(player)
         return adventure_container.quest
 
+    @_thread_safe()
     def get_all_pending_updates(self, delta: timedelta) -> list[AdventureContainer]:
         try:
             qps: ModelSelect = QuestProgressModel.select().where(QuestProgressModel.last_update <= (datetime.now() - delta))
