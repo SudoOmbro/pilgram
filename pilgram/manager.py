@@ -527,17 +527,28 @@ class QuestManager(Manager):
         leader = self.db().get_player_data(ac.player.player_id)
         guild = self.db().get_owned_guild(leader)
         if not guild:
-            log.warning("Guild member tried to update raid for some reason, Fixing...")
+            log.warning("Guild member tried to update raid for some reason, Canceling Raid...")
             party = self.db().get_raid_participants(guild)
             for member in party:
-                if self.db().get_owned_guild(member):
-                    # if any of the raiders has a guild then he's the leader
-                    ac = self.db().get_player_adventure_container(member)
-                    ac.last_update = datetime.now() - timedelta(hours=8)
-                    self.db().update_quest_progress(ac, ac.last_update)
-            ac = self.db().get_player_adventure_container(leader)
-            ac.last_update = datetime.now() + timedelta(days=2)
-            self.db().update_quest_progress(ac, ac.last_update)
+                # cancel raid
+                member_ac = self.db().get_player_adventure_container(member)
+                member_ac.quest = None
+                member.unset_flag(Raiding)
+                member.hp_percent = 1.0
+                # add money, xp & renown (x16)
+                xp, money = member.get_rewards(member)
+                xp_am = member.add_xp(xp * 16)
+                money_am = member.add_money(money * 16)
+                renown = member.get_prestige(ac.quest.zone.level) * 16
+                member.add_renown(renown)
+                # notify Raid failure
+                self.db().create_and_add_notification(
+                    member,
+                    Strings.raid_error + rewards_string(xp_am, money_am, renown)
+                )
+                # save member data
+                self.db().update_quest_progress(member_ac)
+                self.db().update_player_data(member)
             return
         party = self.db().get_raid_participants(guild)
         mult = _get_tourney_score_multiplier(len(party))

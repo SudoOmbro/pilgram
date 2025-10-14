@@ -364,6 +364,7 @@ class Strings:
     raid_finished = "You manage to dispatch the group of enemies & their legendary leader. The raid is finished."
     cannot_cancel_raid = "You can't cancel a Raid!"
     too_many_raids = "Your guild was on a raid too recently, wait {days} more days."
+    raid_error = f"Your party encounters a dimensional anomaly and you find yourself back at {TOWN}..."
 
     no_deathwish_toggle_on_quest = "You cannot toggle Deathwish mode while on a quest."
     deathwish_enabled = "You enabled Deathwish mode!\n\nYou will earn double XP, double BA & double essences but if you die you will lose all of your levels, your BA and your essences (you won't lose your items).\n\nThe enemies you encounter will also be twice as strong."
