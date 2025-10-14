@@ -45,11 +45,12 @@ def run_quest_manager(database: PilgramDatabase):
     if is_killed(INTERVAL / 2):
         return
     while True:
-        log.info("Quest manager update")
+        log.info("Quest manager update start")
         try:
             quest_manager.run()
             if is_killed(INTERVAL):
                 return
+            log.info("Quest manager update end")
         except Exception as e:
             log.exception(f"error in quest manager thread: {e}")
             if is_killed(INTERVAL):
@@ -71,6 +72,7 @@ def run_generator_manager(database: PilgramDatabase):
             generator_manager.run(1)
             if is_killed(INTERVAL):
                 return
+            log.info("Generator manager update end")
         except Exception as e:
             log.exception(f"error in generator manager thread: {e}")
             if is_killed(INTERVAL):
@@ -89,6 +91,7 @@ def run_tourney_manager(database: PilgramDatabase):
             tourney_manager.run()
             if is_killed(interval):
                 return
+            log.info("tourney manager update end")
         except Exception as e:
             log.exception(f"error in tourney manager thread: {e}")
             if is_killed(INTERVAL):
@@ -106,6 +109,7 @@ def run_updates_manager(database: PilgramDatabase):
             updates_manager.run()
             if is_killed(INTERVAL):
                 return
+            log.info("updates manager update end")
         except Exception as e:
             log.exception(f"error in updates manager thread: {e}")
             if is_killed(INTERVAL):

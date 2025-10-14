@@ -520,7 +520,7 @@ def cast_spell(context: UserContext, spell_name: str, *extra_args) -> str:
         return Strings.not_enough_args.format(num=spell.required_args)
     try:
         result = spell.cast(player, extra_args)
-        log.info(f"{player.name} casted {spell_name} on {extra_args}")
+        log.info(f"{player.name} casted {spell_name} on {extra_args if extra_args else "self"}")
         db().update_player_data(player)
         return result
     except SpellError as e:
