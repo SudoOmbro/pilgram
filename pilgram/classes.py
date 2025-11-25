@@ -1955,6 +1955,10 @@ class Pet(CombatActor):
             self.level_up(owner)
         return int(amount)
 
+    def add_money(self, amount: float) -> int:
+        # this should never be called,  but it's here just in case
+        return int(amount)
+
     def get_level_progress(self):
         return (self.xp / self.get_required_xp()) * 100
 

@@ -542,6 +542,7 @@ class CombatContainer:
         self,
         participants: list[CombatActor],
         helpers: dict[CombatActor, CombatActor | None],
+        is_duel: bool = False
     ) -> None:
         self.participants = participants
         self.helpers = helpers
@@ -551,6 +552,7 @@ class CombatContainer:
         self.stamina: dict[CombatActor, float] = {}
         self.turn = 0
         self.death_was_notified: list[CombatActor] = []
+        self.is_duel: bool = is_duel
 
     def _reset_damage_and_resist_scales(self) -> None:
         for actor in self.participants:
@@ -576,7 +578,7 @@ class CombatContainer:
             if actor.team not in teams:
                 teams[actor.team] = []
             teams[actor.team].append(actor)
-            if actor.has_pet():
+            if (not self.is_duel) and actor.has_pet():
                 # teams[actor.team].append(actor.pet)
                 self.participants.append(actor.pet)
         self._reset_damage_and_resist_scales()
