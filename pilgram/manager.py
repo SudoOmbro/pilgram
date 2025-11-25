@@ -664,6 +664,7 @@ class QuestManager(Manager):
                     return False
             if Catching.is_set(player.flags):
                 self.process_catch_pet(ac)
+                return False
             elif ac.is_quest_finished():
                 self._complete_quest(ac)
                 return False

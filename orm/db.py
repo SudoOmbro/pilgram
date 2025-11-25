@@ -1199,7 +1199,7 @@ class PilgramORMDatabase(PilgramDatabase):
         except PetModel.DoesNotExist:
             raise KeyError(f"Could not find pet with id {pet_id}")
 
-    @cache_sized_ttl_quick(size_limit=100, ttl=3600)
+    @cache_sized_ttl_quick(size_limit=100, ttl=300)
     def get_player_pets(self, player_id: int) -> list[Pet]:
         try:
             ps = PlayerModel.get(PlayerModel.id == player_id).pets
